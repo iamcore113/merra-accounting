@@ -3,12 +3,13 @@ import { timer } from 'rxjs';
 import {MatButtonModule} from '@angular/material/button';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { LocalStorageService } from '../../core/services/localStorage/localStorage.service';
+import { SimpleCardComponent } from '../../components/simple-card/simple-card.component';
 
 @Component({
   selector: 'app-token-email-notification',
   templateUrl: './token-email-notification.component.html',
   styleUrls: ['./token-email-notification.component.css'],
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, SimpleCardComponent],
 })
 export class TokenEmailNotificationComponent implements OnInit {
 
@@ -46,6 +47,7 @@ export class TokenEmailNotificationComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.startCooldown(30);
   }
 
 
