@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {FormsModule, ReactiveFormsModule, Validators, FormBuilder} from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
@@ -18,6 +18,7 @@ import { SimpleCardComponent } from '../../../components/simple-card/simple-card
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css'],
   imports: [
+    RouterLink,
     MatButtonModule,
     FormsModule,
     ReactiveFormsModule,

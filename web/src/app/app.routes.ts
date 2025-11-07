@@ -6,10 +6,10 @@ import { OrganizationService } from './core/services/organization/organization.s
 import { AdminMain } from './features/admin-main/admin-main';
 import { SignupComponent } from './features/auth/signup/signup.component';
 import { LandingComponent } from './features/landing/landing.component';
-import { LoginComponent } from './features/login/login.component';
 import { PersonalInfoComponent } from './features/personal-info/personal-info.component';
 import { TokenEmailNotificationComponent } from './features/token-email-notification/token-email-notification.component';
 import { VerifyTokenComponent } from './features/verify-token/verify-token.component';
+import { SigninComponent } from './features/auth/signin/signin.component';
 
 export const routes: Routes = [
   {
@@ -18,7 +18,7 @@ export const routes: Routes = [
   },
   {
     path: 'account/signin',
-    component: LoginComponent
+    component: SigninComponent
   },
   {
     path: 'account/signup',
