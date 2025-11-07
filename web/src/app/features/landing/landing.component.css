@@ -3,7 +3,6 @@
   line-height: 1.6;
 }
 
-/* Header */
 header {
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -21,14 +20,10 @@ nav {
   align-items: center;
 }
 
-p {
-  color: white;
-}
-
 .logo {
   font-size: 28px;
   font-weight: 700;
-  color: #1e40af;
+  color: #047857;
 }
 
 .nav-links {
@@ -45,12 +40,12 @@ p {
 }
 
 .nav-links a:hover {
-  color: #2563eb;
+  color: #059669;
 }
 
 .nav-cta {
   padding: 10px 24px;
-  background-color: #2563eb;
+  background-color: #059669;
   color: white;
   border-radius: 6px;
   text-decoration: none;
@@ -59,12 +54,12 @@ p {
 }
 
 .nav-cta:hover {
-  background-color: #1d4ed8;
+  background-color: #047857;
 }
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
   color: white;
   padding: 100px 40px;
   text-align: center;
@@ -106,7 +101,7 @@ p {
 
 .btn-primary {
   background-color: white;
-  color: #1e40af;
+  color: #047857;
 }
 
 .btn-primary:hover {
@@ -122,7 +117,7 @@ p {
 
 .btn-secondary:hover {
   background-color: white;
-  color: #1e40af;
+  color: #047857;
 }
 
 /* Features Section */
@@ -139,7 +134,7 @@ p {
 .section-title {
   text-align: center;
   font-size: 36px;
-  color: #1e40af;
+  color: #047857;
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -173,7 +168,7 @@ p {
 .feature-icon {
   width: 60px;
   height: 60px;
-  background-color: #dbeafe;
+  background-color: #d1fae5;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -184,7 +179,7 @@ p {
 
 .feature-title {
   font-size: 22px;
-  color: #1e40af;
+  color: #047857;
   margin-bottom: 12px;
   font-weight: 600;
 }
@@ -219,11 +214,11 @@ p {
 }
 
 .service-item:hover {
-  border-color: #2563eb;
+  border-color: #059669;
 }
 
 .service-item h3 {
-  color: #1e40af;
+  color: #047857;
   margin-bottom: 8px;
   font-size: 18px;
 }
@@ -235,7 +230,7 @@ p {
 
 /* CTA Section */
 .cta {
-  background-color: #1e40af;
+  background-color: #047857;
   color: white;
   padding: 80px 40px;
   text-align: center;
