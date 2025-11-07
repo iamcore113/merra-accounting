@@ -1,0 +1,165 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create organization_type table -->
+    <changeSet author="brian" id="2025-create-organization_type-table">
+    	<createTable tableName="organization_type">
+    		<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+    			<constraints primaryKey="true" nullable="true" unique="true" />
+    		</column>
+    		<column name="name" type="varchar(255)">
+    			<constraints nullable="false" unique="true" />
+    		</column>
+    	</createTable>
+    </changeSet>
+  
+    <!-- create organization table -->
+    <changeSet id="2025-create-organization-table" author="brian">
+    	<createTable tableName="organization">
+    		<column name="id" type="uuid" generationType="uuid_generated_v4()">
+    			<constraints nullable="false" unique="true" />
+    		</column>
+    		<column name="profile_image" type="TEXT"></column>
+    		<column name="display_name" type="varchar(255)">
+    			<constraints nullable="false" unique="true" />
+    		</column>
+    		<column name="legal_name" type="varchar(255)">
+    			<constraints nullable="false" unique="true" />
+    		</column>
+    		<column name="organization_description" type="TEXT"></column>
+    		<column name="country" type="varchar(20)">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="default_currency" type="jsonb">
+    			<constraints nullable="false" unique="true" />
+    		</column>
+    		<column name="organization_type" type="uuid">
+    			<constraints
+    				nullable="false"
+    				foreignKeyName="fk_organization__organization_type__organization_type"
+    				referencedTableName="organization_type"
+    				referencedColumnNames="id"
+    				deleteCascade="true"
+    			/>
+    		</column>
+    		<column name="phone_no" type="jsonb[]">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="email" type="varchar(255)">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="website" type="varchar(200)"></column>
+    		<column name="time_zone" type="varchar(100)"></column>
+    		<column name="financial_year" type="jsonb"></column>
+    		<column name="address" type="jsonb[]">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="external_links" type="jsonb[]"></column>
+    		<column name="payment_terms" type="jsonb"></column>
+    		<column name="created_date" type="date" defaultValueComputed="CURRENT_DATE">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="active_subscription" type="boolean" defaultValue="true">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="status" type="varchar(100)" defaultValue="ACTIVE_ACCOUNT">
+    			<constraints nullable="false" />
+    		</column>
+    	</createTable>
+    </changeSet>
+    
+        <!-- create organization_name_log table -->
+    <changeSet id="2025-create-organization_name_log-table" author="brian">
+    	<createTable tableName="organization_name_log">
+    		<column name="organization_id" type="uuid">
+    			<constraints
+    				nullable="false"
+    				foreignKeyName="fk_organization_name_log__organization__organization_id"
+    				referencedTableName="organization"
+    				referencedColumnNames="id"
+    				deleteCascade="true"
+    			/>
+    		</column>
+    		<column name="former_name" type="jsonb">
+    		</column>
+    		<column name="current_name" type="jsonb"></column>
+    		<column name="updated_date" type="date"></column>
+    		<column name="is_updatable" type="boolean" defaultValue="true"></column>
+    		<column name="note" type="text"></column>
+    	</createTable>
+    </changeSet>
+    
+    <!-- create organization_users table-->
+    <changeSet id="2025-create-organization_users" author="brian">
+    	<createTable tableName="organization_users">
+    		<column name="organization_id" type="uuid">
+    			<constraints
+    				nullable="false"
+    				foreignKeyName="fk_organization_users__organization__organization_id"
+    				referencedTableName="organization"
+    				referencedColumnNames="id"
+    				deleteCascade="true"
+    			/>
+    		</column>
+    		<column name="user_id" type="uuid"></column>
+    		<column name="user_role" type="varchar(255)">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="user_joined" type="date" defaultValueComputed="CURRENT_DATE">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="organization_status" type="varchar(200)">
+    			<constraints nullable="true" />
+    		</column>
+    	</createTable>
+    </changeSet>
+    
+    <!-- create organization_user_invites table -->
+    <changeSet id="2025-create-organization_user_invites-table" author="brian">
+    	<createTable tableName="org_invites">
+    		<column name="organization_id" type="uuid">
+    			<constraints
+    				nullable="false"
+    				foreignKeyName="fk__org_invites__organization__organization_id"
+    				referencedTableName="organization"
+    				referencedColumnNames="id"
+    				deleteCascade="true"
+    			/>
+    		</column>
+    		<column name="invitation_for" type="uuid"></column>
+    		<column name="invitation_by" type="uuid"></column>
+    		<column name="invitation_role" type="varchar(100)">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="invite_date" type="date" defaultValueComputed="CURRENT_DATE">
+    			<constraints nullable="false" />
+    		</column>
+    		<column name="invitation_status" type="varchar(100)" defaultValue="PENDING">
+    			<constraints nullable="false" />
+    		</column>
+    	</createTable>
+    </changeSet>
+    
+    <!-- create foreign key constraint for user_id column from organization_users-->
+    <changeSet id="2025-create-foreign-key-constraint-user_id" author="brian">
+    	<addForeignKeyConstraint
+    		baseTableName="organization_users"
+    		baseColumnNames="user_id"
+    		constraintName="fk_organization_users__user_account__user_id"
+    		referencedTableName="user_account"
+    		referencedColumnNames="user_id"
+    		onDelete="SET NULL"
+    		onUpdate="CASCADE"
+    	/>
+    </changeSet>
+
+</databaseChangeLog>

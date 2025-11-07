@@ -1,0 +1,87 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create account_type table -->
+	<changeSet id="2025-create-account_type" author="brian">
+		<createTable tableName="account_type">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints nullable="false" primaryKey="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="description" type="text"></column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create account_category table -->
+	<changeSet id="2025-create-account_category" author="brian">
+		<createTable tableName="account_category">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(200)">
+				<constraints nullable="false" unique="true" />
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create chart of accounts or ledger account -->
+	<changeSet id="2025-create-ledger_account" author="brian">
+		<createTable tableName="ledger_account">
+			<column name="account_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="organization" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_ledger_account__organization__organization"
+					referencedTableName="organization"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="code" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="account_name" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="category_id" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_legder_account__account_category_category_id"
+					referencedTableName="account_category"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="account_type" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_legder_account__account_type_account_type"
+					referencedTableName="account_type"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="status" type="varchar(100)"></column>
+			<column name="description" type="text"></column>
+			<column name="tax_type" type="varchar(200)"></column>
+			<column name="enable_payments_account" type="boolean"></column>
+			<column name="updated_date" type="date"></column>
+			<column name="add_to_watch_list" type="boolean"></column>
+			<column name="archived" type="boolean" defaultValue="false"></column>
+		</createTable>
+	</changeSet>
+
+</databaseChangeLog>

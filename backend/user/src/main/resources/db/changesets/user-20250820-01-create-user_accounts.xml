@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+        <!-- Create user_account table with UUID primary key -->
+    <changeSet id="2025-create-user-account-table" author="brian">
+        <comment>Create user_account table with UUID PK</comment>
+        <createTable tableName="user_account" schemaName="merra_schema">
+            <column name="user_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="profile_url" type="TEXT"></column>
+            <column name="first_name" type="varchar(255)">
+            </column>
+            <column name="last_name" type="varchar(255)">
+            </column>
+            <column name="account_password" type="varchar(255)">
+            </column>
+            <column name="contact_number" type="varchar(100)">
+            	<constraints nullable="true" />
+            </column>
+            <column name="account_role" type="varchar(100)" defaultValue="NONE">
+            	<constraints nullable="false" />
+            </column>
+            <column name="part_of_organization" type="BOOLEAN" defaultValue="FALSE">
+            	<constraints nullable="false" />
+            </column>
+            <column name="is_owner" type="BOOLEAN" defaultValue="FALSE">
+            	<constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

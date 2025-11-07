@@ -1,0 +1,77 @@
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$cyan-palette,
+      tertiary: mat.$orange-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+    @include mat.button-overrides((
+    filled-container-color: var(--mat-sys-primary),
+    filled-container-shape: 0px,
+    filled-label-text-size: 14px,
+    filled-label-text-weight: normal,
+    outlined-container-shape: 0px,
+    outlined-label-text-size: 14px,
+    outlined-label-text-weight: normal,
+  ));
+
+  @include mat.form-field-overrides((
+    container-height: 40px,
+    // ↓ Reduce vertical padding (default ~8–16px)
+    container-vertical-padding: 4px,
+
+    // ↓ Adjust padding for filled appearance (label + input)
+    filled-container-shape: 0px,
+    filled-with-label-container-padding-top: 4px,
+    filled-with-label-container-padding-bottom: 4px,
+    container-text-size: 17px,
+    container-text-weight: normal,
+    outlined-label-text-size: 15px,
+    outlined-label-text-populated-size: 18px,
+    outlined-container-shape: 0px,
+  ));
+
+  @include mat.select-overrides((
+    trigger-text-line-height: normal,
+  ));
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"]
+ {
+  padding: 5px;
+  border: none;
+  border-radius: none;
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  padding: 0;
+}

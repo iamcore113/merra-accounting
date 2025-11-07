@@ -1,0 +1,19 @@
+<div class="email-check-container">
+  <h2>Check Your Email</h2>
+  <p>
+    We’ve sent a verification link to your registered email address. Please check your inbox and
+    click on the link to verify your account.
+  </p>
+  @if (isButtonDisabled()) {
+  <div class="resend-text">Try again in {{ cooldown() }}s</div>
+  }
+  <button
+    class="btn-resend"
+    matButton="filled"
+    (click)="resendEmailVerificationToken()"
+    [disabled]="isButtonDisabled()"
+  >
+    Resend Verification Email
+  </button>
+  <p class="note">Didn’t receive an email? Check your spam folder or try resending.</p>
+</div>

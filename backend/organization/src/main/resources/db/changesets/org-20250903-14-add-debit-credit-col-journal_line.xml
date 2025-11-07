@@ -1,0 +1,21 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- add debit and credit columns to journal_line journal_line table -->
+	<changeSet id="2025-add-debit-and-credit-columns-journal_line-table" author="brian">
+		<addColumn schemaName="merra_schema" tableName="journal_line">
+			<column name="debit" type="numeric(7,2)"></column>
+			<column name="credit" type="numeric(7,2)"></column>
+		</addColumn>
+	</changeSet>
+	
+</databaseChangeLog>

@@ -1,0 +1,58 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create invoice table -->
+	<changeSet id="2025-create-invoice" author="brian">
+		<createTable tableName="invoice">
+			<column name="invoice_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="organization" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_invoice__organization__organization"
+					referencedTableName="organization"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="invoice_type" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="contact" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_invoice__contacts__contact"
+					referencedTableName="contacts"
+					referencedColumnNames="contact_id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="line_amount_type" type="varchar(100)"></column>
+			<column name="invoice_date" type="date"></column>
+			<column name="due_date" type="date">
+				<constraints nullable="false" />
+			</column>
+			<column name="invoice_status" type="varchar(100)" defaultValue="DRAFT">
+				<constraints nullable="false" />
+			</column>
+			<column name="reference" type="varchar(255)"></column>
+			<column name="sub_total" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="grand_total" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="total_tax" type="numeric(7,2)"></column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

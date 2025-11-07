@@ -1,0 +1,66 @@
+<div class="loading-container">
+  @if(isButtonDisabled()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+</div>
+<app-simple-card>
+  <ng-container ngProjectAs="alert-section">
+    @if (serverError()) {
+    <app-alert>
+      {{ errorMessage }}
+    </app-alert>
+    }
+  </ng-container>
+
+  <ng-container ngProjectAs="main-section">
+    <h1>Create Your Merra Account</h1>
+    <p class="subtitle">It's quick and easy</p>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <mat-form-field class="mat-form">
+          <mat-label>Email Address</mat-label>
+          <input
+            type="email"
+            matInput
+            placeholder="Email Address"
+            formControlName="email"
+            required
+          />
+        </mat-form-field>
+        @if (email?.invalid && (email?.dirty || email?.touched)) { @if (email?.hasError('required'))
+        {
+        <mat-error>Email address is required.</mat-error>
+        } }
+      </div>
+      <div class="form-group">
+        <mat-form-field class="mat-form">
+          <mat-label>Password</mat-label>
+          <input
+            type="password"
+            matInput
+            placeholder="At least 8 characters"
+            formControlName="password"
+            required
+          />
+        </mat-form-field>
+        @if (password?.invalid && (password?.dirty || password?.touched)) { @if
+        (password?.hasError('required')) {
+        <mat-error>Password is required.</mat-error>
+        } @if (password?.hasError('minlength')) {
+        <mat-error>Password must be at least 8 characters long.</mat-error>
+        } }
+      </div>
+      <button matButton="filled" type="submit" class="btn" [disabled]="isButtonDisabled()">
+        Sign Up
+      </button>
+    </form>
+  </ng-container>
+  <ng-container ngProjectAs="bottom-section">
+    <p class="privacy-text">
+      We respect your privacy and will not share your information with anyone.
+    </p>
+    <div class="login-link">
+      <a href="#">Already have an account?</a>
+    </div>
+  </ng-container>
+</app-simple-card>

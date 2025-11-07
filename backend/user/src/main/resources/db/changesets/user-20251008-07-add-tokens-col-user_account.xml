@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <!-- Drop verification_token column and add tokens jsonb column -->
+    <changeSet id="2025-drop-verification_token-user_account" author="brian">
+        <dropColumn 
+            columnName="verification_token"
+            schemaName="merra_schema"
+            tableName="user_account">
+        </dropColumn>
+    </changeSet>
+    <changeSet id="2025-add-tokens-col-user_account" author="brian">
+        <addColumn tableName="user_account" schemaName="merra_schema">
+            <column name="tokens" type="jsonb"></column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

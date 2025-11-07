@@ -1,0 +1,28 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- add organization column to contacts table -->
+	<changeSet id="2025-add-organization-column-contacts-table" author="brian">
+		<addColumn schemaName="merra_schema" tableName="contacts">
+			<column name="organization" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_contacts__organization__organization"
+					referencedTableName="organization"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+		</addColumn>
+	</changeSet>
+	
+</databaseChangeLog>

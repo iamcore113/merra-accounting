@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: main
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  # Datasource settings
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: merra-user
+    password: password
+  # Liquibase settings
+  liquibase:
+    change-log: db/changelog/db.changelog-master.xml
+    default-schema: merra_schema
+    liquibase-schema: merra_schema
+    url: ${DB_URL}
+    user: merra-user
+    password: password
+  # Mail settings
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+springdoc:
+  api-docs:
+    path: /api-docs
+# JWT tokens
+jwt:
+  token:
+    secret: ${JWT_TOKEN_SECRET}
+  access:
+    token:
+      duration: ${JWT_ACCESS_TOKEN_DURATION}
+  refresh:
+    token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+  # Verification token
+  email:
+    verification-duration: ${VERIFICATION_TOKEN}
+app:
+  frontend:
+    url: ${FRONTEND_URL}
+  frontend-redirect:
+    url: ${FRONTEND_REDIRECT_URL}

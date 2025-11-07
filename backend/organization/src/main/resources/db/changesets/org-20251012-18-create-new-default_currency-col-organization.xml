@@ -1,0 +1,26 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- add remove default_currency jsonb column -->
+	<changeSet id="2025-remove-default_currency-column-organization" author="brian">
+        <dropColumn schemaName="merra_schema" tableName="organization" columnName="default_currency"/>
+	</changeSet>
+    <!-- add default_currency varchar type column -->
+     <changeSet id="2025-add-default_currency-varchar-col-organization" author="brian">
+        <addColumn tableName="organization" schemaName="merra_schema">
+            <column name="default_currency" type="varchar(100)">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+     </changeSet>
+	
+</databaseChangeLog>

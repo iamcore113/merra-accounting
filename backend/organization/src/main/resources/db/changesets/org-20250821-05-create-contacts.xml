@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create contacts table -->
+	<changeSet id="2025-create-contacts" author="brian">
+		<createTable tableName="contacts">
+			<column name="contact_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="first_name" type="varchar(255)"></column>
+			<column name="last_name" type="varchar(255)"></column>
+			<column name="email_address" type="varchar(100)"></column>
+			<column name="phone_no" type="jsonb[]"></column>
+			<column name="account_number" type="varchar(100)"></column>
+			<column name="company_number" type="varchar(100)"></column>
+			<column name="default_discount" type="int"></column>
+			<column name="tax_number" type="varchar(100)"></column>
+			<column name="contact_status" type="varchar(100)" defaultValue="ACTIVE">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_supplier" type="boolean"></column>
+			<column name="is_customer" type="boolean"></column>
+			<column name="address" type="jsonb"></column>
+			<column name="payment_terms" type="uuid"></column>
+			<column name="updated_date_utc" type="timestamptz"></column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create foreign key constraint for payment_terms column from contacts table -->
+	<changeSet id="2025-create-foreign-key-constraint-payment_terms" author="brian">
+		<addForeignKeyConstraint
+			baseTableName="contacts"
+			baseColumnNames="payment_terms"
+			constraintName="fk_contacts__payment_terms__payment_terms"
+			referencedTableName="payment_terms"
+			referencedColumnNames="payment_term_id"
+		/>
+	</changeSet>
+
+</databaseChangeLog>

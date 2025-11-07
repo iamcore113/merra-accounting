@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create sales_tax_basis table -->
+	<changeSet id="2025-create-tax_component" author="brian">
+		<createTable tableName="tax_component">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="taxt_rate_id" type="uuid">
+				<constraints
+					nullable="false"
+					unique="true"
+					foreignKeyName="fk_tax_component__tax_rate__tax_rate_id"
+					referencedTableName="tax_rate"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+			<column name="rate" type="numeric(7,4)">
+				<constraints nullable="false" />
+			</column>
+			<column name="is_compound" type="boolean"></column>
+			<column name="non_recoverable" type="boolean"></column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

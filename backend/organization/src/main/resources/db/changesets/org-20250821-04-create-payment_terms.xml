@@ -1,0 +1,26 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create payment_terms table -->
+	<changeSet id="2025-create-payment_terms" author="brian">
+		<createTable tableName="payment_terms">
+			<column name="payment_term_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="label" type="varchar(255)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="description" type="text"></column>
+		</createTable>
+	</changeSet>
+
+</databaseChangeLog>

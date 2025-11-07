@@ -1,0 +1,186 @@
+:host {
+  font-family: Arial, Helvetica, sans-serif;
+}
+.navbar-container {
+  background: linear-gradient(to bottom, #6699cc 0%, #1f5a99 100%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+}
+
+.logo-icon {
+  background: white;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 20px;
+  color: #6699cc;
+}
+
+.logo-text {
+  font-size: 24px;
+}
+
+.tagline {
+  font-size: 11px;
+  color: white;
+}
+
+.new-section {
+  color: white;
+  font-size: 12px;
+}
+
+.new-section a {
+  color: white;
+  text-decoration: underline;
+  margin: 0 3px;
+}
+
+.search-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.search-box input {
+  border: none;
+  padding: 5px 10px;
+  font-size: 12px;
+  width: 200px;
+}
+
+.search-box input:focus {
+  outline: none;
+}
+
+.web-dropdown {
+  background: white;
+  border: none;
+  padding: 5px;
+  font-size: 11px;
+  border-left: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.search-btn {
+  background: #f0f0f0;
+  border: 1px solid #999;
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.google-logo {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.google-logo .g {
+  color: #4285f4;
+}
+.google-logo .o1 {
+  color: #ea4335;
+}
+.google-logo .o2 {
+  color: #fbbc05;
+}
+.google-logo .g2 {
+  color: #4285f4;
+}
+.google-logo .l {
+  color: #34a853;
+}
+.google-logo .e {
+  color: #ea4335;
+}
+
+.powered-by {
+  font-size: 9px;
+  color: white;
+  text-transform: uppercase;
+}
+
+.main-nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 25px;
+  list-style: none;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px 0;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+.nav-links .dropdown {
+  position: relative;
+}
+
+.nav-links .dropdown::after {
+  content: ' ▼';
+  font-size: 10px;
+}
+
+.right-nav {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.right-nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 13px;
+  padding: 5px 0;
+}
+
+.right-nav a:hover {
+  text-decoration: underline;
+}
+
+.admin-outlet {
+  padding-left: 10px;
+  padding-right: 10px;
+}

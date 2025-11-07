@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+        
+        <!-- create foregin key constraint for invitation_for column from org_invites table -->
+        <changeSet id="2025-foreign-key-constraint-invitation_for" author="brian">
+        	<addForeignKeyConstraint
+        		baseTableName="org_invites"
+        		baseColumnNames="invitation_for"
+        		constraintName="fk_org_invites_invitation_for__constraint"
+        		referencedTableName="user_account"
+        		referencedColumnNames="user_id"
+        		onDelete="SET NULL"
+        		onUpdate="CASCADE"
+        	/>
+        </changeSet>
+        
+        <!-- create foregin key constraint for invitation_by column from org_invites table -->
+        <changeSet id="2025-foreign-key-constraint-invitation_by" author="brian">
+        	<addForeignKeyConstraint
+        		baseTableName="org_invites"
+        		baseColumnNames="invitation_by"
+        		constraintName="fk_org_invites_invitation_by__constraint"
+        		referencedTableName="user_account"
+        		referencedColumnNames="user_id"
+        		onDelete="SET NULL"
+        		onUpdate="CASCADE"
+        	/>
+        </changeSet>
+        
+        <!-- create unique constrainst for columns invitation_for and invitation_by
+        	from org_invites table
+        -->
+        <changeSet id="2025-create-unique-constraints-invitation_for-and-invitation_by" author="brian">
+        	<addUniqueConstraint
+        		tableName="org_invites"
+        		columnNames="invitation_by, invitation_for"
+        		validate="true"
+        	/>
+        </changeSet>
+
+</databaseChangeLog>

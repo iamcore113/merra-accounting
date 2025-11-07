@@ -1,0 +1,82 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create sales_tax_basis table -->
+	<changeSet id="2025-create-sales_tax_basis" author="brian">
+		<createTable tableName="sales_tax_basis">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="name" type="varchar(255)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="description" type="text">
+				<constraints nullable="false" unique="true" />
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create tax_type table -->
+	<changeSet id="2025-create-tax_type" author="brian">
+		<createTable tableName="tax_type">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="label" type="varchar(255)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="type_collections" type="jsonb">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create tax_rate table -->
+	<changeSet id="2025-create-tax_rate-table" author="brian">
+		<createTable tableName="tax_rate">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="organization" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_tax_rate__organization__organization"
+					referencedTableName="organization"
+					referencedColumnNames="id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="name" type="varchar(200)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="system_defined_name" type="varchar(200)">
+				<constraints nullable="false" />
+			</column>
+			<column name="the_type" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="tax_rate_display" type="numeric(7,4)"></column>
+			<column name="effective_rate" type="numeric(7,4)"></column>
+			<column name="status" type="varchar(90)">
+				<constraints nullable="false" />
+			</column>
+			<column name="apply_to_asset_account" type="boolean"></column>
+			<column name="apply_to_equity_account" type="boolean"></column>
+			<column name="apply_to_expenses_account" type="boolean"></column>
+			<column name="apply_to_liabilities_account" type="boolean"></column>
+			<column name="apply_to_revenue_account" type="boolean"></column>
+			<column name="created_date" type="timestamptz">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

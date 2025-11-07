@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+    
+        <!-- create user_account_settings table -->
+    <changeSet id="2025-create-user_account_settings-table" author="brian">
+        <createTable tableName="user_account_settings">
+            <column name="user_setting_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints
+                	primaryKey="true"
+                	nullable="false"
+                	unique="true"
+                />
+            </column>
+            <column name="user_account" type="uuid">
+            	<constraints
+            		nullable="false"
+            		foreignKeyName="fk_user_account_settings_user_account_col"
+            		referencedTableName="user_account"
+            		referencedColumnNames="user_id"
+            		deleteCascade="true"
+            	/>
+            </column>
+            <column name="auto_accept_invitation" type="BOOLEAN" defaultValue="true">
+            	<constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

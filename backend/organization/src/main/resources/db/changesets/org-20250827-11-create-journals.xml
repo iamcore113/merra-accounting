@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create journal table -->
+	<changeSet id="2025-create-journal-table" author="brian">
+		<createTable tableName="journal">
+			<column name="journal_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="false" nullable="false" unique="true" />
+			</column>
+			<column name="journal_date" type="date">
+				<constraints nullable="false" />
+			</column>
+			<column name="journal_number" type="varchar(255)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+	
+	<!-- create journal_line table -->
+	<changeSet id="2025-create-journal_line-table" author="brian">
+		<createTable tableName="journal_line">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="false" nullable="false" unique="true" />
+			</column>
+			<column name="journal" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_journal__journal_line__journal"
+					referencedTableName="journal"
+					referencedColumnNames="journal_id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="account_details" type="jsonb">
+				<constraints nullable="false" />
+			</column>
+			<column name="description" type="text"></column>
+			<column name="net_amount" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="gross_amount" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="tax_detail" type="jsonb">
+			</column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>

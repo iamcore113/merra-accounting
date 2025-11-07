@@ -1,0 +1,58 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- create line_items table -->
+	<changeSet id="2025-create-line_items" author="brian">
+		<createTable tableName="line_item">
+			<column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+				<constraints primaryKey="true" nullable="false" unique="true" />
+			</column>
+			<column name="invoice_id" type="uuid">
+				<constraints
+					nullable="false"
+					foreignKeyName="fk_line_items__invoice__invoice_id"
+					referencedTableName="invoice"
+					referencedColumnNames="invoice_id"
+					deleteCascade="true"
+				/>
+			</column>
+			<column name="lineitem_description" type="text">
+				<constraints nullable="false" />
+			</column>
+			<column name="line_item_id" type="varchar(200)">
+				<constraints nullable="false" unique="true" />
+			</column>
+			<column name="quantity" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="unit_amount" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="account_code" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="line_amount" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="tax_type" type="varchar(100)">
+				<constraints nullable="false" />
+			</column>
+			<column name="tax_amount" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+			<column name="discount_rate" type="int"></column>
+			<column name="total" type="numeric(7,2)">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+</databaseChangeLog>
