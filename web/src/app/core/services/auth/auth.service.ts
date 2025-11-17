@@ -40,6 +40,7 @@ export class AuthService {
   }
 
   signup(res: CreateAccount): Observable<Config> {
+    console.log(this.signup_url);
     return this._http.post<Config>(this.signup_url, res);
   }
   verifyEmail(token: string) {

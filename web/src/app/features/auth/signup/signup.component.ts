@@ -10,7 +10,7 @@ import { AlertComponent } from '../../../components/alert/alert.component';
 import { LocalStorageService } from '../../../core/services/localStorage/localStorage.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { CommonsService } from '../../../core/services/commons/commons.service';
-import { CreateAccount } from '../../../core/utils/types';
+import { CreateAccount, VerificationResponse } from '../../../core/utils/types';
 import { SimpleCardComponent } from '../../../components/simple-card/simple-card.component';
 
 @Component({
@@ -60,7 +60,9 @@ export class SignupComponent implements OnInit {
   googleIcon: string = '';
 
   onSubmit() {
-    let userId = '';
+    let response: VerificationResponse;
+    let email: string;
+
     if (this.signupForm.valid) {
       this.isButtonDisabled.set(true);
       const payload: CreateAccount = {
@@ -70,7 +72,8 @@ export class SignupComponent implements OnInit {
       this._authService.signup(payload)
       .subscribe({
         next: (res: any) => {
-          userId = res?.data?.userId;
+          response = res?.data;
+          email = response.email;
         },
         error: (err) => {
           console.error(err);
@@ -79,9 +82,11 @@ export class SignupComponent implements OnInit {
           this.isButtonDisabled.set(false);
         },
         complete: () => {
+          console.log('Signup request completed');
+          console.log(response);
           this.isButtonDisabled.set(false);
-          this.localStorageService.setItem('user_id', userId);
-          this._router.navigate(['email/verification']);
+          this.localStorageService.setItem('user_id', response.userId);
+          this._router.navigate(['/email/verification', email]);
         }
       });
     }

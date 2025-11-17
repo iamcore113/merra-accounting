@@ -30,6 +30,12 @@ export type resendEmailVerification = {
   userId: string;
 }
 
+export type VerificationResponse = {
+  verificationToken: string;
+  userId: string;
+  email: string;
+};
+
 export type EmailVerificationSuccess = {
   accountEmail: string;
   accountId: string;
@@ -39,11 +45,3 @@ export type EmailVerificationSuccess = {
 export type EmailVerified = {
   token: string;
 };
-
-export type Oauth2Response = {
-  accessToken: string;
-  idToken: string;
-  email: string;
-  name: string;
-  pictureUrl: string;
-}

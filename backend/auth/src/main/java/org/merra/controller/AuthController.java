@@ -80,7 +80,8 @@ public class AuthController {
     }
 
     @PostMapping("signup")
-    public ResponseEntity<?> signup(@Valid @RequestBody CreateAccountRequest req) {
+    public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
+        System.out.println("KAKAKAKAKAKAKAKAKAKAKKAAKAKAKAKKAKA");
         VerificationResponse res = authService.signup(req);
 
         ApiResponse response = new ApiResponse();

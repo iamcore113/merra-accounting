@@ -26,7 +26,7 @@ export const routes: Routes = [
     title: 'Create Your Account - MERRA'
   },
   {
-    path: 'email/verification',
+    path: 'email/verification/:email',
     component: TokenEmailNotificationComponent,
     title: 'Verify Email'
   },
