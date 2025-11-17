@@ -233,7 +233,6 @@ public class AuthService {
      * create it's account settings
      */
     userAccountService.createUserAccountSetting(newUser);
-    System.out.println("New user created: " + newUser.getEmail());
     return new VerificationResponse(
         false,
         verificationEmailToken,

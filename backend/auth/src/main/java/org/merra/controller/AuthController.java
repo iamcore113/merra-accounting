@@ -1,15 +1,11 @@
 package org.merra.controller;
 
-import java.util.UUID;
-
-import org.apache.catalina.connector.Response;
 import org.merra.api.ApiResponse;
 import org.merra.dto.AuthResponse;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.CreateAccountRequest;
-import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.TokenRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
@@ -18,7 +14,6 @@ import org.merra.utils.AuthConstantResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -81,7 +76,6 @@ public class AuthController {
 
     @PostMapping("signup")
     public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
-        System.out.println("KAKAKAKAKAKAKAKAKAKAKKAAKAKAKAKKAKA");
         VerificationResponse res = authService.signup(req);
 
         ApiResponse response = new ApiResponse();

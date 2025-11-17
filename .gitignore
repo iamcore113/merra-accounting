@@ -2,15 +2,15 @@
 
 #=====WEB=====
 # Compiled output
-/dist
-/tmp
-/out-tsc
-/bazel-out
+/web/dist
+/web/tmp
+/web/out-tsc
+/web/bazel-out
 
 # Node
-/node_modules
-npm-debug.log
-yarn-error.log
+/web/node_modules
+/web/npm-debug.log
+/web/yarn-error.log
 
 # IDEs and editors
 .idea/
@@ -30,13 +30,13 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
-.sass-cache/
-/connect.lock
-/coverage
-/libpeerconnection.log
-testem.log
-/typings
+/web/.angular/cache
+/web/.sass-cache/
+/web/connect.lock
+/web/coverage
+/web/libpeerconnection.log
+/web/testem.log
+/web/typings
 
 # System files
 .DS_Store
