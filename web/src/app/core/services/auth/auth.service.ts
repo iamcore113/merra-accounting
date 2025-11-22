@@ -46,4 +46,8 @@ export class AuthService {
   verifyEmail(token: string) {
     return this._http.get(this.EMAIL_VERIFICATION_URL, {params: {token: token}});
   }
+
+  userPersonalInformation() {
+    
+  }
 }

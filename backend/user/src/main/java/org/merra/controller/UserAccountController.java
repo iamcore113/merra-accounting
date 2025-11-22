@@ -1,16 +1,16 @@
 package org.merra.controller;
 
 import java.util.UUID;
-
-import org.apache.catalina.connector.Response;
 import org.merra.api.ApiResponse;
 import org.merra.dto.UserAccountChangeEmailRequest;
 import org.merra.dto.UserDetailResponse;
+import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.entities.UserAccount;
 import org.merra.services.UserAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,6 +59,18 @@ public class UserAccountController {
 				)
 		);
 
+		return ResponseEntity.ok().body(response);
+	}
+
+	@PostMapping("fill/personal-information")
+	public ResponseEntity<ApiResponse> userPersonalInformation(@Valid @RequestBody UserPersonalInformationRequest request) {
+		var resp = userAccountService.fillUserAccountInfo(request);
+		ApiResponse response = new ApiResponse(
+				"User personal information filled successfully.",
+				true,
+				HttpStatus.OK,
+				resp
+		);
 		return ResponseEntity.ok().body(response);
 	}
 }

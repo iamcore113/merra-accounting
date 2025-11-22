@@ -57,7 +57,10 @@ export class PersonalInfoComponent implements OnInit {
   }
 
   onSubmit() {
-    alert('PERSONAL INFO FORM SUBMITTED');
+    if (this.personalInfoForm.valid) {
+      // Handle form submission, e.g., send data to the server
+      console.log('Form Submitted', this.personalInfoForm.value);
+    }
   }
 
   countries: Country[] = [

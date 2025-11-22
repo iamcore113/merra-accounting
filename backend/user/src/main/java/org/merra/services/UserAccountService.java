@@ -3,9 +3,13 @@ package org.merra.services;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.merra.dto.UserPersonalInformationRequest;
+import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
 import org.merra.entities.UserAccountSettings;
 import org.merra.enums.Roles;
+import org.merra.mapper.UserMapper;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserAccountSettingsRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,12 +20,15 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserAccountService {
+	private final UserMapper userMapper;
 	private final UserAccountRepository userRepository;
 	private final UserAccountSettingsRepository accountSettingsRepository;
 
 	public UserAccountService(
+			UserMapper userMapper,
 			UserAccountRepository userRepository,
 			UserAccountSettingsRepository accountSettingsRepository) {
+		this.userMapper = userMapper;
 		this.userRepository = userRepository;
 		this.accountSettingsRepository = accountSettingsRepository;
 	}
@@ -87,5 +94,19 @@ public class UserAccountService {
 
 		getUserAccount.setIsEnabled(true);
 		userRepository.save(getUserAccount);
+	}
+
+	public UserPersonalInformationResponse fillUserAccountInfo(UserPersonalInformationRequest req) {
+		Optional<UserAccount> userAcc = userRepository.findUserByEmailIgnoreCase(req.email());
+		if (userAcc.isEmpty()) {
+			throw new EntityNotFoundException("User with email " + req.email() + " not found.");
+		}
+		UserAccount user = userAcc.get();
+		user.setFirstName(req.firstName());
+		user.setLastName(req.lastName());
+		user.setCountry(req.country());
+		userRepository.save(user);
+
+		return userMapper.toUserPersonalInformationResponse(user);
 	}
 }
