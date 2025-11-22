@@ -24,7 +24,7 @@ export class VerifyTokenComponent implements OnInit {
         this.router.navigate(['/']);
       },
       complete: () => {
-        this.router.navigate(['account/personal/info/', data.accountId]);
+        this.router.navigate(['account/personal/info/', data.accountEmail]);
       }
     });
   }

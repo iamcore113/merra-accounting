@@ -45,7 +45,7 @@ jwt:
     token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
   # Verification token
   email:
-    verification-duration: ${VERIFICATION_TOKEN}
+    verification-duration: ${MAIL_DURATION}
 app:
   frontend:
     url: ${FRONTEND_URL}

@@ -1,48 +1,33 @@
 <app-simple-card>
   <ng-container ngProjectAs="main-section">
     <div class="form-header">
-      <h1 class="form-title">Personal Information</h1>
-      <p class="form-subtitle">Please provide your details to complete your profile.</p>
+      <h1 class="form-title">Create Organization</h1>
+      <p class="form-subtitle">Create your digital business profile.</p>
     </div>
 
     <div id="successMessage" class="success-message">
       Your information has been saved successfully!
     </div>
 
-    <form id="personalInfoForm" [formGroup]="personalInfoForm" (ngSubmit)="onSubmit()">
+    <form id="personalInfoForm">
       <div class="form-group">
         <mat-form-field class="mat-form">
           <mat-label>First Name</mat-label>
-          <input type="text" matInput placeholder="First Name" formControlName="firstName" required />
+          <input type="text" matInput placeholder="First Name" required />
         </mat-form-field>
-        @if (firstName?.invalid && (firstName?.dirty || firstName?.touched)) { @if (firstName?.hasError('required'))
-        {
-        <mat-error>Email address is required.</mat-error>
-        } }
       </div>
       <div class="form-group">
         <mat-form-field class="mat-form">
           <mat-label>Last Name</mat-label>
-          <input type="text" matInput placeholder="Last Name" formControlName="lastName" required />
+          <input type="text" matInput placeholder="Last Name" required />
         </mat-form-field>
-        @if (lastName?.invalid && (lastName?.dirty || lastName?.touched)) { @if (lastName?.hasError('required'))
-        {
-        <mat-error>Email address is required.</mat-error>
-        } }
       </div>
       <div class="form-group">
         <mat-form-field class="full-width-select">
           <mat-label>Country</mat-label>
-          <mat-select formControlName="country">
-            @for (country of countries; track country) {
-            <mat-option [value]="country.value">{{ country.viewValue }}</mat-option>
-            }
+          <mat-select>
           </mat-select>
         </mat-form-field>
-        @if (country?.invalid && (country?.dirty || country?.touched)) { @if (country?.hasError('required'))
-        {
-        <mat-error>Email address is required.</mat-error>
-        } }
       </div>
 
       <div class="form-group">
@@ -60,7 +45,7 @@
       </div>
 
       <div class="button-group">
-        <button type="button" matButton="outlined" (click)="handleSkip()">Skip</button>
+        <button type="button" matButton="outlined">Skip</button>
         <button type="submit" matButton="filled">Next</button>
       </div>
     </form>

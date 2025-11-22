@@ -10,6 +10,7 @@ import { PersonalInfoComponent } from './features/personal-info/personal-info.co
 import { TokenEmailNotificationComponent } from './features/token-email-notification/token-email-notification.component';
 import { VerifyTokenComponent } from './features/verify-token/verify-token.component';
 import { SigninComponent } from './features/auth/signin/signin.component';
+import { CreateOrganization } from './features/create-organization/create-organization';
 
 export const routes: Routes = [
   {
@@ -36,9 +37,14 @@ export const routes: Routes = [
     title: 'Verifying Token...'
   },
   {
-    path: 'account/personal/info/:id',
+    path: 'account/personal/info/:email',
     component: PersonalInfoComponent,
     title: 'Fill Personal Information'
+  },
+  {
+    path:'account/organization/create/:email',
+    component: CreateOrganization,
+    title: 'Create Your Organization - MERRA',
   },
   {
     path: 'admin',

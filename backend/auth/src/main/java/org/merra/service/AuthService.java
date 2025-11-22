@@ -40,7 +40,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 
 import java.net.URL;
 

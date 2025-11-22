@@ -45,3 +45,10 @@ export type EmailVerificationSuccess = {
 export type EmailVerified = {
   token: string;
 };
+
+export type CreateOrganization = {
+  organizationName: string;
+  organizationAddress: string;
+  organizationCountry: string;
+  organizationPhone: string;
+};

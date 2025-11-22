@@ -3,7 +3,6 @@ package org.merra.services;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.merra.entities.UserAccount;
 import org.merra.entities.UserAccountSettings;
 import org.merra.enums.Roles;
