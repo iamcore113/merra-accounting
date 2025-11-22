@@ -7,6 +7,8 @@ import {MatButtonModule} from '@angular/material/button';
 import { SimpleCardComponent } from '../../components/simple-card/simple-card.component';
 import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { FillUserPersonalInformation } from '../../core/utils/types';
 
 interface Country {
   value: string;
@@ -32,7 +34,7 @@ interface Country {
 export class PersonalInfoComponent implements OnInit {
   private _formBuilder = inject(FormBuilder);
 
-  constructor(private activatedRoute: ActivatedRoute, private router: Router) {
+  constructor(private activatedRoute: ActivatedRoute, private router: Router, private authService: AuthService) {
     this.activatedRoute.params.subscribe((params) => {
       this.userEmail.set(params['email']);
     });
@@ -58,8 +60,21 @@ export class PersonalInfoComponent implements OnInit {
 
   onSubmit() {
     if (this.personalInfoForm.valid) {
-      // Handle form submission, e.g., send data to the server
-      console.log('Form Submitted', this.personalInfoForm.value);
+      const personalInfoVal: FillUserPersonalInformation = {
+        email: this.userEmail(),
+        firstName: this.firstName?.value ?? '',
+        lastName: this.lastName?.value ?? '',
+        country: this.country?.value ?? '',
+      };
+      this.authService.userPersonalInformation(personalInfoVal).subscribe({
+        next: (res: any) => {
+        },
+        error: (err: any) => {
+          console.error('Error filling personal information:', err);
+        },
+        complete: () => {
+        }
+      });
     }
   }
 

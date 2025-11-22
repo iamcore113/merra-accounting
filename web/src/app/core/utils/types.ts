@@ -52,3 +52,10 @@ export type CreateOrganization = {
   organizationCountry: string;
   organizationPhone: string;
 };
+
+export type FillUserPersonalInformation = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  country: string;
+};
