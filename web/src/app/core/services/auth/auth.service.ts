@@ -18,7 +18,7 @@ export class AuthService {
   readonly signup_url = `${AUTHENTICATION_API_VER1}${AUTH_SIGNUP}`;
   readonly oauth_link_url = `${BASE_API_URL}${OAUTH_LINK}`;
   readonly oath_redirect_url = `${BASE_API_URL}${OAUTH_CALLBACK}`;
-  readonly USER_PERSONAL_INFO_URL = `${BASE_API_URL}${USER_ENDPOINT_VER1}${FILL_USER_PERSONAL_INFO}`;
+  readonly USER_PERSONAL_INFO_URL = `${USER_ENDPOINT_VER1}${FILL_USER_PERSONAL_INFO}`;
   readonly EMAIL_VERIFICATION_URL = `${AUTHENTICATION_API_VER1}${VERIFY_EMAIL}`;
   readonly RESEND_EMAIL_VERIFICATION_URL = `${AUTHENTICATION_API_VER1}${RESEND_EMAIL_VERIFICATION}`;
   readonly googleIcon = 'https://www.svgrepo.com/show/475656/google-color.svg';

@@ -12,7 +12,7 @@ export const VERIFY_EMAIL = "req/signup/verify";
 export const VERIFY_EMAIL_V1 = `${API_AUTH}${VERIFY_EMAIL}`;
 export const RESEND_EMAIL_VERIFICATION = "resend/verification/email";
 // User details
-export const USER_ENDPOINT_VER1 = `${API_VERSION_1}business/user/account/`;
+export const USER_ENDPOINT_VER1 = `${API_VERSION_1}account/user/`;
 export const FILL_USER_PERSONAL_INFO = "fill/personal-information"
 // Oauth2
 export const OAUTH_LINK = "auth/url";

@@ -68,6 +68,7 @@ export class PersonalInfoComponent implements OnInit {
       };
       this.authService.userPersonalInformation(personalInfoVal).subscribe({
         next: (res: any) => {
+          console.log('Personal information filled successfully:', res);
         },
         error: (err: any) => {
           console.error('Error filling personal information:', err);
