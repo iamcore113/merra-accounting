@@ -1,12 +1,13 @@
+<div class="loading-container">
+  @if(isButtonDisabled()) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+</div>
 <app-simple-card>
   <ng-container ngProjectAs="main-section">
     <div class="form-header">
       <h1 class="form-title">Personal Information</h1>
       <p class="form-subtitle">Please provide your details to complete your profile.</p>
-    </div>
-
-    <div id="successMessage" class="success-message">
-      Your information has been saved successfully!
     </div>
 
     <form id="personalInfoForm" [formGroup]="personalInfoForm" (ngSubmit)="onSubmit()">
@@ -61,7 +62,7 @@
 
       <div class="button-group">
         <button type="button" matButton="outlined" (click)="handleSkip()">Skip</button>
-        <button type="submit" matButton="filled">Next</button>
+        <button type="submit" matButton="filled" [disabled]="isButtonDisabled()">Next</button>
       </div>
     </form>
   </ng-container>

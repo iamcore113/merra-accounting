@@ -89,17 +89,3 @@ input[type='file'] {
   gap: 12px;
   margin-top: 32px;
 }
-
-.success-message {
-  display: none;
-  padding: 12px;
-  background-color: #d1fae5;
-  color: #065f46;
-  border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.success-message.show {
-  display: block;
-}
