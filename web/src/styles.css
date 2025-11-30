@@ -1,15 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
 
-html,
+/* html,
 body {
   height: 100%;
 }
 body {
-  margin: 0;
   font-family: Roboto, 'Helvetica Neue', sans-serif;
-}
+} */
 /* You can add global styles to this file, and also import other style files */
-p {
+/* p {
   color: var(--text-color);
   font-size: 15px;
 }
@@ -32,4 +31,4 @@ p {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 24px;
-}
+} */

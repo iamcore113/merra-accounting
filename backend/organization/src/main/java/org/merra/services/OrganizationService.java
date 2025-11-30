@@ -64,20 +64,20 @@ public class OrganizationService {
 	 * @return - {@linkplain Organization} object type.
 	 */
 	protected Organization getOrganizationObject(Object obj) {
-		Optional<Organization> findOrganization = Optional.empty();
+		Optional<Organization> findOrganizationOpt = Optional.empty();
 
 		if (obj == null) {
-			findOrganization = Optional.of(new Organization());
+			findOrganizationOpt = Optional.of(new Organization());
 		} else if (obj instanceof UUID id) {
-			findOrganization = organizationRepository
+			findOrganizationOpt = organizationRepository
 					.findById(id);
 
-			if (findOrganization.isEmpty()) {
+			if (findOrganizationOpt.isEmpty()) {
 				throw new NoSuchElementException("Organization entity cannot be found.");
 			}
 		}
 
-		return findOrganization.get();
+		return findOrganizationOpt.get();
 	}
 
 	// This method will create the organization settings after creating the new

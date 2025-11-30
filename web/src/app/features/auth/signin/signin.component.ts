@@ -1,6 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { AlertComponent } from '../../../components/alert/alert.component';
-import { SimpleCardComponent } from '../../../components/simple-card/simple-card.component';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
@@ -8,8 +6,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
   templateUrl: './signin.component.html',
   styleUrls: ['./signin.component.css'],
   imports: [
-    AlertComponent,
-    SimpleCardComponent,
     MatProgressBarModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush

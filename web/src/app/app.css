@@ -1,0 +1,7 @@
+main {
+  width: 100%;
+  min-height: 100%;
+  box-sizing: inherit;
+  padding: 0rem;
+  position: relative;
+}
