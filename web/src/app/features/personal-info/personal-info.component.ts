@@ -9,7 +9,6 @@ import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { FillUserPersonalInformation } from '../../core/utils/types';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 interface Country {
   value: string;
@@ -28,12 +27,11 @@ interface Country {
     SimpleCardComponent,
     FormsModule,
     ReactiveFormsModule,
-    MatInputModule,
-    MatProgressBarModule
+    MatInputModule
   ],
 })
 export class PersonalInfoComponent implements OnInit {
-  isButtonDisabled = signal(false);
+  isDisabled = signal<boolean>(false);
   private _formBuilder = inject(FormBuilder);
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private authService: AuthService) {
@@ -62,7 +60,7 @@ export class PersonalInfoComponent implements OnInit {
 
   onSubmit() {
     if (this.personalInfoForm.valid) {
-      this.isButtonDisabled.set(true);
+      this.isDisabled.set(true);
       const personalInfoVal: FillUserPersonalInformation = {
         email: this.userEmail(),
         firstName: this.firstName?.value ?? '',
@@ -75,11 +73,11 @@ export class PersonalInfoComponent implements OnInit {
         },
         error: (err: any) => {
           console.error('Error filling personal information:', err);
-          this.isButtonDisabled.set(false);
+          this.isDisabled.set(false);
         },
         complete: () => {
-          this.isButtonDisabled.set(false);
-          // this.router.navigate(['/account/organization/create/', this.userEmail()]);
+          this.isDisabled.set(false);
+          this.router.navigate(['/account/organization/create/', this.userEmail()]);
         }
       });
     }
@@ -101,7 +99,7 @@ export class PersonalInfoComponent implements OnInit {
   }
 
   public handleSkip() {
-    this.router.navigate(['/account/organization/create', this.userEmail()]);
+    this.router.navigate(['/account/organization/create/', this.userEmail()]);
   }
 
 }

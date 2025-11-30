@@ -5,11 +5,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
-import {MatProgressBarModule} from '@angular/material/progress-bar';
 import { AlertComponent } from '../../../components/alert/alert.component';
 import { LocalStorageService } from '../../../core/services/localStorage/localStorage.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
-import { CommonsService } from '../../../core/services/commons/commons.service';
 import { CreateAccount, VerificationResponse } from '../../../core/utils/types';
 import { SimpleCardComponent } from '../../../components/simple-card/simple-card.component';
 
@@ -25,7 +23,6 @@ import { SimpleCardComponent } from '../../../components/simple-card/simple-card
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatProgressBarModule,
     AlertComponent,
     SimpleCardComponent
   ],
@@ -33,13 +30,12 @@ import { SimpleCardComponent } from '../../../components/simple-card/simple-card
 })
 export class SignupComponent implements OnInit {
   errorMessage: string = '';
-  serverError = signal(false);
-  isButtonDisabled = signal(false);
+  serverError = signal<boolean>(false);
+  isDisabled = signal<boolean>(false);
   private _router = inject(Router);
   private localStorageService = inject(LocalStorageService);
   private _formBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
-  private _commonsService = inject(CommonsService);
 
   constructor() {
   }
@@ -64,7 +60,7 @@ export class SignupComponent implements OnInit {
     let email: string;
 
     if (this.signupForm.valid) {
-      this.isButtonDisabled.set(true);
+      this.isDisabled.set(true);
       const payload: CreateAccount = {
         email: this.email?.value ?? '',
         password: this.password?.value ?? ''
@@ -79,12 +75,12 @@ export class SignupComponent implements OnInit {
           console.error(err);
           this.errorMessage = err?.error?.message || 'An error occurred during signup. Please try again.';
           this.serverError.set(true);
-          this.isButtonDisabled.set(false);
+          this.isDisabled.set(false);
         },
         complete: () => {
           console.log('Signup request completed');
           console.log(response);
-          this.isButtonDisabled.set(false);
+          this.isDisabled.set(false);
           this.localStorageService.setItem('user_id', response.userId);
           this._router.navigate(['/email/verification', email]);
         }

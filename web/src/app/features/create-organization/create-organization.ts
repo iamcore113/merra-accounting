@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -13,6 +13,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
   styleUrl: './create-organization.css',
 })
 export class CreateOrganization {
+  isDisabled = signal<boolean>(false);
   private _formBuilder = inject(FormBuilder);
 
   organizationForm = this._formBuilder.group({
