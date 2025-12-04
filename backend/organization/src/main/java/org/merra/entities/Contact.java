@@ -2,6 +2,7 @@ package org.merra.entities;
 
 import java.time.Instant;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -10,6 +11,7 @@ import org.hibernate.annotations.TimeZoneStorage;
 import org.hibernate.annotations.TimeZoneStorageType;
 import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetails;
+import org.merra.entities.embedded.ContactAddressEmb;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -32,69 +34,69 @@ import jakarta.validation.constraints.NotNull;
 @Table(name = "contacts", schema = "merra_schema")
 public class Contact {
 
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "contact_id", nullable = false, unique = true)
 	private UUID id;
-	
+
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
 	private Organization organization;
-	
+
 	// Full name of contact / organization
 	@Column(name = "name", nullable = false, unique = true)
 	@NotBlank(message = "Name cannot be blank")
 	private String name;
-	
+
 	@Column(name = "first_name")
 	private String firstName;
-	
+
 	@Column(name = "last_name")
 	private String lastName;
-	
+
 	@Column(name = "email_address")
 	@Email(message = "Email address must be valid")
 	private String emailAddress;
-	
+
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
 	private LinkedHashSet<PhoneDetails> phoneNo;
-	
+
 	@Column(name = "account_number")
 	private String accountNumber;
-	
+
 	// Company registration number
 	@Column(name = "company_number")
 	private String companyNumber;
-	
+
 	@Column(name = "default_discount")
 	private Integer defaultDiscount;
-	
+
 	// Tax number
 	@Column(name = "tax_number")
 	private String taxNumber;
-	
+
 	@Column(name = "contact_status", nullable = false)
 	private String contactStatus = "ACTIVE";
-	
+
 	@Column(name = "is_supplier", nullable = false)
 	@NotNull(message = "Supplier status cannot be null")
 	private Boolean isSupplier;
-	
+
 	@Column(name = "is_customer", nullable = false)
 	@NotNull(message = "Customer status cannot be null")
 	private Boolean isCustomer;
-	
-	
+
 	// Only shown in GET response, not in POST/PUT
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "address", columnDefinition = "jsonb")
-	private Map<String, Object> address;
-	
+	private List<ContactAddressEmb> address;
+
 	// Returned in GET response, not in POST/PUT
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "payment_terms", referencedColumnName = "payment_term_id")
 	private PaymentTerms paymentTerms;
-	
+
 	// Returned in GET response, not in POST/PUT
 	@Column(name = "updated_date_utc")
 	@TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
@@ -103,16 +105,16 @@ public class Contact {
 	public Contact() {
 		// default constructor
 	}
-	
+
 	public Contact(@NotBlank String name, @NotNull Organization organization) {
 		this.name = name;
 		this.organization = organization;
 	}
-	
+
 	public void setIsSupplier(Boolean sup) {
 		this.isSupplier = sup ? Boolean.TRUE : Boolean.FALSE;
 	}
-	
+
 	public void setIsCustomer(Boolean cus) {
 		this.isCustomer = cus ? Boolean.TRUE : Boolean.FALSE;
 	}
@@ -217,11 +219,11 @@ public class Contact {
 		return isCustomer;
 	}
 
-	public Map<String, Object> getAddress() {
+	public List<ContactAddressEmb> getAddress() {
 		return address;
 	}
 
-	public void setAddress(Map<String, Object> address) {
+	public void setAddress(List<ContactAddressEmb> address) {
 		this.address = address;
 	}
 
@@ -241,5 +243,4 @@ public class Contact {
 		this.updatedDateUTC = updatedDateUTC;
 	}
 
-	
 }

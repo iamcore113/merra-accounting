@@ -1,17 +1,12 @@
 package org.merra.config;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +49,7 @@ public class JwtUtils {
         return cal.getTime();
     }
 
-    private String tokenBuilder(@NonNull Date exDate, @NonNull UserDetails userDetails) {
+    private String tokenBuilder(Date exDate, UserDetails userDetails) {
         var algo = Jwts.SIG.HS256;
 
         return Jwts

@@ -1,8 +1,6 @@
 package org.merra.config;
 
 import java.io.IOException;
-
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -15,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class HeaderFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
         final String xTenantId = request.getHeader("X-Tenant-ID");
@@ -23,10 +21,10 @@ public class HeaderFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        System.out.println("This is header filter----------");
         filterChain.doFilter(request, response);
 
-        // throw new UnsupportedOperationException("Unimplemented method 'doFilterInternal'");
+        // throw new UnsupportedOperationException("Unimplemented method
+        // 'doFilterInternal'");
     }
 
 }

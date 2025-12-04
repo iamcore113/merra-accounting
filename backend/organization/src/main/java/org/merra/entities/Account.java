@@ -24,58 +24,60 @@ import jakarta.validation.constraints.NotNull;
 @SQLRestriction("archived <> true")
 @Table(name = "ledger_account", schema = "merra_schema")
 public class Account {
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "account_id", nullable = false, unique = true)
 	private UUID accountId;
-	
+
 	@OneToOne
 	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
 	private Organization organization;
-	
+
 	@Column(nullable = false)
 	@NotBlank(message = "code attribute cannot be blank.")
 	private String code;
-	
+
 	@Column(name = "account_name", nullable = false)
-	@NotBlank(message = "accountName attribute cannote be blank.")
+	@NotBlank(message = "accountName attribute cannot be blank.")
 	private String accountName;
-	
+
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "category_id", referencedColumnName = "id")
 	@NotNull(message = "category attribute cannot be null.")
 	private AccountCategory category;
-	
+
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "account_type", referencedColumnName = "id")
 	@NotNull(message = "accountType attribute cannot be null.")
 	private AccountType accountType;
-	
+
 	private String status;
-	
+
 	@NotBlank(message = "description attribute cannot be blank.")
 	private String description;
-	
+
 	@Column(name = "tax_type")
 	private String taxType;
-	
+
 	@Column(name = "enable_payments_account")
 	private boolean enablePaymentToAccount;
-	
+
 	@Column(name = "updated_date")
 	private LocalDate updatedDate;
-	
+
 	@Column(name = "add_to_watch_list")
 	private boolean addToWatchList;
-	
+
 	private boolean archived = false;
-	
+
 	public void setStatus(String stat) {
-		if (!Set.of(AccountConstants.ACCOUNT_STATUS_ACTIVE, AccountConstants.ACCOUNT_STATUS_ARCHIVED).contains(stat.toUpperCase())) {
+		if (!Set.of(AccountConstants.ACCOUNT_STATUS_ACTIVE, AccountConstants.ACCOUNT_STATUS_ARCHIVED)
+				.contains(stat.toUpperCase())) {
 			throw new NoSuchElementException("Invalid status.");
 		}
 		this.status = stat;
 	}
-	
+
 	// Constructor for creating new account object
 	// The following are the required only attributes for creating object.
 	public Account(
@@ -83,27 +85,24 @@ public class Account {
 			@NotNull String code,
 			@NotNull String accountName,
 			@NotNull AccountType type,
-			@NotNull AccountCategory category
-	) {
+			@NotNull AccountCategory category) {
 		this.organization = org;
 		this.code = code;
 		this.accountName = accountName;
 		this.accountType = type;
 		this.category = category;
 	}
-	
+
 	// Check the type of entry: debit or credit
 	public static String checkEntryType(String accountCategory) {
 		Set<String> debits = Set.of(
 				AccountConstants.ACC__CLASS_TYPE_ASSET,
-				AccountConstants.ACC__CLASS_TYPE_EXPENSE
-		);
-		
+				AccountConstants.ACC__CLASS_TYPE_EXPENSE);
+
 		Set<String> credit = Set.of(
 				AccountConstants.ACC__CLASS_TYPE_LIABILITY,
 				AccountConstants.ACC__CLASS_TYPE_EQUITY,
-				AccountConstants.ACC__CLASS_TYPE_REVENUE
-		);
+				AccountConstants.ACC__CLASS_TYPE_REVENUE);
 		if (debits.contains(accountCategory)) {
 			return AccountConstants.ACC_ENTRY_DEBIT;
 		} else if (credit.contains(accountCategory)) {
@@ -117,7 +116,7 @@ public class Account {
 
 	public Account(UUID accountId, Organization organization,
 			@NotBlank(message = "code attribute cannot be blank.") String code,
-			@NotBlank(message = "accountName attribute cannote be blank.") String accountName,
+			@NotBlank(message = "accountName attribute cannot be blank.") String accountName,
 			@NotNull(message = "category attribute cannot be null.") AccountCategory category,
 			@NotNull(message = "accountType attribute cannot be null.") AccountType accountType, String status,
 			@NotBlank(message = "description attribute cannot be blank.") String description, String taxType,
@@ -138,7 +137,7 @@ public class Account {
 	}
 
 	public Account(Organization organization, @NotBlank(message = "code attribute cannot be blank.") String code,
-			@NotBlank(message = "accountName attribute cannote be blank.") String accountName,
+			@NotBlank(message = "accountName attribute cannot be blank.") String accountName,
 			@NotNull(message = "category attribute cannot be null.") AccountCategory category,
 			@NotNull(message = "accountType attribute cannot be null.") AccountType accountType, String status,
 			@NotBlank(message = "description attribute cannot be blank.") String description, String taxType,
@@ -253,7 +252,4 @@ public class Account {
 		this.archived = archived;
 	}
 
-	
-	
 }
-

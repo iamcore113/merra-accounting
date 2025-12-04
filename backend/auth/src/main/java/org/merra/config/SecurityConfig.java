@@ -3,7 +3,6 @@ package org.merra.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,7 +27,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
-    // private final WebClient userInfoClient;
     private final AuthEntrypointJwt unAuthorizedHandler;
     private final CustomUserDetailsService customUserDetailsService;
     private final AuthTokenFilter authTokenFilter;
@@ -37,7 +35,6 @@ public class SecurityConfig {
             AuthTokenFilter authTokenFilter,
             AuthEntrypointJwt unAuthorizedHandler,
             CustomUserDetailsService customUserDetailsService) {
-        // this.userInfoClient = userInfoClient;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.customUserDetailsService = customUserDetailsService;
         this.authTokenFilter = authTokenFilter;
@@ -82,7 +79,7 @@ public class SecurityConfig {
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(@NonNull CorsRegistry registry) {
+            public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins("http://localhost:4200")
                         .allowedHeaders("*")
@@ -114,7 +111,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/auth/**",
-                                "api/v1/account/user/**",
+                                "/api/v1/account/user/**",
                                 "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",

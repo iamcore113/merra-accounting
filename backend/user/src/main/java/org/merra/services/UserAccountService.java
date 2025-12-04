@@ -13,7 +13,6 @@ import org.merra.mapper.UserMapper;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserAccountSettingsRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -88,7 +87,7 @@ public class UserAccountService {
 		}
 	}
 
-	public void enableUserAccount(@NonNull UUID userId) {
+	public void enableUserAccount(UUID userId) {
 		UserAccount getUserAccount = userRepository.findById(userId)
 				.orElseThrow(() -> new EntityNotFoundException("User entity " + userId + " not found."));
 

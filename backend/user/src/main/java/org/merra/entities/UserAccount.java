@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -121,7 +120,7 @@ public class UserAccount implements UserDetails {
 	public UserAccount() {
 	}
 
-	public UserAccount(@NonNull String email, String password) {
+	public UserAccount(String email, String password) {
 		this.email = email;
 		this.accountPassword = password;
 	}

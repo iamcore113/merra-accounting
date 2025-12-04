@@ -10,9 +10,12 @@ import org.hibernate.type.SqlTypes;
 import org.merra.audit.CreatedDate;
 import org.merra.embedded.PhoneDetails;
 import org.merra.entities.embedded.ExternalLinks;
+import org.merra.entities.embedded.FinancialYearEmb;
+import org.merra.entities.embedded.OrganizationAddressEmb;
 import org.merra.entities.embedded.OrganizationNameUpdate;
 import org.merra.entities.embedded.OrganizationUserInvites;
 import org.merra.entities.embedded.OrganizationUsers;
+import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.Status;
 
 import jakarta.persistence.AttributeOverride;
@@ -110,21 +113,21 @@ public class Organization {
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "financial_year", columnDefinition = "jsonb")
-	private Map<String, Integer> financialYear;
+	private FinancialYearEmb financialYear;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "address", nullable = false, columnDefinition = "jsonb[]")
 	@NotNull(message = "Address attribute cannot be null.")
-	private Set<Map<String, String>> address;
+	private Set<OrganizationAddressEmb> address;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "external_links", columnDefinition = "jsonb[]")
 	private Set<ExternalLinks> externalLinks;
 
 	@JdbcTypeCode(SqlTypes.JSON)
-	@Column(name = "payment_terms")
+	@Column(name = "payment_terms", columnDefinition = "jsonb")
 	@NotNull(message = "paymentTerms attribute cannot be null.")
-	private Map<String, String> paymentTerms;
+	private PaymentTermsEmb paymentTerms;
 
 	@Embedded
 	@AttributeOverride(name = "createdDate", column = @Column(name = "created_date", nullable = false))
@@ -164,7 +167,7 @@ public class Organization {
 	public void setContactDetails(
 			String countryCode,
 			String defaultCurrency,
-			Set<Map<String, String>> address,
+			Set<OrganizationAddressEmb> address,
 			LinkedHashSet<PhoneDetails> phones,
 			String email,
 			String website,
@@ -192,10 +195,10 @@ public class Organization {
 			LinkedHashSet<PhoneDetails> phoneNo,
 			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
-			Map<String, Integer> financialYear,
-			@NotNull(message = "Address attribute cannot be null.") Set<Map<String, String>> address,
+			FinancialYearEmb financialYear,
+			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
 			Set<ExternalLinks> externalLinks,
-			@NotNull(message = "paymentTerms attribute cannot be null.") Map<String, String> paymentTerms,
+			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
 			CreatedDate createdDate, Boolean activeSubscription, Status status) {
 		this(profileImage, nameDetailsUpdate, organizationUsers, organizationUserInvites, displayName, legalName,
 				organizationDescription, country, defaultCurrency, organizationType, phoneNo, email, website, timeZone,
@@ -214,10 +217,10 @@ public class Organization {
 			LinkedHashSet<PhoneDetails> phoneNo,
 			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
-			Map<String, Integer> financialYear,
-			@NotNull(message = "Address attribute cannot be null.") Set<Map<String, String>> address,
+			FinancialYearEmb financialYear,
+			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
 			Set<ExternalLinks> externalLinks,
-			@NotNull(message = "paymentTerms attribute cannot be null.") Map<String, String> paymentTerms,
+			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
 			CreatedDate createdDate, Boolean activeSubscription, Status status) {
 		this.profileImage = profileImage;
 		this.nameDetailsUpdate = nameDetailsUpdate;
@@ -358,19 +361,19 @@ public class Organization {
 		this.timeZone = timeZone;
 	}
 
-	public Map<String, Integer> getFinancialYear() {
+	public FinancialYearEmb getFinancialYear() {
 		return financialYear;
 	}
 
-	public void setFinancialYear(Map<String, Integer> financialYear) {
+	public void setFinancialYear(FinancialYearEmb financialYear) {
 		this.financialYear = financialYear;
 	}
 
-	public Set<Map<String, String>> getAddress() {
+	public Set<OrganizationAddressEmb> getAddress() {
 		return address;
 	}
 
-	public void setAddress(Set<Map<String, String>> address) {
+	public void setAddress(Set<OrganizationAddressEmb> address) {
 		this.address = address;
 	}
 
@@ -382,11 +385,11 @@ public class Organization {
 		this.externalLinks = externalLinks;
 	}
 
-	public Map<String, String> getPaymentTerms() {
+	public PaymentTermsEmb getPaymentTerms() {
 		return paymentTerms;
 	}
 
-	public void setPaymentTerms(Map<String, String> paymentTerms) {
+	public void setPaymentTerms(PaymentTermsEmb paymentTerms) {
 		this.paymentTerms = paymentTerms;
 	}
 

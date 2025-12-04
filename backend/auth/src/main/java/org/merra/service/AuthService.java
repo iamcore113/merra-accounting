@@ -81,7 +81,7 @@ public class AuthService {
     this.userAccountService = userAccountService;
   }
 
-  public VerifiedAccountResponse verifyEmail(@NonNull String tokenParam) {
+  public VerifiedAccountResponse verifyEmail(String tokenParam) {
     var email = jwtUtils.extractUsername(tokenParam);
     Optional<UserAccount> findAccount = userRepository.findUserByEmailIgnoreCase(email);
 
@@ -176,7 +176,7 @@ public class AuthService {
     }
   }
 
-  public AuthResponse login(@NonNull LoginRequest request) {
+  public AuthResponse login(LoginRequest request) {
     Authentication authentication;
 
     try {
@@ -201,8 +201,9 @@ public class AuthService {
         roles);
   }
 
-  public VerificationResponse signup(@NonNull CreateAccountRequest request) {
-    Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(request.email());
+  public VerificationResponse signup(CreateAccountRequest request) {
+    String emailReq = request.email();
+    Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
 
     if (findUserEmail.isPresent()) {
       if (findUserEmail.get().isEnabled()) {
@@ -220,7 +221,7 @@ public class AuthService {
     }
     // throw new EntityExistsException(AuthConstantResponses.EMAIL_EXISTS);
     var encodedPassword = passwordEncoder.encode(request.password());
-    UserAccount userBuilder = new UserAccount(request.email(), encodedPassword);
+    UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
 
     final String verificationEmailToken = jwtUtils.generateToken(userBuilder, verificationToken, false);
     userBuilder.setVerificationToken(verificationEmailToken);
@@ -239,7 +240,7 @@ public class AuthService {
         newUser.getEmail());
   }
 
-  public VerificationResponse resendEmailVerification(@NonNull ResendEmailVerification request) {
+  public VerificationResponse resendEmailVerification(ResendEmailVerification request) {
     Optional<UserAccount> findUser = userRepository.findById(request.userId());
 
     if (findUser.isEmpty()) {
@@ -258,7 +259,7 @@ public class AuthService {
     return new VerificationResponse(true, newVerificationToken, user.getUserId(), user.getEmail());
   }
 
-  public JwtTokens tokens(@NonNull TokenRequest request) {
+  public JwtTokens tokens(TokenRequest request) {
     UserDetails userDetails = userDetailsService.loadUserByUsername(request.userEmail());
 
     final boolean IS_TOKEN_VALID = jwtUtils.isTokenValid(request.refreshToken(), userDetails);
@@ -272,7 +273,7 @@ public class AuthService {
     return new JwtTokens(accessToken, refreshToken);
   }
 
-  public void fillPersonalInformation(FillPersonalInformation req, @NonNull UUID id) {
+  public void fillPersonalInformation(FillPersonalInformation req, UUID id) {
     Optional<UserAccount> findUser = userRepository.findById(id);
 
     if (findUser.isEmpty()) {

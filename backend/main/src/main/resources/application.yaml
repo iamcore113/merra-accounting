@@ -1,6 +1,9 @@
 spring:
   application:
     name: main
+  devtools:
+    livereload:
+      enabled: true
   jpa:
     hibernate:
       ddl-auto: none

@@ -3,6 +3,7 @@ package org.merra.controller;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.catalina.connector.Response;
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
-
 /**
  * x-organization-id header is required for
  * accessing existing organization entity.
@@ -38,40 +38,55 @@ public class OrganizationController {
 	public OrganizationController(OrganizationService organizationService) {
 		this.organizationService = organizationService;
 	}
-	
+
 	@GetMapping("test")
 	public ResponseEntity<String> organizationTest() {
 		return ResponseEntity.ok("Okay...");
 	}
 
+	@GetMapping(path = "metadata")
+	public ResponseEntity<ApiResponse> getOrganizationMetadata() {
+		var res = organizationService.returnOrganizationMetaData();
+		ApiResponse response = new ApiResponse(
+				"Organization metadata found successfully.",
+				true,
+				HttpStatus.OK,
+				res);
+		return ResponseEntity.ok(response);
+	}
+
 	/*
-	 * This method controller will retrieve the list of organizations that a user belongs to.
+	 * This method controller will retrieve the list of organizations that a user
+	 * belongs to.
+	 * 
 	 * @param userId - accepts {@linkplain java.util.UUID} object type.
-	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object type.
-	*/
+	 * 
+	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
+	 * type.
+	 */
 	@GetMapping("select/organizations/{userId}")
-	public ResponseEntity<Set<OrganziationSelectionResponse>> getOrganizationsByUserId(@PathVariable("userId") UUID userId) {
+	public ResponseEntity<Set<OrganziationSelectionResponse>> getOrganizationsByUserId(
+			@PathVariable("userId") UUID userId) {
 		Set<OrganziationSelectionResponse> response = organizationService.getUserOrganizations(userId);
 		return ResponseEntity.ok(response);
 	}
-	
-	
+
 	@Operation(summary = "create new organization")
-	@PostMapping("create")
+	@PostMapping(path = "new")
 	public ResponseEntity<ApiResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
 		ApiResponse response = new ApiResponse(
 				"Organization object found successfully.",
 				true,
 				HttpStatus.OK,
-				organizationService.createNewOrganizationObject(data)
-		);
-		
+				organizationService.createNewOrganizationObject(data));
+
 		return ResponseEntity.ok(response);
 	}
-	
+
 	/**
 	 * TODO finish updateOrganization method controller for updating
 	 * organization entity
+	 * 
 	 * @param id
 	 * @param data
 	 * @return
@@ -80,31 +95,30 @@ public class OrganizationController {
 	public ResponseEntity<OrganizationDetailsResponse> updateOrganization(
 			@RequestHeader("x-organization-id") UUID xOrganizationHeaderId,
 			@PathVariable(name = "id") UUID id,
-			@Valid @RequestBody CreateOrganizationRequest data
-	) {
+			@Valid @RequestBody CreateOrganizationRequest data) {
 		return null;
 	}
-	
+
 	@GetMapping("{id}")
 	public ResponseEntity<ApiResponse> getOrganization(@PathVariable(required = true) UUID id) {
 		ApiResponse response = new ApiResponse(
 				"Organization object found successfully.",
 				true,
 				HttpStatus.OK,
-				organizationService.retrieveOrganizationById(id)
-		);
-		
+				organizationService.retrieveOrganizationById(id));
+
 		return ResponseEntity.ok(response);
 	}
-	
+
 	// Get Organization Elements
 	@GetMapping("elements")
 	public ResponseEntity<OrganizationElementResponse> getOrganizationElements() {
 		return null;
 	}
-	
+
 	/**
 	 * Method controller for handling user organization invitation
+	 * 
 	 * @param id
 	 * @param data
 	 * @return
@@ -112,13 +126,13 @@ public class OrganizationController {
 	@PutMapping("{id}/invite/users/update")
 	public ResponseEntity<?> updatedUserOrganizationInvitation(
 			@PathVariable("id") UUID id,
-			@Valid @RequestBody OrganizationUserInvitationUpdateRequest data
-	) {
+			@Valid @RequestBody OrganizationUserInvitationUpdateRequest data) {
 		return null;
 	}
-	
+
 	/**
 	 * TODO work on delete method controller for organization
+	 * 
 	 * @param id
 	 * @return
 	 */

@@ -2,6 +2,7 @@ package org.merra.services;
 
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
+import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.OrganziationSelectionResponse;
 import org.merra.embedded.PhoneDetails;
 import org.merra.entities.Organization;
@@ -78,6 +79,18 @@ public class OrganizationService {
 		}
 
 		return findOrganizationOpt.get();
+	}
+
+	public OrganizationMetaDataResponse returnOrganizationMetaData() {
+		// Get organization types
+		Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
+				.findAll()
+				.stream()
+				.map(type -> new OrganizationMetaDataResponse.OrganizationTypesMetaData(
+						type.getId(),
+						type.getName()))
+				.collect(java.util.stream.Collectors.toSet());
+		return new OrganizationMetaDataResponse(organizationTypes);
 	}
 
 	// This method will create the organization settings after creating the new
