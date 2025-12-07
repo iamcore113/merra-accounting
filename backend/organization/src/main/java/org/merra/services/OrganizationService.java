@@ -80,7 +80,7 @@ public class OrganizationService {
 				.stream()
 				.map(type -> new OrganizationMetaDataResponse.OrganizationTypesMetaData(
 						type.getId(),
-						type.getName()))
+						type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
 				.collect(java.util.stream.Collectors.toSet());
 		final String[] addresses = { "address1", "address2", "address3", "address4" }; // Placeholder for addresses
 		// For Payment terms

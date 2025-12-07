@@ -42,7 +42,7 @@ public class OrganizationConfig implements CommandLineRunner {
 					new org.merra.entities.OrganizationType("COMPANY"),
 					new org.merra.entities.OrganizationType("TRUST"),
 					new org.merra.entities.OrganizationType("ESTATE"),
-					new org.merra.entities.OrganizationType("CLUB_OR_SOCITY"),
+					new org.merra.entities.OrganizationType("CLUB_OR_SOCIETY"),
 					new org.merra.entities.OrganizationType("NOT_FOR_PROFIT"),
 					new org.merra.entities.OrganizationType("GOVERNMENT_BODY"),
 					new org.merra.entities.OrganizationType("OTHER")));
