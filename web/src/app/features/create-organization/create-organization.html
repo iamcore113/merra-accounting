@@ -9,13 +9,14 @@
       Your information has been saved successfully!
     </div>
 
-    <form id="personalInfoForm">
+    <form id="personalInfoForm" [formGroup]="organizationForm" (ngSubmit)="onSubmit()">
       <div class="form-group">
         <mat-form-field class="mat-form">
           <mat-label>Display Name</mat-label>
           <input
             type="text"
             matInput
+            formControlName="name"
             placeholder="What is the name of your organization?"
             required
           />
@@ -25,8 +26,9 @@
         <mat-form-field class="mat-form">
           <mat-label>Email</mat-label>
           <input
-            type="text"
+            type="email"
             matInput
+            formControlName="email"
             placeholder="What is the email of your organization?"
             required
           />
@@ -35,13 +37,21 @@
       <div class="form-group">
         <mat-form-field class="full-width-select">
           <mat-label>Organization Type</mat-label>
-          <mat-select formControlName="country" required> </mat-select>
+          <mat-select formControlName="type" required>
+            @for (type of organizationTypes; track type) {
+            <mat-option [value]="type.id">{{ type.name }}</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
       </div>
       <div class="form-group">
         <mat-form-field class="mat-form">
           <mat-label>Description</mat-label>
-          <textarea matInput placeholder="What is your organization about?"></textarea>
+          <textarea
+            matInput
+            placeholder="What is your organization about?"
+            formControlName="description"
+          ></textarea>
         </mat-form-field>
       </div>
 
@@ -54,13 +64,25 @@
       <div class="form-group">
         <mat-form-field class="mat-form">
           <mat-label>Currency</mat-label>
-          <input type="text" matInput placeholder="Legal Name" required />
+          <input
+            type="text"
+            matInput
+            placeholder="What is your organization currency?"
+            formControlName="currency"
+            required
+          />
         </mat-form-field>
       </div>
       <div class="form-group">
         <mat-form-field class="mat-form">
-          <mat-label>What is your organization contact number?</mat-label>
-          <input type="number" matInput placeholder="Contact Number" required />
+          <mat-label>Contact Number</mat-label>
+          <input
+            type="number"
+            matInput
+            placeholder="What is your organization contact number?"
+            formControlName="contactNo"
+            required
+          />
         </mat-form-field>
       </div>
 
