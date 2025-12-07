@@ -12,14 +12,6 @@ export class AdminMain implements OnInit {
   private organizationService = inject(OrganizationService);
 
   ngOnInit(): void {
-    this.organizationService.getTestOrganization().subscribe({
-      next: (data) => {
-        console.log('Test Organization Data:', data);
-      },
-      error: (error) => {
-        console.error('Error fetching test organization data:', error);
-      }
-    });
   }
 
 }

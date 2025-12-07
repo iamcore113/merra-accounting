@@ -1,7 +1,7 @@
 <app-simple-card>
   <ng-container ngProjectAs="main-section">
     <div class="form-header">
-      <h1 class="form-title">Create Organization</h1>
+      <h1 class="form-title">Add your organization to start using MERRA now</h1>
       <p class="form-subtitle">Create your digital business profile.</p>
     </div>
 
@@ -12,36 +12,56 @@
     <form id="personalInfoForm">
       <div class="form-group">
         <mat-form-field class="mat-form">
-          <mat-label>First Name</mat-label>
-          <input type="text" matInput placeholder="First Name" required />
+          <mat-label>Display Name</mat-label>
+          <input
+            type="text"
+            matInput
+            placeholder="What is the name of your organization?"
+            required
+          />
         </mat-form-field>
       </div>
       <div class="form-group">
         <mat-form-field class="mat-form">
-          <mat-label>Last Name</mat-label>
-          <input type="text" matInput placeholder="Last Name" required />
+          <mat-label>Email</mat-label>
+          <input
+            type="text"
+            matInput
+            placeholder="What is the email of your organization?"
+            required
+          />
         </mat-form-field>
       </div>
       <div class="form-group">
         <mat-form-field class="full-width-select">
-          <mat-label>Country</mat-label>
-          <mat-select>
-          </mat-select>
+          <mat-label>Organization Type</mat-label>
+          <mat-select formControlName="country" required> </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field class="mat-form">
+          <mat-label>Description</mat-label>
+          <textarea matInput placeholder="What is your organization about?"></textarea>
         </mat-form-field>
       </div>
 
       <div class="form-group">
-        <label>Profile Picture</label>
-        <div class="profile-picture-section">
-          <div class="profile-preview" id="profilePreview">
-            <span class="profile-placeholder">👤</span>
-          </div>
-          <div class="file-input-wrapper">
-            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" />
-            <label for="profilePicture" class="file-label">Choose Photo</label>
-          </div>
-          <div class="file-info">JPG, PNG or GIF (Max. 5MB)</div>
-        </div>
+        <mat-form-field class="full-width-select">
+          <mat-label>Where are you located?</mat-label>
+          <mat-select formControlName="country"> </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field class="mat-form">
+          <mat-label>Currency</mat-label>
+          <input type="text" matInput placeholder="Legal Name" required />
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field class="mat-form">
+          <mat-label>What is your organization contact number?</mat-label>
+          <input type="number" matInput placeholder="Contact Number" required />
+        </mat-form-field>
       </div>
 
       <div class="button-group">

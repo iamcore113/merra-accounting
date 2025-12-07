@@ -19,4 +19,4 @@ export const OAUTH_LINK = "auth/url";
 export const OAUTH_CALLBACK = "auth/callback";
 // Organization
 export const ORGANIZATION_MAPPING = 'business/organization/';
-export const ORGANIZATION_TEST = 'test';
+export const ORGANIZATION_METADATA = 'metadata';

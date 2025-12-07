@@ -26,8 +26,7 @@ interface Country {
     MatInputModule,
     SimpleCardComponent,
     FormsModule,
-    ReactiveFormsModule,
-    MatInputModule
+    ReactiveFormsModule
   ],
 })
 export class PersonalInfoComponent implements OnInit {

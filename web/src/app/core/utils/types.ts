@@ -11,6 +11,23 @@ interface errorResponse {
   status: string;
 }
 
+interface OrganizationPhoneDetails {
+  phoneType: string;
+  phoneNumber: string;
+  phoneAreaCode: string;
+  phoneCountryCode: string;
+  isDefault: boolean;
+}
+
+interface financialYear {
+  yearEndDay: number;
+  yearEndMonth: number;
+}
+
+interface PaymentTerms {
+  subElements: string[];
+  types: string[];
+}
 export type Config = successResponse | errorResponse;
 
 export type CountriesApi = {
@@ -31,15 +48,14 @@ export type resendEmailVerification = {
 }
 
 export type VerificationResponse = {
-  verificationToken: string;
-  userId: string;
-  email: string;
+  resent: boolean;
+  verificationToken: {token: string};
+  userDetail: {userId: string; email: string};
 };
 
-export type EmailVerificationSuccess = {
-  accountEmail: string;
-  accountId: string;
-  isVerified: string;
+export type VerifiedAccountResponse = {
+  isVerified: boolean;
+  email: string;
 };
 
 export type EmailVerified = {
@@ -47,15 +63,23 @@ export type EmailVerified = {
 };
 
 export type CreateOrganization = {
-  organizationName: string;
-  organizationAddress: string;
-  organizationCountry: string;
-  organizationPhone: string;
+  displayName: string;
+  email: string;
+  type: string; // uuid type
+  country: string;
+  financialYear: financialYear;
+  currency: string;
+};
+
+export type OrganizationMetadata = {
+  organizationTypes: Array<{id: string; name: string;}>;
+  address: string[];
+  paymentTerms: PaymentTerms;
 };
 
 export type FillUserPersonalInformation = {
   email: string;
-  firstName: string;
+firstName: string;
   lastName: string;
   country: string;
 };

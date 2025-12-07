@@ -69,7 +69,7 @@ export class SignupComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           response = res?.data;
-          email = response.email;
+          email = response.userDetail.email;
         },
         error: (err) => {
           console.error(err);
@@ -78,10 +78,8 @@ export class SignupComponent implements OnInit {
           this.isDisabled.set(false);
         },
         complete: () => {
-          console.log('Signup request completed');
-          console.log(response);
           this.isDisabled.set(false);
-          this.localStorageService.setItem('user_id', response.userId);
+          this.localStorageService.setItem('user_id', response.userDetail.userId);
           this._router.navigate(['/email/verification', email]);
         }
       });

@@ -11,7 +11,6 @@ import { TokenEmailNotificationComponent } from './features/token-email-notifica
 import { VerifyTokenComponent } from './features/verify-token/verify-token.component';
 import { SigninComponent } from './features/auth/signin/signin.component';
 import { CreateOrganization } from './features/create-organization/create-organization';
-import { AuthService } from './core/services/auth/auth.service';
 
 export const routes: Routes = [
   {
@@ -46,6 +45,10 @@ export const routes: Routes = [
     path:'account/organization/create/:email',
     component: CreateOrganization,
     title: 'Create Your Organization - MERRA',
+    providers: [
+      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
+      OrganizationService
+    ],
   },
   {
     path: 'admin',

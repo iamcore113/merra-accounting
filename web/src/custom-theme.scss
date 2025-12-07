@@ -140,6 +140,31 @@ input[type='file'] {
   margin-top: 32px;
 }
 
+.form-header {
+  margin-bottom: 32px;
+}
+
+.form-title {
+  font-size: 28px;
+  // color: #1e40af;
+  margin-bottom: 8px;
+  font-weight: 600;
+  line-height: normal;
+}
+
+.form-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
