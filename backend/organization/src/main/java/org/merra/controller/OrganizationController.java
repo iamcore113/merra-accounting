@@ -37,17 +37,6 @@ public class OrganizationController {
 		this.organizationService = organizationService;
 	}
 
-	@GetMapping(path = "metadata")
-	public ResponseEntity<ApiResponse> getOrganizationMetadata() {
-		var res = organizationService.returnOrganizationMetaData();
-		ApiResponse response = new ApiResponse(
-				"Organization metadata found successfully.",
-				true,
-				HttpStatus.OK,
-				res);
-		return ResponseEntity.ok(response);
-	}
-
 	/*
 	 * This method controller will retrieve the list of organizations that a user
 	 * belongs to.
