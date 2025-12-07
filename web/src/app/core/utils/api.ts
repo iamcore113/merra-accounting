@@ -5,6 +5,9 @@ export const API_VERSION_1 = `${BASE_API_URL}${VERSION_1}`;
 export const AUTHENTICATION_API_VER1 = `${BASE_API_URL}${API_AUTH}`;
 
 // Mapping urls
+// Metadatas
+export const METADATA_ENDPOINT_VER1 = `${API_VERSION_1}metadata/`;
+export const META_DATA_ORGANIZATION = 'organization';
 // authentications
 export const AUTH_SIGNIN = "signin";
 export const AUTH_SIGNUP = "signup";
@@ -19,4 +22,3 @@ export const OAUTH_LINK = "auth/url";
 export const OAUTH_CALLBACK = "auth/callback";
 // Organization
 export const ORGANIZATION_MAPPING = 'business/organization/';
-export const ORGANIZATION_METADATA = 'metadata';

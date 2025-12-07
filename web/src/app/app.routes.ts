@@ -44,11 +44,7 @@ export const routes: Routes = [
   {
     path:'account/organization/create/:email',
     component: CreateOrganization,
-    title: 'Create Your Organization - MERRA',
-    providers: [
-      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
-      OrganizationService
-    ],
+    title: 'Create Your Organization - MERRA'
   },
   {
     path: 'admin',
