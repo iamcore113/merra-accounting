@@ -1,0 +1,26 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet  author="brian"  id="2025-drop-not-null-constraint-address-organization-table">
+    <dropNotNullConstraint  catalogName="cat"
+            columnDataType="jsonb[]"
+            columnName="address"
+            schemaName="merra_schema"
+            tableName="organization"/>
+  </changeSet>
+    <changeSet  author="brian"  id="2025-drop-not-null-constraint-phone_no-organization-table">
+        <dropNotNullConstraint  catalogName="cat"
+                columnDataType="jsonb[]"
+                columnName="phone_no"
+                schemaName="merra_schema"
+                tableName="organization"/>
+    </changeSet>
+</databaseChangeLog>

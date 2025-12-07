@@ -1,9 +1,20 @@
 package org.merra.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
 
 public record CreateAccountRequest(
-		@NotBlank(message = "email component cannot be blank.") String email,
-		@NotBlank(message = "password component cannot be blank.") @Size(min = 8, max = 100, message = "password component has invalid character size.") String password) {
+		@Email(message = "Invalid email format.") String email,
+		String password) {
+	public CreateAccountRequest {
+		if (email == null || email.isBlank()) {
+			throw new IllegalArgumentException("email component cannot be blank.");
+		}
+
+		if (password == null || password.isBlank()) {
+			throw new IllegalArgumentException("password component cannot be blank.");
+		}
+		if (password.length() < 10) {
+			throw new IllegalArgumentException("password must be at least 10 characters long.");
+		}
+	}
 }

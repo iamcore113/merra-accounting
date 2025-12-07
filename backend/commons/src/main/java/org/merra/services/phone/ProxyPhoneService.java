@@ -3,7 +3,7 @@ package org.merra.services.phone;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
-import org.merra.embedded.PhoneDetails;
+import org.merra.embedded.PhoneDetailsEmb;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,18 +17,18 @@ public final class ProxyPhoneService implements PhoneServiceInterface {
 	public ProxyPhoneService(PhoneService phoneService) {
 		this.phoneService = phoneService;
 	}
-	
+
 	@Override
-	public LinkedHashSet<PhoneDetails> validatePhones(LinkedHashSet<PhoneDetails> phones,
+	public LinkedHashSet<PhoneDetailsEmb> validatePhones(LinkedHashSet<PhoneDetailsEmb> phones,
 			Optional<String> countryCode) {
 		// Validate phone numbers
 		// For contacts phone country code cannot be null.
 		phones.stream()
-		.forEach(pn -> {
-			if(pn.getPhoneCountryCode().isBlank()) {
-				throw new IllegalArgumentException("Phone country code cannot be null.");
-			}
-		});
+				.forEach(pn -> {
+					if (pn.getPhoneCountryCode().isBlank()) {
+						throw new IllegalArgumentException("Phone country code cannot be null.");
+					}
+				});
 		return phoneService.validatePhones(phones, Optional.empty());
 	}
 

@@ -2,8 +2,6 @@ package org.merra.controller;
 
 import java.util.Set;
 import java.util.UUID;
-
-import org.apache.catalina.connector.Response;
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
@@ -37,11 +35,6 @@ public class OrganizationController {
 
 	public OrganizationController(OrganizationService organizationService) {
 		this.organizationService = organizationService;
-	}
-
-	@GetMapping("test")
-	public ResponseEntity<String> organizationTest() {
-		return ResponseEntity.ok("Okay...");
 	}
 
 	@GetMapping(path = "metadata")
@@ -78,7 +71,7 @@ public class OrganizationController {
 				"Organization object found successfully.",
 				true,
 				HttpStatus.OK,
-				organizationService.createNewOrganizationObject(data));
+				organizationService.createNewOrganization(data));
 
 		return ResponseEntity.ok(response);
 	}

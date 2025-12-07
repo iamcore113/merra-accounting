@@ -85,9 +85,12 @@ public class UserAccount implements UserDetails {
 		this.verificationToken = verificationToken;
 	}
 
+	/*
+	 * A user account that is not enabled cannot be authenticated!!!
+	 */
 	@Override
 	public boolean isEnabled() {
-		return this.isEnabled; // Use your entity field
+		return this.isEnabled;
 	}
 
 	public void setIsEnabled(boolean en) {

@@ -33,8 +33,8 @@ public class AuthController {
 
     @GetMapping("req/signup/verify")
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
-        VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
-        ApiResponse apiRes = new ApiResponse(
+        final VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
+        final ApiResponse apiRes = new ApiResponse(
                 "Email successfully verified",
                 true,
                 HttpStatus.CREATED,
@@ -42,19 +42,6 @@ public class AuthController {
 
         return ResponseEntity.ok(apiRes);
     }
-
-    // @PostMapping("fill/personal/information/{id}")
-    // public ResponseEntity<ApiResponse> fillPersonalInformation(@Valid
-    // @RequestBody FillPersonalInformation req, @PathVariable("id") UUID id) {
-    // var res = authService.fillPersonalInformation(req);
-    // ApiResponse apiRes = new ApiResponse(
-    // "Personal information successfully saved",
-    // true,
-    // HttpStatus.CREATED,
-    // res);
-
-    // return ResponseEntity.ok(apiRes);
-    // }
 
     /**
      * Generate new access & refresh token
@@ -64,19 +51,19 @@ public class AuthController {
      */
     @PostMapping("tokens")
     public ResponseEntity<?> tokens(@Valid @RequestBody TokenRequest request) {
-        JwtTokens tokens = authService.tokens(request);
+        final JwtTokens tokens = authService.tokens(request);
         return new ResponseEntity<>(tokens, HttpStatus.OK);
     }
 
     @PostMapping("signin")
     public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
-        AuthResponse res = authService.login(loginRequest);
+        final AuthResponse res = authService.login(loginRequest);
         return ResponseEntity.ok(res);
     }
 
     @PostMapping("signup")
     public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
-        VerificationResponse res = authService.signup(req);
+        final VerificationResponse res = authService.signup(req);
 
         ApiResponse response = new ApiResponse();
         if (res.resent()) {
@@ -95,7 +82,7 @@ public class AuthController {
 
     @PostMapping("resend/verification/email")
     public ResponseEntity<ApiResponse> resendEmailVerification(@Valid @RequestBody ResendEmailVerification req) {
-        var resentToken = authService.resendEmailVerification(req);
+        final var resentToken = authService.resendEmailVerification(req);
 
         ApiResponse response = new ApiResponse();
         response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION_RESEND);

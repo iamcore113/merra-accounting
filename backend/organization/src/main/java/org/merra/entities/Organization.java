@@ -1,14 +1,13 @@
 package org.merra.entities;
 
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.audit.CreatedDate;
-import org.merra.embedded.PhoneDetails;
+import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ExternalLinks;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.OrganizationAddressEmb;
@@ -94,8 +93,8 @@ public class Organization {
 
 	/* Contact Details */
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
-	private LinkedHashSet<PhoneDetails> phoneNo;
+	@Column(name = "phone_no", columnDefinition = "jsonb[]")
+	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "email", nullable = false)
 	@NotBlank(message = "Email is mandatory")
@@ -116,8 +115,7 @@ public class Organization {
 	private FinancialYearEmb financialYear;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "address", nullable = false, columnDefinition = "jsonb[]")
-	@NotNull(message = "Address attribute cannot be null.")
+	@Column(name = "address", columnDefinition = "jsonb[]")
 	private Set<OrganizationAddressEmb> address;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
@@ -153,22 +151,22 @@ public class Organization {
 		this.activeSubscription = isActiveSubscription == null ? true : isActiveSubscription;
 	}
 
-	public void setBasicInformation(
-			String displayName,
-			String legalName,
-			OrganizationType organizationType,
-			String description) {
+	public void setBasicInformation(String displayName, OrganizationType type, String email, String country,
+			FinancialYearEmb financialYear, String currency) {
 		this.setDisplayName(displayName);
-		this.setLegalName(legalName);
-		this.setOrganizationType(organizationType);
-		this.setOrganizationDescription(description);
+		this.setLegalName(displayName);
+		this.setOrganizationType(type);
+		this.setEmail(email);
+		this.setCountry(country);
+		this.setFinancialYear(financialYear);
+		this.setDefaultCurrency(currency);
 	}
 
 	public void setContactDetails(
 			String countryCode,
 			String defaultCurrency,
 			Set<OrganizationAddressEmb> address,
-			LinkedHashSet<PhoneDetails> phones,
+			LinkedHashSet<PhoneDetailsEmb> phones,
 			String email,
 			String website,
 			Set<ExternalLinks> externalLinks) {
@@ -192,7 +190,7 @@ public class Organization {
 			@NotNull(message = "country attribute cannot be null.") String country,
 			@NotNull(message = "defaultCurrency attribute cannot be null.") String defaultCurrency,
 			@NotNull(message = "organizationType attribute cannot be null.") OrganizationType organizationType,
-			LinkedHashSet<PhoneDetails> phoneNo,
+			LinkedHashSet<PhoneDetailsEmb> phoneNo,
 			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
 			FinancialYearEmb financialYear,
@@ -214,7 +212,7 @@ public class Organization {
 			@NotNull(message = "country attribute cannot be null.") String country,
 			@NotNull(message = "defaultCurrency attribute cannot be null.") String defaultCurrency,
 			@NotNull(message = "organizationType attribute cannot be null.") OrganizationType organizationType,
-			LinkedHashSet<PhoneDetails> phoneNo,
+			LinkedHashSet<PhoneDetailsEmb> phoneNo,
 			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
 			FinancialYearEmb financialYear,
@@ -329,11 +327,11 @@ public class Organization {
 		this.organizationType = organizationType;
 	}
 
-	public LinkedHashSet<PhoneDetails> getPhoneNo() {
+	public LinkedHashSet<PhoneDetailsEmb> getPhoneNo() {
 		return phoneNo;
 	}
 
-	public void setPhoneNo(LinkedHashSet<PhoneDetails> phoneNo) {
+	public void setPhoneNo(LinkedHashSet<PhoneDetailsEmb> phoneNo) {
 		this.phoneNo = phoneNo;
 	}
 

@@ -10,7 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.TimeZoneStorage;
 import org.hibernate.annotations.TimeZoneStorageType;
 import org.hibernate.type.SqlTypes;
-import org.merra.embedded.PhoneDetails;
+import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ContactAddressEmb;
 
 import jakarta.persistence.CascadeType;
@@ -60,7 +60,7 @@ public class Contact {
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
-	private LinkedHashSet<PhoneDetails> phoneNo;
+	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "account_number")
 	private String accountNumber;
@@ -163,11 +163,11 @@ public class Contact {
 		this.emailAddress = emailAddress;
 	}
 
-	public LinkedHashSet<PhoneDetails> getPhoneNo() {
+	public LinkedHashSet<PhoneDetailsEmb> getPhoneNo() {
 		return phoneNo;
 	}
 
-	public void setPhoneNo(LinkedHashSet<PhoneDetails> phoneNo) {
+	public void setPhoneNo(LinkedHashSet<PhoneDetailsEmb> phoneNo) {
 		this.phoneNo = phoneNo;
 	}
 

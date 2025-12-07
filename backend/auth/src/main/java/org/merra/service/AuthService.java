@@ -50,7 +50,7 @@ public class AuthService {
   @Value("${jwt.refresh.token-expiration}")
   private int refreshTokenExpiration;
   @Value("${jwt.email.verification-duration}")
-  private int verificationToken;
+  private int verificationTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
@@ -82,20 +82,23 @@ public class AuthService {
   }
 
   public VerifiedAccountResponse verifyEmail(String tokenParam) {
-    var email = jwtUtils.extractUsername(tokenParam);
-    Optional<UserAccount> findAccount = userRepository.findUserByEmailIgnoreCase(email);
-
-    if (findAccount.isEmpty() || findAccount.get().getVerificationToken() == null
-        || !Objects.equals(findAccount.get().getVerificationToken(), tokenParam)) {
-      throw new BadCredentialsException("Token expired.");
+    String email = jwtUtils.extractUsername(tokenParam);
+    if (email == null) {
+      throw new BadCredentialsException("Token email not found.");
+    }
+    UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
+        .orElseThrow(() -> new EntityNotFoundException("User account not found."));
+    final String accountVerificationToken = findAccount.getVerificationToken();
+    if (!Objects.equals(accountVerificationToken, tokenParam)) {
+      throw new BadCredentialsException("Invalid token.");
+    }
+    if (Objects.equals(findAccount.getVerificationToken(), tokenParam)) {
+      findAccount.setVerificationToken(null);
+      findAccount.setIsEnabled(true);
+      userRepository.save(findAccount);
     }
 
-    var getUser = findAccount.get();
-    getUser.setVerificationToken(null);
-    getUser.setIsEnabled(true);
-    userRepository.save(getUser);
-
-    return new VerifiedAccountResponse(true, getUser.getUserId(), getUser.getEmail());
+    return new VerifiedAccountResponse(true, findAccount.getEmail());
   }
 
   public void sendVerificationEmail(String email, String verToken) {
@@ -177,11 +180,21 @@ public class AuthService {
   }
 
   public AuthResponse login(LoginRequest request) {
+    return createAuthenticationResponse(request.email(), request.password());
+  }
+
+  /* Create JWT tokens after successful authentication */
+  private AuthResponse createAuthenticationResponse(String email, String password) {
+    if (email == null || email.isBlank() || password == null || password.isBlank()) {
+      throw new org.springframework.security.authentication.BadCredentialsException(
+          AuthConstantResponses.INVALID_CREDENTIALS);
+    }
+
     Authentication authentication;
 
     try {
       authentication = authenticationManager
-          .authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
+          .authenticate(new UsernamePasswordAuthenticationToken(email, password));
     } catch (AuthenticationException e) {
       throw new org.springframework.security.authentication.BadCredentialsException(
           AuthConstantResponses.INVALID_CREDENTIALS, e);
@@ -189,7 +202,7 @@ public class AuthService {
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserAccount getUser = userRepository
-        .findUserByEmailIgnoreCase(request.email()).get();
+        .findUserByEmailIgnoreCase(email).get();
 
     final String accessToken = jwtUtils.generateToken(getUser, forAccessToken, false);
     final String refreshToken = jwtUtils.generateToken(getUser, refreshTokenExpiration, true);
@@ -202,7 +215,8 @@ public class AuthService {
   }
 
   public VerificationResponse signup(CreateAccountRequest request) {
-    String emailReq = request.email();
+    final String emailReq = request.email();
+    final String passwordReq = request.password();
     Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
 
     if (findUserEmail.isPresent()) {
@@ -211,22 +225,23 @@ public class AuthService {
       } else {
         var user = findUserEmail.get();
         var userTokens = user.getVerificationToken();
-
-        final String resetToken = jwtUtils.generateToken(user, verificationToken, false);
+        final String resetToken = jwtUtils.generateToken(user, verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
         userRepository.save(user);
-        return new VerificationResponse(true, resetToken, user.getUserId(), user.getEmail());
+
+        return new VerificationResponse(true, new VerificationResponse.VerificationToken(resetToken),
+            new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
       }
     }
-    // throw new EntityExistsException(AuthConstantResponses.EMAIL_EXISTS);
-    var encodedPassword = passwordEncoder.encode(request.password());
+
+    final String encodedPassword = passwordEncoder.encode(passwordReq);
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder, verificationToken, false);
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder, verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
-    sendVerificationEmail(request.email(), verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
+    sendVerificationEmail(request.email(), verificationEmailToken);
 
     /**
      * Once the new user is created,
@@ -235,9 +250,8 @@ public class AuthService {
     userAccountService.createUserAccountSetting(newUser);
     return new VerificationResponse(
         false,
-        verificationEmailToken,
-        newUser.getUserId(),
-        newUser.getEmail());
+        new VerificationResponse.VerificationToken(verificationEmailToken),
+        new VerificationResponse.UserDetail(newUser.getUserId(), newUser.getEmail()));
   }
 
   public VerificationResponse resendEmailVerification(ResendEmailVerification request) {
@@ -252,11 +266,12 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user, verificationToken, false);
+    final String newVerificationToken = jwtUtils.generateToken(user, verificationTokenDuration, false);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
     sendVerificationEmail(user.getEmail(), newVerificationToken);
-    return new VerificationResponse(true, newVerificationToken, user.getUserId(), user.getEmail());
+    return new VerificationResponse(true, new VerificationResponse.VerificationToken(newVerificationToken),
+        new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
   }
 
   public JwtTokens tokens(TokenRequest request) {

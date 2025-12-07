@@ -4,10 +4,10 @@ import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.OrganziationSelectionResponse;
-import org.merra.embedded.PhoneDetails;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationSettings;
 import org.merra.entities.OrganizationType;
+import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.InvoiceSettings;
 import org.merra.entities.embedded.LineItemSettings;
 import org.merra.mapper.OrganizationMapper;
@@ -19,10 +19,7 @@ import org.merra.utilities.InvoiceConstants;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -34,8 +31,6 @@ public class OrganizationService {
 	private final OrganizationSettingsRepository organizationSettingsRepo;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final AccountService accountService;
-	private final OrganizationMemberService organizationMemberService;
-	private final PhoneService phoneService;
 	private final OrganizationMapper organizationMapper;
 
 	public OrganizationService(
@@ -43,15 +38,12 @@ public class OrganizationService {
 			OrganizationSettingsRepository organizationSettingsRepo,
 			OrganizationTypeRepository organizationTypeRepository,
 			AccountService accountService,
-			OrganizationMemberService organizationMemberService,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
 		this.organizationSettingsRepo = organizationSettingsRepo;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
-		this.organizationMemberService = organizationMemberService;
-		this.phoneService = phoneService;
 		this.organizationMapper = organizationMapper;
 	}
 
@@ -90,7 +82,12 @@ public class OrganizationService {
 						type.getId(),
 						type.getName()))
 				.collect(java.util.stream.Collectors.toSet());
-		return new OrganizationMetaDataResponse(organizationTypes);
+		final String[] addresses = { "address1", "address2", "address3", "address4" }; // Placeholder for addresses
+		// For Payment terms
+		String[] subElements = { "BILLS", "SALES" };
+		String[] types = { "DAYSAFTERBILLDATE", "DAYSAFTERBILLMONTH", "OFCURRENTMONTH", "OFFOLLOWINGMONTH" };
+		return new OrganizationMetaDataResponse(organizationTypes, addresses,
+				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}
 
 	// This method will create the organization settings after creating the new
@@ -128,88 +125,23 @@ public class OrganizationService {
 		return organizationMapper.toOrganizationResponse(newOrganization);
 	}
 
-	/**
-	 * This method will create new organization object
-	 * 
-	 * @param - {@linkplain CreateOrganizationRequest} object type of data
-	 * @return - {@linkplain OrganizationDetailsResponse} object type of data
-	 */
-	@Transactional
-	public OrganizationDetailsResponse createNewOrganizationObject(CreateOrganizationRequest data) {
+	public OrganizationDetailsResponse createNewOrganization(CreateOrganizationRequest req) {
 		Organization org = getOrganizationObject(null); // New organization object
-		// TODO - For now set this as organization's profile picture
+
+		// FIXME: set a default profile image for organization
 		org.setProfileImage("sample_image_url");
 
+		OrganizationType organizationType = getOrganizationType(req.type());
+		FinancialYearEmb financialYearEmb = new FinancialYearEmb(
+				req.financialYear().yearEndDay(),
+				req.financialYear().yearEndMonth());
+
 		// Set organization basic information
-		setBasicInformation(data.basicInformation(), org);
-
-		// Set organization contact details
-		setContactDetails(data.contactDetails(), org);
-
-		// Set the creator if the organization as the advisor.
-		organizationMemberService.addAdvisor(org);
-
-		// Set organization invited users
-		organizationMemberService.addInvitedUsers(data.inviteOtherUser(), org);
+		org.setBasicInformation(req.displayName(), organizationType, req.email(), req.country(), financialYearEmb,
+				req.currency());
 
 		return save(org);
 
-	}
-
-	/**
-	 * The following fields are part of organization's basic informations:
-	 * - displayName
-	 * - legalName,
-	 * - organizationType
-	 * - organizationDescription
-	 * 
-	 * @param info         - accepts
-	 *                     {@linkplain CreateOrganizationRequest.BasicInformation}
-	 *                     object type.
-	 * @param organization - accepts {@linkplain Organization} object type.
-	 */
-	private void setBasicInformation(
-			CreateOrganizationRequest.BasicInformation info,
-			Organization organization) {
-		OrganizationType type = getOrganizationType(info.organizationType());
-		organization.setBasicInformation(
-				info.displayName(),
-				info.legalName(),
-				type,
-				info.organizationDescription());
-	}
-
-	/**
-	 * This method will set the organization's contact details.
-	 * Contact details include:
-	 * - countryCode
-	 * - addresses
-	 * - phone details
-	 * - email
-	 * - web-site
-	 * - externalLinks
-	 * 
-	 * @param contacts     - accepts
-	 *                     {@linkplain CreateOrganizationRequest.ContactDetails}
-	 *                     object type
-	 * @param organization - accepts {@linkplain Organization} object type.
-	 */
-	private void setContactDetails(
-			CreateOrganizationRequest.ContactDetails contacts,
-			Organization organization) {
-
-		// Validate phone numbers
-		LinkedHashSet<PhoneDetails> validatePhoneDetails = phoneService.validatePhones(contacts.phoneNo(),
-				Optional.of(organization.getCountry()));
-
-		organization.setContactDetails(
-				contacts.countryCode(),
-				contacts.countryCode(),
-				contacts.address(),
-				validatePhoneDetails,
-				contacts.email(),
-				contacts.website(),
-				contacts.externalLinks());
 	}
 
 	/**

@@ -4,38 +4,37 @@ import java.io.Serializable;
 
 import jakarta.validation.constraints.NotNull;
 
-public class PhoneDetails implements Serializable {
+public class PhoneDetailsEmb implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+
 	@NotNull(message = "phoneType attribute cannot be null.")
 	private String phoneType;
-	
+
 	@NotNull(message = "phoneNumber attribute cannot be null.")
 	private String phoneNumber;
-	
+
 	private String phoneAreaCode;
-	
+
 	private String phoneCountryCode;
-	
+
 	private Boolean isDefault;
-	
-	public PhoneDetails(
+
+	public PhoneDetailsEmb(
 			String phoneType,
 			String phoneNumber,
 			String phoneAreaCode,
 			String phoneCountryCode,
-			Boolean isDefault
-	) {
+			Boolean isDefault) {
 		this.phoneType = phoneType;
 		this.phoneNumber = phoneNumber;
 		this.phoneAreaCode = phoneAreaCode;
 		this.phoneCountryCode = phoneCountryCode;
 		this.isDefault = isDefault;
 	}
-	
+
 	public void setIsDefault(Boolean isDefault) {
 		this.isDefault = isDefault ? Boolean.TRUE : Boolean.FALSE;
 	}
@@ -76,5 +75,4 @@ public class PhoneDetails implements Serializable {
 		return isDefault;
 	}
 
-	
 }

@@ -4,7 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import org.merra.embedded.PhoneDetails;
+import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.exception.PhoneTypeNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -51,9 +51,9 @@ public final class PhoneService implements PhoneServiceInterface {
 	}
 
 	@Override
-	public LinkedHashSet<PhoneDetails> validatePhones(LinkedHashSet<PhoneDetails> phones,
+	public LinkedHashSet<PhoneDetailsEmb> validatePhones(LinkedHashSet<PhoneDetailsEmb> phones,
 			Optional<String> countryCode) {
-		LinkedHashSet<PhoneDetails> validatedPhones = new LinkedHashSet<>();
+		LinkedHashSet<PhoneDetailsEmb> validatedPhones = new LinkedHashSet<>();
 		Optional<String> phoneCountryCode = countryCode;
 
 		/**
@@ -61,7 +61,7 @@ public final class PhoneService implements PhoneServiceInterface {
 		 * By default the first phone in the collection is the
 		 * primary phone or will be set as primary phone.
 		 */
-		PhoneDetails primaryPhone = phones.removeFirst();
+		PhoneDetailsEmb primaryPhone = phones.removeFirst();
 		if (!phoneTypeCheck(primaryPhone.getPhoneType())) {
 			throw new PhoneTypeNotFoundException(primaryPhone.getPhoneType());
 		}
@@ -72,7 +72,7 @@ public final class PhoneService implements PhoneServiceInterface {
 
 		PhoneNumber parsedPrimaryPhone = parsePhone(primaryPhone.getPhoneNumber(), phoneCountryCode.get());
 
-		validatedPhones.addFirst(new PhoneDetails(
+		validatedPhones.addFirst(new PhoneDetailsEmb(
 				primaryPhone.getPhoneType(),
 				String.valueOf(parsedPrimaryPhone.getNationalNumber()),
 				primaryPhone.getPhoneAreaCode(),
@@ -83,7 +83,7 @@ public final class PhoneService implements PhoneServiceInterface {
 		 * If there are multiple phones provided
 		 */
 		if (!phones.isEmpty()) {
-			for (PhoneDetails rphone : phones) {
+			for (PhoneDetailsEmb rphone : phones) {
 				if (!phoneTypeCheck(rphone.getPhoneType())) {
 					throw new PhoneTypeNotFoundException(rphone.getPhoneType());
 				}
@@ -93,7 +93,7 @@ public final class PhoneService implements PhoneServiceInterface {
 				}
 
 				PhoneNumber parsedPhone = parsePhone(rphone.getPhoneNumber(), phoneCountryCode.get());
-				validatedPhones.add(new PhoneDetails(
+				validatedPhones.add(new PhoneDetailsEmb(
 						rphone.getPhoneType(),
 						String.valueOf(parsedPhone.getNationalNumber()),
 						rphone.getPhoneAreaCode(),
