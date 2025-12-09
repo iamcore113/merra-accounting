@@ -5,7 +5,7 @@ import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
 
-public class ExternalLinks implements Serializable {	
+public class ExternalLinksEmb implements Serializable {
 	/**
 	 * 
 	 */
@@ -14,18 +14,17 @@ public class ExternalLinks implements Serializable {
 			"FACEBOOK",
 			"INSTAGRAM",
 			"WEBSITE",
-			"TIKTOK"
-	);
-	
+			"TIKTOK");
+
 	@NotNull(message = "linkType attribute cannot be null.")
 	private String linkType;
 	@NotNull(message = "url attribute cannot be null.")
 	private String url;
-	
+
 	public void setLinkType(String linkType) {
 		if (!linkTypes.contains(linkType.toUpperCase())) {
 			throw new IllegalArgumentException("Invalid key found: '" + linkType + "'. Allowed keys are: " + linkTypes);
-		}else {
+		} else {
 			this.linkType = linkType.toUpperCase();
 		}
 	}
@@ -42,14 +41,13 @@ public class ExternalLinks implements Serializable {
 		this.url = url;
 	}
 
-	public ExternalLinks(@NotNull(message = "linkType attribute cannot be null.") String linkType,
+	public ExternalLinksEmb(@NotNull(message = "linkType attribute cannot be null.") String linkType,
 			@NotNull(message = "url attribute cannot be null.") String url) {
 		this.linkType = linkType;
 		this.url = url;
 	}
 
-	public ExternalLinks() {
+	public ExternalLinksEmb() {
 	}
 
-	
 }

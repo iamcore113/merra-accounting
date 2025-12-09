@@ -1,19 +1,18 @@
 package org.merra.entities.embedded;
 
-
 import java.io.Serializable;
 
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class InvoiceSettings implements Serializable {
+public class InvoiceSettingsEmb implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String defaultLineAmountType;
 	private String status;
-	
+
 	public void setStatus(String stat) {
 		// DRAFT is the default status
 		this.status = stat.isBlank() ? "DRAFT" : stat;
@@ -31,10 +30,10 @@ public class InvoiceSettings implements Serializable {
 		this.defaultLineAmountType = defaultLineAmountType;
 	}
 
-	public InvoiceSettings() {
+	public InvoiceSettingsEmb() {
 	}
 
-	public InvoiceSettings(String defaultLineAmountType, String status) {
+	public InvoiceSettingsEmb(String defaultLineAmountType, String status) {
 		this.defaultLineAmountType = defaultLineAmountType;
 		this.status = status;
 	}

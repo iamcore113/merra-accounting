@@ -14,8 +14,8 @@ import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
 import org.merra.entities.Invoice;
 import org.merra.entities.LineItem;
-import org.merra.entities.embedded.InvoiceActions;
-import org.merra.entities.embedded.InvoiceSettings;
+import org.merra.entities.embedded.InvoiceActionsEmb;
+import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.ContactRepository;
@@ -149,7 +149,7 @@ public class InvoiceService {
 		 */
 		Optional<String> statusOpt = Optional.empty();
 		if (request.status().isBlank()) {
-			InvoiceSettings invoiceSettings = organizationSettingsRepository
+			InvoiceSettingsEmb invoiceSettings = organizationSettingsRepository
 					.findSettingsByOrganizationId(organizationId);
 			statusOpt = Optional.of(invoiceSettings.getStatus());
 		} else {
@@ -172,7 +172,7 @@ public class InvoiceService {
 	 * @param status  - accepts {@linkplain java.util.String} object type.
 	 */
 	private void setInvoiceActions(Invoice invoice, String status) {
-		InvoiceActions invoiceActions = new InvoiceActions();
+		InvoiceActionsEmb invoiceActions = new InvoiceActionsEmb();
 		if (status.equalsIgnoreCase(InvoiceConstants.INVOICE_STATUS_DRAFT)) {
 			invoiceActions.setDelete(true);
 			invoiceActions.setEdit(true);

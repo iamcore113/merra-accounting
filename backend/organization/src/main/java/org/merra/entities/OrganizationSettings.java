@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.merra.entities.embedded.InvoiceSettings;
+import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.entities.embedded.LineItemSettings;
 
 import jakarta.persistence.CascadeType;
@@ -27,20 +27,21 @@ import jakarta.persistence.Table;
 @Table(name = "organization_setting", schema = "merra_schema")
 public class OrganizationSettings {
 
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "setting_id", nullable = false, unique = true)
 	private UUID settingId;
-	
+
 	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "organization_id", unique = true, referencedColumnName = "id")
 	private Organization organization;
-	
+
 	// Default settings for invoices
 	@Embedded
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "invoice_settings")
-	private InvoiceSettings invoiceSettings;
-	
+	private InvoiceSettingsEmb invoiceSettings;
+
 	// Default settings for line items
 	@Embedded
 	@JdbcTypeCode(SqlTypes.JSON)
@@ -50,13 +51,13 @@ public class OrganizationSettings {
 	public OrganizationSettings() {
 	}
 
-	public OrganizationSettings(UUID settingId, Organization organization, InvoiceSettings invoiceSettings,
+	public OrganizationSettings(UUID settingId, Organization organization, InvoiceSettingsEmb invoiceSettings,
 			LineItemSettings lineItemSettings) {
 		this(organization, invoiceSettings, lineItemSettings);
 		this.settingId = settingId;
 	}
 
-	public OrganizationSettings(Organization organization, InvoiceSettings invoiceSettings,
+	public OrganizationSettings(Organization organization, InvoiceSettingsEmb invoiceSettings,
 			LineItemSettings lineItemSettings) {
 		this.organization = organization;
 		this.invoiceSettings = invoiceSettings;
@@ -67,7 +68,6 @@ public class OrganizationSettings {
 		return settingId;
 	}
 
-
 	public Organization getOrganization() {
 		return organization;
 	}
@@ -76,11 +76,11 @@ public class OrganizationSettings {
 		this.organization = organization;
 	}
 
-	public InvoiceSettings getInvoiceSettings() {
+	public InvoiceSettingsEmb getInvoiceSettings() {
 		return invoiceSettings;
 	}
 
-	public void setInvoiceSettings(InvoiceSettings invoiceSettings) {
+	public void setInvoiceSettings(InvoiceSettingsEmb invoiceSettings) {
 		this.invoiceSettings = invoiceSettings;
 	}
 
@@ -92,6 +92,4 @@ public class OrganizationSettings {
 		this.lineItemSettings = lineItemSettings;
 	}
 
-	
 }
-

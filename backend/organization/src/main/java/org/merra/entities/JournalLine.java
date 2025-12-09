@@ -5,8 +5,8 @@ import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.merra.entities.embedded.AccountDetail;
-import org.merra.entities.embedded.TaxDetail;
+import org.merra.entities.embedded.AccountDetailEmb;
+import org.merra.entities.embedded.TaxDetailEmb;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -23,24 +23,25 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "journal_line", schema = "merra_schema")
 public class JournalLine {
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
-	
+
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "journal", nullable = false, referencedColumnName = "journal_id")
 	private Journal journal;
-	
+
 	@Embedded
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "account_details", nullable = false, columnDefinition = "jsonb")
 	@NotNull(message = "accountDetails attribute cannot be null.")
-	private AccountDetail accountDetails;
-	
+	private AccountDetailEmb accountDetails;
+
 	private String description;
-	
+
 	@Column(columnDefinition = "numeric(7,2)")
 	private BigDecimal credit;
-	
+
 	@Column(columnDefinition = "numeric(7,2)")
 	private BigDecimal debit;
 
@@ -48,14 +49,14 @@ public class JournalLine {
 	}
 
 	public JournalLine(UUID id, Journal journal,
-			@NotNull(message = "accountDetails attribute cannot be null.") AccountDetail accountDetails,
+			@NotNull(message = "accountDetails attribute cannot be null.") AccountDetailEmb accountDetails,
 			String description, BigDecimal credit, BigDecimal debit) {
 		this(journal, accountDetails, description, credit, debit);
 		this.id = id;
 	}
 
 	public JournalLine(Journal journal,
-			@NotNull(message = "accountDetails attribute cannot be null.") AccountDetail accountDetails,
+			@NotNull(message = "accountDetails attribute cannot be null.") AccountDetailEmb accountDetails,
 			String description, BigDecimal credit, BigDecimal debit) {
 		this.journal = journal;
 		this.accountDetails = accountDetails;
@@ -76,11 +77,11 @@ public class JournalLine {
 		this.journal = journal;
 	}
 
-	public AccountDetail getAccountDetails() {
+	public AccountDetailEmb getAccountDetails() {
 		return accountDetails;
 	}
 
-	public void setAccountDetails(AccountDetail accountDetails) {
+	public void setAccountDetails(AccountDetailEmb accountDetails) {
 		this.accountDetails = accountDetails;
 	}
 

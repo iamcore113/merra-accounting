@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.merra.embedded.PhoneDetailsEmb;
-import org.merra.entities.embedded.ExternalLinks;
+import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.OrganizationAddressEmb;
 
 import jakarta.validation.constraints.Email;
@@ -35,7 +35,7 @@ public record OrganizationDetailsResponse(
 			@Email(message = "Invalid email component value") @NotBlank(message = "Email component cannot be blank.") String email,
 			String website,
 			LinkedHashSet<PhoneDetailsEmb> phoneNo,
-			Set<ExternalLinks> externalLinks) {
+			Set<ExternalLinksEmb> externalLinks) {
 	}
 
 	public record Users(

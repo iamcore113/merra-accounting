@@ -8,12 +8,12 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.audit.CreatedDate;
 import org.merra.embedded.PhoneDetailsEmb;
-import org.merra.entities.embedded.ExternalLinks;
+import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.OrganizationAddressEmb;
 import org.merra.entities.embedded.OrganizationNameUpdate;
-import org.merra.entities.embedded.OrganizationUserInvites;
-import org.merra.entities.embedded.OrganizationUsers;
+import org.merra.entities.embedded.OrganizationUserInvitesEmb;
+import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.Status;
 
@@ -58,12 +58,12 @@ public class Organization {
 	@ElementCollection
 	@CollectionTable(schema = "merra_schema", name = "organization_users", joinColumns = {
 			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUsers> organizationUsers;
+	private Set<OrganizationUsersEmb> organizationUsers;
 
 	@ElementCollection
 	@CollectionTable(schema = "merra_schema", name = "org_invites", joinColumns = {
 			@JoinColumn(name = " organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUserInvites> organizationUserInvites;
+	private Set<OrganizationUserInvitesEmb> organizationUserInvites;
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
@@ -120,7 +120,7 @@ public class Organization {
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
 	@Column(name = "external_links", columnDefinition = "jsonb[]")
-	private Set<ExternalLinks> externalLinks;
+	private Set<ExternalLinksEmb> externalLinks;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "payment_terms", columnDefinition = "jsonb")
@@ -169,7 +169,7 @@ public class Organization {
 			LinkedHashSet<PhoneDetailsEmb> phones,
 			String email,
 			String website,
-			Set<ExternalLinks> externalLinks) {
+			Set<ExternalLinksEmb> externalLinks) {
 		this.setCountry(countryCode);
 		this.setDefaultCurrency(defaultCurrency);
 		this.setAddress(address);
@@ -183,8 +183,8 @@ public class Organization {
 	}
 
 	public Organization(UUID id, @NotNull(message = "profile_image") String profileImage,
-			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsers> organizationUsers,
-			Set<OrganizationUserInvites> organizationUserInvites,
+			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsersEmb> organizationUsers,
+			Set<OrganizationUserInvitesEmb> organizationUserInvites,
 			@NotBlank(message = "displayName attribute cannot be blank.") String displayName,
 			@NotBlank(message = "legalName cannot be blank.") String legalName, String organizationDescription,
 			@NotNull(message = "country attribute cannot be null.") String country,
@@ -195,7 +195,7 @@ public class Organization {
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
 			FinancialYearEmb financialYear,
 			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
-			Set<ExternalLinks> externalLinks,
+			Set<ExternalLinksEmb> externalLinks,
 			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
 			CreatedDate createdDate, Boolean activeSubscription, Status status) {
 		this(profileImage, nameDetailsUpdate, organizationUsers, organizationUserInvites, displayName, legalName,
@@ -205,8 +205,8 @@ public class Organization {
 	}
 
 	public Organization(@NotNull(message = "profile_image") String profileImage,
-			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsers> organizationUsers,
-			Set<OrganizationUserInvites> organizationUserInvites,
+			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsersEmb> organizationUsers,
+			Set<OrganizationUserInvitesEmb> organizationUserInvites,
 			@NotBlank(message = "displayName attribute cannot be blank.") String displayName,
 			@NotBlank(message = "legalName cannot be blank.") String legalName, String organizationDescription,
 			@NotNull(message = "country attribute cannot be null.") String country,
@@ -217,7 +217,7 @@ public class Organization {
 			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
 			FinancialYearEmb financialYear,
 			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
-			Set<ExternalLinks> externalLinks,
+			Set<ExternalLinksEmb> externalLinks,
 			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
 			CreatedDate createdDate, Boolean activeSubscription, Status status) {
 		this.profileImage = profileImage;
@@ -263,19 +263,19 @@ public class Organization {
 		this.nameDetailsUpdate = nameDetailsUpdate;
 	}
 
-	public Set<OrganizationUsers> getOrganizationUsers() {
+	public Set<OrganizationUsersEmb> getOrganizationUsers() {
 		return organizationUsers;
 	}
 
-	public void setOrganizationUsers(Set<OrganizationUsers> organizationUsers) {
+	public void setOrganizationUsers(Set<OrganizationUsersEmb> organizationUsers) {
 		this.organizationUsers = organizationUsers;
 	}
 
-	public Set<OrganizationUserInvites> getOrganizationUserInvites() {
+	public Set<OrganizationUserInvitesEmb> getOrganizationUserInvites() {
 		return organizationUserInvites;
 	}
 
-	public void setOrganizationUserInvites(Set<OrganizationUserInvites> organizationUserInvites) {
+	public void setOrganizationUserInvites(Set<OrganizationUserInvitesEmb> organizationUserInvites) {
 		this.organizationUserInvites = organizationUserInvites;
 	}
 
@@ -375,11 +375,11 @@ public class Organization {
 		this.address = address;
 	}
 
-	public Set<ExternalLinks> getExternalLinks() {
+	public Set<ExternalLinksEmb> getExternalLinks() {
 		return externalLinks;
 	}
 
-	public void setExternalLinks(Set<ExternalLinks> externalLinks) {
+	public void setExternalLinks(Set<ExternalLinksEmb> externalLinks) {
 		this.externalLinks = externalLinks;
 	}
 

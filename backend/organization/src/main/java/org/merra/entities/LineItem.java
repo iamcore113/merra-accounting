@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.merra.entities.embedded.LineItemByAccountCode;
+import org.merra.entities.embedded.LineItemByAccountCodeEmb;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,79 +22,81 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
- *  the "LineItems" collection holds all the granular detail
- *  about what is being bought or sold on that particular invoice.
- *  When you create an invoice in Xero, you add multiple "line items"
- *  to build up the total amount.
+ * the "LineItems" collection holds all the granular detail
+ * about what is being bought or sold on that particular invoice.
+ * When you create an invoice in Xero, you add multiple "line items"
+ * to build up the total amount.
  */
 @Entity
 @Table(name = "line_item", schema = "merra_schema")
 public class LineItem {
 
-	@Id @GeneratedValue(strategy = GenerationType.UUID)
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
-	
+
 	// Shouldn't be include at any JSON response -- FOR NOW
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "invoice_id", referencedColumnName = "invoice_id")
 	@NotNull(message = "Invoice cannot be null")
 	private Invoice invoice;
-	
+
 	// A clear explanation of the product or service provided.
 	@Column(name = "lineitem_description", nullable = false)
 	@NotBlank(message = "Description cannot be blank")
 	private String description;
-	
-	// Unique identifier assigned by the application itself to each individual line item
+
+	// Unique identifier assigned by the application itself to each individual line
+	// item
 	@Column(name = "line_item_id", nullable = false, unique = true)
 	@NotBlank(message = "Line item ID cannot be blank")
 	private String lineItemId;
-	
+
 	// How many units of that product or service were provided.
 	@Column(name = "quantity", nullable = false)
 	@NotNull(message = "Quantity cannot be blank")
 	private Double quantity;
-	
+
 	// The cost of one unit of that product or service.
 	@Column(name = "unit_amount", nullable = false)
 	@NotNull(message = "Unit amount cannot be blank")
 	private Double unitAmount;
-	
+
 	@Column(name = "account_code", nullable = false)
 	@NotBlank(message = "Account code cannot be blank")
 	private String accountCode;
-	
+
 	// This is automatically calculated
 	// total value for that specific line item -- LineAmount = Quantity * UnitAmount
 	@Column(name = "line_amount", nullable = false)
 	@NotNull(message = "Line amount cannot be blank")
 	private Double lineAmount;
-	
+
 	@Column(name = "tax_type", nullable = false)
 	@NotBlank(message = "taxType attribute cannot be blank.")
 	private String taxType;
-	
+
 	// auto-calculated
 	@Column(name = "tax_amount", nullable = false, precision = 7, scale = 2)
 	@NotNull(message = "Tax amount cannot be null")
 	private BigDecimal taxAmount;
-	
+
 	@Column(name = "discount_rate")
 	private Integer discountRate;
-	
+
 	@Column(nullable = false, precision = 7, scale = 2)
 	@NotNull(message = "total attribute cannot be null.")
 	private BigDecimal total;
-	
-	public static List<LineItemByAccountCode> getLineItemByAccountCode(Set<LineItem> lineItems) {
-		List<LineItemByAccountCode> response = new ArrayList<>();
-		for (LineItem lt: lineItems) {
+
+	public static List<LineItemByAccountCodeEmb> getLineItemByAccountCode(Set<LineItem> lineItems) {
+		List<LineItemByAccountCodeEmb> response = new ArrayList<>();
+		for (LineItem lt : lineItems) {
 			int total = Collections.frequency(lineItems, lt.getAccountCode());
 			List<LineItem> getLineItems = lineItems.stream()
 					.filter(dt -> dt.getAccountCode().equals(lt.getAccountCode()))
 					.toList();
-			
-			response.add(new LineItemByAccountCode(lt.getAccountCode(), total, getLineItems));
+
+			response.add(new LineItemByAccountCodeEmb(lt.getAccountCode(), total, getLineItems));
 		}
 		return response;
 	}
@@ -112,7 +114,8 @@ public class LineItem {
 			@NotBlank(message = "taxType attribute cannot be blank.") String taxType,
 			@NotNull(message = "Tax amount cannot be null") BigDecimal taxAmount, Integer discountRate,
 			@NotNull(message = "total attribute cannot be null.") BigDecimal total) {
-		this(invoice, description, lineItemId, quantity, unitAmount, accountCode, lineAmount, taxType, taxAmount, discountRate, total);
+		this(invoice, description, lineItemId, quantity, unitAmount, accountCode, lineAmount, taxType, taxAmount,
+				discountRate, total);
 		this.id = id;
 	}
 
@@ -231,5 +234,4 @@ public class LineItem {
 		this.total = total;
 	}
 
-	
 }

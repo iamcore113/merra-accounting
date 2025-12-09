@@ -17,33 +17,34 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Embeddable
-public class OrganizationUserInvites {
-	
+public class OrganizationUserInvitesEmb {
+
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "invitation_for", nullable = false)
 	@NotNull(message = "InvitationFor field cannot be null.")
 	private UserAccount invitationFor;
-	
+
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "invitation_by", nullable = false)
 	@NotNull(message = "InvitationBy field cannot be null.")
 	private UserAccount invitationBy;
-	
+
 	@Column(name = "invitation_role", nullable = false)
 	@NotBlank(message = "invitationRole field cannot be null")
 	private String invitationRole;
-	
+
 	@Column(name = "invite_date", nullable = false)
 	@DateTimeFormat(iso = ISO.DATE)
 	private LocalDate inviteDate = LocalDate.now();
-	
+
 	@Column(name = "invitation_status", nullable = false)
 	private String invitationStatus = OrganizationConstants.INVITATION_STATUS_PENDING;
 
-	public OrganizationUserInvites() {
+	public OrganizationUserInvitesEmb() {
 	}
 
-	public OrganizationUserInvites(@NotNull(message = "InvitationFor field cannot be null.") UserAccount invitationFor,
+	public OrganizationUserInvitesEmb(
+			@NotNull(message = "InvitationFor field cannot be null.") UserAccount invitationFor,
 			@NotNull(message = "InvitationBy field cannot be null.") UserAccount invitationBy,
 			@NotBlank(message = "invitationRole field cannot be null") String invitationRole, LocalDate inviteDate,
 			String invitationStatus) {
@@ -94,5 +95,4 @@ public class OrganizationUserInvites {
 		this.invitationStatus = invitationStatus;
 	}
 
-	
 }

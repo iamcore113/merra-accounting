@@ -8,7 +8,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.merra.entities.embedded.InvoiceActions;
+import org.merra.entities.embedded.InvoiceActionsEmb;
 import org.merra.repositories.InvoiceRepository;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -91,7 +91,7 @@ public class Invoice {
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "actions", nullable = false, columnDefinition = "jsonb")
 	@NotNull(message = "actions attribute cannot be null.")
-	private InvoiceActions actions;
+	private InvoiceActionsEmb actions;
 
 	public void setLineAmountTypes(String lineAmountTypes) {
 		if (lineAmountTypes.isEmpty() || lineAmountTypes.isBlank()) {
@@ -124,7 +124,7 @@ public class Invoice {
 			@NotBlank(message = "Reference cannot be blank") String reference,
 			@NotNull(message = "subTotal cannot be null.") Double subTotal,
 			@NotNull(message = "grandTotal cannot be null.") BigDecimal grandTotal, BigDecimal totalTax,
-			@NotNull(message = "actions attribute cannot be null.") InvoiceActions actions) {
+			@NotNull(message = "actions attribute cannot be null.") InvoiceActionsEmb actions) {
 		this.organization = organization;
 		this.type = type;
 		this.contact = contact;
@@ -150,7 +150,7 @@ public class Invoice {
 			@NotBlank(message = "Reference cannot be blank") String reference,
 			@NotNull(message = "subTotal cannot be null.") Double subTotal,
 			@NotNull(message = "grandTotal cannot be null.") BigDecimal grandTotal, BigDecimal totalTax,
-			@NotNull(message = "actions attribute cannot be null.") InvoiceActions actions) {
+			@NotNull(message = "actions attribute cannot be null.") InvoiceActionsEmb actions) {
 
 		this(organization, type, contact, lineItems, lineAmountTypes, date, dueDate, status, reference, subTotal,
 				grandTotal, totalTax, actions);
@@ -250,11 +250,11 @@ public class Invoice {
 		this.totalTax = totalTax;
 	}
 
-	public InvoiceActions getActions() {
+	public InvoiceActionsEmb getActions() {
 		return actions;
 	}
 
-	public void setActions(InvoiceActions actions) {
+	public void setActions(InvoiceActionsEmb actions) {
 		this.actions = actions;
 	}
 

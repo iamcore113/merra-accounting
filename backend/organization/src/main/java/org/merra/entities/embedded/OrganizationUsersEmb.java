@@ -13,26 +13,26 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 
 @Embeddable
-public class OrganizationUsers {	
+public class OrganizationUsersEmb {
 	@ManyToOne(targetEntity = UserAccount.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinColumn(name = "user_id", nullable = false, unique = true)
 	private UserAccount userId;
-	
+
 	@NotBlank(message = "User role cannot be blank")
 	@Column(name = "user_role", nullable = false)
 	private String userRole;
-	
+
 	@Column(name = "user_joined", nullable = false)
 	private LocalDate userJoined = LocalDate.now();
-	
+
 	@Column(name = "organization_status", nullable = false)
 	@NotBlank(message = "organizationStatus cannpt be blank.")
 	private String organizationStatus;
 
-	public OrganizationUsers() {
+	public OrganizationUsersEmb() {
 	}
 
-	public OrganizationUsers(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole,
+	public OrganizationUsersEmb(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole,
 			LocalDate userJoined,
 			@NotBlank(message = "organizationStatus cannpt be blank.") String organizationStatus) {
 		this.userId = userId;
@@ -73,6 +73,4 @@ public class OrganizationUsers {
 		this.organizationStatus = organizationStatus;
 	}
 
-	
 }
-

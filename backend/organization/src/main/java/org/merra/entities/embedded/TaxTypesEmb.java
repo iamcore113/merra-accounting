@@ -6,32 +6,32 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-
-public class TaxTypes implements Serializable {/**
-	 * 
-	 */
+public class TaxTypesEmb implements Serializable {
+	/**
+	* 
+	*/
 	private static final long serialVersionUID = 1L;
-	
+
 	@NotBlank(message = "type atrribute cannot be blank.")
 	private String type;
-	
+
 	@NotNull(message = "rate attribute cannot be null.")
 	@Digits(integer = 4, fraction = 2)
 	private Double rate;
-	
+
 	@NotBlank(message = "name attribute cannot be blank.")
 	private String name;
-	
+
 	// VAT or GST
 	private String component;
-	
+
 	@NotNull(message = "systemDefined attribute cannot be null.")
 	private Boolean systemDefined;
 
-	public TaxTypes() {
+	public TaxTypesEmb() {
 	}
 
-	public TaxTypes(@NotBlank(message = "type atrribute cannot be blank.") String type,
+	public TaxTypesEmb(@NotBlank(message = "type atrribute cannot be blank.") String type,
 			@NotNull(message = "rate attribute cannot be null.") @Digits(integer = 4, fraction = 2) Double rate,
 			@NotBlank(message = "name attribute cannot be blank.") String name, String component,
 			@NotNull(message = "systemDefined attribute cannot be null.") Boolean systemDefined) {

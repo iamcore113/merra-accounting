@@ -8,7 +8,7 @@ import org.merra.entities.Organization;
 import org.merra.entities.OrganizationSettings;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.FinancialYearEmb;
-import org.merra.entities.embedded.InvoiceSettings;
+import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.entities.embedded.LineItemSettings;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
@@ -96,7 +96,7 @@ public class OrganizationService {
 		OrganizationSettings settings = new OrganizationSettings();
 		settings.setOrganization(org);
 
-		InvoiceSettings invoiceSettings = new InvoiceSettings();
+		InvoiceSettingsEmb invoiceSettings = new InvoiceSettingsEmb();
 		invoiceSettings.setStatus(InvoiceConstants.INVOICE_STATUS_DRAFT);
 		settings.setInvoiceSettings(invoiceSettings);
 

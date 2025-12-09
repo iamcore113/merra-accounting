@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Embeddable
-public class AccountDetail implements Serializable {
+public class AccountDetailEmb implements Serializable {
 	/**
 	 * 
 	 */
@@ -16,13 +16,13 @@ public class AccountDetail implements Serializable {
 
 	@NotNull(message = "accountId attribute cannot be null.")
 	private UUID accountId;
-	
+
 	@NotBlank(message = "accountCode attribute cannot be blank.")
 	private String accountCode;
-	
+
 	@NotBlank(message = "accountType attribute cannot be blank.")
 	private String accountType;
-	
+
 	private String accountName;
 
 	public static long getSerialversionuid() {
@@ -61,7 +61,7 @@ public class AccountDetail implements Serializable {
 		this.accountName = accountName;
 	}
 
-	public AccountDetail(@NotNull(message = "accountId attribute cannot be null.") UUID accountId,
+	public AccountDetailEmb(@NotNull(message = "accountId attribute cannot be null.") UUID accountId,
 			@NotBlank(message = "accountCode attribute cannot be blank.") String accountCode,
 			@NotBlank(message = "accountType attribute cannot be blank.") String accountType, String accountName) {
 		this.accountId = accountId;
@@ -70,8 +70,7 @@ public class AccountDetail implements Serializable {
 		this.accountName = accountName;
 	}
 
-	public AccountDetail() {
+	public AccountDetailEmb() {
 	}
 
-	
 }

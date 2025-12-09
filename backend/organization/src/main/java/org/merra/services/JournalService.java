@@ -12,9 +12,9 @@ import org.merra.entities.Journal;
 import org.merra.entities.JournalLine;
 import org.merra.entities.LineItem;
 import org.merra.entities.Organization;
-import org.merra.entities.embedded.AccountDetail;
+import org.merra.entities.embedded.AccountDetailEmb;
 import org.merra.entities.embedded.JournalTotalAmountEntry;
-import org.merra.entities.embedded.LineItemByAccountCode;
+import org.merra.entities.embedded.LineItemByAccountCodeEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.JournalRepository;
@@ -45,7 +45,7 @@ public class JournalService {
 			@NotEmpty Set<LineItem> lineItems,
 			Organization org,
 			@NotNull Invoice findInvoiceById) {
-		List<LineItemByAccountCode> getLineItemByAccountCode = LineItem.getLineItemByAccountCode(lineItems);
+		List<LineItemByAccountCodeEmb> getLineItemByAccountCode = LineItem.getLineItemByAccountCode(lineItems);
 
 		Journal createJournal = new Journal();
 		// set the journal date
@@ -89,7 +89,7 @@ public class JournalService {
 			journalLines.add(taxJournalLine);
 		}
 
-		for (LineItemByAccountCode lt : getLineItemByAccountCode) {
+		for (LineItemByAccountCodeEmb lt : getLineItemByAccountCode) {
 			Double totalLineAmount = null;
 			Account getAccountCode = accountRepository
 					.findByAccountCodeAndOrganizationId(lt.getAccountCode(), org.getId())
@@ -147,7 +147,7 @@ public class JournalService {
 		JournalLine jl = new JournalLine();
 
 		jl.setJournal(journal);
-		jl.setAccountDetails(new AccountDetail(
+		jl.setAccountDetails(new AccountDetailEmb(
 				accountCode.getAccountId(),
 				accountCode.getCode(),
 				accountCode.getAccountType().getName(),
