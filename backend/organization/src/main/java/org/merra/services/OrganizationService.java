@@ -19,6 +19,7 @@ import org.merra.repositories.OrganizationSettingsRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -78,6 +79,7 @@ public class OrganizationService {
 		return findOrganizationOpt.get();
 	}
 
+	@Cacheable("organizationMetadata")
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
 		// Get organization types
 		Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
