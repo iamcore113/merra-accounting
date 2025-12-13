@@ -1,14 +1,19 @@
 package org.merra.dto;
 
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
+
+import org.merra.enums.AddressEn;
+import org.merra.enums.PaymentTermTypes;
+import org.merra.enums.PaymentTermsEn;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record OrganizationMetaDataResponse(
                 Set<OrganizationTypesMetaData> organizationTypes,
-                String[] addresses,
+                EnumSet<AddressEn> addresses,
                 PaymentTermsMetaData paymentTerms
 
 ) {
@@ -18,7 +23,7 @@ public record OrganizationMetaDataResponse(
         }
 
         public record PaymentTermsMetaData(
-                        String[] subElements,
-                        String[] types) {
+                        EnumSet<PaymentTermsEn> subElements,
+                        EnumSet<PaymentTermTypes> types) {
         }
 }

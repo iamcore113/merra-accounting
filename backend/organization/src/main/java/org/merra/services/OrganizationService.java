@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.EnumSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -85,20 +87,10 @@ public class OrganizationService {
 						type.getId(),
 						type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
 				.collect(java.util.stream.Collectors.toSet());
-		final String[] addresses = {
-			AddressEn.ADDRESS1.name(),
-			AddressEn.ADDRESS2.name(),
-			AddressEn.ADDRESS3.name(),
-			AddressEn.ADDRESS4.name()
-		}; // Placeholder for addresses
+		final EnumSet<AddressEn> addresses = EnumSet.allOf(AddressEn.class);
 		// For Payment terms
-		final String[] subElements = { PaymentTermsEn.BILLS.name(), PaymentTermsEn.SALES.name() };
-		final String[] types = {
-			PaymentTermTypes.DAYSAFTERBILLDATE.name(),
-			PaymentTermTypes.DAYSAFTERBILLMONTH.name(),
-			PaymentTermTypes.OFCURRENTMONTH.name(),
-			PaymentTermTypes.OFFOLLOWINGMONTH.name()
-		};
+		final EnumSet<PaymentTermsEn> subElements = EnumSet.allOf(PaymentTermsEn.class);
+		final EnumSet<PaymentTermTypes> types = EnumSet.allOf(PaymentTermTypes.class);
 		return new OrganizationMetaDataResponse(organizationTypes, addresses,
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}
