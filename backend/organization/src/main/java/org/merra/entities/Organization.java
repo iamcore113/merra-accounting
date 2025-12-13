@@ -15,7 +15,7 @@ import org.merra.entities.embedded.OrganizationNameUpdate;
 import org.merra.entities.embedded.OrganizationUserInvitesEmb;
 import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
-import org.merra.enums.Status;
+import org.merra.enums.StatusEn;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -137,13 +137,13 @@ public class Organization {
 
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private Status status = Status.ACTIVE_ACCOUNT;
+	private StatusEn status = StatusEn.ACTIVE_ACCOUNT;
 
-	public void setStatus(Status status) {
+	public void setStatus(StatusEn status) {
 		if (status != null) {
 			this.status = status;
 		} else {
-			this.status = Status.ACTIVE_ACCOUNT;
+			this.status = StatusEn.ACTIVE_ACCOUNT;
 		}
 	}
 
@@ -197,7 +197,7 @@ public class Organization {
 			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
 			Set<ExternalLinksEmb> externalLinks,
 			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
-			CreatedDate createdDate, Boolean activeSubscription, Status status) {
+			CreatedDate createdDate, Boolean activeSubscription, StatusEn status) {
 		this(profileImage, nameDetailsUpdate, organizationUsers, organizationUserInvites, displayName, legalName,
 				organizationDescription, country, defaultCurrency, organizationType, phoneNo, email, website, timeZone,
 				financialYear, address, externalLinks, paymentTerms, createdDate, activeSubscription, status);
@@ -219,7 +219,7 @@ public class Organization {
 			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
 			Set<ExternalLinksEmb> externalLinks,
 			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
-			CreatedDate createdDate, Boolean activeSubscription, Status status) {
+			CreatedDate createdDate, Boolean activeSubscription, StatusEn status) {
 		this.profileImage = profileImage;
 		this.nameDetailsUpdate = nameDetailsUpdate;
 		this.organizationUsers = organizationUsers;
@@ -403,7 +403,7 @@ public class Organization {
 		return activeSubscription;
 	}
 
-	public Status getStatus() {
+	public StatusEn getStatus() {
 		return status;
 	}
 

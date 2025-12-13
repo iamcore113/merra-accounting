@@ -10,6 +10,9 @@ import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.entities.embedded.LineItemSettings;
+import org.merra.enums.AddressEn;
+import org.merra.enums.PaymentTermTypes;
+import org.merra.enums.PaymentTermsEn;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationSettingsRepository;
@@ -82,10 +85,20 @@ public class OrganizationService {
 						type.getId(),
 						type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
 				.collect(java.util.stream.Collectors.toSet());
-		final String[] addresses = { "address1", "address2", "address3", "address4" }; // Placeholder for addresses
+		final String[] addresses = {
+			AddressEn.ADDRESS1.name(),
+			AddressEn.ADDRESS2.name(),
+			AddressEn.ADDRESS3.name(),
+			AddressEn.ADDRESS4.name()
+		}; // Placeholder for addresses
 		// For Payment terms
-		final String[] subElements = { "BILLS", "SALES" };
-		final String[] types = { "DAYSAFTERBILLDATE", "DAYSAFTERBILLMONTH", "OFCURRENTMONTH", "OFFOLLOWINGMONTH" };
+		final String[] subElements = { PaymentTermsEn.BILLS.name(), PaymentTermsEn.SALES.name() };
+		final String[] types = {
+			PaymentTermTypes.DAYSAFTERBILLDATE.name(),
+			PaymentTermTypes.DAYSAFTERBILLMONTH.name(),
+			PaymentTermTypes.OFCURRENTMONTH.name(),
+			PaymentTermTypes.OFFOLLOWINGMONTH.name()
+		};
 		return new OrganizationMetaDataResponse(organizationTypes, addresses,
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}
