@@ -84,8 +84,8 @@ public class OrganizationService {
 				.collect(java.util.stream.Collectors.toSet());
 		final String[] addresses = { "address1", "address2", "address3", "address4" }; // Placeholder for addresses
 		// For Payment terms
-		String[] subElements = { "BILLS", "SALES" };
-		String[] types = { "DAYSAFTERBILLDATE", "DAYSAFTERBILLMONTH", "OFCURRENTMONTH", "OFFOLLOWINGMONTH" };
+		final String[] subElements = { "BILLS", "SALES" };
+		final String[] types = { "DAYSAFTERBILLDATE", "DAYSAFTERBILLMONTH", "OFCURRENTMONTH", "OFFOLLOWINGMONTH" };
 		return new OrganizationMetaDataResponse(organizationTypes, addresses,
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}

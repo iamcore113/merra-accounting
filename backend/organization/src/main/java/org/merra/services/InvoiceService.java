@@ -364,7 +364,7 @@ public class InvoiceService {
 			@NotNull String status) {
 		Invoice findInvoiceById = invoiceRepository.findById(invoiceId)
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE));
-		String formerStatus = findInvoiceById.getStatus();
+		final String formerStatus = findInvoiceById.getStatus();
 
 		findInvoiceById.setStatus(status);
 		invoiceRepository.save(findInvoiceById);

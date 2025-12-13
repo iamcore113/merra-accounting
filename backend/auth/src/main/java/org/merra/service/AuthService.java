@@ -21,7 +21,6 @@ import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -82,7 +81,7 @@ public class AuthService {
   }
 
   public VerifiedAccountResponse verifyEmail(String tokenParam) {
-    String email = jwtUtils.extractUsername(tokenParam);
+    final String email = jwtUtils.extractUsername(tokenParam);
     if (email == null) {
       throw new BadCredentialsException("Token email not found.");
     }

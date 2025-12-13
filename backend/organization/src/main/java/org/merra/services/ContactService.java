@@ -38,7 +38,7 @@ public class ContactService {
 	public ContactResponse createSimpleContact(@NotNull SimpleContactRequest request) {
 		Organization getOrganization = organizationRepository.findById(request.organizationId())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION));
-		String contactName = request.name();
+		final String contactName = request.name();
 		Contact obj = new Contact(contactName, getOrganization);
 		Contact newContact = contactRepository.save(obj);
 		

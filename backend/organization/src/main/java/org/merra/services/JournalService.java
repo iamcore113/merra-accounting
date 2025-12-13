@@ -55,7 +55,7 @@ public class JournalService {
 		 * Get the accounts receivable or debit account
 		 * if it is a customer invoice
 		 */
-		String CUSTOMER_INVOICE = InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE;
+		final String CUSTOMER_INVOICE = InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE;
 		Optional<JournalLine> accountReceivableJournalEntryOpt = Optional.empty();
 		// If invoice is a customer invoice
 		// Create an entry for account receivable
@@ -153,7 +153,7 @@ public class JournalService {
 				accountCode.getAccountType().getName(),
 				accountCode.getAccountName()));
 		jl.setDescription(accountCode.getDescription());
-		String category = accountCode.getCategory().getName();
+		final String category = accountCode.getCategory().getName();
 
 		/**
 		 * Check account code category type (debit or credit)
