@@ -66,13 +66,10 @@ public class UserAccountService {
 	 *              if it can't find one.
 	 */
 	public UserAccount getAuthenticatedUser() {
-		Optional<UserAccount> findAuthUser = userRepository.findAuthenticatedUser();
+		UserAccount findAuthUser = userRepository.findAuthenticatedUser()
+			.orElseThrow(() -> new NoSuchElementException("Authenticated user not found in the database."));
 
-		if (findAuthUser.isEmpty()) {
-			throw new NoSuchElementException("Authenticated user not found in the database.");
-		}
-
-		return findAuthUser.get();
+		return findAuthUser;
 	}
 
 	public String retrieveRole(String role) {
