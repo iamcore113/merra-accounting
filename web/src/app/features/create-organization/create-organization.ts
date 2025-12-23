@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -8,6 +8,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { MatGridListModule } from '@angular/material/grid-list';
 import { OrganizationService } from '../../core/services/organization/organization.service';
 import { OrganizationMetadata } from '../../core/utils/types';
+import { ActivatedRoute } from '@angular/router';
 
 
 interface OrganizationType {
@@ -24,27 +25,28 @@ interface OrganizationType {
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.css',
 })
-export class CreateOrganization {
+export class CreateOrganization implements OnInit {
+  private route = inject(ActivatedRoute);
+  private org = inject(OrganizationService);
+
   isDisabled = signal<boolean>(false);
+  readonly userEmail: string = this.route.snapshot.params['email'] || '';
   metadata: OrganizationMetadata = {} as OrganizationMetadata;
   organizationTypes: OrganizationType[] = [] as OrganizationType[];
   private _formBuilder = inject(FormBuilder);
 
-  constructor(private org: OrganizationService) {
+  ngOnInit(): void {
     this.org.getMetadata().subscribe((res) => {
       if ('data' in res) {
         this.metadata = res.data as OrganizationMetadata;
         this.organizationTypes = this.metadata.organizationTypes;
       }
-
-      console.log(this.metadata);
-      console.log(this.organizationTypes);
     });
   }
 
   organizationForm = this._formBuilder.group({
     name: ['', Validators.required],
-    email: ['', Validators.required, Validators.email],
+    email: [this.userEmail, [Validators.required, Validators.email]],
     type: ['', Validators.required],
     description: [''],
     country: ['', Validators.required],

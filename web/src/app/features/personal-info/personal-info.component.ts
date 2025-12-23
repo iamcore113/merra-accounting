@@ -34,10 +34,8 @@ export class PersonalInfoComponent implements OnInit {
   private _formBuilder = inject(FormBuilder);
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private authService: AuthService) {
-    this.activatedRoute.params.subscribe((params) => {
-      this.userEmail.set(params['email']);
-    });
   }
+
   private userEmail = signal<string>('');
   personalInfoForm = this._formBuilder.group({
     firstName: ['', Validators.required],
@@ -94,10 +92,13 @@ export class PersonalInfoComponent implements OnInit {
     {value: 'singapore', viewValue: 'Singapore'},
   ];
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.activatedRoute.params.subscribe((params) => {
+      this.userEmail.set(params['email']);
+    });
   }
 
-  public handleSkip() {
+  handleSkip() {
     this.router.navigate(['/account/organization/create/', this.userEmail()]);
   }
 

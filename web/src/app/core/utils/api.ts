@@ -1,6 +1,6 @@
 export const BASE_API_URL = "http://localhost:8080/";
 export const VERSION_1 = "api/v1/";
-export const API_AUTH = "api/auth/";
+export const API_AUTH = `${VERSION_1}auth/`;
 export const API_VERSION_1 = `${BASE_API_URL}${VERSION_1}`;
 export const AUTHENTICATION_API_VER1 = `${BASE_API_URL}${API_AUTH}`;
 
