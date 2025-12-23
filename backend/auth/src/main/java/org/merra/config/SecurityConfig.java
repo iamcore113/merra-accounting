@@ -18,9 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -75,19 +72,26 @@ public class SecurityConfig {
      * 
      * @return - {@linkplain UrlBasedCorsConfigurationSource} object.
      */
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200")
-                        .allowedHeaders("*")
-                        .allowedMethods("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+    // @Bean
+    // WebMvcConfigurer corsConfigurer() {
+    //     return new WebMvcConfigurer() {
+    //         @Override
+    //         public void addCorsMappings(CorsRegistry registry) {
+    //             registry.addMapping("/**")
+    //                     .allowedOrigins("http://localhost:4200")
+    //                     .allowedHeaders("*")
+    //                     .allowedMethods("*")
+    //                     .allowCredentials(true);
+    //         }
+
+    //         @Override
+    //         public void configureApiVersioning(ApiVersionConfigurer configurer) {
+    //             configurer.addSupportedVersions("1.0", "2.0")
+    //                         .setDefaultVersion("1.0")
+    //                         .usePathSegment(2);
+    //         }
+    //     };
+    // }
 
     /**
      * This security filter chain method is used for the apis.
@@ -111,9 +115,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",
                                 "/auth/**",
+                                "/api/v1/auth/**",
                                 "/api/v1/metadata/**",
                                 "/api/v1/account/user/**",
-                                "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**")

@@ -46,7 +46,7 @@ public class OrganizationController {
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
-	@GetMapping("select/organizations/{userId}")
+	@GetMapping(value = "select/organizations/{userId}")
 	public ResponseEntity<Set<OrganziationSelectionResponse>> getOrganizationsByUserId(
 			@PathVariable("userId") UUID userId) {
 		Set<OrganziationSelectionResponse> response = organizationService.getUserOrganizations(userId);

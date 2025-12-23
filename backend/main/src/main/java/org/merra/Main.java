@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@EnableJpaRepositories(basePackages = { "org.merra" })
-@EntityScan(basePackages = { "org.merra" })
-@SpringBootApplication(scanBasePackages = { "org.merra" })
+@EnableJpaRepositories(basePackages="org.merra")
+@EntityScan(basePackages="org.merra")
+@SpringBootApplication(scanBasePackages="org.merra")
 @RestController
 @RequestMapping
 public class Main {

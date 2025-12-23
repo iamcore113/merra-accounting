@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/auth/")
+@RequestMapping(value = "api/v1/auth/")
 public class AuthController {
     private final AuthService authService;
 
@@ -31,7 +31,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @GetMapping("req/signup/verify")
+    @GetMapping(value = "req/signup/verify")
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
         final VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
         final ApiResponse apiRes = new ApiResponse(
@@ -55,7 +55,7 @@ public class AuthController {
         return new ResponseEntity<>(tokens, HttpStatus.OK);
     }
 
-    @PostMapping("signin")
+    @PostMapping(value = "signin")
     public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
         final AuthResponse res = authService.login(loginRequest);
         return ResponseEntity.ok(res);
