@@ -20,5 +20,4 @@ public record AccountResponse(
 		LocalDate updatedDate,
 		boolean addToWatchList
 ) {
-
 }

@@ -79,7 +79,13 @@ export type OrganizationMetadata = {
 
 export type FillUserPersonalInformation = {
   email: string;
-firstName: string;
+  firstName: string;
   lastName: string;
   country: string;
+};
+
+export type CountriesList = {
+  name: string;
+  cca2: string;
+  currency: string;
 };

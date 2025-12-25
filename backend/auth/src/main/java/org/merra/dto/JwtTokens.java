@@ -1,11 +1,16 @@
 package org.merra.dto;
-
-import jakarta.validation.constraints.NotBlank;
-
 public record JwtTokens(
-		@NotBlank(message = "accessToken component cannot be blank.")
 		String accessToken,
-		@NotBlank(message = "refreshToken component cannot be blank.")
 		String refreshToken
-) {}
+) {
+	public JwtTokens {
+		if (accessToken == null || accessToken.isBlank()) {
+			throw new IllegalArgumentException("accessToken component cannot be blank.");
+		}
+
+		if (refreshToken == null || refreshToken.isBlank()) {
+			throw new IllegalArgumentException("refreshToken component cannot be blank.");
+		}
+	}
+}
 

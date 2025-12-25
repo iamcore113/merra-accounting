@@ -1,5 +1,7 @@
 package org.merra.service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -7,11 +9,11 @@ import java.util.UUID;
 
 import org.merra.config.JwtUtils;
 import org.merra.dto.AuthResponse;
+import org.merra.dto.CreateAccountRequest;
+import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
-import org.merra.dto.CreateAccountRequest;
-import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.TokenRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
@@ -21,6 +23,7 @@ import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,13 +37,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.InvalidUrlException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
-
-import java.net.URL;
 
 @Service
 public class AuthService {
@@ -173,7 +176,7 @@ public class AuthService {
       helper.setText(content, true);
       mailSender.send(mimeMessage);
 
-    } catch (Exception e) {
+    } catch (MessagingException | MalformedURLException | MailException | InvalidUrlException e) {
       System.err.println("Failed to send email: " + e.getMessage());
     }
   }

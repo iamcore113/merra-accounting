@@ -54,7 +54,11 @@
       <div class="form-group">
         <mat-form-field class="full-width-select">
           <mat-label>Where are you located?</mat-label>
-          <mat-select formControlName="country"> </mat-select>
+          <mat-select formControlName="country" required>
+            @for (country of countries; track country.cca2) {
+            <mat-option [value]="country.cca2">{{ country.name }} ({{country.currency}})</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
       </div>
       <div class="form-group">
@@ -68,6 +72,32 @@
             required
           />
         </mat-form-field>
+      </div>
+      <div>
+        <div class="form-group">
+          <mat-form-field class="mat-form">
+            <mat-label>Financial Year End Month</mat-label>
+            <input
+              type="number"
+              matInput
+              formControlName="yearEndMonth"
+              placeholder=""
+              required
+            />
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field class="mat-form">
+            <mat-label>Financial Year End Day</mat-label>
+            <input
+              type="number"
+              matInput
+              formControlName="yearEndDay"
+              placeholder=""
+              required
+            />
+          </mat-form-field>
+        </div>
       </div>
       <div class="form-group">
         <mat-form-field class="mat-form">
