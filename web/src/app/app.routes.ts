@@ -11,11 +11,28 @@ import { TokenEmailNotificationComponent } from './features/token-email-notifica
 import { VerifyTokenComponent } from './features/verify-token/verify-token.component';
 import { SigninComponent } from './features/auth/signin/signin.component';
 import { CreateOrganization } from './features/create-organization/create-organization';
+import { authGuard } from './core/guards/auth/auth-guard';
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'home',
     component: LandingComponent
+  },
+  {
+    path: '',
+    component: AdminMain,
+    canActivate: [authGuard],
+    providers: [
+      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
+      OrganizationService
+    ],
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./features/main-dashboard/main-dashboard').then(m => m.MainDashboard),
+        title: 'Dashboard - MERRA'
+      }
+    ]
   },
   {
     path: 'account/signin',
@@ -45,22 +62,6 @@ export const routes: Routes = [
     path:'account/organization/create/:email',
     component: CreateOrganization,
     title: 'Create Your Organization - MERRA'
-  },
-  {
-    path: 'admin',
-    component: AdminMain,
-    title: 'Admin - MERRA',
-    providers: [
-      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
-      OrganizationService
-    ],
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./features/main-dashboard/main-dashboard').then(m => m.MainDashboard),
-        title: 'Dashboard - MERRA'
-      }
-    ]
   },
   {
     path: '**',

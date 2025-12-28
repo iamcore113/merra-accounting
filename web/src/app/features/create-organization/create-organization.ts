@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { OrganizationService } from '../../core/services/organization/organization.service';
-import { OrganizationMetadata, CountriesList } from '../../core/utils/types';
+import { OrganizationMetadata, CreateOrganizationPayload, CountriesList } from '../../core/utils/types';
 import { ActivatedRoute } from '@angular/router';
 import { CommonsService } from '../../core/services/commons/commons.service';
 
@@ -85,7 +85,7 @@ export class CreateOrganization implements OnInit {
       yearEndDay: Number(intputValues.yearEndDay),
       yearEndMonth: Number(intputValues.yearEndMonth),
     };
-    const formValue = {
+    const formValue: CreateOrganizationPayload = {
       displayName: intputValues.name || '',
       email: intputValues.email || '',
       type: intputValues.type || '',
@@ -93,6 +93,17 @@ export class CreateOrganization implements OnInit {
       currency: intputValues.currency || '',
       financialYear: financialYear,
     };
-    console.log(this.organizationForm.value);
+
+    this.org.createOrganization(formValue).subscribe({
+      next: (res: any) => {
+        console.log('Organization created successfully:', res);
+      },
+      error: (err) => {
+        console.error('Error creating organization:', err);
+      },
+      complete: () => {
+        this.isDisabled.set(false);
+      }
+    });
   }
 }

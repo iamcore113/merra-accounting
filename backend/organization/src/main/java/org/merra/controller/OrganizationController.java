@@ -2,6 +2,7 @@ package org.merra.controller;
 
 import java.util.Set;
 import java.util.UUID;
+
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
@@ -54,7 +55,7 @@ public class OrganizationController {
 	}
 
 	@Operation(summary = "create new organization")
-	@PostMapping(path = "new")
+	@PostMapping("create")
 	public ResponseEntity<ApiResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
 		ApiResponse response = new ApiResponse(
 				"Organization object found successfully.",

@@ -8,6 +8,7 @@ export const AUTHENTICATION_API_VER1 = `${BASE_API_URL}${API_AUTH}`;
 // Metadatas
 export const METADATA_ENDPOINT_VER1 = `${API_VERSION_1}metadata/`;
 export const META_DATA_ORGANIZATION = 'organization/';
+export const CREATE_NEW_ORGANIZATION = `${API_VERSION_1}business/organization/create`;
 // authentications
 export const AUTH_SIGNIN = "signin";
 export const AUTH_SIGNUP = "signup";

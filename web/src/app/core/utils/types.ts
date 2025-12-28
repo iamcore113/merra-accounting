@@ -62,7 +62,7 @@ export type EmailVerified = {
   token: string;
 };
 
-export type CreateOrganization = {
+export type CreateOrganizationPayload = {
   displayName: string;
   email: string;
   type: string; // uuid type

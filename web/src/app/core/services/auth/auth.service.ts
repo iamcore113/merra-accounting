@@ -55,4 +55,9 @@ export class AuthService {
   userPersonalInformation(res: FillUserPersonalInformation): Observable<Config> {
     return this._http.post<Config>(this.USER_PERSONAL_INFO_URL, res);
   }
+
+  isAuthenticated(): boolean {
+    const token = this.localStorageService.getItem('auth_token');
+    return !!token;
+  }
 }
