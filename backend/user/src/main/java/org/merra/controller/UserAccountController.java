@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.validation.Valid;
 
 
@@ -21,7 +22,8 @@ public class UserAccountController {
 		this.userAccountService = userAccountService;
 	}
 
-	@PostMapping("fill/personal-information")
+	/* Complete profile endpoint */
+	@PostMapping("complete/profile")
 	public ResponseEntity<ApiResponse> userPersonalInformation(@Valid @RequestBody UserPersonalInformationRequest request) {
 		var resp = userAccountService.fillUserAccountInfo(request);
 		ApiResponse response = new ApiResponse(

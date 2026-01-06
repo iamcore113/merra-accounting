@@ -3,6 +3,7 @@ package org.merra.service;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import org.merra.dto.TokenRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
 import org.merra.entities.UserAccount;
+import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
@@ -53,10 +55,16 @@ public class AuthService {
   private int refreshTokenExpiration;
   @Value("${jwt.email.verification-duration}")
   private int verificationTokenDuration;
+  @Value("${jwt.access.limited}")
+  private int limitedAccessTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
   private String webUrl;
+
+  private static final String USER_PENDING = UserAccountStatusEn.PENDING.toString();
+  private static final String USER_NONE = UserAccountStatusEn.NONE.toString();
+  private static final String USER_ADMIN = UserAccountStatusEn.ADMIN.toString();
 
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
@@ -94,13 +102,17 @@ public class AuthService {
     if (!Objects.equals(accountVerificationToken, tokenParam)) {
       throw new BadCredentialsException("Invalid token.");
     }
+
+    String limitedAccessToken = null;
+
     if (Objects.equals(findAccount.getVerificationToken(), tokenParam)) {
       findAccount.setVerificationToken(null);
       findAccount.setIsEnabled(true);
       userRepository.save(findAccount);
+      limitedAccessToken = jwtUtils.generateToken(findAccount.getEmail(), Map.of("role", USER_PENDING), limitedAccessTokenDuration, false);
     }
 
-    return new VerifiedAccountResponse(true, findAccount.getEmail());
+    return new VerifiedAccountResponse(true, findAccount.getEmail(), limitedAccessToken);
   }
 
   public void sendVerificationEmail(String email, String verToken) {
@@ -206,8 +218,9 @@ public class AuthService {
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
 
-    final String accessToken = jwtUtils.generateToken(getUser, forAccessToken, false);
-    final String refreshToken = jwtUtils.generateToken(getUser, refreshTokenExpiration, true);
+    final Map<String, Object> claims = Map.of("role", getUser.getRoles());
+    final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);
+    final String refreshToken = jwtUtils.generateToken(getUser.getEmail(), claims, refreshTokenExpiration, true);
     List<String> roles = getUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
     return new AuthResponse(
@@ -227,7 +240,7 @@ public class AuthService {
       } else {
         var user = findUserEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user, verificationTokenDuration, false);
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
         userRepository.save(user);
@@ -240,7 +253,7 @@ public class AuthService {
     final String encodedPassword = passwordEncoder.encode(passwordReq);
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder, verificationTokenDuration, false);
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
     sendVerificationEmail(request.email(), verificationEmailToken);
@@ -268,7 +281,7 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user, verificationTokenDuration, false);
+    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
     sendVerificationEmail(user.getEmail(), newVerificationToken);
@@ -285,8 +298,8 @@ public class AuthService {
           AuthConstantResponses.INVALID_REFRESH_TOKEN);
     }
 
-    final String accessToken = jwtUtils.generateToken(userDetails, forAccessToken, false);
-    final String refreshToken = jwtUtils.generateToken(userDetails, refreshTokenExpiration, true);
+    final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", USER_NONE), forAccessToken, false);
+    final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", USER_NONE), refreshTokenExpiration, true);
     return new JwtTokens(accessToken, refreshToken);
   }
 

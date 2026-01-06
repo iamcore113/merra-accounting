@@ -2,6 +2,7 @@ package org.merra.config;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -31,15 +32,20 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public String generateToken(UserDetails userDetails, int tokenDuration, boolean isRefreshToken) {
-        Date expirationDate = null;
+    public String extractRole(String token) {
+        final Claims claims = extractAllClaims(token);
+        return claims.get("role", String.class);
+    }
+
+    public String generateToken(String userEmail, Map<String, Object> claims, int tokenDuration, boolean isRefreshToken) {
+        final Date expirationDate;
 
         if (isRefreshToken) {
             expirationDate = generateRefreshTokenExpirationDate(tokenDuration);
         } else {
             expirationDate = new Date(System.currentTimeMillis() + tokenDuration);
         }
-        return tokenBuilder(expirationDate, userDetails);
+        return tokenBuilder(expirationDate, userEmail, claims);
     }
 
     private Date generateRefreshTokenExpirationDate(int tokenDuration) {
@@ -48,14 +54,13 @@ public class JwtUtils {
         cal.add(Calendar.DAY_OF_MONTH, tokenDuration); // add 5 days
         return cal.getTime();
     }
-
-    private String tokenBuilder(Date exDate, UserDetails userDetails) {
+    private String tokenBuilder(Date exDate, String userEmail, Map<String, Object> claims) {
         var algo = Jwts.SIG.HS256;
 
         return Jwts
                 .builder()
-                .claims(null)
-                .subject(userDetails.getUsername())
+                .claims(claims)
+                .subject(userEmail)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(exDate)
                 .signWith(getSignInKey(), algo)
