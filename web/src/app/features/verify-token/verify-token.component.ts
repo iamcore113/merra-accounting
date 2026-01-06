@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { VerifiedAccountResponse } from '../../core/utils/types';
+import { LocalStorageService } from '../../core/services/localStorage/localStorage.service';
 
 @Component({
   selector: 'app-verify-token',
@@ -10,7 +11,7 @@ import { VerifiedAccountResponse } from '../../core/utils/types';
 })
 export class VerifyTokenComponent implements OnInit {
 
-  constructor(private router: Router, private route: ActivatedRoute, private http: AuthService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private http: AuthService, private localStorageService: LocalStorageService) { }
 
   ngOnInit() {
     let data: VerifiedAccountResponse;
@@ -24,6 +25,7 @@ export class VerifyTokenComponent implements OnInit {
         console.error(err);
       },
       complete: () => {
+        this.localStorageService.setItem('temp_token', data.temporaryAccessToken);
         this.router.navigate(['account/personal/info/', data.email]);
       }
     });

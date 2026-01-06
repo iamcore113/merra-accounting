@@ -56,6 +56,7 @@ export type VerificationResponse = {
 export type VerifiedAccountResponse = {
   isVerified: boolean;
   email: string;
+  temporaryAccessToken: string;
 };
 
 export type EmailVerified = {

@@ -16,7 +16,8 @@ import { authGuard } from './core/guards/auth/auth-guard';
 export const routes: Routes = [
   {
     path: 'home',
-    component: LandingComponent
+    component: LandingComponent,
+    title: 'MERRA - Manage. Report. Repeat.'
   },
   {
     path: '',
