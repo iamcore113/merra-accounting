@@ -1,5 +1,11 @@
 package org.merra.services;
 
+import java.util.EnumSet;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.OrganizationDetailsResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
@@ -10,13 +16,16 @@ import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.entities.embedded.LineItemSettings;
+import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
+import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationSettingsRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.UserAccountRepository;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
@@ -25,32 +34,31 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.EnumSet;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
 @Service
 public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationSettingsRepository organizationSettingsRepo;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final AccountService accountService;
+	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
-
+	private final UserAccountRepository userAccountRepository;
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
+			UserAccountService userAccountService,
 			OrganizationSettingsRepository organizationSettingsRepo,
 			OrganizationTypeRepository organizationTypeRepository,
 			AccountService accountService,
+			UserAccountRepository userAccountRepository,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
+		this.userAccountService = userAccountService;
 		this.organizationSettingsRepo = organizationSettingsRepo;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.organizationMapper = organizationMapper;
+		this.userAccountRepository = userAccountRepository;
 	}
 
 	/**
@@ -132,9 +140,17 @@ public class OrganizationService {
 		return organizationMapper.toOrganizationResponse(newOrganization);
 	}
 
-	public OrganizationDetailsResponse createNewOrganization(CreateOrganizationRequest req) {
+	public OrganizationDetailsResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
 		Organization org = getOrganizationObject(null); // New organization object
 
+		// Set organization user as MEMBER role
+		// Return the updated user account
+		var getUserAccount = userAccountService.setUserRole(userId, UserAccountStatusEn.MEMBER);
+		// Set the user as ADSIVOR role in the organization
+		OrganizationUsersEmb organizationUsersEmb = new OrganizationUsersEmb(getUserAccount, 
+			UserAccountStatusEn.ADVISOR.toString());	
+		org.setOrganizationUsers(Set.of(organizationUsersEmb));
+		
 		// FIXME: set a default profile image for organization
 		org.setProfileImage("sample_image_url");
 

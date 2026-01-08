@@ -9,6 +9,7 @@ import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
 import org.merra.entities.UserAccountSettings;
 import org.merra.enums.Roles;
+import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.UserMapper;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserAccountSettingsRepository;
@@ -104,5 +105,13 @@ public class UserAccountService {
 		userRepository.save(user);
 
 		return userMapper.toUserPersonalInformationResponse(user);
+	}
+
+	public UserAccount setUserRole(UUID userId, UserAccountStatusEn role) {
+		UserAccount getUserAccount = userRepository.findById(userId)
+				.orElseThrow(() -> new EntityNotFoundException("User entity " + userId + " not found."));
+
+		getUserAccount.setRoles(role.toString());
+		return userRepository.save(getUserAccount);
 	}
 }

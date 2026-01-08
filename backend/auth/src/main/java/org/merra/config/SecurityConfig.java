@@ -5,6 +5,8 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,21 +27,23 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
+    private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+    private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
+    private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
+    private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
+    private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
     private final AuthEntrypointJwt unAuthorizedHandler;
     private final CustomUserDetailsService customUserDetailsService;
-    private final MainTokenFilter mainTokenFilter;
-    private final TempTokenFilter tempTokenFilter;
+    private final TokenFilter tokenFilter;
 
     public SecurityConfig(
-            MainTokenFilter mainTokenFilter,
             AuthEntrypointJwt unAuthorizedHandler,
-            TempTokenFilter tempTokenFilter,
+            TokenFilter tokenFilter,
             CustomUserDetailsService customUserDetailsService) {
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.customUserDetailsService = customUserDetailsService;
-        this.mainTokenFilter = mainTokenFilter;
-        this.tempTokenFilter = tempTokenFilter;
+        this.tokenFilter = tokenFilter;
     }
 
     @Bean
@@ -82,18 +86,20 @@ public class SecurityConfig {
         configuration and added to the Security filter chain, otherwise it will never execute. 
     */
     @Bean
-    public FilterRegistrationBean<TempTokenFilter> registration(TempTokenFilter filter) {
-        FilterRegistrationBean<TempTokenFilter> registration = new FilterRegistrationBean<>(filter);
-        // This line is the magic: it tells Spring Boot NOT to add it to the main filter chain
-        registration.setEnabled(false); 
+    public FilterRegistrationBean<TokenFilter> registrationMain(TokenFilter filter) {
+        FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
         return registration;
     }
 
     @Bean
-    public FilterRegistrationBean<MainTokenFilter> registrationMain(MainTokenFilter filter) {
-        FilterRegistrationBean<MainTokenFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setEnabled(false);
-        return registration;
+    public static RoleHierarchy roleHierarchy() {
+        return RoleHierarchyImpl.withDefaultRolePrefix()
+            .role(ROLE_ADVISOR).implies(ROLE_STANDARD)
+            .role(ROLE_STANDARD).implies(ROLE_INVOICE_ONLY)
+            .role(ROLE_INVOICE_ONLY).implies(ROLE_READ_ONLY)
+            .role(ROLE_READ_ONLY).implies(ROLE_IDLE)
+            .build();
     }
 
     /**
@@ -119,7 +125,7 @@ public class SecurityConfig {
                             "/api/v1/metadata/**",
                             "/api/v1/account/user/**"
                         )
-                        .hasRole(UserAccountStatusEn.PENDING.toString())
+                        .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR)
                         .requestMatchers(
                                 "/",
                                 "/api/v1/auth/**",
@@ -132,8 +138,7 @@ public class SecurityConfig {
                 .exceptionHandling(
                         customizer -> customizer.authenticationEntryPoint(unAuthorizedHandler))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(tempTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(mainTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

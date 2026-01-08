@@ -62,9 +62,11 @@ public class AuthService {
   @Value("${app.frontend.url}")
   private String webUrl;
 
-  private static final String USER_PENDING = UserAccountStatusEn.PENDING.toString();
-  private static final String USER_NONE = UserAccountStatusEn.NONE.toString();
-  private static final String USER_ADMIN = UserAccountStatusEn.ADMIN.toString();
+    private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+    private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
+    private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
+    private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
+    private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
@@ -108,8 +110,9 @@ public class AuthService {
     if (Objects.equals(findAccount.getVerificationToken(), tokenParam)) {
       findAccount.setVerificationToken(null);
       findAccount.setIsEnabled(true);
+      findAccount.setRoles(ROLE_IDLE);
       userRepository.save(findAccount);
-      limitedAccessToken = jwtUtils.generateToken(findAccount.getEmail(), Map.of("role", USER_PENDING), limitedAccessTokenDuration, false);
+      limitedAccessToken = jwtUtils.generateToken(findAccount.getEmail(), Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
     }
 
     return new VerifiedAccountResponse(true, findAccount.getEmail(), limitedAccessToken);
@@ -240,7 +243,7 @@ public class AuthService {
       } else {
         var user = findUserEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
         userRepository.save(user);
@@ -253,7 +256,7 @@ public class AuthService {
     final String encodedPassword = passwordEncoder.encode(passwordReq);
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
     sendVerificationEmail(request.email(), verificationEmailToken);
@@ -281,7 +284,7 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", USER_NONE), verificationTokenDuration, false);
+    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
     sendVerificationEmail(user.getEmail(), newVerificationToken);
@@ -298,8 +301,8 @@ public class AuthService {
           AuthConstantResponses.INVALID_REFRESH_TOKEN);
     }
 
-    final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", USER_NONE), forAccessToken, false);
-    final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", USER_NONE), refreshTokenExpiration, true);
+    final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), forAccessToken, false);
+    final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), refreshTokenExpiration, true);
     return new JwtTokens(accessToken, refreshToken);
   }
 

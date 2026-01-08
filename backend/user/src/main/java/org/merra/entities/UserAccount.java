@@ -1,9 +1,9 @@
 package org.merra.entities;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.merra.enums.UserAccountStatusEn;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,7 +46,7 @@ public class UserAccount implements UserDetails {
 
 	@Column(name = "account_role", nullable = false)
 	@NotNull(message = "Roles cannot be null")
-	private String roles = "NONE";
+	private String roles = UserAccountStatusEn.IDLE.toString();
 
 	// A user by default doesn't own any organization
 	@Column(name = "is_owner", nullable = false)
@@ -98,8 +98,8 @@ public class UserAccount implements UserDetails {
 	}
 
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return List.of(new SimpleGrantedAuthority(roles));
+	public Set<? extends GrantedAuthority> getAuthorities() {
+		return Set.of(new SimpleGrantedAuthority(roles));
 	}
 
 	public String getCountry() {
@@ -169,7 +169,9 @@ public class UserAccount implements UserDetails {
 	}
 
 	public void setRoles(String roles) {
-		this.roles = roles;
+		if (!roles.contains("ROLE_")) {
+			this.roles = "ROLE_" + roles.toUpperCase();
+		}
 	}
 
 	public boolean isOwner() {

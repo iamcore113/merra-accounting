@@ -1,7 +1,10 @@
 package org.merra.enums;
 
 public enum UserAccountStatusEn {
-    PENDING,
-    NONE,
-    ADMIN
+    STANDARD,
+    ADVISOR,
+    READ_ONLY,
+    INVOICE_ONLY,
+    MEMBER,
+    IDLE;
 }

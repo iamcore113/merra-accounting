@@ -27,18 +27,14 @@ public class OrganizationUsersEmb {
 
 	@Column(name = "organization_status", nullable = false)
 	@NotBlank(message = "organizationStatus cannpt be blank.")
-	private String organizationStatus;
+	private String organizationStatus = "ACTIVE";
 
 	public OrganizationUsersEmb() {
 	}
 
-	public OrganizationUsersEmb(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole,
-			LocalDate userJoined,
-			@NotBlank(message = "organizationStatus cannpt be blank.") String organizationStatus) {
+	public OrganizationUsersEmb(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole) {
 		this.userId = userId;
 		this.userRole = userRole;
-		this.userJoined = userJoined;
-		this.organizationStatus = organizationStatus;
 	}
 
 	public UserAccount getUserId() {

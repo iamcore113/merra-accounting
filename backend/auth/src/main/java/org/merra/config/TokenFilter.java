@@ -2,6 +2,8 @@ package org.merra.config;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,11 +23,12 @@ import jakarta.servlet.http.HttpServletResponse;
  * explicitly add it or not.
 */
 @Component
-public class MainTokenFilter extends OncePerRequestFilter {
+public class TokenFilter extends OncePerRequestFilter {
+    private static final Logger logger = LoggerFactory.getLogger(TokenFilter.class);
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
 
-    public MainTokenFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+    public TokenFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
     }
@@ -41,10 +44,12 @@ public class MainTokenFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         final String email = jwtUtils.extractUsername(jwt);
-        System.out.println("Extracted Email: " + email);
+        logger.info("Extracted Email: {}", email);
         
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            logger.info("Authorities: {}", userDetails.getAuthorities());
+            
             if (jwtUtils.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
