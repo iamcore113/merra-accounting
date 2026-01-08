@@ -25,7 +25,7 @@ export class VerifyTokenComponent implements OnInit {
         console.error(err);
       },
       complete: () => {
-        this.localStorageService.setItem('temp_token', data.temporaryAccessToken);
+        this.localStorageService.setItem('access_token', data.temporaryAccessToken);
         this.router.navigate(['account/personal/info/', data.email]);
       }
     });

@@ -12,6 +12,7 @@ import { VerifyTokenComponent } from './features/verify-token/verify-token.compo
 import { SigninComponent } from './features/auth/signin/signin.component';
 import { CreateOrganization } from './features/create-organization/create-organization';
 import { authGuard } from './core/guards/auth/auth-guard';
+import { CommonsService } from './core/services/commons/commons.service';
 
 export const routes: Routes = [
   {
@@ -62,7 +63,11 @@ export const routes: Routes = [
   {
     path:'account/organization/create/:email',
     component: CreateOrganization,
-    title: 'Create Your Organization - MERRA'
+    title: 'Create Your Organization - MERRA',
+    providers: [
+      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
+      CommonsService, OrganizationService
+    ]
   },
   {
     path: '**',
