@@ -6,7 +6,9 @@ import java.util.UUID;
 import org.merra.entities.TaxType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @Repository
 public interface TaxTypeRepository extends JpaRepository<TaxType, UUID> {
 	// Tax types

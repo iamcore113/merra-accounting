@@ -25,11 +25,11 @@ import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationSettingsRepository;
 import org.merra.repositories.OrganizationTypeRepository;
-import org.merra.repositories.UserAccountRepository;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
@@ -42,14 +42,13 @@ public class OrganizationService {
 	private final AccountService accountService;
 	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
-	private final UserAccountRepository userAccountRepository;
+
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
 			UserAccountService userAccountService,
 			OrganizationSettingsRepository organizationSettingsRepo,
 			OrganizationTypeRepository organizationTypeRepository,
 			AccountService accountService,
-			UserAccountRepository userAccountRepository,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
@@ -58,7 +57,6 @@ public class OrganizationService {
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.organizationMapper = organizationMapper;
-		this.userAccountRepository = userAccountRepository;
 	}
 
 	/**
@@ -140,6 +138,7 @@ public class OrganizationService {
 		return organizationMapper.toOrganizationResponse(newOrganization);
 	}
 
+	@Transactional
 	public OrganizationDetailsResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
 		Organization org = getOrganizationObject(null); // New organization object
 

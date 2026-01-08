@@ -34,7 +34,9 @@ public class OrganizationUsersEmb {
 
 	public OrganizationUsersEmb(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole) {
 		this.userId = userId;
-		this.userRole = userRole;
+		if (!userRole.contains("ROLE_")) {
+			this.userRole = "ROLE_" + userRole;
+		}
 	}
 
 	public UserAccount getUserId() {
@@ -58,7 +60,9 @@ public class OrganizationUsersEmb {
 	}
 
 	public void setUserRole(String userRole) {
-		this.userRole = userRole;
+		if (!userRole.contains("ROLE_")) {
+			this.userRole = "ROLE_" + userRole.toUpperCase();
+		}
 	}
 
 	public void setUserJoined(LocalDate userJoined) {
