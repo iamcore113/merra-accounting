@@ -74,7 +74,7 @@ export class CreateOrganization implements OnInit {
     description: [''],
     country: ['', Validators.required],
     currency: ['', Validators.required],
-    contactNo: [''],
+    contactNo: ['', Validators.required],
     yearEndDay: ['', Validators.required],
     yearEndMonth: ['', Validators.required],
   });
@@ -89,6 +89,7 @@ export class CreateOrganization implements OnInit {
       displayName: intputValues.name || '',
       email: intputValues.email || '',
       type: intputValues.type || '',
+      contactNo: intputValues.contactNo || '',
       country: intputValues.country || '',
       currency: intputValues.currency || '',
       financialYear: financialYear,

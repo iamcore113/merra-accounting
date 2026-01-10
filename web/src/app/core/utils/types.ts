@@ -67,6 +67,7 @@ export type CreateOrganizationPayload = {
   displayName: string;
   email: string;
   type: string; // uuid type
+  contactNo: string;
   country: string;
   financialYear: financialYear;
   currency: string;
