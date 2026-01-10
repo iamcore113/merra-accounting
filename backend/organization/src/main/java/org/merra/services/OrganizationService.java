@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.merra.dto.CreateOrganizationRequest;
-import org.merra.dto.OrganizationDetailsResponse;
+import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.OrganziationSelectionResponse;
 import org.merra.entities.Organization;
@@ -100,8 +100,7 @@ public class OrganizationService {
 	}
 
 	@Transactional
-	public OrganizationDetailsResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
-		logger.info("CreateOrganizationRequest: {}", req);
+	public NewOrganizationResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
 
 		Organization org = getOrganizationObject(null); // New organization object
 
@@ -132,21 +131,8 @@ public class OrganizationService {
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
 
-		return organizationMapper.toOrganizationResponse(newOrganization);
+		return new NewOrganizationResponse(newOrganization.getId());
 
-	}
-
-	/**
-	 * This method will check existing organization entity by
-	 * {@linkplain java.util.UUID} id
-	 * 
-	 * @param id - accepts {@linkplain java.util.UUID} type of ID
-	 * @return - returns {@linkplain OrganizationDetailsResponse} object type.
-	 */
-	public OrganizationDetailsResponse retrieveOrganizationById(UUID id) {
-		Organization getOrganization = organizationRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Organization object not found."));
-		return organizationMapper.toOrganizationResponse(getOrganization);
 	}
 
 	/**

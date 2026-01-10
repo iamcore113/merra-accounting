@@ -101,10 +101,10 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	@Column(name = "address", columnDefinition = "jsonb[]", nullable = true)
+	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
 	private Set<OrganizationAddressEmb> address;
 
-	@Column(name = "external_links", columnDefinition = "jsonb[]", nullable = true)
+	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
 	private Set<ExternalLinksEmb> externalLinks;
 
 	@JdbcTypeCode(SqlTypes.JSON)
@@ -135,8 +135,13 @@ public class Organization {
 		this.activeSubscription = isActiveSubscription == null ? true : isActiveSubscription;
 	}
 
-	public void setBasicInformation(String displayName, OrganizationType type, String email, String country,
-			FinancialYearEmb financialYear, String currency) {
+	public void setBasicInformation(String displayName,
+		OrganizationType type,
+		String email,
+		String country,
+		FinancialYearEmb financialYear,
+		String currency
+	) {
 		this.setDisplayName(displayName);
 		this.setLegalName(displayName);
 		this.setOrganizationType(type);

@@ -1,0 +1,32 @@
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+  <changeSet author="brian" id="2026-modify-column-type-organization-address">
+    <preConditions onFail="HALT">
+      <dbms type="postgresql"/>
+    </preConditions>
+    <sql>
+      ALTER TABLE merra_schema.organization
+      ALTER COLUMN address TYPE jsonb
+      USING array_to_json(address)::jsonb;
+    </sql>
+  </changeSet>
+    <changeSet author="brian" id="2026-modify-column-type-organization-external_links">
+    <preConditions onFail="HALT">
+      <dbms type="postgresql"/>
+    </preConditions>
+    <sql>
+      ALTER TABLE merra_schema.organization
+      ALTER COLUMN external_links TYPE jsonb
+      USING array_to_json(external_links)::jsonb;
+    </sql>
+  </changeSet>
+</databaseChangeLog>
