@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class OrganizationAddressEmb implements Serializable {
     private String addressType;
     private Set<String> linkedSet; // new LinkedHashSet<>()

@@ -1,61 +1,81 @@
 package org.merra.mapper;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mappings;
-import org.mapstruct.Mapping;
 import org.mapstruct.NullValueMappingStrategy;
 import org.merra.dto.OrganizationDetailsResponse;
 import org.merra.dto.OrganziationSelectionResponse;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.OrganizationUsersEmb;
+import org.merra.repositories.UserAccountRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Mapper(nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL, componentModel = "spring")
-public interface OrganizationMapper {
-	@Mappings({
-			@Mapping(source = "id", target = "organizationId"),
-			@Mapping(source = "profileImage", target = "organizationInfo.profileImage"),
-			@Mapping(source = "displayName", target = "organizationInfo.displayName"),
-			@Mapping(source = "legalName", target = "organizationInfo.legalName"),
-			@Mapping(source = "organizationDescription", target = "organizationInfo.organizationDescription"),
-			@Mapping(source = "organizationType", target = "organizationInfo.organizationType"),
-			@Mapping(source = "country", target = "contactInformation.countryCode"),
-			@Mapping(source = "address", target = "contactInformation.address"),
-			@Mapping(source = "email", target = "contactInformation.email"),
-			@Mapping(source = "website", target = "contactInformation.website"),
-			@Mapping(source = "phoneNo", target = "contactInformation.phoneNo"),
-			@Mapping(source = "externalLinks", target = "contactInformation.externalLinks"),
-			@Mapping(source = "organizationUsers", target = "organizationUsers")
-	})
-	OrganizationDetailsResponse toOrganizationResponse(Organization org);
+public abstract class OrganizationMapper {
 
-	default Map<String, String> mapObjectToMap(OrganizationType org) {
+	@Autowired
+	protected UserAccountRepository userAccountRepository;
+
+	public OrganizationDetailsResponse toOrganizationResponse(Organization org) {
+
+		OrganizationDetailsResponse.BasicInformation basicInfo = new OrganizationDetailsResponse.BasicInformation(
+				org.getProfileImage(),
+				org.getDisplayName(),
+				org.getLegalName(),
+				org.getOrganizationDescription(),
+				mapObjectToMap(org.getOrganizationType()));
+
+		OrganizationDetailsResponse.ContactInformation contactInfo = new OrganizationDetailsResponse.ContactInformation(
+				org.getCountry(),
+				org.getAddress(),
+				org.getEmail(),
+				org.getWebsite(),
+				org.getPhoneNo(),
+				org.getExternalLinks());
+
+		Set<OrganizationDetailsResponse.Users> users = organizationUsers(org.getOrganizationUsers());
+
+		return new OrganizationDetailsResponse(
+				org.getId(),
+				basicInfo,
+				contactInfo,
+				users);
+	}
+
+	private Map<String, String> mapObjectToMap(OrganizationType org) {
 
 		return Map.of(
 				"id", org.getId().toString(),
 				"name", org.getName());
 	}
 
-	default Set<OrganizationDetailsResponse.Users> organizationUsers(Set<OrganizationUsersEmb> users) {
-		Set<OrganizationDetailsResponse.Users> mapUsers = users.stream()
-				.map(usr -> new OrganizationDetailsResponse.Users(
-						Map.of("id", usr.getUserId().getUserId().toString(), "name",
-								usr.getUserId().getFirstName() + " " + usr.getUserId().getLastName()),
-						usr.getUserRole(), usr.getUserJoined()))
-				.collect(Collectors.toSet());
+	private Set<OrganizationDetailsResponse.Users> organizationUsers(Set<OrganizationUsersEmb> users) {
+		Set<OrganizationDetailsResponse.Users> mapUsers = new HashSet<>();
+		for (OrganizationUsersEmb user : users) {
+			var getUser = userAccountRepository.findById(user.getUserId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
+			mapUsers.add(new OrganizationDetailsResponse.Users(
+					Map.of("id", user.getUserId().toString(), "name",
+							getUser.getFirstName() + " " + getUser.getLastName()),
+					user.getUserRole(), user.getUserJoined()));
+		}
 
 		return mapUsers;
 	}
 
-	@Mappings({
-			@Mapping(source = "id", target = "organizationId"),
-			@Mapping(source = "organizationDescription", target = "description")
-	})
-	OrganziationSelectionResponse toOrganizationSelectionResponse(Organization org);
+	public OrganziationSelectionResponse toOrganizationSelectionResponse(Organization org) {
+		return new OrganziationSelectionResponse(org.getId(), org.getDisplayName(), org.getLegalName(), org.getOrganizationDescription(), org.getStatus().toString());
+	}
 
-	Set<OrganziationSelectionResponse> toOrganizationSelectionResponses(Set<Organization> org);
+	public Set<OrganziationSelectionResponse> toOrganizationSelectionResponses(Set<Organization> org) {
+		return org.stream()
+				.map(this::toOrganizationSelectionResponse)
+				.collect(Collectors.toSet());
+	}
 }

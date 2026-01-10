@@ -1,33 +1,27 @@
 package org.merra.entities.embedded;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-import org.merra.entities.UserAccount;
 import org.merra.utilities.OrganizationConstants;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Embeddable
 public class OrganizationUserInvitesEmb {
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "invitation_for", nullable = false)
+	@Column(name = "invitation_for", nullable = false)
 	@NotNull(message = "InvitationFor field cannot be null.")
-	private UserAccount invitationFor;
+	private UUID invitationFor;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "invitation_by", nullable = false)
+	@Column(name = "invitation_by", nullable = false)
 	@NotNull(message = "InvitationBy field cannot be null.")
-	private UserAccount invitationBy;
+	private UUID invitationBy;
 
 	@Column(name = "invitation_role", nullable = false)
 	@NotBlank(message = "invitationRole field cannot be null")
@@ -44,8 +38,8 @@ public class OrganizationUserInvitesEmb {
 	}
 
 	public OrganizationUserInvitesEmb(
-			@NotNull(message = "InvitationFor field cannot be null.") UserAccount invitationFor,
-			@NotNull(message = "InvitationBy field cannot be null.") UserAccount invitationBy,
+			@NotNull(message = "InvitationFor field cannot be null.") UUID invitationFor,
+			@NotNull(message = "InvitationBy field cannot be null.") UUID invitationBy,
 			@NotBlank(message = "invitationRole field cannot be null") String invitationRole, LocalDate inviteDate,
 			String invitationStatus) {
 		this.invitationFor = invitationFor;
@@ -55,11 +49,11 @@ public class OrganizationUserInvitesEmb {
 		this.invitationStatus = invitationStatus;
 	}
 
-	public UserAccount getInvitationFor() {
+	public UUID getInvitationFor() {
 		return invitationFor;
 	}
 
-	public UserAccount getInvitationBy() {
+	public UUID getInvitationBy() {
 		return invitationBy;
 	}
 
@@ -75,11 +69,11 @@ public class OrganizationUserInvitesEmb {
 		return invitationStatus;
 	}
 
-	public void setInvitationFor(UserAccount invitationFor) {
+	public void setInvitationFor(UUID invitationFor) {
 		this.invitationFor = invitationFor;
 	}
 
-	public void setInvitationBy(UserAccount invitationBy) {
+	public void setInvitationBy(UUID invitationBy) {
 		this.invitationBy = invitationBy;
 	}
 

@@ -1,28 +1,25 @@
 package org.merra.entities;
 
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.merra.audit.CreatedDate;
 import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.OrganizationAddressEmb;
-import org.merra.entities.embedded.OrganizationNameUpdate;
 import org.merra.entities.embedded.OrganizationUserInvitesEmb;
 import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
 
-import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -46,14 +43,7 @@ public class Organization {
 	private UUID id;
 
 	@Column(name = "profile_image")
-	@NotNull(message = "profile_image")
 	private String profileImage;
-
-	@ElementCollection
-	@CollectionTable(schema = "merra_schema", name = "organization_name_log", joinColumns = {
-			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false)
-	})
-	private Set<OrganizationNameUpdate> nameDetailsUpdate;
 
 	@ElementCollection
 	@CollectionTable(schema = "merra_schema", name = "organization_users", joinColumns = {
@@ -62,7 +52,7 @@ public class Organization {
 
 	@ElementCollection
 	@CollectionTable(schema = "merra_schema", name = "org_invites", joinColumns = {
-			@JoinColumn(name = " organization_id", referencedColumnName = "id", nullable = false) })
+			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
 	private Set<OrganizationUserInvitesEmb> organizationUserInvites;
 
 	@Column(name = "display_name", nullable = false, unique = true)
@@ -92,8 +82,8 @@ public class Organization {
 	private OrganizationType organizationType;
 
 	/* Contact Details */
-	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone_no", columnDefinition = "jsonb[]")
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "phone_no", columnDefinition = "jsonb", nullable = true)
 	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "email", nullable = false)
@@ -103,9 +93,6 @@ public class Organization {
 
 	private String website;
 
-	// @OneToOne(fetch = FetchType.LAZY, mappedBy = "organization")
-	// private TaxDetails taxDetails;
-
 	@NotBlank(message = "timeZone attribute is required.")
 	@Column(name = "time_zone")
 	private String timeZone;
@@ -114,12 +101,10 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "address", columnDefinition = "jsonb[]")
+	@Column(name = "address", columnDefinition = "jsonb[]", nullable = true)
 	private Set<OrganizationAddressEmb> address;
 
-	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "external_links", columnDefinition = "jsonb[]")
+	@Column(name = "external_links", columnDefinition = "jsonb[]", nullable = true)
 	private Set<ExternalLinksEmb> externalLinks;
 
 	@JdbcTypeCode(SqlTypes.JSON)
@@ -127,9 +112,8 @@ public class Organization {
 	@NotNull(message = "paymentTerms attribute cannot be null.")
 	private PaymentTermsEmb paymentTerms;
 
-	@Embedded
-	@AttributeOverride(name = "createdDate", column = @Column(name = "created_date", nullable = false))
-	private CreatedDate createdDate;
+	@Column(name = "created_date", nullable = false)
+	private LocalDate createdDate = LocalDate.now();
 
 	// By default when an organization is created, it has an active subscription
 	@Column(name = "active_subscription", nullable = false)
@@ -182,67 +166,6 @@ public class Organization {
 	public Organization() {
 	}
 
-	public Organization(UUID id, @NotNull(message = "profile_image") String profileImage,
-			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsersEmb> organizationUsers,
-			Set<OrganizationUserInvitesEmb> organizationUserInvites,
-			@NotBlank(message = "displayName attribute cannot be blank.") String displayName,
-			@NotBlank(message = "legalName cannot be blank.") String legalName, String organizationDescription,
-			@NotNull(message = "country attribute cannot be null.") String country,
-			@NotNull(message = "defaultCurrency attribute cannot be null.") String defaultCurrency,
-			@NotNull(message = "organizationType attribute cannot be null.") OrganizationType organizationType,
-			LinkedHashSet<PhoneDetailsEmb> phoneNo,
-			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
-			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
-			FinancialYearEmb financialYear,
-			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
-			Set<ExternalLinksEmb> externalLinks,
-			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
-			CreatedDate createdDate, Boolean activeSubscription, StatusEn status) {
-		this(profileImage, nameDetailsUpdate, organizationUsers, organizationUserInvites, displayName, legalName,
-				organizationDescription, country, defaultCurrency, organizationType, phoneNo, email, website, timeZone,
-				financialYear, address, externalLinks, paymentTerms, createdDate, activeSubscription, status);
-		this.id = id;
-	}
-
-	public Organization(@NotNull(message = "profile_image") String profileImage,
-			Set<OrganizationNameUpdate> nameDetailsUpdate, Set<OrganizationUsersEmb> organizationUsers,
-			Set<OrganizationUserInvitesEmb> organizationUserInvites,
-			@NotBlank(message = "displayName attribute cannot be blank.") String displayName,
-			@NotBlank(message = "legalName cannot be blank.") String legalName, String organizationDescription,
-			@NotNull(message = "country attribute cannot be null.") String country,
-			@NotNull(message = "defaultCurrency attribute cannot be null.") String defaultCurrency,
-			@NotNull(message = "organizationType attribute cannot be null.") OrganizationType organizationType,
-			LinkedHashSet<PhoneDetailsEmb> phoneNo,
-			@NotBlank(message = "Email is mandatory") @Email(message = "Email attribute should be valid") String email,
-			String website, @NotBlank(message = "timeZone attribute is required.") String timeZone,
-			FinancialYearEmb financialYear,
-			@NotNull(message = "Address attribute cannot be null.") Set<OrganizationAddressEmb> address,
-			Set<ExternalLinksEmb> externalLinks,
-			@NotNull(message = "paymentTerms attribute cannot be null.") PaymentTermsEmb paymentTerms,
-			CreatedDate createdDate, Boolean activeSubscription, StatusEn status) {
-		this.profileImage = profileImage;
-		this.nameDetailsUpdate = nameDetailsUpdate;
-		this.organizationUsers = organizationUsers;
-		this.organizationUserInvites = organizationUserInvites;
-		this.displayName = displayName;
-		this.legalName = legalName;
-		this.organizationDescription = organizationDescription;
-		this.country = country;
-		this.defaultCurrency = defaultCurrency;
-		this.organizationType = organizationType;
-		this.phoneNo = phoneNo;
-		this.email = email;
-		this.website = website;
-		this.timeZone = timeZone;
-		this.financialYear = financialYear;
-		this.address = address;
-		this.externalLinks = externalLinks;
-		this.paymentTerms = paymentTerms;
-		this.createdDate = createdDate;
-		this.activeSubscription = activeSubscription;
-		this.status = status;
-	}
-
 	public UUID getId() {
 		return id;
 	}
@@ -253,14 +176,6 @@ public class Organization {
 
 	public void setProfileImage(String profileImage) {
 		this.profileImage = profileImage;
-	}
-
-	public Set<OrganizationNameUpdate> getNameDetailsUpdate() {
-		return nameDetailsUpdate;
-	}
-
-	public void setNameDetailsUpdate(Set<OrganizationNameUpdate> nameDetailsUpdate) {
-		this.nameDetailsUpdate = nameDetailsUpdate;
 	}
 
 	public Set<OrganizationUsersEmb> getOrganizationUsers() {
@@ -391,11 +306,11 @@ public class Organization {
 		this.paymentTerms = paymentTerms;
 	}
 
-	public CreatedDate getCreatedDate() {
+	public LocalDate getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(CreatedDate createdDate) {
+	public void setCreatedDate(LocalDate createdDate) {
 		this.createdDate = createdDate;
 	}
 

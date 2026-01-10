@@ -1,22 +1,17 @@
 package org.merra.entities.embedded;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
-import org.merra.entities.UserAccount;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Embeddable
 public class OrganizationUsersEmb {
-	@ManyToOne(targetEntity = UserAccount.class, fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	@JoinColumn(name = "user_id", nullable = false, unique = true)
-	private UserAccount userId;
+	@NotNull(message = "User ID cannot be null")
+	private UUID userId;
 
 	@NotBlank(message = "User role cannot be blank")
 	@Column(name = "user_role", nullable = false)
@@ -26,20 +21,20 @@ public class OrganizationUsersEmb {
 	private LocalDate userJoined = LocalDate.now();
 
 	@Column(name = "organization_status", nullable = false)
-	@NotBlank(message = "organizationStatus cannpt be blank.")
+	@NotBlank(message = "organizationStatus cannot be blank.")
 	private String organizationStatus = "ACTIVE";
 
 	public OrganizationUsersEmb() {
 	}
 
-	public OrganizationUsersEmb(UserAccount userId, @NotBlank(message = "User role cannot be blank") String userRole) {
+	public OrganizationUsersEmb(UUID userId, @NotBlank(message = "User role cannot be blank") String userRole) {
 		this.userId = userId;
 		if (!userRole.contains("ROLE_")) {
 			this.userRole = "ROLE_" + userRole;
 		}
 	}
 
-	public UserAccount getUserId() {
+	public UUID getUserId() {
 		return userId;
 	}
 
@@ -55,7 +50,7 @@ public class OrganizationUsersEmb {
 		return organizationStatus;
 	}
 
-	public void setUserId(UserAccount userId) {
+	public void setUserId(UUID userId) {
 		this.userId = userId;
 	}
 

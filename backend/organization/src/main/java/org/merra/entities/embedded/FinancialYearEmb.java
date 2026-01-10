@@ -2,12 +2,12 @@ package org.merra.entities.embedded;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class FinancialYearEmb implements Serializable {
     private int yearEndDay;
     private int yearEndMonth;
+
+    public FinancialYearEmb() {
+    }
 
     public FinancialYearEmb(int yearEndDay, int yearEndMonth) {
         this.yearEndDay = yearEndDay;

@@ -1,16 +1,15 @@
 package org.merra.entities;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
-import org.merra.audit.CreatedDate;
+
 import org.merra.utilities.TaxConstants;
 
-import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -77,9 +76,8 @@ public class TaxRate {
 	@Column(name = "apply_to_revenue_account")
 	private Boolean applyToRevenueAccount;
 
-	@Embedded
-	@AttributeOverride(name = "createdDate", column = @Column(name = "created_date", nullable = false))
-	private CreatedDate createdDate;
+	@Column(name = "created_date", nullable = false)
+	private LocalDate createdDate = LocalDate.now();
 
 	public void setStatus(String stat) {
 		Set<String> taxStatuses = Set.of(
@@ -114,29 +112,6 @@ public class TaxRate {
 	}
 
 	public TaxRate() {
-	}
-
-	public TaxRate(Organization organization, @NotBlank(message = "name attribute cannot be null.") String name,
-			@NotBlank(message = "systemDefinedName attribute cannot be blank.") String systemDefinedName,
-			@NotBlank(message = "taxType attribute cannot be blank.") String taxType, Set<TaxComponent> taxComponent,
-			BigDecimal taxRateDisplay, BigDecimal effectiveRate,
-			@NotBlank(message = "status attribute cannot be null.") String status, Boolean applyToAssetAccount,
-			Boolean applyToEquityAccount, Boolean applyToExpensesAccount, Boolean applyToLiabilitiesAccount,
-			Boolean applyToRevenueAccount, CreatedDate createdDate) {
-		this.organization = organization;
-		this.name = name;
-		this.systemDefinedName = systemDefinedName;
-		this.taxType = taxType;
-		this.taxComponent = taxComponent;
-		this.taxRateDisplay = taxRateDisplay;
-		this.effectiveRate = effectiveRate;
-		this.status = status;
-		this.applyToAssetAccount = applyToAssetAccount;
-		this.applyToEquityAccount = applyToEquityAccount;
-		this.applyToExpensesAccount = applyToExpensesAccount;
-		this.applyToLiabilitiesAccount = applyToLiabilitiesAccount;
-		this.applyToRevenueAccount = applyToRevenueAccount;
-		this.createdDate = createdDate;
 	}
 
 	public UUID getId() {
@@ -224,11 +199,11 @@ public class TaxRate {
 		return applyToRevenueAccount;
 	}
 
-	public CreatedDate getCreatedDate() {
+	public LocalDate getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(CreatedDate createdDate) {
+	public void setCreatedDate(LocalDate createdDate) {
 		this.createdDate = createdDate;
 	}
 

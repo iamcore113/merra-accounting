@@ -107,11 +107,12 @@ public class UserAccountService {
 		return userMapper.toUserPersonalInformationResponse(user);
 	}
 
-	public UserAccount setUserRole(UUID userId, UserAccountStatusEn role) {
+	public void setUserRole(UUID userId, UserAccountStatusEn role) {
+		String roleName = role.name();
 		UserAccount getUserAccount = userRepository.findById(userId)
 				.orElseThrow(() -> new EntityNotFoundException("User entity " + userId + " not found."));
 
-		getUserAccount.setRoles(role.toString());
-		return userRepository.save(getUserAccount);
+		getUserAccount.setRoles(roleName);
+		userRepository.save(getUserAccount);
 	}
 }

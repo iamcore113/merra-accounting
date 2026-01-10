@@ -16,5 +16,5 @@ public record OrganziationSelectionResponse(
     @NotBlank(message = "status cannot be blank")
     String status
 ) {
-
+    
 }

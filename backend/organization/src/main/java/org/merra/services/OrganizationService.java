@@ -11,22 +11,20 @@ import org.merra.dto.OrganizationDetailsResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.OrganziationSelectionResponse;
 import org.merra.entities.Organization;
-import org.merra.entities.OrganizationSettings;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.FinancialYearEmb;
-import org.merra.entities.embedded.InvoiceSettingsEmb;
-import org.merra.entities.embedded.LineItemSettings;
 import org.merra.entities.embedded.OrganizationUsersEmb;
+import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
-import org.merra.repositories.OrganizationSettingsRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.services.phone.PhoneService;
-import org.merra.utilities.InvoiceConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,8 +34,8 @@ import jakarta.validation.constraints.NotNull;
 
 @Service
 public class OrganizationService {
+	private static final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
 	private final OrganizationRepository organizationRepository;
-	private final OrganizationSettingsRepository organizationSettingsRepo;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final AccountService accountService;
 	private final UserAccountService userAccountService;
@@ -46,14 +44,12 @@ public class OrganizationService {
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
 			UserAccountService userAccountService,
-			OrganizationSettingsRepository organizationSettingsRepo,
 			OrganizationTypeRepository organizationTypeRepository,
 			AccountService accountService,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
 		this.userAccountService = userAccountService;
-		this.organizationSettingsRepo = organizationSettingsRepo;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.organizationMapper = organizationMapper;
@@ -103,55 +99,21 @@ public class OrganizationService {
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}
 
-	// This method will create the organization settings after creating the new
-	// organization
-	private void createOrganizationSettings(@NotNull Organization org) {
-		OrganizationSettings settings = new OrganizationSettings();
-		settings.setOrganization(org);
-
-		InvoiceSettingsEmb invoiceSettings = new InvoiceSettingsEmb();
-		invoiceSettings.setStatus(InvoiceConstants.INVOICE_STATUS_DRAFT);
-		settings.setInvoiceSettings(invoiceSettings);
-
-		LineItemSettings lineItemSetting = new LineItemSettings();
-		lineItemSetting.setDefaultQuantity(0.00);
-		settings.setLineItemSettings(lineItemSetting);
-
-		organizationSettingsRepo.save(settings);
-	}
-
-	/**
-	 * This will persist the organization object to database (the actual creation of
-	 * the entity
-	 * to the database)
-	 * 
-	 * @param organization - accepts {@linkplain Organization} object type.
-	 * @return - {@linkplain OrganizationDetailsResponse} object type.
-	 */
-	private OrganizationDetailsResponse save(Organization organization) {
-		Organization newOrganization = organizationRepository.save(organization);
-		// create organization's default settings
-		this.createOrganizationSettings(organization);
-		// create organization's default ledger accounts
-		accountService.createDefaultAccounts(newOrganization);
-
-		return organizationMapper.toOrganizationResponse(newOrganization);
-	}
-
 	@Transactional
 	public OrganizationDetailsResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
+		logger.info("CreateOrganizationRequest: {}", req);
+
 		Organization org = getOrganizationObject(null); // New organization object
 
 		// Set organization user as MEMBER role
-		// Return the updated user account
-		var getUserAccount = userAccountService.setUserRole(userId, UserAccountStatusEn.MEMBER);
-		// Set the user as ADSIVOR role in the organization
-		OrganizationUsersEmb organizationUsersEmb = new OrganizationUsersEmb(getUserAccount, 
-			UserAccountStatusEn.ADVISOR.toString());	
-		org.setOrganizationUsers(Set.of(organizationUsersEmb));
+		userAccountService.setUserRole(userId, UserAccountStatusEn.MEMBER);
+		// Set the user as ADVISOR role in the organization
+		String setRole = UserAccountStatusEn.ADVISOR.name();
+		OrganizationUsersEmb organizationUsersEmb = new OrganizationUsersEmb(userId, setRole);	
+		org.setOrganizationUsers(new java.util.HashSet<>(Set.of(organizationUsersEmb)));
 		
-		// FIXME: set a default profile image for organization
-		org.setProfileImage("sample_image_url");
+		// Profile image will default to null; set via organization settings if needed
+		org.setProfileImage(null);
 
 		OrganizationType organizationType = getOrganizationType(req.type());
 		FinancialYearEmb financialYearEmb = new FinancialYearEmb(
@@ -161,8 +123,16 @@ public class OrganizationService {
 		// Set organization basic information
 		org.setBasicInformation(req.displayName(), organizationType, req.email(), req.country(), financialYearEmb,
 				req.currency());
+		
+		// Set required fields: timeZone and paymentTerms
+		org.setTimeZone("UTC");
+		org.setPaymentTerms(new PaymentTermsEmb());
 
-		return save(org);
+		Organization newOrganization = organizationRepository.save(org);
+		// create organization's default ledger accounts
+		accountService.createDefaultAccounts(newOrganization);
+
+		return organizationMapper.toOrganizationResponse(newOrganization);
 
 	}
 

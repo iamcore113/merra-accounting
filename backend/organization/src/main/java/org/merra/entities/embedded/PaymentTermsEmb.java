@@ -2,9 +2,6 @@ package org.merra.entities.embedded;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class PaymentTermsEmb implements Serializable {
     private String term;
     private Elements elements;
@@ -17,7 +14,6 @@ public class PaymentTermsEmb implements Serializable {
         this.term = term;
     }
 
-    @Embeddable
     public static class Elements implements Serializable {
         private int day;
         private String type;

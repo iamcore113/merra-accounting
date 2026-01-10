@@ -15,18 +15,17 @@ import org.merra.entities.Contact;
 import org.merra.entities.Invoice;
 import org.merra.entities.LineItem;
 import org.merra.entities.embedded.InvoiceActionsEmb;
-import org.merra.entities.embedded.InvoiceSettingsEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.ContactRepository;
 import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationRepository;
-import org.merra.repositories.OrganizationSettingsRepository;
 import org.merra.repositories.TaxRateRepository;
 import org.merra.repositories.TaxTypeRepository;
 import org.merra.repositories.projections.AccountLookup;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.stereotype.Service;
+
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
@@ -41,7 +40,6 @@ import jakarta.validation.constraints.NotNull;
 public class InvoiceService {
 
 	private final OrganizationRepository organizationRepository;
-	private final OrganizationSettingsRepository organizationSettingsRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactRepository contactRepository;
 	private final ContactService contactService;
@@ -52,7 +50,6 @@ public class InvoiceService {
 
 	public InvoiceService(
 			OrganizationRepository organizationRepository,
-			OrganizationSettingsRepository organizationSettingsRepository,
 			InvoiceRepository invoiceRepository,
 			ContactRepository contactRepository,
 			ContactService contactService,
@@ -61,7 +58,6 @@ public class InvoiceService {
 			TaxRateRepository taxRateRepository,
 			TaxTypeRepository taxTypeRepository) {
 		this.organizationRepository = organizationRepository;
-		this.organizationSettingsRepository = organizationSettingsRepository;
 		this.invoiceRepository = invoiceRepository;
 		this.contactRepository = contactRepository;
 		this.contactService = contactService;
@@ -143,22 +139,11 @@ public class InvoiceService {
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
 
-		/**
-		 * If status is not provided in the request.
-		 * Use the organization's default invoice status set in organization's settings.
-		 */
-		Optional<String> statusOpt = Optional.empty();
-		if (request.status().isBlank()) {
-			InvoiceSettingsEmb invoiceSettings = organizationSettingsRepository
-					.findSettingsByOrganizationId(organizationId);
-			statusOpt = Optional.of(invoiceSettings.getStatus());
-		} else {
-			statusOpt = Optional.of(request.status());
-		}
-		invoice.setStatus(statusOpt.get());
+		String status = request.status().isBlank() ? "DRAFT" : request.status();
+		invoice.setStatus(status);
 
 		// set invoice actions
-		setInvoiceActions(invoice, statusOpt.get());
+		setInvoiceActions(invoice, status);
 
 		invoice.setReference(request.reference());
 
