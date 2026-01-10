@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AccountTypeRepository extends JpaRepository<AccountType, UUID> {
 	Optional<AccountType> findByNameIgnoreCase(String name);
+	boolean existsByNameIgnoreCase(String code);
 }
