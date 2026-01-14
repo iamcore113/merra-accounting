@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * is automatically added to the security filter chain, regardless of whether you
  * explicitly add it or not.
 */
-@Component
+@Component("tokenFilter")
 public class TokenFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(TokenFilter.class);
     private final JwtUtils jwtUtils;

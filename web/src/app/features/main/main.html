@@ -1,0 +1,67 @@
+<nav class="navbar">
+    <!-- Logo -->
+    <a href="#" class="navbar-brand">
+        <!-- Simple SVG Logo -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        <span>BrandUI</span>
+    </a>
+
+    <!-- Navigation Links -->
+    <div class="nav-links" id="navLinks">
+        <a href="#" class="nav-item active">Dashboard</a>
+        <a href="#" class="nav-item">Team</a>
+        <a href="#" class="nav-item">Projects</a>
+        <a href="#" class="nav-item">Calendar</a>
+        <a href="#" class="nav-item">Reports</a>
+    </div>
+
+    <!-- Right Side Icons/Profile -->
+    <div class="nav-right">
+        <button class="icon-btn" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-dot"></span>
+        </button>
+
+        <div class="user-profile">
+            <!-- Avatar placeholder using Initials -->
+            <div class="avatar">JD</div>
+            <span class="user-name">John Doe</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
+
+        <!-- Hamburger Icon for Mobile -->
+        <button class="mobile-menu-btn" onclick="toggleMenu()" aria-label="Menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+</nav>
+<!-- Secondary Navbar (Organization Selector) -->
+<div class="sub-navbar">
+    <div class="org-select-wrapper">
+        <span class="org-label">Organization</span>
+        <select class="org-select">
+            <option value="1">Acme Corp Ltd.</option>
+            <option value="2">Stark Industries</option>
+            <option value="3">Wayne Enterprises</option>
+            <option value="4">+ Add New Organization</option>
+        </select>
+    </div>
+    <!-- Optional: Right side of sub-nav could go here (e.g., date range, breadcrumbs) -->
+</div>
+
+<div>
+    <router-outlet />
+</div>

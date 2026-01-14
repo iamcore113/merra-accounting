@@ -3,7 +3,6 @@ import { NotFoundComponent } from './features/not-found/not-found.component';
 import { provideHttpClient, withInterceptors, withRequestsMadeViaParent } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth/auth-interceptor';
 import { OrganizationService } from './core/services/organization/organization.service';
-import { AdminMain } from './features/admin-main/admin-main';
 import { SignupComponent } from './features/auth/signup/signup.component';
 import { LandingComponent } from './features/landing/landing.component';
 import { PersonalInfoComponent } from './features/personal-info/personal-info.component';
@@ -13,6 +12,8 @@ import { SigninComponent } from './features/auth/signin/signin.component';
 import { CreateOrganization } from './features/create-organization/create-organization';
 import { authGuard } from './core/guards/auth/auth-guard';
 import { CommonsService } from './core/services/commons/commons.service';
+import { Main } from './features/main/main';
+import { OrphanAccount } from './features/orphan-account/orphan-account';
 
 export const routes: Routes = [
   {
@@ -22,8 +23,8 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: AdminMain,
-    canActivate: [authGuard],
+    component: Main,
+    // canActivate: [authGuard],
     providers: [
       provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
       OrganizationService
@@ -35,6 +36,11 @@ export const routes: Routes = [
         title: 'Dashboard - MERRA'
       }
     ]
+  },
+  {
+    path: 'account/orphan/:email',
+    component: OrphanAccount,
+    title: 'Orphan Account'
   },
   {
     path: 'account/signin',

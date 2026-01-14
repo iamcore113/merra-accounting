@@ -1,0 +1,14 @@
+<app-simple-card>
+
+  <ng-container ngProjectAs="main-section">
+    <h1>Your account is not part of any organization</h1>
+    <p class="subtitle">
+        An account without an organization cannot access any resources. Please create a new organization to get started.
+    </p>
+  </ng-container>
+  <ng-container ngProjectAs="bottom-section">
+    <button matButton="filled" type="submit" class="btn" (click)="goToOrganization()">
+        Create Organization
+    </button>
+  </ng-container>
+</app-simple-card>

@@ -9,7 +9,7 @@
 html {
   @include mat.theme((
     color: (
-      primary: mat.$green-palette,
+      primary: mat.$orange-palette,
       // tertiary: mat.$orange-palette,
     ),
     typography: Roboto,

@@ -8,7 +8,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { MatGridListModule } from '@angular/material/grid-list';
 import { OrganizationService } from '../../core/services/organization/organization.service';
 import { OrganizationMetadata, CreateOrganizationPayload, CountriesList, NewOrganizationResponse } from '../../core/utils/types';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonsService } from '../../core/services/commons/commons.service';
 
 
@@ -30,6 +30,7 @@ export class CreateOrganization implements OnInit {
   private route = inject(ActivatedRoute);
   private org = inject(OrganizationService);
   private commons = inject(CommonsService);
+  private router = inject(Router);
 
   isDisabled = signal<boolean>(false);
   readonly userEmail: string = this.route.snapshot.params['email'] || '';
@@ -106,5 +107,9 @@ export class CreateOrganization implements OnInit {
         this.isDisabled.set(false);
       }
     });
+  }
+
+  handleSkip() {
+    this.router.navigate(['/account/orphan/', this.userEmail]);
   }
 }
