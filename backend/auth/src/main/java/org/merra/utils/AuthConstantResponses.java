@@ -13,6 +13,10 @@ public class AuthConstantResponses {
 	// email verification
 	public static final String EMAIL_VERIFICATION = "Verification email sent.";
 	public static final String EMAIL_VERIFICATION_RESEND = "Verification email resent.";
+	// Tokens
+	public static final String TOKENS_ISSUED = "New access and refresh tokens issued.";
+	public static final String TOKEN_INVALID = "Token is invalid.";
+	public static final String TOKEN_VALID = "Token is valid.";
 
 	private AuthConstantResponses() {
 	}

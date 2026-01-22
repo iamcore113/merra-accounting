@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 
+
 @RestController
 @RequestMapping("api/v1/account/user/")
 public class UserAccountController {
@@ -34,4 +35,5 @@ public class UserAccountController {
 		);
 		return ResponseEntity.ok().body(response);
 	}
+	
 }

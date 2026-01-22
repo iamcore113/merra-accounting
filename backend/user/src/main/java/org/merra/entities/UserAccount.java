@@ -1,5 +1,6 @@
 package org.merra.entities;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -118,6 +119,10 @@ public class UserAccount implements UserDetails {
 	@Override
 	public String getPassword() {
 		return this.accountPassword;
+	}
+
+	public Optional<String> getFullName() {
+		return Optional.ofNullable((this.firstName != null ? this.firstName : "") + " " + (this.lastName != null ? this.lastName : ""));
 	}
 
 	public UserAccount() {

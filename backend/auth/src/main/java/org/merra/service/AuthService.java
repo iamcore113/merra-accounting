@@ -15,7 +15,6 @@ import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
-import org.merra.dto.TokenRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
 import org.merra.entities.UserAccount;
@@ -290,20 +289,6 @@ public class AuthService {
     sendVerificationEmail(user.getEmail(), newVerificationToken);
     return new VerificationResponse(true, new VerificationResponse.VerificationToken(newVerificationToken),
         new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
-  }
-
-  public JwtTokens tokens(TokenRequest request) {
-    UserDetails userDetails = userDetailsService.loadUserByUsername(request.userEmail());
-
-    final boolean IS_TOKEN_VALID = jwtUtils.isTokenValid(request.refreshToken(), userDetails);
-    if (!IS_TOKEN_VALID) {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          AuthConstantResponses.INVALID_REFRESH_TOKEN);
-    }
-
-    final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), forAccessToken, false);
-    final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), refreshTokenExpiration, true);
-    return new JwtTokens(accessToken, refreshToken);
   }
 
   public void fillPersonalInformation(FillPersonalInformation req, UUID id) {

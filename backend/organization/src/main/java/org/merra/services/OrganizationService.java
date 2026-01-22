@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
-import org.merra.dto.OrganziationSelectionResponse;
+import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.embedded.FinancialYearEmb;
@@ -22,9 +22,8 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.merra.services.phone.PhoneService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +33,6 @@ import jakarta.validation.constraints.NotNull;
 
 @Service
 public class OrganizationService {
-	private static final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final AccountService accountService;
@@ -131,7 +129,15 @@ public class OrganizationService {
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
 
-		return new NewOrganizationResponse(newOrganization.getId());
+		var checkUserFullName = userAccountService.returnAccountFullName(userId);
+		boolean userInfoPresent = true;
+		String userfullName = null;
+		if (checkUserFullName.isEmpty()) {
+			userInfoPresent = false;
+		} else {
+			userfullName = checkUserFullName.get();
+		}
+		return new NewOrganizationResponse(newOrganization.getId(), new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName));
 
 	}
 
@@ -156,8 +162,9 @@ public class OrganizationService {
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
-	public Set<OrganziationSelectionResponse> getUserOrganizations(@NotNull UUID userId) {
-		Set<Organization> organizations = organizationRepository.findOrganizationsByUserId(userId);
-		return organizationMapper.toOrganizationSelectionResponses(organizations);
+	public UserOrganizationResponse getUserOrganizations(@NotNull UUID userId) {
+		var getUserAccount = userAccountService.retrieveById(userId);
+		Set<OrganizationUsersLookup> organizations = organizationRepository.findOrganizationsByUserId(userId);
+		return organizationMapper.toOrganizationUserDetails(organizations, getUserAccount);
 	}
 }

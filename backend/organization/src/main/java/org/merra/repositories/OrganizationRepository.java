@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.merra.entities.Organization;
 import org.merra.entities.UserAccount;
+import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -43,5 +44,5 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	boolean existsOrganizationsByUserId(@Param("userId") UUID userId);
 
 	@Query("SELECT org FROM Organization org JOIN org.organizationUsers ou WHERE ou.userId = :userId")
-	Set<Organization> findOrganizationsByUserId(@Param("userId") UUID userId);
+	Set<OrganizationUsersLookup> findOrganizationsByUserId(@Param("userId") UUID userId);
 }

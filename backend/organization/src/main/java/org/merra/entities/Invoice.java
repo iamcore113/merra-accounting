@@ -9,7 +9,6 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.entities.embedded.InvoiceActionsEmb;
-import org.merra.repositories.InvoiceRepository;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.format.annotation.DateTimeFormat;
 

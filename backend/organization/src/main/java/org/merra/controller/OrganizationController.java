@@ -1,11 +1,10 @@
 package org.merra.controller;
 
-import java.util.Set;
 import java.util.UUID;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
-import org.merra.dto.OrganziationSelectionResponse;
+import org.merra.dto.UserOrganizationResponse;
 import org.merra.services.OrganizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,10 +40,15 @@ public class OrganizationController {
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
-	@GetMapping(value = "select/organizations/{userId}")
-	public ResponseEntity<Set<OrganziationSelectionResponse>> getOrganizationsByUserId(
+	@GetMapping(value = "users/{userId}")
+	public ResponseEntity<ApiResponse> getOrganizationsByUserId(
 			@PathVariable("userId") UUID userId) {
-		Set<OrganziationSelectionResponse> response = organizationService.getUserOrganizations(userId);
+		UserOrganizationResponse res = organizationService.getUserOrganizations(userId);
+		ApiResponse response = new ApiResponse(
+		"User organizations retrieved successfully.",
+		true,
+		HttpStatus.OK,
+		res);
 		return ResponseEntity.ok(response);
 	}
 

@@ -34,7 +34,9 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
      */
     @Query("select u from UserAccount u where u.id = ?#{ principal?.id }")
     Optional<UserAccount> findAuthenticatedUser();
-    
+    @Query("SELECT u.email FROM UserAccount u WHERE u.userId = :userId")
+    Optional<String> findUserEmailById(UUID userId);
+
     Optional<UserAccount>findUserByEmailIgnoreCase(String email);
     
     @Query("SELECT COUNT(u) FROM UserAccount u WHERE u.email = :email")

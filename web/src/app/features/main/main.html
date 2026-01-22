@@ -7,7 +7,7 @@
             <polyline points="2 17 12 22 22 17"></polyline>
             <polyline points="2 12 12 17 22 12"></polyline>
         </svg>
-        <span>BrandUI</span>
+        <span>MerraAccounting</span>
     </a>
 
     <!-- Navigation Links -->
@@ -32,7 +32,7 @@
         <div class="user-profile">
             <!-- Avatar placeholder using Initials -->
             <div class="avatar">JD</div>
-            <span class="user-name">John Doe</span>
+            <span class="user-name">{{userOrganizations.userDetails.fullName}}</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);">
                 <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -57,6 +57,11 @@
             <option value="2">Stark Industries</option>
             <option value="3">Wayne Enterprises</option>
             <option value="4">+ Add New Organization</option>
+            @for (item of userOrganizationList; track item.organizationId) {
+                <li>{{ item.organizationName }}</li>
+            } @empty {
+            <li>There are no items.</li>
+            }
         </select>
     </div>
     <!-- Optional: Right side of sub-nav could go here (e.g., date range, breadcrumbs) -->

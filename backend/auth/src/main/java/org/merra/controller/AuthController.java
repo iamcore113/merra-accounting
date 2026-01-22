@@ -2,11 +2,9 @@ package org.merra.controller;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.AuthResponse;
-import org.merra.dto.JwtTokens;
+import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
-import org.merra.dto.CreateAccountRequest;
-import org.merra.dto.TokenRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
 import org.merra.service.AuthService;
@@ -43,17 +41,11 @@ public class AuthController {
         return ResponseEntity.ok(apiRes);
     }
 
-    /**
-     * Generate new access & refresh token
-     * 
-     * @param request TokenRequest object type.
-     * @return
-     */
-    @PostMapping("tokens")
-    public ResponseEntity<?> tokens(@Valid @RequestBody TokenRequest request) {
-        final JwtTokens tokens = authService.tokens(request);
-        return new ResponseEntity<>(tokens, HttpStatus.OK);
+    @GetMapping("path")
+    public String getMethodName(@RequestParam String param) {
+        return new String();
     }
+    
 
     @PostMapping(value = "signin")
     public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {

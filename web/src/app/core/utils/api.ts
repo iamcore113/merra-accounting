@@ -5,21 +5,23 @@ export const API_VERSION_1 = `${BASE_API_URL}${VERSION_1}`;
 export const AUTHENTICATION_API_VER1 = `${BASE_API_URL}${API_AUTH}`;
 
 // Mapping urls
-// Metadatas
+// Organization
+export const ORGANIZATION_MAPPING = 'business/organization/';
 export const METADATA_ENDPOINT_VER1 = `${API_VERSION_1}metadata/`;
 export const META_DATA_ORGANIZATION = 'organization/';
-export const CREATE_NEW_ORGANIZATION = `${API_VERSION_1}business/organization/create/`;
+export const CREATE_NEW_ORGANIZATION = `${API_VERSION_1}${ORGANIZATION_MAPPING}create/`;
+export const USER_ORGANIZATIONS = `${API_VERSION_1}${ORGANIZATION_MAPPING}users/`;
 // authentications
 export const AUTH_SIGNIN = "signin";
 export const AUTH_SIGNUP = "signup";
 export const VERIFY_EMAIL = "req/signup/verify";
 export const VERIFY_EMAIL_V1 = `${API_AUTH}${VERIFY_EMAIL}`;
 export const RESEND_EMAIL_VERIFICATION = "resend/verification/email";
+// tokens
+export const REQUEST_TOKENS = "request/tokens/user/";
 // User details
 export const USER_ENDPOINT_VER1 = `${API_VERSION_1}account/user/`;
 export const COMPLETE_USER_PERSONAL_INFO = "complete/profile";
 // Oauth2
 export const OAUTH_LINK = "auth/url";
 export const OAUTH_CALLBACK = "auth/callback";
-// Organization
-export const ORGANIZATION_MAPPING = 'business/organization/';

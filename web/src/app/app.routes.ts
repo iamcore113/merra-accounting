@@ -24,7 +24,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Main,
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     providers: [
       provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
       OrganizationService

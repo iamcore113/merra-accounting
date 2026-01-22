@@ -1,3 +1,5 @@
+import { A } from "@angular/cdk/keycodes";
+
 interface successResponse {
   message: string;
   result: string;
@@ -59,6 +61,10 @@ export type VerifiedAccountResponse = {
   temporaryAccessToken: string;
 };
 
+export type ValidateTokenRequest = {
+  token: string;
+};
+
 export type EmailVerified = {
   token: string;
 };
@@ -93,4 +99,20 @@ export type CountriesList = {
 
 export type NewOrganizationResponse = {
   organizationId: string;
+  userDetails: {userId: string; userInfoPresent: boolean; name: string;};
+};
+
+export type OrganizationList = Array<{
+  organizationId: string;
+  organizationName: string;
+}>;
+
+export type UserOrganizationResponse = {
+  userDetails: {userId: string; fullName: string; email: string;};
+  organizations: OrganizationList
+};
+
+export type RequestedTokensResponse = {
+  accessToken: string;
+  refreshToken: string;
 };

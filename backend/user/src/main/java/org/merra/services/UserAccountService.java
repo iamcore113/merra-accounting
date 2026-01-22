@@ -13,6 +13,8 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.UserMapper;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserAccountSettingsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class UserAccountService {
+	private static final Logger logger = LoggerFactory.getLogger(UserAccountService.class);
 	private final UserMapper userMapper;
 	private final UserAccountRepository userRepository;
 	private final UserAccountSettingsRepository accountSettingsRepository;
@@ -40,7 +43,7 @@ public class UserAccountService {
 		try {
 			accountSettingsRepository.save(accountSettings);
 		} catch (DataIntegrityViolationException e) {
-			e.printStackTrace();
+			logger.error("Error saving account settings", e);
 		}
 	}
 
@@ -59,6 +62,10 @@ public class UserAccountService {
 		return findById.get();
 	}
 
+	public Optional<String> returnAccountFullName(UUID userId) {
+		return retrieveById(userId).getFullName();
+	}
+
 	/**
 	 * This will retrieve current authenticated user entity
 	 * 
@@ -74,11 +81,11 @@ public class UserAccountService {
 	}
 
 	public String retrieveRole(String role) {
-		if (role == Roles.SUBSCRIBER.toString()) {
+		if (role.equals(Roles.SUBSCRIBER.toString())) {
 			return Roles.SUBSCRIBER.toString();
-		} else if (role == Roles.READ_ONLY.toString()) {
+		} else if (role.equals(Roles.READ_ONLY.toString())) {
 			return Roles.READ_ONLY.toString();
-		} else if (role == Roles.INVOICE_ONLY.toString()) {
+		} else if (role.equals(Roles.INVOICE_ONLY.toString())) {
 			return Roles.READ_ONLY.toString();
 		} else {
 			return "n/a";

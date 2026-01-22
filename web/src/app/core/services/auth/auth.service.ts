@@ -3,12 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   BASE_API_URL, AUTHENTICATION_API_VER1,
-  AUTH_SIGNIN, AUTH_SIGNUP,
+  AUTH_SIGNIN, AUTH_SIGNUP, REQUEST_TOKENS,
   VERIFY_EMAIL, OAUTH_CALLBACK,
   OAUTH_LINK, RESEND_EMAIL_VERIFICATION,
   USER_ENDPOINT_VER1, COMPLETE_USER_PERSONAL_INFO
 } from '../../utils/api';
-import { Config, CreateAccount, resendEmailVerification, FillUserPersonalInformation } from '../../utils/types';
+import { Config, CreateAccount, resendEmailVerification, FillUserPersonalInformation, RequestedTokensResponse } from '../../utils/types';
 import { LocalStorageService } from '../localStorage/localStorage.service';
 
 @Injectable({
@@ -56,8 +56,32 @@ export class AuthService {
     return this._http.post<Config>(this.USER_PERSONAL_INFO_URL, res);
   }
 
-  isAuthenticated(): boolean {
-    const token = this.localStorageService.getItem('auth_token');
+  getTokens(): boolean {
+    const token = this.localStorageService.getItem('access_token');
     return !!token;
+  }
+  validateToken(token: string) {
+    
+  }
+
+  requestTokens() {
+    console.log("Requesting tokens...");
+    let tokens: RequestedTokensResponse;
+    const userId = this.localStorageService.getItem('user_id');
+    const url = `${AUTHENTICATION_API_VER1}${REQUEST_TOKENS}${userId}`;
+    this._http.get<Config>(url).subscribe({
+      next: (res: any) => {
+        console.log('Tokens fetched successfully:');
+        tokens = res.data as RequestedTokensResponse;
+      },
+      error: (err) => {
+        console.error('Error fetching tokens:', err);
+      },
+      complete: () => {
+        this.localStorageService.setItem('access_token', tokens.accessToken);
+        this.localStorageService.setItem('refresh_token', tokens.refreshToken);
+        console.log('Tokens stored in local storage.');
+      }
+    });
   }
 }

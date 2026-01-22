@@ -42,7 +42,6 @@ public class InvoiceService {
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactRepository contactRepository;
-	private final ContactService contactService;
 	private final JournalService journalService;
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
@@ -52,7 +51,6 @@ public class InvoiceService {
 			OrganizationRepository organizationRepository,
 			InvoiceRepository invoiceRepository,
 			ContactRepository contactRepository,
-			ContactService contactService,
 			JournalService journalService,
 			AccountRepository accountRepository,
 			TaxRateRepository taxRateRepository,
@@ -60,7 +58,6 @@ public class InvoiceService {
 		this.organizationRepository = organizationRepository;
 		this.invoiceRepository = invoiceRepository;
 		this.contactRepository = contactRepository;
-		this.contactService = contactService;
 		this.journalService = journalService;
 		this.accountRepository = accountRepository;
 		this.taxRateRepository = taxRateRepository;

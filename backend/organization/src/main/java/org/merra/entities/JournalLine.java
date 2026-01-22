@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.entities.embedded.AccountDetailEmb;
-import org.merra.entities.embedded.TaxDetailEmb;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -10,6 +10,8 @@ import { OrganizationService } from '../../core/services/organization/organizati
 import { OrganizationMetadata, CreateOrganizationPayload, CountriesList, NewOrganizationResponse } from '../../core/utils/types';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonsService } from '../../core/services/commons/commons.service';
+import { LocalStorageService } from '../../core/services/localStorage/localStorage.service';
+import { AuthService } from '../../core/services/auth/auth.service';
 
 
 interface OrganizationType {
@@ -27,10 +29,12 @@ interface OrganizationType {
   styleUrl: './create-organization.css',
 })
 export class CreateOrganization implements OnInit {
+  private _router = inject(Router);
   private route = inject(ActivatedRoute);
   private org = inject(OrganizationService);
+  private auth = inject(AuthService);
   private commons = inject(CommonsService);
-  private router = inject(Router);
+  private localStorageService = inject(LocalStorageService);
 
   isDisabled = signal<boolean>(false);
   readonly userEmail: string = this.route.snapshot.params['email'] || '';
@@ -104,12 +108,18 @@ export class CreateOrganization implements OnInit {
         console.error('Error creating organization:', err);
       },
       complete: () => {
+        this.localStorageService.setItem('organization_id', new_org_res.organizationId);
+        this.localStorageService.setItem('user_id', new_org_res.userDetails.userId);
         this.isDisabled.set(false);
+        this.auth.requestTokens();
+        this._router.navigate(['']);
       }
     });
   }
 
   handleSkip() {
-    this.router.navigate(['/account/orphan/', this.userEmail]);
+    console.log('Skipping organization creation');
+    this.auth.requestTokens();
+    this._router.navigate(['/account/orphan/', this.userEmail]);
   }
 }
