@@ -36,7 +36,12 @@ public class UserAccountService {
 		this.accountSettingsRepository = accountSettingsRepository;
 	}
 
-	// TODO - createUserAccountSetting() must test this method
+	// TODO - createUserAccountSetting() must test this method.
+	/**
+	 * This method will create new UserAccountSettings entity.
+	 * 
+	 * @param account - accepts {@linkplain UserAccount} object type.
+	 */
 	public void createUserAccountSetting(UserAccount account) {
 		UserAccountSettings accountSettings = new UserAccountSettings(account);
 

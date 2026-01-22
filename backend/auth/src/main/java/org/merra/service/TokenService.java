@@ -33,7 +33,6 @@ public class TokenService {
     private int verificationTokenDuration;
     @Value("${jwt.access.limited}")
     private int limitedAccessTokenDuration;
-    @Value("${spring.mail.username}")
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;

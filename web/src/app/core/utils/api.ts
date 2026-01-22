@@ -18,7 +18,10 @@ export const VERIFY_EMAIL = "req/signup/verify";
 export const VERIFY_EMAIL_V1 = `${API_AUTH}${VERIFY_EMAIL}`;
 export const RESEND_EMAIL_VERIFICATION = "resend/verification/email";
 // tokens
-export const REQUEST_TOKENS = "request/tokens/user/";
+const TOKENS = "tokens/";
+export const REQUEST_TOKENS = `${TOKENS}request/user/`;
+export const OBTAIN_NEW_TOKENS = `${TOKENS}obtain/new`;
+export const VALIDATE_TOKEN = `${TOKENS}validate`;
 // User details
 export const USER_ENDPOINT_VER1 = `${API_VERSION_1}account/user/`;
 export const COMPLETE_USER_PERSONAL_INFO = "complete/profile";
