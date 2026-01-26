@@ -4,6 +4,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatIconModule} from '@angular/material/icon';
 import { SimpleCardComponent } from '../../components/simple-card/simple-card.component';
 import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -23,6 +25,8 @@ interface Country {
     MatFormFieldModule,
     MatSelectModule,
     MatButtonModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
     MatInputModule,
     SimpleCardComponent,
     FormsModule,
@@ -31,6 +35,8 @@ interface Country {
 })
 export class PersonalInfoComponent implements OnInit {
   isDisabled = signal<boolean>(false);
+  previewUrl = signal<string | null>(null);
+  selectedFile = signal<File | null>(null);
   private _formBuilder = inject(FormBuilder);
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private authService: AuthService) {
@@ -96,6 +102,18 @@ export class PersonalInfoComponent implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.userEmail.set(params['email']);
     });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile.set(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.previewUrl.set(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   handleSkip() {

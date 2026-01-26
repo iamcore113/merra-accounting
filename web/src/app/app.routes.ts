@@ -24,11 +24,7 @@ export const routes: Routes = [
   {
     path: '',
     component: Main,
-    canActivate: [authGuard],
-    providers: [
-      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
-      OrganizationService
-    ],
+    //canActivate: [authGuard],
     children: [
       {
         path: 'dashboard',
@@ -69,11 +65,7 @@ export const routes: Routes = [
   {
     path:'account/organization/create/:email',
     component: CreateOrganization,
-    title: 'Create Your Organization - MERRA',
-    providers: [
-      provideHttpClient(withInterceptors([authInterceptor]),withRequestsMadeViaParent()),
-      CommonsService, OrganizationService
-    ]
+    title: 'Create Your Organization - MERRA'
   },
   {
     path: '**',

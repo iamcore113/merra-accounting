@@ -5,12 +5,14 @@ import java.util.UUID;
 import org.merra.api.ApiResponse;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.ValidateTokenRequest;
+import org.merra.dto.ValidateTokenResponse;
 import org.merra.service.TokenService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,18 +45,19 @@ public class TokensController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("validate")
+    @PostMapping("validate")
     public ResponseEntity<ApiResponse> validateToken(@Valid @RequestBody ValidateTokenRequest req) {
-        var validate = tokenService.validateToken(req.token());
+        final String token = req.token();
+        final ValidateTokenResponse validate = tokenService.validateToken(token);
         ApiResponse response = new ApiResponse();
-        response.setMessage(AuthConstantResponses.TOKEN_INVALID);
-        response.setResult(true);
+        response.setMessage(validate.isValid() ? AuthConstantResponses.TOKEN_VALID : AuthConstantResponses.TOKEN_INVALID);
+        response.setResult(validate.isValid());
         response.setResponse(HttpStatus.OK);
         response.setData(validate);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("obtain/new")
+    @PostMapping("obtain/new")
     public ResponseEntity<ApiResponse> obtainNewAccessToken(@Valid @RequestBody ValidateTokenRequest req) {
         final JwtTokens tokens = tokenService.obtainNewAccessToken(req.token());
         ApiResponse response = new ApiResponse();

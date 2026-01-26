@@ -65,6 +65,10 @@ export type ValidateTokenRequest = {
   token: string;
 };
 
+export type ValidateTokenResponse = {
+  isValid: boolean;
+};
+
 export type EmailVerified = {
   token: string;
 };

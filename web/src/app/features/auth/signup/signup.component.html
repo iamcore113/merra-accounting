@@ -45,8 +45,12 @@
         <mat-error>Password must be at least 8 characters long.</mat-error>
         } }
       </div>
-      <button matButton="filled" type="submit" class="btn" [disabled]="isDisabled()">
-        Sign Up
+      <button mat-flat-button color="primary" type="submit" class="btn" [disabled]="isDisabled()">
+        @if (isDisabled()) {
+          <mat-spinner diameter="24" color="accent"></mat-spinner>
+        } @else {
+          Sign Up
+        }
       </button>
     </form>
   </ng-container>

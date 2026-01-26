@@ -1,1 +1,165 @@
-<p>main-dashboard works!</p>
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Dashboard</h1>
+    <div class="header-actions">
+       <button class="action-btn">This Month ▼</button>
+    </div>
+  </header>
+
+  <!-- Key Metrics -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon revenue">💰</div>
+      <div class="stat-content">
+        <span class="stat-label">Total Revenue</span>
+        <span class="stat-value">$124,500.00</span>
+        <span class="stat-change positive">
+          <span>↑</span> 12.5% from last month
+        </span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon expenses">💸</div>
+      <div class="stat-content">
+        <span class="stat-label">Total Expenses</span>
+        <span class="stat-value">$45,200.00</span>
+        <span class="stat-change negative">
+           <span>↑</span> 5.2% from last month
+        </span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon profit">📈</div>
+      <div class="stat-content">
+        <span class="stat-label">Net Profit</span>
+        <span class="stat-value">$79,300.00</span>
+        <span class="stat-change positive">
+           <span>↑</span> 18.3% from last month
+        </span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pending">⏳</div>
+      <div class="stat-content">
+        <span class="stat-label">Pending Invoices</span>
+        <span class="stat-value">5</span>
+        <span class="stat-subtext">$12,400.00 total value</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="dashboard-content">
+    <!-- Main Chart Section -->
+    <div class="main-column">
+      <div class="content-card chart-card">
+        <div class="card-header">
+          <h2>Cash Flow</h2>
+        </div>
+        <div class="chart-placeholder">
+           <!-- Visual placeholder for a chart -->
+           <div class="bar" style="height: 60%"></div>
+           <div class="bar" style="height: 80%"></div>
+           <div class="bar" style="height: 45%"></div>
+           <div class="bar" style="height: 90%"></div>
+           <div class="bar" style="height: 70%"></div>
+           <div class="bar" style="height: 55%"></div>
+           <div class="bar" style="height: 85%"></div>
+           <div class="bar" style="height: 65%"></div>
+           <div class="bar" style="height: 95%"></div>
+           <div class="bar" style="height: 50%"></div>
+           <div class="bar" style="height: 75%"></div>
+           <div class="bar" style="height: 60%"></div>
+        </div>
+      </div>
+
+      <div class="content-card recent-transactions">
+        <div class="card-header">
+          <h2>Recent Transactions</h2>
+          <a class="view-all">View All</a>
+        </div>
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Oct 24</td>
+              <td>Tech Solutions Inc.</td>
+              <td>Service Revenue</td>
+              <td>+$4,500.00</td>
+              <td><span class="badge success">Completed</span></td>
+            </tr>
+             <tr>
+              <td>Oct 23</td>
+              <td>Office Supplies Co.</td>
+              <td>Office Expenses</td>
+              <td>-$245.00</td>
+              <td><span class="badge success">Completed</span></td>
+            </tr>
+             <tr>
+              <td>Oct 22</td>
+              <td>Client Payment</td>
+              <td>Service Revenue</td>
+              <td>+$1,200.00</td>
+              <td><span class="badge pending">Pending</span></td>
+            </tr>
+             <tr>
+              <td>Oct 21</td>
+              <td>Server Hosting</td>
+              <td>Infrastructure</td>
+              <td>-$150.00</td>
+              <td><span class="badge success">Completed</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Side Column -->
+    <div class="side-column">
+      <div class="content-card quick-actions">
+         <div class="card-header">
+          <h2>Quick Actions</h2>
+        </div>
+        <div class="action-grid">
+          <button class="quick-action-btn">
+             <span>➕</span> New Invoice
+          </button>
+          <button class="quick-action-btn">
+             <span>➖</span> Add Expense
+          </button>
+           <button class="quick-action-btn">
+             <span>👤</span> Add Client
+          </button>
+           <button class="quick-action-btn">
+             <span>📊</span> Generate Report
+          </button>
+        </div>
+      </div>
+
+       <div class="content-card notifications">
+         <div class="card-header">
+          <h2>Notifications</h2>
+        </div>
+        <div class="action-grid" style="gap: 16px;">
+          <div style="font-size: 14px; color: var(--mat-sys-on-surface);">
+            <strong>System Update</strong><br>
+            <span style="color: var(--mat-sys-on-surface-variant); font-size: 12px;">2 hours ago</span>
+            <p style="margin: 4px 0 0 0; color: var(--mat-sys-on-surface-variant);">Scheduled maintenance tonight at 2 AM.</p>
+          </div>
+           <div style="font-size: 14px; color: var(--mat-sys-on-surface);">
+            <strong>New Invoice Paid</strong><br>
+            <span style="color: var(--mat-sys-on-surface-variant); font-size: 12px;">5 hours ago</span>
+            <p style="margin: 4px 0 0 0; color: var(--mat-sys-on-surface-variant);">Invoice #1024 was paid by Acme Corp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

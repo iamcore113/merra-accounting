@@ -50,20 +50,33 @@
       <div class="form-group">
         <label>Profile Picture</label>
         <div class="profile-picture-section">
-          <div class="profile-preview" id="profilePreview">
-            <span class="profile-placeholder">👤</span>
+          <div class="profile-preview">
+            @if (previewUrl()) {
+              <img [src]="previewUrl()" alt="Profile Preview" class="preview-image" />
+            } @else {
+              <mat-icon class="profile-placeholder-icon">account_circle</mat-icon>
+            }
           </div>
           <div class="file-input-wrapper">
-            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" />
-            <label for="profilePicture" class="file-label">Choose Photo</label>
+            <input type="file" #fileInput id="profilePicture" (change)="onFileSelected($event)" accept="image/*" hidden />
+            <button type="button" mat-stroked-button (click)="fileInput.click()">
+              <mat-icon>upload</mat-icon>
+              Choose Photo
+            </button>
           </div>
           <div class="file-info">JPG, PNG or GIF (Max. 5MB)</div>
         </div>
       </div>
 
       <div class="button-group">
-        <button type="button" matButton="outlined" (click)="handleSkip()">Skip</button>
-        <button type="submit" matButton="filled" [disabled]="isDisabled()">Next</button>
+        <button type="button" mat-stroked-button (click)="handleSkip()">Skip</button>
+        <button type="submit" mat-flat-button color="primary" [disabled]="isDisabled()">
+          @if (isDisabled()) {
+            <mat-spinner diameter="24" color="accent"></mat-spinner>
+          } @else {
+            Next
+          }
+        </button>
       </div>
     </form>
   </ng-container>

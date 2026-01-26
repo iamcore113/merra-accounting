@@ -5,6 +5,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatSelectModule} from '@angular/material/select';
 import {MatInputModule} from '@angular/material/input';
 import {MatButtonModule} from '@angular/material/button';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { AlertComponent } from '../../../components/alert/alert.component';
 import { LocalStorageService } from '../../../core/services/localStorage/localStorage.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
@@ -18,6 +19,7 @@ import { SimpleCardComponent } from '../../../components/simple-card/simple-card
   imports: [
     RouterLink,
     MatButtonModule,
+    MatProgressSpinnerModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,

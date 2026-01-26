@@ -42,3 +42,18 @@ label {
 .login-link a:hover {
   text-decoration: underline;
 }
+
+.btn {
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px; /* Ensure consistent height */
+}
+
+/* Ensure spinner is visible against disabled background if needed, 
+   though disabled buttons usually reduce opacity. 
+   We might need to force opacity 1 if we want to show the spinner clearly,
+   but standard behavior is fine. 
+*/

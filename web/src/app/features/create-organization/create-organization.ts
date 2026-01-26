@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { SimpleCardComponent } from '../../components/simple-card/simple-card.component';
@@ -23,6 +24,7 @@ interface OrganizationType {
   imports: [
     MatFormFieldModule, MatSelectModule,
     MatButtonModule, MatInputModule,
+    MatProgressSpinnerModule,
     MatGridListModule, SimpleCardComponent,
     FormsModule, ReactiveFormsModule],
   templateUrl: './create-organization.html',

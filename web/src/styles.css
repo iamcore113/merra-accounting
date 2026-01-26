@@ -10,10 +10,10 @@ body {
   font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 /* You can add global styles to this file, and also import other style files */
-p {
+/* p {
   color: var(--text-color);
   font-size: 15px;
-}
+} */
 
 .form-group {
   margin-bottom: 20px;

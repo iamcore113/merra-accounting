@@ -101,8 +101,14 @@
       </div>
 
       <div class="button-group">
-        <button type="button" matButton="outlined" (click)="handleSkip()">Skip</button>
-        <button type="submit" matButton="filled">Next</button>
+        <button type="button" mat-stroked-button (click)="handleSkip()">Skip</button>
+        <button type="submit" mat-flat-button color="primary" [disabled]="isDisabled()">
+          @if (isDisabled()) {
+            <mat-spinner diameter="24" color="accent"></mat-spinner>
+          } @else {
+            Next
+          }
+        </button>
       </div>
     </form>
   </ng-container>
