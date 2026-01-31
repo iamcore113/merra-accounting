@@ -17,62 +17,47 @@ export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn):
   }
   
   const access_token: string | null = ls.getItem('access_token');
-  const refresh_token: string | null = ls.getItem('refresh_token');
-
+  console.log("Auth Interceptor running...");
+  
+  // Attach token if available
+  let authReq = req;
   if (access_token) {
-    return auth.validateToken(access_token).pipe(
-      switchMap((res: any) => {
-        const data = res.data as ValidateTokenResponse;
-        if (data && data.isValid) {
-          req = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${access_token}`
-            }
-          });
-          return next(req);
-        } else {
-          // Access token invalid, check refresh token
-          if (refresh_token) {
-            return auth.validateToken(refresh_token).pipe(
-              switchMap((refreshRes: any) => {
-                const refreshData = refreshRes.data as ValidateTokenResponse;
-                if (refreshData && refreshData.isValid) {
-                  // Refresh token valid, obtain new tokens
-                  return auth.obtainNewTokens(refresh_token).pipe(
-                    switchMap((newTokensRes: any) => {
-                      const newTokens = newTokensRes.data as RequestedTokensResponse;
-                      ls.setItem('access_token', newTokens.accessToken);
-                      ls.setItem('refresh_token', newTokens.refreshToken);
-                      req = req.clone({
-                        setHeaders: {
-                          Authorization: `Bearer ${newTokens.accessToken}`
-                        }
-                      });
-                      return next(req);
-                    }),
-                    catchError((err) => {
-                      console.error('Failed to obtain new tokens:', err);
-                      return next(req);
-                    })
-                  );
-                }
-                return next(req);
-              }),
-              catchError((err) => {
-                console.error('Refresh token validation failed:', err);
-                return next(req);
-              })
-            );
-          }
-          return next(req);
-        }
-      }),
-      catchError((err) => {
-        console.error('Token validation failed:', err);
-        // If validation fails, proceed without the token
-        return next(req);
-      })
-    );
+    authReq = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${access_token}`
+      }
+    });
   }
-  return next(req);
+
+  return next(authReq).pipe(
+    catchError((error) => {
+      // Handle 401 Unauthorized errors
+      if (error.status === 401) {
+        console.log('401 detected, attempting to refresh token...');
+        return auth.refreshToken().pipe(
+          switchMap((newTokens: any) => {
+            if (newTokens && newTokens.accessToken) {
+              // Retry the request with the new token
+              const retryReq = req.clone({
+                setHeaders: {
+                  Authorization: `Bearer ${newTokens.accessToken}`
+                }
+              });
+              return next(retryReq);
+            }
+            // If refresh failed, propagate the original error
+            return of(error); // Or throwError(() => error) depending on desired behavior
+          }),
+          catchError((refreshErr) => {
+            // If refresh logic throws an error, propagate it
+             console.error('Refresh token failed in interceptor', refreshErr);
+             // Optionally redirect to login here
+             return of(error); 
+          })
+        );
+      }
+      // Propagate other errors
+      throw error;
+    })
+  );
 }

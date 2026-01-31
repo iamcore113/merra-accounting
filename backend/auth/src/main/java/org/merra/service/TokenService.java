@@ -10,6 +10,8 @@ import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,6 +21,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class TokenService {
+    private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
     private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
     private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
     private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
@@ -60,7 +63,9 @@ public class TokenService {
     }
 
     public ValidateTokenResponse validateToken(String token) {
+        logger.info("Validating token: {}", token);
         final String email = jwtUtils.extractUsername(token);
+        logger.info("Extracted email from token: {}", email);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         boolean isTokenValid = true;
         if (!jwtUtils.isTokenValid(token, userDetails)) {

@@ -9,7 +9,8 @@ import {
   USER_ENDPOINT_VER1, COMPLETE_USER_PERSONAL_INFO,
   API_VERSION_1,
   VALIDATE_TOKEN,
-  OBTAIN_NEW_TOKENS
+  OBTAIN_NEW_TOKENS,
+  VER1_API
 } from '../../utils/api';
 import { Config, CreateAccount, resendEmailVerification, FillUserPersonalInformation, RequestedTokensResponse } from '../../utils/types';
 import { LocalStorageService } from '../localStorage/localStorage.service';
@@ -75,9 +76,7 @@ export class AuthService {
   }
   validateToken(token: string) {
     console.log(`Validate token: ${token} URL: ${this.tokenValidateUrl}`);
-    return this._http.post<Config>(this.tokenValidateUrl, {token: token}, {
-      context: new HttpContext().set(BYPASS_LOGGING, true)
-    });
+    return this._http.post<Config>(this.tokenValidateUrl, {token: token});
   }
 
   obtainNewTokens(token: string) {
@@ -86,10 +85,40 @@ export class AuthService {
     });
   }
 
+  refreshToken(): Observable<RequestedTokensResponse | null> {
+    const refreshToken = this.localStorageService.getItem('refresh_token');
+    console.log(`Get refresh token ${refreshToken}`);
+    if (!refreshToken) {
+      return new Observable(observer => {
+        observer.next(null);
+        observer.complete();
+      });
+    }
+
+    return new Observable(observer => {
+      this.obtainNewTokens(refreshToken).subscribe({
+        next: (res: any) => {
+          const newTokens = res.data as RequestedTokensResponse;
+          this.localStorageService.setItem('access_token', newTokens.accessToken);
+          this.localStorageService.setItem('refresh_token', newTokens.refreshToken);
+          observer.next(newTokens);
+          observer.complete();
+        },
+        error: (err) => {
+          console.error('Failed to refresh token', err);
+          this.localStorageService.removeItem('access_token');
+          this.localStorageService.removeItem('refresh_token');
+          observer.next(null);
+          observer.complete();
+        }
+      });
+    });
+  }
+
   requestTokens(): void {
     let tokens: RequestedTokensResponse;
     const userId = this.localStorageService.getItem('user_id');
-    const url = `${AUTHENTICATION_API_VER1}${REQUEST_TOKENS}${userId}`;
+    const url = `${VER1_API}${REQUEST_TOKENS}${userId}`;
     this._http.get<Config>(url, {context: new HttpContext().set(BYPASS_LOGGING, true)}).subscribe({
       next: (res: any) => {
         console.log('Tokens fetched successfully:');

@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { timer } from 'rxjs';
 import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { LocalStorageService } from '../../core/services/localStorage/localStorage.service';
 import { SimpleCardComponent } from '../../components/simple-card/simple-card.component';
@@ -9,7 +10,7 @@ import { SimpleCardComponent } from '../../components/simple-card/simple-card.co
   selector: 'app-token-email-notification',
   templateUrl: './token-email-notification.component.html',
   styleUrls: ['./token-email-notification.component.css'],
-  imports: [MatButtonModule, SimpleCardComponent],
+  imports: [MatButtonModule, SimpleCardComponent, MatIconModule],
 })
 export class TokenEmailNotificationComponent implements OnInit {
 

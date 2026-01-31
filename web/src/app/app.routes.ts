@@ -1,8 +1,5 @@
 import { Routes } from '@angular/router';
 import { NotFoundComponent } from './features/not-found/not-found.component';
-import { provideHttpClient, withInterceptors, withRequestsMadeViaParent } from '@angular/common/http';
-import { authInterceptor } from './core/interceptors/auth/auth-interceptor';
-import { OrganizationService } from './core/services/organization/organization.service';
 import { SignupComponent } from './features/auth/signup/signup.component';
 import { LandingComponent } from './features/landing/landing.component';
 import { PersonalInfoComponent } from './features/personal-info/personal-info.component';
@@ -11,7 +8,6 @@ import { VerifyTokenComponent } from './features/verify-token/verify-token.compo
 import { SigninComponent } from './features/auth/signin/signin.component';
 import { CreateOrganization } from './features/create-organization/create-organization';
 import { authGuard } from './core/guards/auth/auth-guard';
-import { CommonsService } from './core/services/commons/commons.service';
 import { Main } from './features/main/main';
 import { OrphanAccount } from './features/orphan-account/orphan-account';
 
