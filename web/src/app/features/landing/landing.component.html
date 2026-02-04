@@ -9,7 +9,19 @@
     </ul>
     <div class="nav-actions">
       <a routerLink="/account/signin" class="nav-cta">Sign In</a>
-      <a routerLink="/account/signup" class="nav-link-secondary">Create an account</a>
+      <a
+        routerLink="/account/signup"
+        class="nav-link-secondary"
+        style="
+          background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--mat-sys-primary) 90%, white),
+            var(--mat-sys-primary)
+          );
+          background-color: var(--mat-sys-primary);
+        "
+        >Create an account</a
+      >
     </div>
 
     <button class="mobile-menu-toggle">☰</button>
@@ -20,10 +32,13 @@
 <section class="hero">
   <div class="hero-container">
     <div class="hero-image">
-      <img src="feature/accounting_essentials.png" alt="Accounting Essentials">
+      <img src="feature/accounting_essentials.png" alt="Accounting Essentials" />
     </div>
     <div class="hero-content">
-      <h1>Professional <span class="text-gradient-orange">Accounting</span> & <span class="text-gradient-blue">Bookkeeping</span> Made Simple</h1>
+      <h1>
+        Professional <span class="text-gradient-orange">Accounting</span> &
+        <span class="text-gradient-blue">Bookkeeping</span> Made Simple
+      </h1>
       <p>
         Streamline your finances with MERRA's comprehensive accounting solutions designed for
         businesses of all sizes.
@@ -90,7 +105,7 @@
   <div class="footer-content">
     <div class="footer-section">
       <h3>MERRA</h3>
-      <p style="color: white; opacity: 0.7;">
+      <p style="color: white; opacity: 0.7">
         Professional accounting and bookkeeping solutions for modern businesses.
       </p>
     </div>
