@@ -1,0 +1,132 @@
+:host {
+  display: block;
+  background-color: var(--mat-sys-surface);
+}
+.navbar {
+  background-color: white;
+  padding: 28px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  box-shadow: none;
+}
+
+.navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 24px;
+  color: #1f2937;
+}
+
+.signup-btn {
+  border-radius: 0;
+}
+
+.hero {
+  padding: 48px 24px;
+  text-align: center;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero h1 {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+
+
+.hero-card {
+  width: 100%;
+  max-width: 1200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.col {
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+mat-card-content {
+  background-color: #ffffff;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.col.no-border {
+  border: none;
+}
+
+.login-form .actions {
+  justify-self: start;
+  display: flex;
+  gap: 12px;
+}
+
+.gradient-btn {
+  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.gradient-btn:hover {
+  filter: brightness(1.05);
+}
+
+.login-form button {
+  justify-self: start;
+  width: auto;
+}
+
+.display-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.forgot-link {
+  align-self: flex-start;
+  margin-top: 8px;
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+}
+.forgot-link:hover {
+  text-decoration: underline;
+}
