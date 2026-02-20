@@ -1,0 +1,27 @@
+<mat-card class="auth-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon fontSet="material-icons-outlined">mark_email_read</mat-icon>
+      Verify Your Email
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="message-container">
+      <p class="message-text">
+        We've sent a verification email to your inbox. Please check your email and click the
+        verification link to activate your account.
+      </p>
+      <p class="message-subtext">
+        Didn't receive the email? Check your spam folder or click the button below to resend.
+      </p>
+    </div>
+
+    <div class="button-container">
+      <button matButton="filled" type="button" (click)="onResend()">
+        <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+        Resend Verification Email
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>
