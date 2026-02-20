@@ -88,3 +88,130 @@ export interface OrganizationMetaDataResponse {
   addresses: AddressEn[];
   paymentTerms: PaymentTermsMetaData;
 }
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/AccountByOrganizationResponse.java
+export interface AccountByOrganizationResponse {
+  organizationID: string;
+  accountID: string;
+  code: string;
+  accountName: string;
+  accountType: string;
+  description: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/AccountCodeExistsResponse.java
+export interface AccountCodeExistsResponse {
+  accountCode: string;
+  exists: boolean;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/AccountResponse.java
+export interface AccountResponse {
+  accountID: string;
+  code: string;
+  name: string;
+  taxType: string;
+  status: string;
+  updatedDate: string;
+  addToWatchList: boolean;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CompleteContactRequest.java
+export interface CompleteContactRequest {
+  organizationId: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  accountNumber: string;
+  companyNumber: string;
+  contactStatus: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/ContactResponse.java
+export interface ContactResponse {
+  contactId: string;
+  name: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CreateInvoiceRequest.LineItems
+export interface LineItems {
+  description: string;
+  quantity: number;
+  unitAmount: number;
+  accountCode: string;
+  overrideTaxType: string;
+  discountRate: number;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CreateInvoiceRequest.java
+export interface CreateInvoiceRequest {
+  invoiceType: string;
+  contact: string;
+  lineAmountType: string;
+  lineItems: LineItems[];
+  date: string;
+  dueDate: string;
+  status: string;
+  taxEligible: boolean;
+  reference: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/InvoiceTaxEligibility.java
+export interface InvoiceTaxEligibility {
+  organizationID: string;
+  taxEligible: boolean;
+  message: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationElementResponse.UserOrganizationRole
+export interface UserOrganizationRole {
+  role: string;
+  description: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationElementResponse.OrganizationTypes
+export interface OrganizationTypes {
+  organizationTypeId: string;
+  name: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationElementResponse.java
+export interface OrganizationElementResponse {
+  userRole: UserOrganizationRole[];
+  organizationTypes: OrganizationTypes[];
+  countryCode: string[];
+  phoneDetails: Array<Record<string, string[]>>;
+  addressTypes: string[];
+  phoneTypes: string[];
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationUserInvitationUpdateRequest.java
+export interface OrganizationUserInvitationUpdateRequest {
+  invitationBy: string;
+  invitationTo: string;
+  updatedBy: string;
+  invitationStatus: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganziationSelectionResponse.java
+export interface OrganizationSelectionResponse {
+  organizationId: string;
+  displayName: string;
+  legalName: string;
+  description: string;
+  status: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/SimpleContactRequest.java
+export interface SimpleContactRequest {
+  name: string;
+  organizationId: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/UpdateInvoiceResponse.java
+export interface UpdateInvoiceResponse {
+  invoiceID: string;
+  formerStatus: string;
+  currentStatus: string;
+}
