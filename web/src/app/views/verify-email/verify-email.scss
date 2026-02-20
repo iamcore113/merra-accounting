@@ -67,4 +67,13 @@
       height: 1.25rem;
     }
   }
+
+  .orange-button {
+    background-color: rgba(255, 165, 0, 0.7) !important;
+    color: white !important;
+
+    &:hover {
+      background-color: rgba(255, 140, 0, 0.8) !important;
+    }
+  }
 }
