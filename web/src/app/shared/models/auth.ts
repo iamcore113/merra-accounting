@@ -60,3 +60,20 @@ export interface VerificationResponse {
 export interface ResendEmailVerification {
   userId: string;
 }
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/FillPersonalInformation.java
+export interface FillPersonalInformation {
+  firstName: string;
+  lastName: string;
+  profile: string;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/ValidateTokenRequest.java
+export interface ValidateTokenRequest {
+  token: string;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/ValidateTokenResponse.java
+export interface ValidateTokenResponse {
+  isValid: boolean;
+}
