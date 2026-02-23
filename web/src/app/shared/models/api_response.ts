@@ -1,7 +1,7 @@
 /**
  * Base interface corresponding to JsonResponse.java
  */
-export interface JsonResponse {
+interface JsonResponse {
   message: string;
   result: boolean;
   response: number; // HttpStatus mapped to number
@@ -11,13 +11,17 @@ export interface JsonResponse {
  * Interface corresponding to ApiResponse.java
  * Generic type T allows for type-safe data property
  */
-export interface SuccessResponse<T = any> extends JsonResponse {
+interface SuccessResponse<T = any> extends JsonResponse {
   data: T;
 }
 
 /**
  * Interface corresponding to ApiError.java
  */
-export interface ErrorResponse extends JsonResponse {
+interface ErrorResponse extends JsonResponse {
   // No additional properties beyond JsonResponse
+}
+
+export interface Config {
+  res: SuccessResponse | ErrorResponse;
 }
