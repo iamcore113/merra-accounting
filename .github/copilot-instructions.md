@@ -223,7 +223,8 @@ The app uses a custom Material 3 theme defined in [`web/src/styles.scss`](web/sr
 web/
 ├── src/
 │   ├── app/
-│   │   ├── components/     # Feature components
+│   │   ├── shared/         # Shared components
+│   │   ├── views/          # Page components
 │   │   ├── app.ts          # Root component
 │   │   ├── app.routes.ts   # Route definitions
 │   │   └── app.config.ts   # App configuration
