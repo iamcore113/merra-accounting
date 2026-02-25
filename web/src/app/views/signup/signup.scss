@@ -4,6 +4,7 @@
   max-width: 500px;
   width: 100%;
   padding: 1rem;
+  background-color: white;
 
   mat-card-header {
     display: flex;
@@ -39,6 +40,27 @@ form {
     width: 100%;
   }
 
+  .gender-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .gender-label {
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .gender-radio-group {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .gender-error {
+      font-size: 0.75rem;
+      color: var(--mat-sys-error);
+    }
+  }
+
   .button-container {
     display: flex;
     justify-content: flex-start;
@@ -49,6 +71,11 @@ form {
     button {
       padding: 0.75rem 2rem;
       font-size: 1rem;
+    }
+
+    a {
+      background-color: limegreen;
+      color: white;
     }
   }
 }

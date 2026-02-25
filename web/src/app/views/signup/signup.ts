@@ -5,6 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from '@angular/material/radio';
 import { AuthService } from '../../shared/services/auth-service';
 import { CreateAccountRequest } from '../../shared/models/auth';
 
@@ -16,7 +17,8 @@ import { CreateAccountRequest } from '../../shared/models/auth';
     MatInputModule,
     MatButtonModule,
     MatCardModule,
-    MatIconModule
+    MatIconModule,
+    MatRadioModule
   ],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
@@ -30,8 +32,13 @@ export class Signup {
   constructor(private fb: FormBuilder) {
     this.signupForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
-      confirmPassword: ['', [Validators.required]]
+      password: ['', [
+        Validators.required,
+        Validators.minLength(10),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)
+      ]],
+      confirmPassword: ['', [Validators.required]],
+      gender: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -56,10 +63,10 @@ export class Signup {
 
   onSubmit() {
     if (this.signupForm.valid) {
-      console.log('Form submitted:', this.signupForm.value);
       const req: CreateAccountRequest = {
         email: this.signupForm.value.email,
-        password: this.signupForm.value.password
+        password: this.signupForm.value.password,
+        gender: this.signupForm.value.gender
       };
       this.auth_service.signup(req).subscribe({
         next: (response) => {

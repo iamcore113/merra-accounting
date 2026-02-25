@@ -8,6 +8,16 @@
 
   <mat-card-content>
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="gender-field">
+        <label class="gender-label">Gender</label>
+        <mat-radio-group formControlName="gender" class="gender-radio-group">
+          <mat-radio-button value="male">Male</mat-radio-button>
+          <mat-radio-button value="female">Female</mat-radio-button>
+        </mat-radio-group>
+        @if (signupForm.get('gender')?.hasError('required') && signupForm.get('gender')?.touched) {
+          <mat-error class="gender-error">Gender is required</mat-error>
+        }
+      </div>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
         <input matInput type="email" formControlName="email" placeholder="Enter your email" />
@@ -37,6 +47,16 @@
           signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched
         ) {
           <mat-error>Password is required</mat-error>
+        }
+        @if (
+          signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched
+        ) {
+          <mat-error>Password must be at least 10 characters long</mat-error>
+        }
+        @if (
+          signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched
+        ) {
+          <mat-error>Password must contain at least 1 uppercase letter and 1 number</mat-error>
         }
       </mat-form-field>
 
@@ -69,7 +89,7 @@
       </mat-form-field>
 
       <div class="button-container">
-        <button matButton="filled" type="submit" [disabled]="!signupForm.valid">Sign Up</button>
+        <button matButton="filled" type="submit">Sign Up</button>
         <a matButton href="#">Do you have an account?</a>
       </div>
     </form>

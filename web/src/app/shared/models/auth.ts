@@ -3,6 +3,7 @@
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/CreateAccountRequest.java
 export interface CreateAccountRequest {
   email: string;
+  gender: string;
   password: string;
 }
 
