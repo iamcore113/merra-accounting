@@ -8,7 +8,7 @@ This file provides concise, actionable facts for AI coding agents working on the
 
 This is a **monorepo** with two main directories:
 
-- **`backend/`** — Java 21 Spring Boot 4.0.0 multi-module Maven backend
+- **`backend/`** — Java 25 Spring Boot 4.0.0 multi-module Maven backend
 - **`web/`** — Angular 20.x frontend application
 
 ---
@@ -17,7 +17,7 @@ This is a **monorepo** with two main directories:
 
 ### Overview
 
-- Multi-module Maven backend under `backend/` (Java 21, Spring Boot 4.0.0).
+- Multi-module Maven backend under `backend/` (Java 25, Spring Boot 4.0.0).
 - Top-level modules (declared in `backend/pom.xml`): `main`, `auth`, `commons`, `user`, `organization`.
 - `main` is the Spring Boot application and depends on the other modules (see [`backend/main/pom.xml`](backend/main/pom.xml)).
 

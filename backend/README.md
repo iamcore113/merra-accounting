@@ -1,6 +1,6 @@
 # Merra Accounting - Backend
 
-Multi-module Java 21 Spring Boot 4.0.0 application using Maven.
+Multi-module Java 25 Spring Boot 4.0.0 application using Maven.
 
 ## Project Structure
 
@@ -16,7 +16,7 @@ The `main` module depends on all other modules and serves as the runtime applica
 
 ## Prerequisites
 
-- Java 21 or higher
+- Java 25 or higher
 - Docker and Docker Compose (for local database)
 - Maven (wrapper included - `mvnw` / `mvnw.cmd`)
 
@@ -202,7 +202,7 @@ SpringDoc OpenAPI documentation is available when the application is running:
 ### Build Errors
 
 - Clean the project: `./mvnw clean`
-- Ensure Java 21 is installed: `java -version`
+- Ensure Java 25 is installed: `java -version`
 - Check for MapStruct annotation processor errors in logs
 
 ### Environment Variables Not Loading

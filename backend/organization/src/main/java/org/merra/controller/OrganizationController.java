@@ -31,30 +31,28 @@ public class OrganizationController {
 		this.organizationService = organizationService;
 	}
 
-	/*
-	 * This method controller will retrieve the list of organizations that a user
-	 * belongs to.
+	/**
+	 * Retrieves the list of organizations that a user belongs to.
 	 * 
-	 * @param userId - accepts {@linkplain java.util.UUID} object type.
-	 * 
-	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
-	 * type.
+	 * @param userId the unique identifier of the user
+	 * @return a response entity containing the user's organizations
 	 */
 	@GetMapping(value = "users/{userId}")
 	public ResponseEntity<ApiResponse> getOrganizationsByUserId(
 			@PathVariable("userId") UUID userId) {
 		UserOrganizationResponse res = organizationService.getUserOrganizations(userId);
 		ApiResponse response = new ApiResponse(
-		"User organizations retrieved successfully.",
-		true,
-		HttpStatus.OK,
-		res);
+				"User organizations retrieved successfully.",
+				true,
+				HttpStatus.OK,
+				res);
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "create new organization")
 	@PostMapping("create/{userId}")
-	public ResponseEntity<ApiResponse> createOrganization(@PathVariable("userId") UUID userId, @RequestBody @Valid CreateOrganizationRequest data) {
+	public ResponseEntity<ApiResponse> createOrganization(@PathVariable("userId") UUID userId,
+			@RequestBody @Valid CreateOrganizationRequest data) {
 		ApiResponse response = new ApiResponse(
 				"Organization object found successfully.",
 				true,
