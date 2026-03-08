@@ -19,6 +19,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	@Query("UPDATE Invoice i SET i.status = :status WHERE i.invoiceId = :invoiceId")
 	int updateInvoiceStatus(
 			@Param("invoiceId") UUID invoiceId,
-			@Param("status") String status
-	);
+			@Param("status") String status);
 }

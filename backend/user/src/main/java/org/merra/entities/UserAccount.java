@@ -42,6 +42,10 @@ public class UserAccount implements UserDetails {
 	@Column(name = "last_name")
 	private String lastName;
 
+	@Column(name = "gender", nullable = false)
+	@NotBlank(message = "gender cannot be blank.")
+	private String gender;
+
 	@Column(name = "account_password")
 	private String accountPassword;
 
@@ -122,7 +126,8 @@ public class UserAccount implements UserDetails {
 	}
 
 	public Optional<String> getFullName() {
-		return Optional.ofNullable((this.firstName != null ? this.firstName : "") + " " + (this.lastName != null ? this.lastName : ""));
+		return Optional.ofNullable(
+				(this.firstName != null ? this.firstName : "") + " " + (this.lastName != null ? this.lastName : ""));
 	}
 
 	public UserAccount() {
@@ -177,6 +182,14 @@ public class UserAccount implements UserDetails {
 		if (!roles.contains("ROLE_")) {
 			this.roles = "ROLE_" + roles.toUpperCase();
 		}
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
 	}
 
 	public boolean isOwner() {

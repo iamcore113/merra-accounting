@@ -132,7 +132,7 @@ public class Organization {
 	}
 
 	public void setActiveSubscription(Boolean isActiveSubscription) {
-		this.activeSubscription = isActiveSubscription == null ? true : isActiveSubscription;
+		this.activeSubscription = isActiveSubscription == null || isActiveSubscription;
 	}
 
 	public void setBasicInformation(String displayName,

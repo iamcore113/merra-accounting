@@ -1,13 +1,15 @@
 package org.merra.dto;
 
-import jakarta.validation.constraints.Email;
-
 public record CreateAccountRequest(
-		@Email(message = "Invalid email format.") String email,
+		String email,
+		String gender,
 		String password) {
 	public CreateAccountRequest {
 		if (email == null || email.isBlank()) {
 			throw new IllegalArgumentException("email component cannot be blank.");
+		}
+		if (gender == null || gender.isBlank()) {
+			throw new IllegalArgumentException("gender component cannot be blank.");
 		}
 
 		if (password == null || password.isBlank()) {

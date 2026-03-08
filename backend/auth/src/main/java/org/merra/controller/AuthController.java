@@ -29,6 +29,14 @@ public class AuthController {
         this.authService = authService;
     }
 
+    /**
+     * Verifies a user's email address using a verification token sent via email.
+     * This endpoint is typically accessed through a link in the verification email.
+     *
+     * @param tokenParam the email verification token
+     * @return ResponseEntity containing the verification result and verified
+     *         account details
+     */
     @GetMapping(value = "req/signup/verify")
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
         final VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
@@ -41,18 +49,29 @@ public class AuthController {
         return ResponseEntity.ok(apiRes);
     }
 
-    @GetMapping("path")
-    public String getMethodName(@RequestParam String param) {
-        return new String();
-    }
-    
-
+    /**
+     * Authenticates a user and provides access tokens for subsequent API requests.
+     * Validates credentials and returns authentication tokens upon successful
+     * login.
+     *
+     * @param loginRequest the login credentials containing username/email and
+     *                     password
+     * @return ResponseEntity containing authentication tokens and user information
+     */
     @PostMapping(value = "signin")
     public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
         final AuthResponse res = authService.login(loginRequest);
         return ResponseEntity.ok(res);
     }
 
+    /**
+     * Registers a new user account and sends an email verification link.
+     * If an account with the same email already exists but is unverified, it
+     * resends the verification email.
+     *
+     * @param req the account creation request containing user details
+     * @return ResponseEntity with verification instructions and status
+     */
     @PostMapping("signup")
     public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
         final VerificationResponse res = authService.signup(req);
@@ -72,6 +91,16 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Resends the email verification link to a user who has not yet verified their
+     * email.
+     * This is useful when the original verification email was not received or has
+     * expired.
+     *
+     * @param req the request containing the email address to resend verification to
+     * @return ResponseEntity with confirmation that the verification email was
+     *         resent
+     */
     @PostMapping("resend/verification/email")
     public ResponseEntity<ApiResponse> resendEmailVerification(@Valid @RequestBody ResendEmailVerification req) {
         final var resentToken = authService.resendEmailVerification(req);

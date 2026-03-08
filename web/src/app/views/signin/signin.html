@@ -1,0 +1,45 @@
+<mat-card class="auth-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon fontSet="material-icons-outlined">login</mat-icon>
+      Sign In
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="Enter your email" />
+        <mat-icon matPrefix fontSet="material-icons-outlined">mail</mat-icon>
+        @if (signinForm.get('email')?.hasError('required') && signinForm.get('email')?.touched) {
+          <mat-error>Email is required</mat-error>
+        }
+        @if (signinForm.get('email')?.hasError('email') && signinForm.get('email')?.touched) {
+          <mat-error>Please enter a valid email</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          type="password"
+          formControlName="password"
+          placeholder="Enter your password"
+        />
+        <mat-icon matPrefix fontSet="material-icons-outlined">lock</mat-icon>
+        @if (
+          signinForm.get('password')?.hasError('required') && signinForm.get('password')?.touched
+        ) {
+          <mat-error>Password is required</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="button-container">
+        <button matButton="filled" type="submit" [disabled]="!signinForm.valid">Sign In</button>
+        <a matButton href="#">Don't have an account?</a>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>
