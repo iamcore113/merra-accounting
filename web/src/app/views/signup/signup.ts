@@ -1,11 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../shared/services/auth-service';
 import { CreateAccountRequest } from '../../shared/models/auth';
 
@@ -18,16 +21,20 @@ import { CreateAccountRequest } from '../../shared/models/auth';
     MatButtonModule,
     MatCardModule,
     MatIconModule,
-    MatRadioModule
+    MatProgressSpinnerModule,
+    MatRadioModule,
+    MatSnackBarModule
   ],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })
 export class Signup {
   auth_service = inject(AuthService);
+  snackBar = inject(MatSnackBar);
   signupForm: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
+  isSubmitting = signal(false);
 
   constructor(private fb: FormBuilder) {
     this.signupForm = this.fb.group({
@@ -62,22 +69,44 @@ export class Signup {
   }
 
   onSubmit() {
-    if (this.signupForm.valid) {
+    if (this.signupForm.valid && !this.isSubmitting()) {
+      this.isSubmitting.set(true);
+      let pendingErrorMessage: string | null = null;
+
       const req: CreateAccountRequest = {
         email: this.signupForm.value.email,
         password: this.signupForm.value.password,
         gender: this.signupForm.value.gender
       };
-      this.auth_service.signup(req).subscribe({
+      this.auth_service.signup(req).pipe(
+        finalize(() => {
+          this.isSubmitting.set(false);
+
+          if (pendingErrorMessage) {
+            this.snackBar.open(pendingErrorMessage, 'Close', {
+              duration: 5000,
+              horizontalPosition: 'center',
+              verticalPosition: 'bottom'
+            });
+          }
+        })
+      ).subscribe({
         next: (response) => {
           console.log('Signup successful:', response);
           // Add your signup logic here
         },
         error: (error) => {
           console.error('Signup failed:', error);
-          // Handle signup error here
+          const errorMessage =
+            error?.error?.message ||
+            error?.error?.error ||
+            error?.message ||
+            'Signup failed. Please try again.';
+          pendingErrorMessage = errorMessage;
         },
-        complete: () => console.log('Signup request completed')
+        complete: () => {
+          console.log('Signup request completed')
+        }
       });
     }
   }

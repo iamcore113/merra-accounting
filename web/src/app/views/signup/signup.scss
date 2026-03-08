@@ -71,6 +71,13 @@ form {
     button {
       padding: 0.75rem 2rem;
       font-size: 1rem;
+      min-width: 120px;
+
+      .submit-spinner {
+        display: block;
+        margin: 0 auto;
+        --mdc-circular-progress-active-indicator-color: currentColor;
+      }
     }
 
     a {
