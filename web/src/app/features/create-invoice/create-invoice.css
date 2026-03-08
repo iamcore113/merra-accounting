@@ -1,0 +1,83 @@
+.create-invoice-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+/* Row 1: Form Styling */
+.invoice-form-card {
+  /* No specific style needed, inherits mat-card defaults */
+}
+
+.invoice-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-row mat-form-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Row 2: Table Styling */
+.line-items-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 !important;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.line-items-table {
+  width: 100%;
+}
+
+/* Table Header Styling */
+.line-items-table th {
+  background-color: var(--mat-sys-primary) !important;
+  color: white !important;
+}
+
+/* Dense form fields for table cells */
+.dense-form-field {
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Adjust mat-form-field within table to reduce height */
+.line-items-table .mat-mdc-form-field-subscript-wrapper {
+  display: none; /* Hide error spacing if not validating in table */
+}
+
+.line-items-table td.mat-mdc-cell {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 8px;
+}
+
+.line-items-table td.mat-mdc-cell:last-child {
+  padding-right: 24px;
+}
+
+/* Actions */
+.actions-container {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-start;
+}

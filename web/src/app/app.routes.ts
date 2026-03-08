@@ -10,6 +10,7 @@ import { CreateOrganization } from './features/create-organization/create-organi
 import { authGuard } from './core/guards/auth/auth-guard';
 import { Main } from './features/main/main';
 import { OrphanAccount } from './features/orphan-account/orphan-account';
+import { CreateInvoice } from './features/create-invoice/create-invoice';
 
 export const routes: Routes = [
   {
@@ -26,6 +27,11 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./features/main-dashboard/main-dashboard').then(m => m.MainDashboard),
         title: 'Dashboard - MERRA'
+      },
+      {
+        path: 'invoice/create',
+        loadComponent: () => import('./features/create-invoice/create-invoice').then(m => m.CreateInvoice),
+        title: 'Create Invoice'
       }
     ]
   },
