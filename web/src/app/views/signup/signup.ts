@@ -108,7 +108,7 @@ export class Signup {
         },
         complete: () => {
           console.log('Signup request completed');
-          void this.router.navigate(['/account/verify-email']);
+          void this.router.navigate(['account/verify-email', this.signupForm.value.email]);
         }
       });
     }
