@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth-service';
 import { CreateAccountRequest } from '../../shared/models/auth';
 
@@ -31,6 +32,7 @@ import { CreateAccountRequest } from '../../shared/models/auth';
 export class Signup {
   auth_service = inject(AuthService);
   snackBar = inject(MatSnackBar);
+  router = inject(Router);
   signupForm: FormGroup;
   hidePassword = true;
   hideConfirmPassword = true;
@@ -105,7 +107,8 @@ export class Signup {
           pendingErrorMessage = errorMessage;
         },
         complete: () => {
-          console.log('Signup request completed')
+          console.log('Signup request completed');
+          void this.router.navigate(['/account/verify-email']);
         }
       });
     }
