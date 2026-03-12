@@ -12,7 +12,7 @@ export const routes: Routes = [
     children: [
       { path: 'signup', component: Signup },
       { path: 'signin', component: Signin },
-      { path: 'verify-email', component: VerifyEmail },
+      { path: 'verify-email/:email', component: VerifyEmail },
     ]
   },
 ];
