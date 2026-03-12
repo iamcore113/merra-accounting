@@ -211,6 +211,7 @@ Build artifacts will be stored in the `dist/` directory.
 
 - **Forms**: Use `ReactiveFormsModule` or `FormsModule` with Material form fields
 - **HTTP**: Import `HttpClient` from `@angular/common/http`
+- **Read route state**: Use `ActivatedRoute` to access route parameters and query parameters
 - **Signals**: Use Angular signals for reactive state management (see [`app.ts`](web/src/app/app.ts))
 - **Images**: Use `NgOptimizedImage` directive for better performance
 
