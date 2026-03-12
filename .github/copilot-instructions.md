@@ -121,8 +121,14 @@ The app will be available at `http://localhost:4200/` and will auto-reload on ch
 - Use Material components for:
   - Buttons: `MatButtonModule`
   - Form fields: `MatFormFieldModule`, `MatInputModule`
+  - Select dropdowns: `MatSelectModule`
+  - Snackbar: `MatSnackBarModule`
+  - Stepper: `MatStepperModule`
   - Cards: `MatCardModule`
   - Icons: `MatIconModule`
+  - Checkbox: `MatCheckboxModule`
+  - Dialog/Modal: `MatDialog`
+  - Progress spinners: `MatProgressSpinnerModule`
   - And all other UI elements
 
 ### Button Styling Rules
