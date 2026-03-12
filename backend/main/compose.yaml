@@ -17,7 +17,7 @@ services:
     image: adminer
     restart: always
     ports:
-      - 7777:8080
+      - 7771:8080
     networks:
       - merra_network
     depends_on:
