@@ -118,7 +118,7 @@ public class AuthService {
 
   public void sendVerificationEmail(String email, String verToken) {
     final String subject = "Email Verification";
-    final String path = "auth/signup/req/verify";
+    final String path = "account/verify";
     final String msg = "Click the button below to verify your email address";
     sendEmail(email, verToken, subject, path, msg);
 
