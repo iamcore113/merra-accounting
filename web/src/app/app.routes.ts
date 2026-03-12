@@ -3,6 +3,7 @@ import { Signup } from './views/signup/signup';
 import { Signin } from './views/signin/signin';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { AuthLayout } from './shared/components/auth-layout/auth-layout';
+import { VerifyAccount } from './views/verify-account/verify-account';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -10,9 +11,10 @@ export const routes: Routes = [
     path: 'account',
     component: AuthLayout,
     children: [
-      { path: 'signup', component: Signup },
-      { path: 'signin', component: Signin },
-      { path: 'verify-email/:email', component: VerifyEmail },
+      { path: 'signup', component: Signup, title: 'Create Account' },
+      { path: 'signin', component: Signin, title: 'Sign In' },
+      { path: 'verify-email/:email', component: VerifyEmail, title: 'Verify Email' },
+      { path: 'verify', component: VerifyAccount, title: 'Verify Account' },
     ]
   },
 ];
