@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class JournalTotalAmountEntry implements Serializable {/**
+public class JournalTotalAmountEntryEmb implements Serializable {/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
@@ -25,9 +25,9 @@ public class JournalTotalAmountEntry implements Serializable {/**
 	public void setTotalCredit(BigDecimal totalCredit) {
 		this.totalCredit = totalCredit;
 	}
-	public JournalTotalAmountEntry() {
+	public JournalTotalAmountEntryEmb() {
 	}
-	public JournalTotalAmountEntry(BigDecimal totalDebit, BigDecimal totalCredit) {
+	public JournalTotalAmountEntryEmb(BigDecimal totalDebit, BigDecimal totalCredit) {
 		this.totalDebit = totalDebit;
 		this.totalCredit = totalCredit;
 	}

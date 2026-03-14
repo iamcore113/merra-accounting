@@ -13,7 +13,7 @@ import org.merra.entities.JournalLine;
 import org.merra.entities.LineItem;
 import org.merra.entities.Organization;
 import org.merra.entities.embedded.AccountDetailEmb;
-import org.merra.entities.embedded.JournalTotalAmountEntry;
+import org.merra.entities.embedded.JournalTotalAmountEntryEmb;
 import org.merra.entities.embedded.LineItemByAccountCodeEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
@@ -126,7 +126,7 @@ public class JournalService {
 				.map(tc -> tc.getCredit())
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		JournalTotalAmountEntry total = new JournalTotalAmountEntry(totalDebit, totalCredit);
+		JournalTotalAmountEntryEmb total = new JournalTotalAmountEntryEmb(totalDebit, totalCredit);
 		createJournal.setTotal(total);
 
 		journalRepository.save(createJournal);

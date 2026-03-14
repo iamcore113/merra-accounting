@@ -5,7 +5,7 @@ import java.io.Serializable;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public class LineItemSettings implements Serializable {
+public class LineItemSettingsEmb implements Serializable {
 	/**
 	 * 
 	 */
@@ -32,9 +32,9 @@ public class LineItemSettings implements Serializable {
 	public void setDefaultDiscountRate(Integer defaultDiscountRate) {
 		this.defaultDiscountRate = defaultDiscountRate;
 	}
-	public LineItemSettings() {
+	public LineItemSettingsEmb() {
 	}
-	public LineItemSettings(Double defaultQuantity, String defaultAccountCode, Integer defaultDiscountRate) {
+	public LineItemSettingsEmb(Double defaultQuantity, String defaultAccountCode, Integer defaultDiscountRate) {
 		this.defaultQuantity = defaultQuantity;
 		this.defaultAccountCode = defaultAccountCode;
 		this.defaultDiscountRate = defaultDiscountRate;

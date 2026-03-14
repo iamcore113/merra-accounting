@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.merra.entities.embedded.JournalTotalAmountEntry;
+import org.merra.entities.embedded.JournalTotalAmountEntryEmb;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
@@ -52,7 +52,7 @@ public class Journal {
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "total", columnDefinition = "jsonb")
-	private JournalTotalAmountEntry total;
+	private JournalTotalAmountEntryEmb total;
 
 	public Journal() {
 	}
@@ -60,7 +60,7 @@ public class Journal {
 	public Journal(UUID journalId, @NotNull(message = "journalDate attribute cannot be null.") LocalDate journalDate,
 			BigInteger journalNumber,
 			@NotEmpty(message = "journalLines attribute cannot be empty.") List<JournalLine> journalLines,
-			JournalTotalAmountEntry total) {
+			JournalTotalAmountEntryEmb total) {
 		this(journalDate, journalNumber, journalLines, total);
 		this.journalId = journalId;
 	}
@@ -68,7 +68,7 @@ public class Journal {
 	public Journal(@NotNull(message = "journalDate attribute cannot be null.") LocalDate journalDate,
 			BigInteger journalNumber,
 			@NotEmpty(message = "journalLines attribute cannot be empty.") List<JournalLine> journalLines,
-			JournalTotalAmountEntry total) {
+			JournalTotalAmountEntryEmb total) {
 		this.journalDate = journalDate;
 		this.journalNumber = journalNumber;
 		this.journalLines = journalLines;
@@ -104,11 +104,11 @@ public class Journal {
 		journalLines.forEach(line -> line.setJournal(this));
 	}
 
-	public JournalTotalAmountEntry getTotal() {
+	public JournalTotalAmountEntryEmb getTotal() {
 		return total;
 	}
 
-	public void setTotal(JournalTotalAmountEntry total) {
+	public void setTotal(JournalTotalAmountEntryEmb total) {
 		this.total = total;
 	}
 
