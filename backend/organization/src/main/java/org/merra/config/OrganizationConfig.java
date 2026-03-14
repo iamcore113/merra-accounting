@@ -23,7 +23,7 @@ public class OrganizationConfig implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		// create account categories
+		// Create Account Categories
 		if (accountCategoryRepository.findAll().isEmpty()) {
 			accountCategoryRepository.saveAll(Set.of(
 					new AccountCategory(AccountConstants.ACC_CATEGORY_ASSET),
@@ -33,7 +33,7 @@ public class OrganizationConfig implements CommandLineRunner {
 					new AccountCategory(AccountConstants.ACC_CATEGORY_REVENUE)));
 		}
 
-		// Add organization types
+		// Add organization types - DEFAULTS
 		if (organizationTypeRepository.findAll().isEmpty()) {
 			organizationTypeRepository.saveAll(Set.of(
 					new org.merra.entities.OrganizationType("INDIVIDUAL"),

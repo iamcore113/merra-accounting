@@ -21,6 +21,7 @@ import org.merra.repositories.JournalRepository;
 import org.merra.utilities.AccountConstants;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -29,6 +30,7 @@ import jakarta.validation.constraints.NotNull;
 
 // TODO - work on the taxes part
 @Service
+@Validated
 public class JournalService {
 	private final AccountRepository accountRepository;
 	private final JournalRepository journalRepository;

@@ -19,7 +19,7 @@ public class OrganizationMetadataController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getAllOrganizationMetadata() {
+    public ResponseEntity<ApiResponse> getOrganizationMetadata() {
         var res = organizationService.returnOrganizationMetaData();
         ApiResponse response = new ApiResponse(
                 "Organization metadata found successfully.",

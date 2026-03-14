@@ -78,8 +78,8 @@ public class Account {
 		this.status = stat;
 	}
 
-	// Constructor for creating new account object
-	// The following are the required only attributes for creating object.
+	// Minimal constructor for creating a new Account instance.
+	// Only the essential attributes required for initialization are included.
 	public Account(
 			@NotNull Organization org,
 			@NotNull String code,
