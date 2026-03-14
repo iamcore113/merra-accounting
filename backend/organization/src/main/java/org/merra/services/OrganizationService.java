@@ -25,6 +25,7 @@ import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.merra.services.phone.PhoneService;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -137,7 +138,10 @@ public class OrganizationService {
 		} else {
 			userfullName = checkUserFullName.get();
 		}
-		return new NewOrganizationResponse(newOrganization.getId(), new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName));
+		return new NewOrganizationResponse(
+				newOrganization.getId(),
+				new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName)
+		);
 
 	}
 
@@ -148,6 +152,10 @@ public class OrganizationService {
 	 * @return OrganizationType object
 	 */
 	private OrganizationType getOrganizationType(UUID type) {
+		if (type == null) {
+			throw new IllegalArgumentException("Organization type is required");
+		}
+		
 		OrganizationType getOrganizationType = organizationTypeRepository.findById(type)
 				.orElseThrow(() -> new EntityNotFoundException("Organization type not found"));
 

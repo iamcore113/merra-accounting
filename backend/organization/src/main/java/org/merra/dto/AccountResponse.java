@@ -3,21 +3,30 @@ package org.merra.dto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public record AccountResponse(
-		@NotNull(message = "accountID component cannot be null.")
 		UUID accountID,
-		@NotBlank(message = "code component cannot be blank.")
 		String code,
-		@NotBlank(message = "name component cannot be blank.")
 		String name,
-		@NotBlank(message = "taxType component cannot be blank.")
 		String taxType,
-		@NotBlank(message = "status component cannot be blank.")
 		String status,
 		LocalDate updatedDate,
 		boolean addToWatchList
 ) {
+	public AccountResponse {
+		if (accountID == null) {
+			throw new IllegalArgumentException("accountID cannot be null");
+		}
+		if (code == null || code.isBlank()) {
+			throw new IllegalArgumentException("code cannot be null or blank");
+		}
+		if (name == null || name.isBlank()) {
+			throw new IllegalArgumentException("name cannot be null or blank");
+		}
+		if (taxType == null || taxType.isBlank()) {
+			throw new IllegalArgumentException("taxType cannot be null or blank");
+		}
+		if (status == null || status.isBlank()) {
+			throw new IllegalArgumentException("status cannot be null or blank");
+		}
+	}
 }

@@ -2,16 +2,20 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public record InvoiceTaxEligibility(
-		@NotNull(message = "organizationID component cannot be null.")
 		UUID organizationID,
-		@NotNull(message = "taxEligible component cannot be null.")
 		Boolean taxEligible,
-		@NotBlank(message = "message component cannot be blank.")
 		String message
 ) {
-
+	public InvoiceTaxEligibility {
+		if (organizationID == null) {
+			throw new IllegalArgumentException("organizationID cannot be null");
+		}
+		if (taxEligible == null) {
+			throw new IllegalArgumentException("taxEligible cannot be null");
+		}
+		if (message == null || message.isBlank()) {
+			throw new IllegalArgumentException("message cannot be null or blank");
+		}
+	}
 }

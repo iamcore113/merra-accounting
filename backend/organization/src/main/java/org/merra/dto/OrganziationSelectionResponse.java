@@ -2,19 +2,25 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public record OrganziationSelectionResponse(
-    @NotNull(message = "organizationId cannot be null")
     UUID organizationId,
-    @NotBlank(message = "displayName cannot be blank")
     String displayName,
-    @NotBlank(message = "legalName cannot be blank")
     String legalName,
     String description,
-    @NotBlank(message = "status cannot be blank")
     String status
 ) {
-    
+    public OrganziationSelectionResponse {
+    	if (organizationId == null) {
+			throw new IllegalArgumentException("organizationId cannot be null");
+		}
+    	if (displayName == null || displayName.isBlank()) {
+    		throw new IllegalArgumentException("displayName cannot be null or blank");
+    	}
+    	if (legalName == null || legalName.isBlank()) {
+			throw new IllegalArgumentException("legalName cannot be null or blank");
+		}
+    	if (status == null || status.isBlank()) {
+    		throw new IllegalArgumentException("status cannot be null or blank");
+    	}
+    }
 }
