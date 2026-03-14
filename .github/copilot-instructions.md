@@ -230,7 +230,7 @@ The app uses a custom Material 3 theme defined in [`web/src/styles.scss`](web/sr
 web/
 ├── src/
 │   ├── app/
-│   │   ├── shared/         # Shared components
+│   │   ├── shared/         # Shared components, interceptors, models, services, api
 │   │   ├── views/          # Page components
 │   │   ├── app.ts          # Root component
 │   │   ├── app.routes.ts   # Route definitions
