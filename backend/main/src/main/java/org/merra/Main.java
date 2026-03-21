@@ -21,6 +21,6 @@ public class Main {
 
     @GetMapping
     public ResponseEntity<String> main() {
-        return ResponseEntity.ok("Backend is running...");
+        return ResponseEntity.ok("backend is now running..");
     }
 }
