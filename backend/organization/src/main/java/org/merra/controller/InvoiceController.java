@@ -25,11 +25,6 @@ public class InvoiceController {
 		this.invoicesService = invoicesService;
 	}
 
-	@GetMapping
-	public String getMethodName() {
-		return new String("Hello world");
-	}
-
 	/**
 	 * When the user creates an invoice (e.g. clicks the button for creating
 	 * new invoice) a request will be sent to this and this will be the response.
