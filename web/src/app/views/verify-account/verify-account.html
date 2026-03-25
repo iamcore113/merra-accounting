@@ -1,1 +1,12 @@
-<p>verify-account works!</p>
+
+<div class="verify-account-center">
+  @if (isLoading) {
+    <div class="spinner-stack">
+      <mat-spinner [diameter]="64" [strokeWidth]="6"></mat-spinner>
+      <div class="verify-text">Verifying account..</div>
+    </div>
+  } @else {
+    <div class="verify-text">Verification complete.</div>
+  }
+</div>
+

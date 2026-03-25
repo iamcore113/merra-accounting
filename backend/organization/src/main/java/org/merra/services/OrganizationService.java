@@ -25,7 +25,6 @@ import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.merra.services.phone.PhoneService;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;

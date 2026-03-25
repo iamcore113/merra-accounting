@@ -1,0 +1,22 @@
+
+.verify-account-center {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.verify-text {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
