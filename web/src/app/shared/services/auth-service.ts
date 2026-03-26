@@ -17,7 +17,7 @@ export class AuthService {
 
   verifyAccount(token: string): Observable<Config> {
     const url = `${REQUEST_SIGNUP_VERIFICATION_EMAIL_URL}?token=${token}`;
-    return this.http.post<Config>(url, token);
+    return this.http.get<Config>(url);
   }
   
 }

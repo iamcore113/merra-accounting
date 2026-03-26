@@ -4,6 +4,7 @@ import { Signin } from './views/signin/signin';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { AuthLayout } from './shared/components/auth-layout/auth-layout';
 import { VerifyAccount } from './views/verify-account/verify-account';
+import { PersonalDetails } from './views/personal-details/personal-details';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -15,6 +16,7 @@ export const routes: Routes = [
       { path: 'signin', component: Signin, title: 'Sign In' },
       { path: 'verify-email/:email', component: VerifyEmail, title: 'Verify Email' },
       { path: 'verify', component: VerifyAccount, title: 'Verify Account' },
+      { path: 'personal-details/:email', component: PersonalDetails, title: 'Personal Details' },
     ]
   },
 ];

@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../shared/services/auth-service';
+import { finalize } from 'rxjs/operators';
+import { VerifiedAccountResponse } from '../../shared/models/auth';
+import { Config } from '../../shared/models/api_response';
 
 @Component({
   selector: 'app-verify-account-success-snackbar',
@@ -26,34 +29,59 @@ class VerifyAccountSuccessSnackBar {}
 })
 export class VerifyAccount implements OnInit {
   token: string | null = null;
+  email: string | null = null;
+  temp_token: string | null = null;
   isLoading = true;
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private authService: AuthService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
-      this.token = params.get('token');
-      if (this.token) {
-        this.authService.verifyAccount(this.token).subscribe({
-          next: () => {
-            this.snackBar.openFromComponent(VerifyAccountSuccessSnackBar, {
-              duration: 5000,
-            });
-          },
-          error: (error: any) => {
-            console.error('Error verifying account', error);
-            this.snackBar.open('Error verifying account. Please try again.', 'Dismiss', {
-              duration: 5000,
-            });
-          },
-          complete: () => {
-            console.log('Verification complete');
-            this.isLoading = false;
-          }
+      const token = params.get('token');
+      if (token) {
+        setTimeout(() => {
+          this.token = token;
+          this.isLoading = true;
         });
+        
+        this.authService
+          .verifyAccount(token)
+          .pipe(
+            finalize(() => {
+              setTimeout(() => {
+                this.isLoading = false;
+              });
+            })
+          )
+          .subscribe({
+            next: (response: Config) => {
+              if (response.result && 'data' in response) {
+                const verifiedData = (response as any).data as VerifiedAccountResponse;
+                this.email = verifiedData.email;
+                this.temp_token = verifiedData.temporaryAccessToken;
+              }
+            },
+            error: (error: any) => {
+              console.error('Error verifying account', error);
+              this.snackBar.open('Error verifying account. Please try again.', 'Dismiss', {
+                duration: 5000,
+              });
+            },
+            complete: () => {
+              this.snackBar.openFromComponent(VerifyAccountSuccessSnackBar, {
+                duration: 5000,
+              });
+              if (this.email) {
+                this.router.navigate(['account/personal-details', this.email]);
+              } else {
+                this.router.navigate(['account/personal-details']);
+              }
+            }
+          });
       }
     });
   }

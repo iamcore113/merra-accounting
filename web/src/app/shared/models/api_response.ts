@@ -22,6 +22,4 @@ interface ErrorResponse extends JsonResponse {
   // No additional properties beyond JsonResponse
 }
 
-export interface Config {
-  res: SuccessResponse | ErrorResponse;
-}
+export type Config = SuccessResponse | ErrorResponse;
