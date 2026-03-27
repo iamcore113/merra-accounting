@@ -23,6 +23,10 @@ html, body {
 }
 
 body {
+  // Define custom CSS variables
+  --brand-font-family: "Michroma", sans-serif;
+  --brand-color: #024684;
+
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
   // user's system settings.
@@ -45,3 +49,18 @@ h1, h2, h3, h4, h5, h6, p {
   color: #333333;
   margin: 0;
 }
+
+// Brand logo font REGULAR
+.brand-logo {
+  font-family: var(--brand-font-family);
+  color: var(--brand-color);
+  font-weight: 400;
+  font-style: normal;
+}
+.sub-brand-logo {
+  font-family: var(--brand-font-family);
+  color: var(--brand-color);
+  font-style: light;
+  font-size: 0.875rem;
+}
+
