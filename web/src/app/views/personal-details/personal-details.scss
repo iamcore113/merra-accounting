@@ -13,10 +13,21 @@
 
     mat-card-title {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
       gap: 0.5rem;
       font-size: 1.75rem;
-      color: var(--mat-sys-primary);
+      color: var(--default-text-color);
+      margin-bottom: 0.9rem;
+
+      .sub-text {
+        font-size: 0.890rem;
+        color: var(--default-text-color);
+        margin: 0;
+        font-weight: 400;
+        line-height: 1.4;
+        max-width: 400px;
+      }
 
       mat-icon {
         font-size: 2rem;
@@ -70,8 +81,8 @@ form {
       font-size: 0.65rem;
       min-height: 20px;
       line-height: 1;
-      background: #ff6b35;
-      border: 1px solid #ff6b35;
+      background: var(--default-text-color);
+      border: 1px solid var(--default-text-color);
       border-radius: 4px;
       color: white;
       cursor: pointer;
@@ -79,8 +90,8 @@ form {
       position: relative;
 
       &:hover {
-        background: #e55a2b;
-        border-color: #e55a2b;
+        background: #555555;
+        border-color: #555555;
       }
 
       &:active {

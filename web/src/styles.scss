@@ -26,6 +26,7 @@ body {
   // Define custom CSS variables
   --brand-font-family: "Michroma", sans-serif;
   --brand-color: #024684;
+  --default-text-color: #333333;
 
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
@@ -46,7 +47,7 @@ body {
 
 /* Global styles */
 h1, h2, h3, h4, h5, h6, p {
-  color: #333333;
+  color: var(--default-text-color);
   margin: 0;
 }
 
