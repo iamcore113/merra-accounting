@@ -7,6 +7,7 @@ import { AuthService } from '../../shared/services/auth-service';
 import { finalize } from 'rxjs/operators';
 import { VerifiedAccountResponse } from '../../shared/models/auth';
 import { Config } from '../../shared/models/api_response';
+import { LocalStorageService } from '../../shared/services/local-storage-service';
 
 @Component({
   selector: 'app-verify-account-success-snackbar',
@@ -36,7 +37,8 @@ export class VerifyAccount implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private localStorage: LocalStorageService
   ) {}
 
   ngOnInit() {
@@ -76,6 +78,8 @@ export class VerifyAccount implements OnInit {
                 duration: 5000,
               });
               if (this.email) {
+                this.localStorage.setItem('user_email', this.email);
+                this.localStorage.setItem('temp_token', this.temp_token);
                 this.router.navigate(['account/personal-details', this.email]);
               } else {
                 this.router.navigate(['account/personal-details']);

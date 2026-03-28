@@ -21,7 +21,7 @@ export const routes: Routes = [
     ]
   },
   {
-    path: 'create/organization',
+    path: 'create/organization/:email',
     component: CreateOrganization,
     title: 'Create Organization'
   }

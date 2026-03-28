@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { UserPersonalInformationRequest } from '../../shared/models/user';
 import { UserService } from '../../shared/services/user-service';
+import { Config } from '../../shared/models/api_response';
 
 @Component({
   selector: 'app-personal-details',
@@ -23,14 +24,18 @@ import { UserService } from '../../shared/services/user-service';
   styleUrl: './personal-details.scss',
 })
 export class PersonalDetails implements OnInit {
-  personalDetailsForm: FormGroup;
+  personalDetailsForm!: FormGroup;
   isEmailDisabled = true;
+  emailFromResponse: string = '';
 
   constructor(
     private fb: FormBuilder,
+    private router: Router,
     private route: ActivatedRoute,
     private userService: UserService,
-  ) {
+  ) {}
+
+  ngOnInit(): void {
     // Reactive forms keep validation rules in one place (here in TS),
     // so the template stays mostly focused on displaying fields + errors.
     this.personalDetailsForm = this.fb.group({
@@ -39,9 +44,7 @@ export class PersonalDetails implements OnInit {
       lastName: ['', [Validators.required]],
       country: ['', [Validators.required]],
     });
-  }
 
-  ngOnInit(): void {
     // Pull the email from the URL path parameter, e.g. /account/personal-details/you@site.com
     // This is useful for onboarding flows where the backend redirects you with pre-known data.
     this.route.paramMap.subscribe(params => {
@@ -63,18 +66,25 @@ export class PersonalDetails implements OnInit {
     if (this.personalDetailsForm.invalid) {
       return;
     }
-    const request: UserPersonalInformationRequest = this.personalDetailsForm.value;
+    // form.getRawValue() - Includes all controls (enabled + disabled)
+    const request: UserPersonalInformationRequest = this.personalDetailsForm.getRawValue();
     this.userService.personalInformation(request).subscribe({
-      next: (response) => {
-        console.log('Personal details:', response);
+      next: (response: Config) => {
+        if (response.result && 'data' in response) {
+          const verifiedData = (response as any).data as UserPersonalInformationRequest;
+          this.emailFromResponse = verifiedData.email;
+        }
       },
       error: (error) => {
         console.error('Error updating personal details:', error);
       },
       complete: () => {
-        console.log('Personal details update completed');
         // TODO: Wire this up to your backend / next onboarding step.
-        console.log('Personal details:', this.personalDetailsForm.value);
+        if (this.personalDetailsForm.value.email === this.emailFromResponse) {
+          this.router.navigate(['/create/organization', this.personalDetailsForm.value.email]);
+        } else {
+          console.error('Email does not match');
+        }
       }
     });
   }

@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
-import { CreateOrganizationRequest, FinancialYear } from '../../shared/models/organization';
+import { CreateOrganizationRequest, FinancialYear, OrganizationMetaDataResponse } from '../../shared/models/organization';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { Config } from '../../shared/models/api_response';
 
 @Component({
   selector: 'app-create-organization',
@@ -32,6 +33,7 @@ export class CreateOrganization implements OnInit {
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
 
+  public organizationMetadata: OrganizationMetaDataResponse | null = null;
   organizationForm!: FormGroup;
   isSubmitting = false;
   daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -39,6 +41,28 @@ export class CreateOrganization implements OnInit {
   ngOnInit(): void {
     const email = this.activatedRoute.snapshot.paramMap.get('email');
     this.initializeForm(email);
+    this.loadOrganizationMetadata();
+  }
+
+  private loadOrganizationMetadata(): void {
+    let verifiedData: OrganizationMetaDataResponse | null = null;
+    this.organizationService.getOrganizationMetadata().subscribe({
+      next: (response: Config) => {
+        if (response.result && 'data' in response) {
+          verifiedData = (response as any).data as OrganizationMetaDataResponse;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load organization metadata:', error);
+        this.snackBar.open('Failed to load organization metadata', 'Close', {
+          duration: 3000
+        });
+      },
+      complete: () => {
+        this.organizationMetadata = verifiedData;
+        console.log('Organization metadata loaded:', this.organizationMetadata);
+      }
+    });
   }
 
   private initializeForm(email?: string | null): void {
