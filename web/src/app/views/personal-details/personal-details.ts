@@ -6,6 +6,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { UserPersonalInformationRequest } from '../../shared/models/user';
+import { UserService } from '../../shared/services/user-service';
 
 @Component({
   selector: 'app-personal-details',
@@ -27,6 +29,7 @@ export class PersonalDetails implements OnInit {
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
+    private userService: UserService,
   ) {
     // Reactive forms keep validation rules in one place (here in TS),
     // so the template stays mostly focused on displaying fields + errors.
@@ -57,12 +60,22 @@ export class PersonalDetails implements OnInit {
   onNext() {
     // Mark all controls as touched so validation errors show if the user clicks Next too early.
     this.personalDetailsForm.markAllAsTouched();
-
     if (this.personalDetailsForm.invalid) {
       return;
     }
-
-    // TODO: Wire this up to your backend / next onboarding step.
-    console.log('Personal details:', this.personalDetailsForm.value);
+    const request: UserPersonalInformationRequest = this.personalDetailsForm.value;
+    this.userService.personalInformation(request).subscribe({
+      next: (response) => {
+        console.log('Personal details:', response);
+      },
+      error: (error) => {
+        console.error('Error updating personal details:', error);
+      },
+      complete: () => {
+        console.log('Personal details update completed');
+        // TODO: Wire this up to your backend / next onboarding step.
+        console.log('Personal details:', this.personalDetailsForm.value);
+      }
+    });
   }
 }

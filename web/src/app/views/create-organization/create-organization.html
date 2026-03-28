@@ -1,0 +1,176 @@
+<div class="container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>Create New Organization</mat-card-title>
+      <mat-card-subtitle>Enter your organization details to get started</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="organization-form">
+        
+        <!-- Display Name Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Display Name</mat-label>
+          <input matInput placeholder="Enter organization display name" formControlName="displayName" required>
+          @if (organizationForm.get('displayName')?.hasError('required')) {
+            <mat-error>
+              Display name is required
+            </mat-error>
+          }
+          @if (organizationForm.get('displayName')?.hasError('minlength')) {
+            <mat-error>
+              Display name must be at least 2 characters long
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Type Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Organization Type</mat-label>
+          <mat-select formControlName="type" required>
+            <mat-option value="">Select organization type</mat-option>
+            <mat-option value="COMPANY">Company</mat-option>
+            <mat-option value="NON_PROFIT">Non-Profit</mat-option>
+            <mat-option value="PARTNERSHIP">Partnership</mat-option>
+            <mat-option value="SOLE_PROPRIETOR">Sole Proprietor</mat-option>
+            <mat-option value="GOVERNMENT">Government</mat-option>
+            <mat-option value="OTHER">Other</mat-option>
+          </mat-select>
+          @if (organizationForm.get('type')?.hasError('required')) {
+            <mat-error>
+              Organization type is required
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Email Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput type="email" placeholder="Enter organization email" formControlName="email" required>
+          @if (organizationForm.get('email')?.hasError('required')) {
+            <mat-error>
+              Email is required
+            </mat-error>
+          }
+          @if (organizationForm.get('email')?.hasError('email')) {
+            <mat-error>
+              Please enter a valid email address
+            </mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Country and Currency Row -->
+        <div class="country-currency-row">
+          <!-- Country Field -->
+          <mat-form-field appearance="outline" class="country-field">
+            <mat-label>Country</mat-label>
+            <mat-select formControlName="country" required>
+              <mat-option value="">Select country</mat-option>
+              <mat-option value="US">United States</mat-option>
+              <mat-option value="CA">Canada</mat-option>
+              <mat-option value="UK">United Kingdom</mat-option>
+              <mat-option value="AU">Australia</mat-option>
+              <mat-option value="DE">Germany</mat-option>
+              <mat-option value="FR">France</mat-option>
+              <mat-option value="JP">Japan</mat-option>
+              <mat-option value="CN">China</mat-option>
+              <mat-option value="IN">India</mat-option>
+              <mat-option value="SG">Singapore</mat-option>
+              <mat-option value="PH">Philippines</mat-option>
+              <mat-option value="OTHER">Other</mat-option>
+            </mat-select>
+            @if (organizationForm.get('country')?.hasError('required')) {
+              <mat-error>
+                Country is required
+              </mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Currency Field -->
+          <mat-form-field appearance="outline" class="currency-field">
+            <mat-label>Currency</mat-label>
+            <mat-select formControlName="currency" required>
+              <mat-option value="">Select currency</mat-option>
+              <mat-option value="USD">USD - US Dollar</mat-option>
+              <mat-option value="CAD">CAD - Canadian Dollar</mat-option>
+              <mat-option value="GBP">GBP - British Pound</mat-option>
+              <mat-option value="EUR">EUR - Euro</mat-option>
+              <mat-option value="AUD">AUD - Australian Dollar</mat-option>
+              <mat-option value="JPY">JPY - Japanese Yen</mat-option>
+              <mat-option value="CNY">CNY - Chinese Yuan</mat-option>
+              <mat-option value="INR">INR - Indian Rupee</mat-option>
+              <mat-option value="SGD">SGD - Singapore Dollar</mat-option>
+              <mat-option value="PHP">PHP - Philippine Peso</mat-option>
+              <mat-option value="OTHER">Other</mat-option>
+            </mat-select>
+            @if (organizationForm.get('currency')?.hasError('required')) {
+              <mat-error>
+                Currency is required
+              </mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Financial Year Section -->
+        <div class="financial-year-section">
+          <h3>Financial Year Settings</h3>
+          
+          <div class="year-end-row">
+            <!-- Year End Month -->
+            <mat-form-field appearance="outline" class="month-field">
+              <mat-label>Year End Month</mat-label>
+              <mat-select formControlName="yearEndMonth" required>
+                <mat-option value="">Select month</mat-option>
+                <mat-option [value]="1">January</mat-option>
+                <mat-option [value]="2">February</mat-option>
+                <mat-option [value]="3">March</mat-option>
+                <mat-option [value]="4">April</mat-option>
+                <mat-option [value]="5">May</mat-option>
+                <mat-option [value]="6">June</mat-option>
+                <mat-option [value]="7">July</mat-option>
+                <mat-option [value]="8">August</mat-option>
+                <mat-option [value]="9">September</mat-option>
+                <mat-option [value]="10">October</mat-option>
+                <mat-option [value]="11">November</mat-option>
+                <mat-option [value]="12">December</mat-option>
+              </mat-select>
+              @if (organizationForm.get('yearEndMonth')?.hasError('required')) {
+                <mat-error>
+                  Year end month is required
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <!-- Year End Day -->
+            <mat-form-field appearance="outline" class="day-field">
+              <mat-label>Year End Day</mat-label>
+              <mat-select formControlName="yearEndDay" required>
+                <mat-option value="">Select day</mat-option>
+                @for (day of daysInMonth; track day) {
+                  <mat-option [value]="day">{{ day }}</mat-option>
+                }
+              </mat-select>
+              @if (organizationForm.get('yearEndDay')?.hasError('required')) {
+                <mat-error>
+                  Year end day is required
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button matButton="outlined" type="button" (click)="onCancel()">Cancel</button>
+          <button matButton="filled" type="submit" [disabled]="!organizationForm.valid || isSubmitting">
+            @if (!isSubmitting) {
+              <span>Create Organization</span>
+            } @else {
+              <span>Creating...</span>
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

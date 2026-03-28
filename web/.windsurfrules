@@ -50,7 +50,7 @@ The app will be available at `http://localhost:4200/` and will auto-reload on ch
 
 ### Button Styling Rules
 
-- **For `<button>` tags**: always add `matButton="filled"` attribute
+- **For `<button>` tags**: always add `matButton="filled"` attribute for the primary button and matButton="outlined" attribute for the secondary button
   ```html
   <button matButton="filled" type="button">Submit</button>
   ```
@@ -123,6 +123,10 @@ Build artifacts will be stored in the `dist/` directory.
   ```
 - Always use `--skip-tests` if you don't need test files initially
 - Components are generated as standalone by default
+
+### Control Flow in Components
+- Use `@if` for conditional rendering
+- Use `@for` for iteration
 
 ### Common Patterns
 

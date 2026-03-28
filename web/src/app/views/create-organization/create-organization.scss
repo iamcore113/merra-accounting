@@ -1,0 +1,177 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #f5f5f5;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+mat-card-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+mat-card-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+mat-card-content {
+  padding: 1.5rem;
+}
+
+.organization-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.financial-year-section {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: transparent;
+  border-radius: 6px;
+
+  h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+.year-end-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .month-field {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .day-field {
+    flex: 0 0 120px;
+  }
+}
+
+.country-currency-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .country-field {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .currency-field {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+
+  button {
+    min-width: 120px;
+  }
+}
+
+// Material form field customizations
+.mat-mdc-form-field {
+  .mat-mdc-form-field-flex {
+    background-color: white;
+  }
+
+  .mat-mdc-form-field-focus-overlay {
+    background-color: white;
+  }
+}
+
+// Success and error snackbar styles
+::ng-deep .success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .form-card {
+    max-width: 100%;
+  }
+
+  .year-end-row {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .month-field,
+    .day-field {
+      flex: 1;
+      min-width: 100%;
+    }
+  }
+
+  .country-currency-row {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .country-field,
+    .currency-field {
+      flex: 1;
+      min-width: 100%;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  mat-card-content {
+    padding: 1rem;
+  }
+
+  .financial-year-section {
+    padding: 0.75rem;
+  }
+}

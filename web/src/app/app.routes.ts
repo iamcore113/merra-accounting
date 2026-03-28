@@ -5,6 +5,7 @@ import { VerifyEmail } from './views/verify-email/verify-email';
 import { AuthLayout } from './shared/components/auth-layout/auth-layout';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
+import { CreateOrganization } from './views/create-organization/create-organization';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -19,4 +20,9 @@ export const routes: Routes = [
       { path: 'personal-details/:email', component: PersonalDetails, title: 'Personal Details' },
     ]
   },
+  {
+    path: 'create/organization',
+    component: CreateOrganization,
+    title: 'Create Organization'
+  }
 ];
