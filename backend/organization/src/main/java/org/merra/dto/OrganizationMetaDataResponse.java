@@ -18,8 +18,16 @@ public record OrganizationMetaDataResponse(
 
 ) {
         public record OrganizationTypesMetaData(
-                        @NotNull(message = "ID cannot be null") UUID id,
-                        @NotBlank(message = "Name cannot be blank") String name) {
+                        UUID id,
+                        String name) {
+        	public OrganizationTypesMetaData {
+				if (id == null || name == null || name.isBlank()) {
+					throw new IllegalArgumentException("Organization type metadata fields cannot be null or blank.");
+				}
+				if (name.isBlank() || name == null) {
+					throw new IllegalArgumentException("Organization type name cannot be null or blank.");
+				}
+			}
         }
 
         public record PaymentTermsMetaData(
