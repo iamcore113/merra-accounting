@@ -10,24 +10,6 @@ services:
       - 'POSTGRES_USER=merra-user'
     ports:
       - '5070:5432'
-    networks: 
-      - merra_network
-
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - 7771:8080
-    networks:
-      - merra_network
-    depends_on:
-      - db
 
 volumes:
   db_data:
-
-networks:
-  merra_network:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.host_binding_ipv4: '127.0.0.1'
