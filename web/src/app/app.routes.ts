@@ -29,6 +29,6 @@ export const routes: Routes = [
   {
     path: 'error',
     component: ErrorPage,
-    title: 'Error'
+    title: 'Error Page'
   }
 ];
