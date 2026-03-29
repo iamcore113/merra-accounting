@@ -68,6 +68,7 @@ export class PersonalDetails implements OnInit {
     }
     // form.getRawValue() - Includes all controls (enabled + disabled)
     const request: UserPersonalInformationRequest = this.personalDetailsForm.getRawValue();
+    const getEmail: string = request.email;
     this.userService.personalInformation(request).subscribe({
       next: (response: Config) => {
         if (response.result && 'data' in response) {
@@ -80,8 +81,8 @@ export class PersonalDetails implements OnInit {
       },
       complete: () => {
         // TODO: Wire this up to your backend / next onboarding step.
-        if (this.personalDetailsForm.value.email === this.emailFromResponse) {
-          this.router.navigate(['/create/organization', this.personalDetailsForm.value.email]);
+        if (getEmail === this.emailFromResponse) {
+          this.router.navigate(['/create/organization', getEmail]);
         } else {
           console.error('Email does not match');
         }

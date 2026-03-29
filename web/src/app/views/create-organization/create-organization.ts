@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, OrganizationMetaDataResponse } from '../../shared/models/organization';
@@ -9,8 +9,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { CommonModule } from '@angular/common';
-import { Config } from '../../shared/models/api_response';
+import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
+import { CountryApiService } from '../../shared/services/country-api-service';
 
 @Component({
   selector: 'app-create-organization',
@@ -21,7 +23,8 @@ import { Config } from '../../shared/models/api_response';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatButtonModule
+    MatButtonModule,
+    MatAutocompleteModule
   ],
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.scss',
@@ -32,8 +35,12 @@ export class CreateOrganization implements OnInit {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
+  private countryApiService = inject(CountryApiService);
+  private cdr = inject(ChangeDetectorRef);
 
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
+  public countries: RestCountriesSelection = [];
+  public filteredCountries: RestCountriesSelection = [];
   organizationForm!: FormGroup;
   isSubmitting = false;
   daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -42,6 +49,7 @@ export class CreateOrganization implements OnInit {
     const email = this.activatedRoute.snapshot.paramMap.get('email');
     this.initializeForm(email);
     this.loadOrganizationMetadata();
+    this.loadCountries();
   }
 
   private loadOrganizationMetadata(): void {
@@ -75,6 +83,56 @@ export class CreateOrganization implements OnInit {
       yearEndDay: [null, Validators.required],
       currency: ['', Validators.required]
     });
+  }
+
+  private loadCountries(): void {
+    let collect_response: RestCountryList;
+    this.countryApiService.getCountries().subscribe({
+      next: (response: RestCountryList) => {
+        collect_response = response;
+      },
+      error: (error) => {
+        console.error('Failed to load countries:', error);
+        this.snackBar.open('Failed to load countries', 'Close', {
+          duration: 3000
+        });
+      },
+      complete: () => {
+        // Transform the response to the format we need
+        this.countries = collect_response.map(country => ({
+          name: country.name.common,
+          cca2: country.cca2,
+          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
+        }));
+        this.filteredCountries = [...this.countries];
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onCountryInput(searchTerm: string): void {
+    if (!searchTerm) {
+      this.filteredCountries = [...this.countries];
+    } else {
+      this.filteredCountries = this.countries.filter(country =>
+        country.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+  }
+
+  onCountrySelected(countryCode: string): void {
+    this.onCountryChange(countryCode);
+  }
+
+  onCountryChange(countryCode: string): void {
+    if (countryCode) {
+      const selectedCountry = this.countries.find(country => country.cca2 === countryCode);
+      if (selectedCountry && selectedCountry.currency !== 'N/A') {
+        this.organizationForm.patchValue({ currency: selectedCountry.currency });
+      }
+    } else {
+      this.organizationForm.patchValue({ currency: '' });
+    }
   }
 
   onSubmit(): void {

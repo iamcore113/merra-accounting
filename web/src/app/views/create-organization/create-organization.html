@@ -29,12 +29,11 @@
           <mat-label>Organization Type</mat-label>
           <mat-select formControlName="type" required>
             <mat-option value="">Select organization type</mat-option>
-            <mat-option value="COMPANY">Company</mat-option>
-            <mat-option value="NON_PROFIT">Non-Profit</mat-option>
-            <mat-option value="PARTNERSHIP">Partnership</mat-option>
-            <mat-option value="SOLE_PROPRIETOR">Sole Proprietor</mat-option>
-            <mat-option value="GOVERNMENT">Government</mat-option>
-            <mat-option value="OTHER">Other</mat-option>
+            @if (organizationMetadata && organizationMetadata.organizationTypes) {
+              @for (orgType of organizationMetadata.organizationTypes; track orgType.id) {
+                <mat-option [value]="orgType.id">{{ orgType.name }}</mat-option>
+              }
+            }
           </mat-select>
           @if (organizationForm.get('type')?.hasError('required')) {
             <mat-error>
@@ -64,21 +63,18 @@
           <!-- Country Field -->
           <mat-form-field appearance="outline" class="country-field">
             <mat-label>Country</mat-label>
-            <mat-select formControlName="country" required>
-              <mat-option value="">Select country</mat-option>
-              <mat-option value="US">United States</mat-option>
-              <mat-option value="CA">Canada</mat-option>
-              <mat-option value="UK">United Kingdom</mat-option>
-              <mat-option value="AU">Australia</mat-option>
-              <mat-option value="DE">Germany</mat-option>
-              <mat-option value="FR">France</mat-option>
-              <mat-option value="JP">Japan</mat-option>
-              <mat-option value="CN">China</mat-option>
-              <mat-option value="IN">India</mat-option>
-              <mat-option value="SG">Singapore</mat-option>
-              <mat-option value="PH">Philippines</mat-option>
-              <mat-option value="OTHER">Other</mat-option>
-            </mat-select>
+            <input matInput 
+                   formControlName="country" 
+                   required
+                   [matAutocomplete]="auto"
+                   (input)="onCountryInput($event.target.value)">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onCountrySelected($event.option.value)">
+              @if (filteredCountries && filteredCountries.length > 0) {
+                @for (country of filteredCountries; track country.cca2) {
+                  <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+                }
+              }
+            </mat-autocomplete>
             @if (organizationForm.get('country')?.hasError('required')) {
               <mat-error>
                 Country is required
@@ -89,20 +85,7 @@
           <!-- Currency Field -->
           <mat-form-field appearance="outline" class="currency-field">
             <mat-label>Currency</mat-label>
-            <mat-select formControlName="currency" required>
-              <mat-option value="">Select currency</mat-option>
-              <mat-option value="USD">USD - US Dollar</mat-option>
-              <mat-option value="CAD">CAD - Canadian Dollar</mat-option>
-              <mat-option value="GBP">GBP - British Pound</mat-option>
-              <mat-option value="EUR">EUR - Euro</mat-option>
-              <mat-option value="AUD">AUD - Australian Dollar</mat-option>
-              <mat-option value="JPY">JPY - Japanese Yen</mat-option>
-              <mat-option value="CNY">CNY - Chinese Yuan</mat-option>
-              <mat-option value="INR">INR - Indian Rupee</mat-option>
-              <mat-option value="SGD">SGD - Singapore Dollar</mat-option>
-              <mat-option value="PHP">PHP - Philippine Peso</mat-option>
-              <mat-option value="OTHER">Other</mat-option>
-            </mat-select>
+            <input matInput formControlName="currency" required readonly>
             @if (organizationForm.get('currency')?.hasError('required')) {
               <mat-error>
                 Currency is required
@@ -119,24 +102,20 @@
             <!-- Year End Month -->
             <mat-form-field appearance="outline" class="month-field">
               <mat-label>Year End Month</mat-label>
-              <mat-select formControlName="yearEndMonth" required>
-                <mat-option value="">Select month</mat-option>
-                <mat-option [value]="1">January</mat-option>
-                <mat-option [value]="2">February</mat-option>
-                <mat-option [value]="3">March</mat-option>
-                <mat-option [value]="4">April</mat-option>
-                <mat-option [value]="5">May</mat-option>
-                <mat-option [value]="6">June</mat-option>
-                <mat-option [value]="7">July</mat-option>
-                <mat-option [value]="8">August</mat-option>
-                <mat-option [value]="9">September</mat-option>
-                <mat-option [value]="10">October</mat-option>
-                <mat-option [value]="11">November</mat-option>
-                <mat-option [value]="12">December</mat-option>
-              </mat-select>
+              <input matInput type="number" placeholder="Enter month (1-12)" formControlName="yearEndMonth" min="1" max="12" required>
               @if (organizationForm.get('yearEndMonth')?.hasError('required')) {
                 <mat-error>
                   Year end month is required
+                </mat-error>
+              }
+              @if (organizationForm.get('yearEndMonth')?.hasError('min')) {
+                <mat-error>
+                  Month must be at least 1
+                </mat-error>
+              }
+              @if (organizationForm.get('yearEndMonth')?.hasError('max')) {
+                <mat-error>
+                  Month must be at most 12
                 </mat-error>
               }
             </mat-form-field>
@@ -144,15 +123,20 @@
             <!-- Year End Day -->
             <mat-form-field appearance="outline" class="day-field">
               <mat-label>Year End Day</mat-label>
-              <mat-select formControlName="yearEndDay" required>
-                <mat-option value="">Select day</mat-option>
-                @for (day of daysInMonth; track day) {
-                  <mat-option [value]="day">{{ day }}</mat-option>
-                }
-              </mat-select>
+              <input matInput type="number" placeholder="Enter day (1-31)" formControlName="yearEndDay" min="1" max="31" required>
               @if (organizationForm.get('yearEndDay')?.hasError('required')) {
                 <mat-error>
                   Year end day is required
+                </mat-error>
+              }
+              @if (organizationForm.get('yearEndDay')?.hasError('min')) {
+                <mat-error>
+                  Day must be at least 1
+                </mat-error>
+              }
+              @if (organizationForm.get('yearEndDay')?.hasError('max')) {
+                <mat-error>
+                  Day must be at most 31
                 </mat-error>
               }
             </mat-form-field>

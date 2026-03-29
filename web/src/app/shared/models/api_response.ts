@@ -23,3 +23,36 @@ interface ErrorResponse extends JsonResponse {
 }
 
 export type Config = SuccessResponse | ErrorResponse;
+
+/**
+ * Interface for REST Countries API response
+ * Based on https://restcountries.com/v3.1/all?fields=name,cca2,currencies
+ */
+interface RestCountry {
+  name: {
+    common: string;
+    official: string;
+    nativeName: {
+      [languageCode: string]: {
+        official: string;
+        common: string;
+      };
+    };
+  };
+  currencies: {
+    [currencyCode: string]: {
+      name: string;
+      symbol: string;
+    };
+  };
+  cca2: string;
+}
+export type RestCountryList = RestCountry[];
+
+interface RestCountriesSelectionObj {
+  name: string;
+  cca2: string;
+  currency: string;
+}
+
+export type RestCountriesSelection = RestCountriesSelectionObj[];
