@@ -99,21 +99,19 @@ public class AuthService {
     UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
         .orElseThrow(() -> new EntityNotFoundException("User account not found."));
     final String accountVerificationToken = findAccount.getVerificationToken();
+    final String getAccountEmail = findAccount.getEmail();
     if (!Objects.equals(accountVerificationToken, tokenParam)) {
       throw new BadCredentialsException("Invalid token.");
     }
 
     String limitedAccessToken = null;
+    findAccount.setVerificationToken(null);
+    findAccount.setIsEnabled(true);
+    findAccount.setRoles(ROLE_IDLE);
+    userRepository.save(findAccount);
+    limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
 
-    if (Objects.equals(findAccount.getVerificationToken(), tokenParam)) {
-      findAccount.setVerificationToken(null);
-      findAccount.setIsEnabled(true);
-      findAccount.setRoles(ROLE_IDLE);
-      userRepository.save(findAccount);
-      limitedAccessToken = jwtUtils.generateToken(findAccount.getEmail(), Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
-    }
-
-    return new VerifiedAccountResponse(true, findAccount.getEmail(), limitedAccessToken);
+    return new VerifiedAccountResponse(true, getAccountEmail, limitedAccessToken);
   }
 
   public void sendVerificationEmail(String email, String verToken) {
