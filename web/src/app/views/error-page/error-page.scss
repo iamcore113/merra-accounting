@@ -1,0 +1,170 @@
+@use '@angular/material' as mat;
+
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: white;
+}
+
+.error-card {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+
+  mat-card-header {
+    background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    
+    .error-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      color: white;
+      
+      .error-icon {
+        font-size: 4rem;
+        width: 4rem;
+        height: 4rem;
+        animation: pulse 2s infinite;
+      }
+      
+      .error-code {
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+    }
+  }
+
+  .error-content {
+    padding: 2rem;
+    
+    .error-message {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--mat-sys-on-surface);
+      margin: 0 0 1rem 0;
+    }
+    
+    .error-description {
+      font-size: 1rem;
+      color: var(--mat-sys-on-surface-variant);
+      margin: 0 0 2rem 0;
+      line-height: 1.6;
+    }
+    
+    .error-details {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      
+      mat-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+        color: var(--mat-sys-primary);
+      }
+      
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--mat-sys-on-surface-variant);
+      }
+    }
+  }
+
+  .error-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0 2rem 2rem 2rem;
+    
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 120px;
+      
+      mat-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .error-container {
+    padding: 1rem;
+  }
+  
+  .error-card {
+    margin: 1rem;
+    
+    mat-card-header {
+      padding: 1.5rem 1rem;
+      
+      .error-title {
+        .error-icon {
+          font-size: 3rem;
+          width: 3rem;
+          height: 3rem;
+        }
+        
+        .error-code {
+          font-size: 2.5rem;
+        }
+      }
+    }
+    
+    .error-content {
+      padding: 1.5rem;
+      
+      .error-message {
+        font-size: 1.25rem;
+      }
+    }
+    
+    .error-actions {
+      flex-direction: column;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

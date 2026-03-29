@@ -6,6 +6,7 @@ import { AuthLayout } from './shared/components/auth-layout/auth-layout';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
 import { CreateOrganization } from './views/create-organization/create-organization';
+import { ErrorPage } from './views/error-page/error-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,5 +25,10 @@ export const routes: Routes = [
     path: 'create/organization/:email',
     component: CreateOrganization,
     title: 'Create Organization'
+  },
+  {
+    path: 'error',
+    component: ErrorPage,
+    title: 'Error'
   }
 ];
