@@ -69,8 +69,15 @@ export class VerifyAccount implements OnInit {
             },
             error: (error: any) => {
               console.error('Error verifying account', error);
-              this.snackBar.open('Error verifying account. Please try again.', 'Dismiss', {
-                duration: 5000,
+              const errorStatus = error.status;
+              const errorMessage = error?.message || 'Failed to verify account. The verification link may be invalid or expired.';
+              const errorDescription = error?.error?.message || 'Please check your email for a new verification link or contact support if the problem persists.';
+              this.router.navigate(['/error'], {
+                queryParams: {
+                  code: errorStatus.toString(),
+                  message: 'Account Verification Failed',
+                  description: errorDescription
+                }
               });
             },
             complete: () => {
