@@ -6,9 +6,11 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { UserPersonalInformationRequest } from '../../shared/models/user';
 import { UserService } from '../../shared/services/user-service';
-import { Config } from '../../shared/models/api_response';
+import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
+import { CountryApiService } from '../../shared/services/country-api-service';
 
 @Component({
   selector: 'app-personal-details',
@@ -17,6 +19,7 @@ import { Config } from '../../shared/models/api_response';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatIconModule,
   ],
@@ -27,12 +30,14 @@ export class PersonalDetails implements OnInit {
   personalDetailsForm!: FormGroup;
   isEmailDisabled = true;
   emailFromResponse: string = '';
+  public countries: RestCountriesSelection = [];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private userService: UserService,
+    private countryApiService: CountryApiService
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +56,24 @@ export class PersonalDetails implements OnInit {
       const email = params.get('email');
       if (email) {
         this.personalDetailsForm.patchValue({ email });
+      }
+    });
+    
+    let collect_response: RestCountryList;
+    this.countryApiService.getCountries().subscribe({
+      next: (countries: RestCountryList) => {
+        collect_response = countries;
+        console.log('Countries loaded:', countries);
+      },
+      error: (error) => {
+        console.error('Error loading countries:', error);
+      },
+      complete: () => {
+        this.countries = collect_response.map(country => ({
+          name: country.name.common,
+          cca2: country.cca2,
+          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
+        }));
       }
     });
   }

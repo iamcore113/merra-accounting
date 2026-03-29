@@ -64,7 +64,11 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Country</mat-label>
-        <input matInput type="text" formControlName="country" placeholder="Enter your country" />
+        <mat-select formControlName="country" placeholder="Select your country">
+          @for (country of countries; track country.cca2) {
+            <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+          }
+        </mat-select>
         <mat-icon matPrefix fontSet="material-icons-outlined">public</mat-icon>
         @if (
           personalDetailsForm.get('country')?.hasError('required') &&
