@@ -13,42 +13,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   
   const tempToken = localStorage.getItem('temp_token');
-  
+  console.log(`requiresAuth: ${requiresAuth}`);
   if (!tempToken && requiresAuth) {
     // No token and auth required - redirect to signin with message
     router.navigate(['/account/signin'], { 
-      queryParams: { message: 'Your session has expired. Please login again.' }
+      queryParams: { message: 'Invalid token. Please login again.' }
     });
     return throwError(() => new Error('No authentication token found'));
   }
   
   if (tempToken && requiresAuth) {
-    // Return Observable that handles token validation
-    return tokenCheckService.validateToken(tempToken).pipe(
-      catchError(() => {
-        // Token validation failed - remove and redirect to signin with message
-        localStorage.removeItem('temp_token');
-        router.navigate(['/account/signin'], { 
-          queryParams: { message: 'Your session has expired. Please login again.' }
-        });
-        return throwError(() => new Error('Token validation failed'));
-      }),
-      switchMap(response => {
-        if (response?.isValid) {
-          const authReq = req.clone({
-            headers: req.headers.set('Authorization', `Bearer ${tempToken}`)
-          });
-          return next(authReq);
-        } else {
-          // Invalid token - remove and redirect to signin with message
-          localStorage.removeItem('temp_token');
-          router.navigate(['/account/signin'], { 
-            queryParams: { message: 'Your session has expired. Please login again.' }
-          });
-          return throwError(() => new Error('Invalid authentication token'));
-        }
-      })
-    );
+    // Add token to Authorization header
+    const authReq = req.clone({
+      headers: req.headers.set('Authorization', `Bearer ${tempToken}`)
+    });
+    return next(authReq);
   }
 
   return next(req);

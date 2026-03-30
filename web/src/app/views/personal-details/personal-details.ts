@@ -7,6 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { AsyncPipe } from '@angular/common';
 import { UserPersonalInformationRequest } from '../../shared/models/user';
 import { UserService } from '../../shared/services/user-service';
 import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
@@ -22,6 +26,8 @@ import { CountryApiService } from '../../shared/services/country-api-service';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatAutocompleteModule,
+    AsyncPipe,
   ],
   templateUrl: './personal-details.html',
   styleUrl: './personal-details.scss',
@@ -31,6 +37,7 @@ export class PersonalDetails implements OnInit {
   isEmailDisabled = true;
   emailFromResponse: string = '';
   public countries: RestCountriesSelection = [];
+  filteredCountries: Observable<RestCountriesSelection> = new Observable<RestCountriesSelection>();
 
   constructor(
     private fb: FormBuilder,
@@ -49,6 +56,12 @@ export class PersonalDetails implements OnInit {
       lastName: ['', [Validators.required]],
       country: ['', [Validators.required]],
     });
+
+    // Initialize filteredCountries immediately with empty array to avoid undefined
+    this.filteredCountries = this.personalDetailsForm.get('country')?.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterCountries(value || ''))
+    ) || new Observable<RestCountriesSelection>();
 
     // Pull the email from the URL path parameter, e.g. /account/personal-details/you@site.com
     // This is useful for onboarding flows where the backend redirects you with pre-known data.
@@ -74,6 +87,8 @@ export class PersonalDetails implements OnInit {
           cca2: country.cca2,
           currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
         }));
+        // Trigger a new emission to update the filtered list with loaded countries
+        this.personalDetailsForm.get('country')?.updateValueAndValidity();
       }
     });
   }
@@ -81,6 +96,13 @@ export class PersonalDetails implements OnInit {
   enableEmailEditing(): void {
     this.isEmailDisabled = false;
     this.personalDetailsForm.get('email')?.enable();
+  }
+
+  private _filterCountries(value: string): RestCountriesSelection {
+    const filterValue = value.toLowerCase();
+    return this.countries.filter(country => 
+      country.name.toLowerCase().includes(filterValue)
+    );
   }
 
   onNext() {

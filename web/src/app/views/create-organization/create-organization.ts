@@ -105,7 +105,6 @@ export class CreateOrganization implements OnInit {
           currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
         }));
         this.filteredCountries = [...this.countries];
-        this.cdr.detectChanges();
       }
     });
   }

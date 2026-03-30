@@ -64,12 +64,17 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Country</mat-label>
-        <mat-select formControlName="country" placeholder="Select your country">
-          @for (country of countries; track country.cca2) {
+        <input type="text" 
+               matInput 
+               formControlName="country" 
+               placeholder="Start typing to search your country"
+               [matAutocomplete]="auto">
+        <mat-icon matPrefix fontSet="material-icons-outlined">public</mat-icon>
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (country of filteredCountries | async; track country.cca2) {
             <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
           }
-        </mat-select>
-        <mat-icon matPrefix fontSet="material-icons-outlined">public</mat-icon>
+        </mat-autocomplete>
         @if (
           personalDetailsForm.get('country')?.hasError('required') &&
           personalDetailsForm.get('country')?.touched

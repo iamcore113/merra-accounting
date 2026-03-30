@@ -14,21 +14,21 @@ export const routes: Routes = [
     path: 'account',
     component: AuthLayout,
     children: [
-      { path: 'signup', component: Signup, title: 'Create Account' },
-      { path: 'signin', component: Signin, title: 'Sign In' },
-      { path: 'verify-email/:email', component: VerifyEmail, title: 'Verify Email' },
-      { path: 'verify', component: VerifyAccount, title: 'Verify Account' },
-      { path: 'personal-details/:email', component: PersonalDetails, title: 'Personal Details' },
+      { path: 'signup', component: Signup, title: 'MERRA - Create Account' },
+      { path: 'signin', component: Signin, title: 'MERRA - Sign In' },
+      { path: 'verify-email/:email', component: VerifyEmail, title: 'MERRA - Verify Email' },
+      { path: 'verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
+      { path: 'personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
     ]
   },
   {
     path: 'create/organization/:email',
     component: CreateOrganization,
-    title: 'Create Organization'
+    title: 'MERRA - Create Organization'
   },
   {
     path: 'error',
     component: ErrorPage,
-    title: 'Error Page'
+    title: 'MERRA - Error Page'
   }
 ];
