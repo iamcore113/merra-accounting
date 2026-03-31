@@ -1,7 +1,10 @@
 package org.merra.dto;
 
+import java.util.UUID;
+
 public record VerifiedAccountResponse(
                 boolean isVerified,
+                UUID userId,
                 String email,
                 String temporaryAccessToken
 ) {

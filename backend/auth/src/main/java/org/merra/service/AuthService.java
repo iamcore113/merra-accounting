@@ -111,7 +111,7 @@ public class AuthService {
     userRepository.save(findAccount);
     limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
 
-    return new VerifiedAccountResponse(true, getAccountEmail, limitedAccessToken);
+    return new VerifiedAccountResponse(true, findAccount.getUserId(), getAccountEmail, limitedAccessToken);
   }
 
   public void sendVerificationEmail(String email, String verToken) {
