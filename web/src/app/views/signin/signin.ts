@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
+import {LoginRequest} from '../../shared/models/auth';
 @Component({
   selector: 'app-signin',
   imports: [
@@ -47,8 +47,7 @@ export class Signin implements OnInit {
 
   onSubmit() {
     if (this.signinForm.valid) {
-      console.log('Form submitted:', this.signinForm.value);
-      // Add your signin logic here
+      const req: LoginRequest = this.signinForm.value;
     }
   }
 }
