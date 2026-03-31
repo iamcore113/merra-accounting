@@ -1,4 +1,6 @@
 # MERRA Accounting & Bookkeeping
+
+![Wave Icon](web/public/wave-icon.svg)
 > [!WARNING]
 > This software is unfinished. Keep your expectations low.
 
