@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, OrganizationMetaDataResponse } from '../../shared/models/organization';
@@ -13,6 +13,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { CommonModule } from '@angular/common';
 import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
 import { CountryApiService } from '../../shared/services/country-api-service';
+import { LocalStorageService } from '../../shared/services/local-storage-service';
 
 @Component({
   selector: 'app-create-organization',
@@ -35,8 +36,8 @@ export class CreateOrganization implements OnInit {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
+  private localStorage = inject(LocalStorageService);
   private countryApiService = inject(CountryApiService);
-  private cdr = inject(ChangeDetectorRef);
 
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
@@ -104,19 +105,23 @@ export class CreateOrganization implements OnInit {
           cca2: country.cca2,
           currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
         }));
-        this.filteredCountries = [...this.countries];
+        setTimeout(() => {
+          this.filteredCountries = [...this.countries];
+        });
       }
     });
   }
 
   onCountryInput(searchTerm: string): void {
-    if (!searchTerm) {
-      this.filteredCountries = [...this.countries];
-    } else {
-      this.filteredCountries = this.countries.filter(country =>
-        country.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    setTimeout(() => {
+      if (!searchTerm) {
+        this.filteredCountries = [...this.countries];
+      } else {
+        this.filteredCountries = this.countries.filter(country =>
+          country.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+    });
   }
 
   onCountrySelected(countryCode: string): void {
@@ -156,16 +161,15 @@ export class CreateOrganization implements OnInit {
       currency: formValue.currency
     };
 
-    // TODO: Get actual user ID from authentication service
-    const userId = 'current-user-id';
+    const userId = this.localStorage.getItem("user_id");
+
+    if (userId === null) {
+      console.error("User ID is null - cannot create organization");
+      return;
+    }
 
     this.organizationService.createOrganization(organizationRequest, userId).subscribe({
       next: (response) => {
-        this.snackBar.open('Organization created successfully!', 'Success', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
-        });
-        this.router.navigate(['/organizations']);
       },
       error: (error) => {
         console.error('Error creating organization:', error);
@@ -177,6 +181,10 @@ export class CreateOrganization implements OnInit {
       },
       complete: () => {
         this.isSubmitting = false;
+        this.snackBar.open('Organization created successfully!', 'Success', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
       }
     });
   }

@@ -35,6 +35,7 @@ export interface AuthResponse {
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/VerifiedAccountResponse.java
 export interface VerifiedAccountResponse {
   isVerified: boolean;
+  userId: string;
   email: string;
   temporaryAccessToken: string;
 }
