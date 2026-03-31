@@ -1,7 +1,7 @@
 package org.merra.controller;
 
 import org.merra.api.ApiResponse;
-import org.merra.dto.AuthResponse;
+import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
@@ -59,8 +59,8 @@ public class AuthController {
      * @return ResponseEntity containing authentication tokens and user information
      */
     @PostMapping(value = "signin")
-    public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
-        final AuthResponse res = authService.login(loginRequest);
+    public ResponseEntity<SigninResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
+        final SigninResponse res = authService.login(loginRequest);
         return ResponseEntity.ok(res);
     }
 

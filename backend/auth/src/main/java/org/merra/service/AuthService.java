@@ -1,5 +1,7 @@
 package org.merra.service;
 
+import static org.mockito.ArgumentMatchers.booleanThat;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -9,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.merra.config.JwtUtils;
-import org.merra.dto.AuthResponse;
+import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
@@ -192,12 +194,12 @@ public class AuthService {
     }
   }
 
-  public AuthResponse login(LoginRequest request) {
+  public SigninResponse login(LoginRequest request) {
     return createAuthenticationResponse(request.email(), request.password());
   }
 
   /* Create JWT tokens after successful authentication */
-  private AuthResponse createAuthenticationResponse(String email, String password) {
+  private SigninResponse createAuthenticationResponse(String email, String password) {
     if (email == null || email.isBlank() || password == null || password.isBlank()) {
       throw new org.springframework.security.authentication.BadCredentialsException(
           AuthConstantResponses.INVALID_CREDENTIALS);
@@ -216,16 +218,25 @@ public class AuthService {
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
+    
+    SigninResponse response = new SigninResponse();
+    
+    boolean isProfileComplete = true;
+    if (getUser.getFirstName() == null || getUser.getLastName() == null) {
+	  isProfileComplete = false;
+	}
+    response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled()));
 
     final Map<String, Object> claims = Map.of("role", getUser.getRoles());
     final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);
     final String refreshToken = jwtUtils.generateToken(getUser.getEmail(), claims, refreshTokenExpiration, true);
     List<String> roles = getUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
+    
+    response.setTokens(new JwtTokens(accessToken, refreshToken));
+    response.setUserdetails(response.new Userdetails(getUser.getUserId(), getUser.getEmail(), roles));
+    
+    return response;
 
-    return new AuthResponse(
-        new JwtTokens(accessToken, refreshToken),
-        new AuthResponse.UserDetail(getUser.getUserId(), getUser.getEmail()),
-        roles);
   }
 
   public VerificationResponse signup(CreateAccountRequest request) {
