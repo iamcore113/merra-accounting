@@ -28,11 +28,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(authReq).pipe(
       catchError(error => {
         if (error.status === 401) {
+          localStorage.removeItem('temp_token');
+          localStorage.removeItem('user_id');
+          localStorage.removeItem('user_email');
           // Token expired or invalid - redirect to signin
           router.navigate(['/account/signin'], { 
             queryParams: { message: 'Token expired. Please login again.' }
           });
-          localStorage.removeItem('temp_token'); // Clear invalid token
         }
         return throwError(() => error);
       })
@@ -42,7 +44,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error.status === 401) {
-        // Unexpected 401 - redirect to signin
+        localStorage.removeItem('temp_token');
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('user_email');
         router.navigate(['/account/signin'], { 
           queryParams: { message: 'Authentication failed. Please login again.' }
         });
