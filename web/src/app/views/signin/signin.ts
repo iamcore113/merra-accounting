@@ -69,11 +69,7 @@ export class Signin implements OnInit {
         complete: () => {
           this.localStorage.setItem('access_token', verifiedData.tokens.accessToken);
           this.localStorage.setItem('refresh_token', verifiedData.tokens.refreshToken);
-          const isComplete = verifiedData.accountStatus.isComplete;
-          const getEmail = verifiedData.userdetails.email;
-          if (!isComplete) {
-            this.router.navigate(['/personal-details/', getEmail]);
-          }
+          // This will redirect to the main page
         }
       });
     }

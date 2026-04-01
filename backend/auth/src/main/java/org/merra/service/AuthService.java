@@ -200,10 +200,6 @@ public class AuthService {
 
   /* Create JWT tokens after successful authentication */
   private SigninResponse createAuthenticationResponse(String email, String password) {
-    if (email == null || email.isBlank() || password == null || password.isBlank()) {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          AuthConstantResponses.INVALID_CREDENTIALS);
-    }
 
     Authentication authentication;
 
