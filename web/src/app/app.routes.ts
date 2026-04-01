@@ -7,6 +7,7 @@ import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
 import { CreateOrganization } from './views/create-organization/create-organization';
 import { ErrorPage } from './views/error-page/error-page';
+import { MainLayout } from './shared/components/main-layout/main-layout';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -20,6 +21,10 @@ export const routes: Routes = [
       { path: 'verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
       { path: 'personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
     ]
+  },
+  {
+    path: 'main',
+    component: MainLayout
   },
   {
     path: 'create/organization/:email',

@@ -1,0 +1,63 @@
+.main-header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    height: 64px;
+    
+    .logo {
+      h1 {
+        margin: 0;
+        font-size: 0.9rem;
+        font-weight: 500 !important;
+        font-style: normal;
+        position: relative;
+        cursor: pointer;
+        transition: color 0.3s ease;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background-color: var(--brand-color);
+          transition: width 0.3s ease;
+        }
+        
+        &:hover {
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+    }
+    
+    .main-nav {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 1rem;
+  }
+}
