@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.merra.config.TenantContext;
 import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.dto.UpdateInvoiceResponse;
@@ -112,9 +113,35 @@ public class InvoiceService {
 		return findInvoiceOpt.get();
 	}
 
-	public void createNewInvoiceObject(CreateInvoiceRequest request, UUID organizationId) {
+	/**
+	 * Creates a new invoice object from the provided request data.
+	 * 
+	 * This method performs the following operations:
+	 * - Creates a new Invoice entity instance
+	 * - Validates that the organization exists in the current tenant context
+	 * - Sets the invoice type from the request
+	 * - Retrieves and assigns the contact entity, applying default discount if available
+	 * - Processes and sets line items with discount calculations
+	 * - Calculates total invoice amounts including taxes and discounts
+	 * - Sets invoice dates (issue date and due date)
+	 * - Sets invoice status (defaults to "DRAFT" if not provided)
+	 * - Configures invoice actions based on the status
+	 * - Sets the invoice reference number
+	 * - Persists the invoice to the database
+	 * 
+	 * @param request The CreateInvoiceRequest containing all invoice data including
+	 *                type, contact, line items, dates, status, and reference
+	 * @throws EntityNotFoundException if organization or contact is not found
+	 */
+	public void createNewInvoiceObject(CreateInvoiceRequest request) {
 		// Create new Invoice object
 		Invoice invoice = retrieveInvoiceObject(null);
+
+		// Get organization ID
+		final UUID getOrganizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
+		if (!organizationRepository.existsById(getOrganizationId)) {
+			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
+		}
 
 		// Set the invoice type
 		invoice.setType(request.invoiceType());
@@ -125,12 +152,7 @@ public class InvoiceService {
 		invoice.setContact(getContact);
 
 		Integer CONTACT_DEFAULT_DISCOUNT = getContact.getDefaultDiscount();
-		setLineItems(
-				invoice,
-				request.lineItems(),
-				request.lineAmountType(),
-				CONTACT_DEFAULT_DISCOUNT,
-				organizationId);
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), CONTACT_DEFAULT_DISCOUNT, getOrganizationId);
 		calculateInvoice(invoice);
 
 		invoice.setDate(request.date());
@@ -148,10 +170,18 @@ public class InvoiceService {
 	}
 
 	/**
-	 * This method will set the invoice object's actions instance
+	 * Configures the available actions for an invoice based on its current status.
 	 * 
-	 * @param invoice - accepts {@linkplain Invoice} object.
-	 * @param status  - accepts {@linkplain java.util.String} object type.
+	 * This method determines what operations can be performed on an invoice by setting
+	 * action flags in the InvoiceActionsEmb embedded object. Currently, only invoices
+	 * with "DRAFT" status can be edited or deleted.
+	 * 
+	 * Action rules:
+	 * - DRAFT status: Edit and Delete actions are enabled
+	 * - Other statuses: No actions enabled (default behavior)
+	 * 
+	 * @param invoice The Invoice entity to configure actions for
+	 * @param status The current status of the invoice (e.g., "DRAFT", "SENT", "PAID")
 	 */
 	private void setInvoiceActions(Invoice invoice, String status) {
 		InvoiceActionsEmb invoiceActions = new InvoiceActionsEmb();
