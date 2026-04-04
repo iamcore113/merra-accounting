@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * When you select an AccountCode for a line item,
@@ -38,6 +39,7 @@ import jakarta.validation.constraints.NotNull;
  * in your API request.
  */
 @Service
+@Validated
 public class InvoiceService {
 
 	private final OrganizationRepository organizationRepository;
@@ -133,7 +135,7 @@ public class InvoiceService {
 	 *                type, contact, line items, dates, status, and reference
 	 * @throws EntityNotFoundException if organization or contact is not found
 	 */
-	public void createNewInvoiceObject(CreateInvoiceRequest request) {
+	public void createNewInvoiceObject(@NotNull CreateInvoiceRequest request) {
 		// Create new Invoice object
 		Invoice invoice = retrieveInvoiceObject(null);
 
@@ -183,7 +185,7 @@ public class InvoiceService {
 	 * @param invoice The Invoice entity to configure actions for
 	 * @param status The current status of the invoice (e.g., "DRAFT", "SENT", "PAID")
 	 */
-	private void setInvoiceActions(Invoice invoice, String status) {
+	private void setInvoiceActions(Invoice invoice, @NotNull String status) {
 		InvoiceActionsEmb invoiceActions = new InvoiceActionsEmb();
 		if (status.equalsIgnoreCase(InvoiceConstants.INVOICE_STATUS_DRAFT)) {
 			invoiceActions.setDelete(true);
@@ -198,7 +200,7 @@ public class InvoiceService {
 	 * 
 	 * @param invoice - accepts {@linkplain Invoice} object type.
 	 */
-	private void save(Invoice invoice) {
+	private void save(@NotNull Invoice invoice) {
 		invoiceRepository.save(invoice);
 	}
 
@@ -213,31 +215,39 @@ public class InvoiceService {
 	 * @return - modified {@linkplain Invoice} object
 	 */
 	private Invoice setLineItems(
-			Invoice invoice,
-			Set<CreateInvoiceRequest.LineItems> lineItemsSet,
+			@NotNull Invoice invoice,
+			@NotNull Set<CreateInvoiceRequest.LineItems> lineItemsSet,
 			String lineAmountTypeRequest,
 			Integer customerDefaultDiscount,
-			UUID organizationId) {
+			@NotNull UUID organizationId) {
 		/**
-		 * Set lineAmountTypeRequest.
-		 * If lineAmountTypeRequest is not specified then use the organization's
-		 * DefaultPurchasesTax (If specified)
+		 * Determine the line amount type (tax inclusive vs exclusive) for the invoice.
+		 * 
+		 * Priority order:
+		 * 1. Use the lineAmountTypeRequest parameter if provided (not blank)
+		 * 2. Fall back to organization's default tax type if configured
+		 * 3. Default to "EXCLUSIVE" if neither is specified
+		 * 
+		 * This determines whether line item amounts include tax (INCLUSIVE) or exclude tax (EXCLUSIVE).
 		 */
 		Optional<String> lineAmountTypeOpt = Optional.empty();
 		Optional<String> organizationDefaultTaxPurchaseOpt = organizationRepository.findLineAmountType(organizationId);
 
-		// Set line amount type
-		if (!lineAmountTypeRequest.isBlank()) {
+		// Apply line amount type selection logic following the priority order
+		if (lineAmountTypeRequest != null && !lineAmountTypeRequest.isBlank()) {
+			// Priority 1: Use explicitly provided line amount type
 			lineAmountTypeOpt = Optional.of(lineAmountTypeRequest);
-		} else if (lineAmountTypeRequest.isBlank()) {
+		} else {
+			// Priority 2: Check for organization's default tax type
 			if (organizationDefaultTaxPurchaseOpt.isPresent()) {
 				lineAmountTypeOpt = Optional.of(organizationDefaultTaxPurchaseOpt.get());
 			} else {
-				// Type EXCLUSIVE is the default if both lineAmountTypeRequest and
-				// organizationDefaultTaxPurchase is not specified
+				// Priority 3: Fall back to EXCLUSIVE as the system default
+				// This is used when neither request nor organization specifies a type
 				lineAmountTypeOpt = Optional.of(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE);
 			}
 		}
+		// Apply the determined line amount type to the invoice
 		invoice.setLineAmountTypes(lineAmountTypeOpt.get());
 
 		Set<LineItem> lineItems = lineItemsSet
