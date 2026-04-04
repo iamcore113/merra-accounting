@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.merra.config.TenantContext;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
@@ -175,5 +176,18 @@ public class OrganizationService {
 		var getUserAccount = userAccountService.retrieveById(userId);
 		Set<OrganizationUsersLookup> organizations = organizationRepository.findOrganizationsByUserId(userId);
 		return organizationMapper.toOrganizationUserDetails(organizations, getUserAccount);
+	}
+	
+	
+	public void getOrganizationDashboard() {
+		final UUID organizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
+		final UUID userId = TenantContext.getTenantId(TenantContext.USER_TENANT);
+		
+		if (organizationId == null || userId == null) {
+			throw new IllegalStateException("Organization ID and User ID must be present in the tenant context");
+		}
+		
+		var getUserId = userAccountService.retrieveById(userId);
+		var getOrganization = organizationRepository.findById(organizationId);
 	}
 }

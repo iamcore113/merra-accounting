@@ -33,8 +33,7 @@ public class OrganizationController {
 	}
 
 	@GetMapping("dashboard")
-	public void getOrganizationDashboard(@RequestHeader("Accept-Encoding") UUID organizationId, @RequestHeader("Accept-Encoding") UUID userId) {
-		
+	public void getOrganizationDashboard() {
 	}
 
 	/**
