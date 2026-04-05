@@ -65,8 +65,6 @@ public class OrganizationMembers {
 	public LocalDate dateUpdated;
 
 	public OrganizationMembers() {
-		this.isCreator = false;
-		this.isInvited = false;
 	}
 	
 	// for the creator member
