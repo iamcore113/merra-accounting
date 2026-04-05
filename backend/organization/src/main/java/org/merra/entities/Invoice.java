@@ -36,6 +36,10 @@ public class Invoice {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "invoice_id", nullable = false, unique = true)
 	private UUID invoiceId;
+	
+	@Column(name = "invoice_number", nullable = false, unique = true)
+	@NotBlank(message = "Invoice number cannot be blank")
+	private String invoiceNumber;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "organization", nullable = false)
@@ -154,6 +158,14 @@ public class Invoice {
 		this(organization, type, contact, lineItems, lineAmountTypes, date, dueDate, status, reference, subTotal,
 				grandTotal, totalTax, actions);
 		this.invoiceId = invoiceId;
+	}
+	
+	public String getInvoiceNumber() {
+		return invoiceNumber;
+	}
+
+	public void setInvoiceNumber(String invoiceNumber) {
+		this.invoiceNumber = invoiceNumber;
 	}
 
 	public UUID getInvoiceId() {

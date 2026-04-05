@@ -1,0 +1,22 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+	
+	<!-- add invoiceNumber column -->
+     <changeSet id="2026-add-invoiceColumn-organization" author="brian">
+     	<createSequence sequenceName="invoice_num_seq" startValue="1" incrementBy="1"/>
+        <addColumn tableName="organization" schemaName="merra_schema">
+            <column name="invoice_number" type="varchar(100)">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+	</changeSet>
+</databaseChangeLog>

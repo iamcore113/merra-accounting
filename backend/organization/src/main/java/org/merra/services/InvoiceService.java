@@ -2,6 +2,7 @@ package org.merra.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -163,12 +164,12 @@ public class InvoiceService {
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
 
-		String status = request.status().isBlank() ? "DRAFT" : request.status();
+		final String status = request.status().isBlank() ? "DRAFT" : request.status();
 		invoice.setStatus(status);
 
 		// set invoice actions
 		setInvoiceActions(invoice, status);
-
+		invoice.setInvoiceNumber(generateInvoiceNumber());
 		invoice.setReference(request.reference());
 
 		this.save(invoice);
@@ -412,5 +413,13 @@ public class InvoiceService {
 				formerStatus,
 				currentStatus);
 	}
+	
+	private String generateInvoiceNumber() {
+        Long nextVal = invoiceRepository.getNextInvoiceSequence();
+        int year = LocalDate.now().getYear();
+        
+        // Format: INV - [Year] - [4-digit padded number]
+        return String.format("INV-%d-%03d", year, nextVal);
+    }
 
 }

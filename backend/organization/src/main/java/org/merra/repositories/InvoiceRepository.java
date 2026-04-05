@@ -23,4 +23,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	
 	@Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = :status")
 	Integer countInvoicesByStatus(String status);
+	
+	@Query(value = "SELECT nextval('invoice_num_seq')", nativeQuery = true)
+    Long getNextInvoiceSequence();
 }
