@@ -55,14 +55,13 @@ public class OrganizationController {
 	}
 
 	@Operation(summary = "create new organization")
-	@PostMapping("create/{userId}")
-	public ResponseEntity<ApiResponse> createOrganization(@PathVariable("userId") UUID userId,
-			@RequestBody @Valid CreateOrganizationRequest data) {
+	@PostMapping("create")
+	public ResponseEntity<ApiResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
 		ApiResponse response = new ApiResponse(
 				"Organization object found successfully.",
 				true,
 				HttpStatus.OK,
-				organizationService.createNewOrganization(userId, data));
+				organizationService.createNewOrganization(data));
 
 		return ResponseEntity.ok(response);
 	}

@@ -1,5 +1,7 @@
 package org.merra.services;
 
+import java.lang.reflect.Member;
+import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -14,9 +16,10 @@ import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.Organization;
+import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
+import org.merra.entities.UserAccount;
 import org.merra.entities.embedded.FinancialYearEmb;
-import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
@@ -24,9 +27,9 @@ import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.InvoiceRepository;
+import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
-import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,6 +45,7 @@ import jakarta.validation.constraints.NotNull;
 public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
+	private final OrganizationMembersRepository organizationMembersRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
 	private final UserAccountService userAccountService;
@@ -51,11 +55,13 @@ public class OrganizationService {
 			OrganizationRepository organizationRepository,
 			UserAccountService userAccountService,
 			OrganizationTypeRepository organizationTypeRepository,
+			OrganizationMembersRepository organizationMembersRepository,
 			InvoiceRepository invoiceRepository,
 			AccountService accountService,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
+		this.organizationMembersRepository = organizationMembersRepository;
 		this.userAccountService = userAccountService;
 		this.invoiceRepository = invoiceRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
@@ -108,16 +114,18 @@ public class OrganizationService {
 	}
 
 	@Transactional
-	public NewOrganizationResponse createNewOrganization(UUID userId, CreateOrganizationRequest req) {
+	public NewOrganizationResponse createNewOrganization(CreateOrganizationRequest req) {
 
 		Organization org = getOrganizationObject(null); // New organization object
-
+		
+		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
+		if (getUserId == null) {
+			throw new IllegalStateException("User ID must be present in the tenant context");
+		}
+		UserAccount user = userAccountService.retrieveById(getUserId);
+		
 		// Set organization user as MEMBER role
-		userAccountService.setUserRole(userId, UserAccountStatusEn.MEMBER);
-		// Set the user as ADVISOR role in the organization
-		String setRole = UserAccountStatusEn.ADVISOR.name();
-		OrganizationUsersEmb organizationUsersEmb = new OrganizationUsersEmb(userId, setRole);	
-		org.setOrganizationUsers(new java.util.HashSet<>(Set.of(organizationUsersEmb)));
+		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
 		
 		// Profile image will default to null; set via organization settings if needed
 		org.setProfileImage(null);
@@ -136,10 +144,15 @@ public class OrganizationService {
 		org.setPaymentTerms(new PaymentTermsEmb());
 
 		Organization newOrganization = organizationRepository.save(org);
+		
+		// Set the user to creator member
+		OrganizationMembers member = new OrganizationMembers(newOrganization, user);
+		organizationMembersRepository.save(member);
+		
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
 
-		var checkUserFullName = userAccountService.returnAccountFullName(userId);
+		var checkUserFullName = userAccountService.returnAccountFullName(getUserId);
 		boolean userInfoPresent = true;
 		String userfullName = null;
 		if (checkUserFullName.isEmpty()) {
@@ -149,7 +162,7 @@ public class OrganizationService {
 		}
 		return new NewOrganizationResponse(
 				newOrganization.getId(),
-				new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName)
+				new NewOrganizationResponse.UserDetails(getUserId, userInfoPresent, userfullName)
 		);
 
 	}
@@ -179,10 +192,12 @@ public class OrganizationService {
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
+	// TODO: work here
 	public UserOrganizationResponse getUserOrganizations(@NotNull UUID userId) {
-		var getUserAccount = userAccountService.retrieveById(userId);
-		Set<OrganizationUsersLookup> organizations = organizationRepository.findOrganizationsByUserId(userId);
-		return organizationMapper.toOrganizationUserDetails(organizations, getUserAccount);
+		return null;
+//		var getUserAccount = userAccountService.retrieveById(userId);
+//		Set<OrganizationUsersLookup> organizations = organizationRepository.findOrganizationsByUserId(userId);
+//		return organizationMapper.toOrganizationUserDetails(organizations, getUserAccount);
 	}
 	
 	

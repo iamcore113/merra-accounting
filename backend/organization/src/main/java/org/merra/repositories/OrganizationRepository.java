@@ -39,10 +39,4 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	 */
 	@Query("SELECT org.country FROM Organization org WHERE org.id = :id")
 	Optional<String> findCountryUsingOrganizationId(@Param("id") UUID id);
-
-	@Query("SELECT COUNT(org) > 0 FROM Organization org JOIN org.organizationUsers ou WHERE ou.userId = :userId")
-	boolean existsOrganizationsByUserId(@Param("userId") UUID userId);
-
-	@Query("SELECT org FROM Organization org JOIN org.organizationUsers ou WHERE ou.userId = :userId")
-	Set<OrganizationUsersLookup> findOrganizationsByUserId(@Param("userId") UUID userId);
 }

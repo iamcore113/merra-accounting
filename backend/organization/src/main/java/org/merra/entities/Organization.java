@@ -11,15 +11,11 @@ import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.OrganizationAddressEmb;
-import org.merra.entities.embedded.OrganizationUserInvitesEmb;
-import org.merra.entities.embedded.OrganizationUsersEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -44,16 +40,6 @@ public class Organization {
 
 	@Column(name = "profile_image")
 	private String profileImage;
-
-	@ElementCollection
-	@CollectionTable(schema = "merra_schema", name = "organization_users", joinColumns = {
-			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUsersEmb> organizationUsers;
-
-	@ElementCollection
-	@CollectionTable(schema = "merra_schema", name = "org_invites", joinColumns = {
-			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUserInvitesEmb> organizationUserInvites;
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
@@ -181,22 +167,6 @@ public class Organization {
 
 	public void setProfileImage(String profileImage) {
 		this.profileImage = profileImage;
-	}
-
-	public Set<OrganizationUsersEmb> getOrganizationUsers() {
-		return organizationUsers;
-	}
-
-	public void setOrganizationUsers(Set<OrganizationUsersEmb> organizationUsers) {
-		this.organizationUsers = organizationUsers;
-	}
-
-	public Set<OrganizationUserInvitesEmb> getOrganizationUserInvites() {
-		return organizationUserInvites;
-	}
-
-	public void setOrganizationUserInvites(Set<OrganizationUserInvitesEmb> organizationUserInvites) {
-		this.organizationUserInvites = organizationUserInvites;
 	}
 
 	public String getDisplayName() {

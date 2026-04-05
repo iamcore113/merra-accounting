@@ -17,10 +17,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 
 @Service
+@Validated
 public class UserAccountService {
 	private static final Logger logger = LoggerFactory.getLogger(UserAccountService.class);
 	private final UserMapper userMapper;
@@ -58,7 +61,7 @@ public class UserAccountService {
 	 * @param id - accepts {@linkplain java.util.UUID} type
 	 * @return - {@linkplain UserAccount} object type.
 	 */
-	public UserAccount retrieveById(UUID id) {
+	public UserAccount retrieveById(@NotNull UUID id) {
 		Optional<UserAccount> findById = userRepository.findById(id);
 
 		if (findById.isEmpty()) {
@@ -119,12 +122,10 @@ public class UserAccountService {
 		return userMapper.toUserPersonalInformationResponse(user);
 	}
 
-	public void setUserRole(UUID userId, UserAccountStatusEn role) {
+	public void setUserRole(@NotNull UserAccount user, @NotNull UserAccountStatusEn role) {
 		String roleName = role.name();
-		UserAccount getUserAccount = userRepository.findById(userId)
-				.orElseThrow(() -> new EntityNotFoundException("User entity " + userId + " not found."));
 
-		getUserAccount.setRoles(roleName);
-		userRepository.save(getUserAccount);
+		user.setRoles(roleName);
+		userRepository.save(user);
 	}
 }
