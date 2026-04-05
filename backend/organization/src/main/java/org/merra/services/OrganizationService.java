@@ -145,7 +145,7 @@ public class OrganizationService {
 
 		Organization newOrganization = organizationRepository.save(org);
 		
-		// Set the user to creator member
+		// Set the user to creator member ~ constructor for initializing the creator member
 		OrganizationMembers member = new OrganizationMembers(newOrganization, user);
 		organizationMembersRepository.save(member);
 		
