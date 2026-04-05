@@ -7,6 +7,7 @@ public final class InvoiceConstants {
 	public static final String INVOICE_STATUS_DRAFT = "DRAFT"; // The default status
 	public static final String INVOICE_STATUS_SUBMITTED = "SUBMITTED";
 	public static final String INVOICE_STATUS_AUTHORISED = "AUTHORISED";
+	public static final String INVOICE_STATUS_DELETED = "DELETED";
 	
 	// Invoice Line amount types
 	// this means the provided unitAmount for each line item

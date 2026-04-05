@@ -1,6 +1,7 @@
 package org.merra.services;
 
 import java.util.EnumSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.UUID;
 import org.merra.config.TenantContext;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.NewOrganizationResponse;
+import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.Organization;
@@ -21,10 +23,12 @@ import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationMapper;
+import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.merra.services.phone.PhoneService;
+import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +42,7 @@ import jakarta.validation.constraints.NotNull;
 public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
+	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
 	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
@@ -46,11 +51,13 @@ public class OrganizationService {
 			OrganizationRepository organizationRepository,
 			UserAccountService userAccountService,
 			OrganizationTypeRepository organizationTypeRepository,
+			InvoiceRepository invoiceRepository,
 			AccountService accountService,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
 		this.userAccountService = userAccountService;
+		this.invoiceRepository = invoiceRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.organizationMapper = organizationMapper;
@@ -179,7 +186,7 @@ public class OrganizationService {
 	}
 	
 	
-	public void getOrganizationDashboard() {
+	public OrganizationDashboardResponse getOrganizationDashboard() {
 		final UUID organizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
 		final UUID userId = TenantContext.getTenantId(TenantContext.USER_TENANT);
 		
@@ -189,5 +196,18 @@ public class OrganizationService {
 		
 		var getUserId = userAccountService.retrieveById(userId);
 		var getOrganization = organizationRepository.findById(organizationId);
+		
+		Integer draftCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_DRAFT);
+		Integer submittedCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_SUBMITTED);
+		Integer authorisedCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_AUTHORISED);
+		
+		Map<String, Integer> invoicesCountsMap = Map.of(
+				InvoiceConstants.INVOICE_STATUS_DRAFT, draftCount,
+				InvoiceConstants.INVOICE_STATUS_SUBMITTED, submittedCount,
+				InvoiceConstants.INVOICE_STATUS_AUTHORISED, authorisedCount
+		);
+		
+		return organizationMapper.toOrganizationDashboardresponse(invoicesCountsMap);
+		
 	}
 }

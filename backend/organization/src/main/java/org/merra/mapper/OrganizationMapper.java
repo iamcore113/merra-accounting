@@ -1,15 +1,18 @@
 package org.merra.mapper;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.UserAccount;
 import org.merra.repositories.projections.OrganizationUsersLookup;
+import org.merra.utilities.InvoiceConstants;
 
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
@@ -40,5 +43,19 @@ public interface OrganizationMapper {
 			);
 		}
 		return organizationDetailsSet;
+	}
+	
+	@Mappings({
+		@Mapping(target = "invoiceStatusCount", source = "invoiceStatusCounts", qualifiedByName = "mapInvoiceStatusCounts")
+	})
+	OrganizationDashboardResponse toOrganizationDashboardresponse(Map<String, Integer> invoiceStatusCounts);
+	
+	@Named("mapInvoiceStatusCounts")
+	default OrganizationDashboardResponse.InvoiceStatusCount mapInvoiceStatusCounts(Map<String, Integer> invoiceStatusCounts) {
+		return new OrganizationDashboardResponse.InvoiceStatusCount(
+			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_DRAFT),
+			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_SUBMITTED),
+			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_AUTHORISED)
+		);
 	}
 }

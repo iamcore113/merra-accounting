@@ -20,4 +20,7 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	int updateInvoiceStatus(
 			@Param("invoiceId") UUID invoiceId,
 			@Param("status") String status);
+	
+	@Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = :status")
+	Integer countInvoicesByStatus(String status);
 }

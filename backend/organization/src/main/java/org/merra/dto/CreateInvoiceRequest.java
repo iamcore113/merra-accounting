@@ -17,25 +17,39 @@ import jakarta.validation.constraints.Pattern;
 
 @ValidateInvoice
 public record CreateInvoiceRequest(
-		@NotNull(message = "invoiceType component cannot be null.")
 		String invoiceType,
-		@NotNull(message = "contact component cannot be null")
 		UUID contact,
-		@NotNull(message = "lineAmounType component cannot be null")
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
 		String lineAmountType,
-		@NotNull(message = "lineItems component cannot be null.")
 		Set<LineItems> lineItems,
-		@NotNull(message = "date component cannot be null.")
 		LocalDate date,
 		@Future(message = "Invalid value for dueDate component.")
 		@DateTimeFormat(iso = ISO.DATE)
 		LocalDate dueDate,
 		String status,
-		@NotNull(message = "taxEligible component cannot be null.")
 		Boolean taxEligible,
 		String reference
 ) {
+	public CreateInvoiceRequest {
+		if (lineItems != null && lineItems.isEmpty()) {
+			throw new IllegalArgumentException("lineItems component cannot be empty.");
+		}
+		if (invoiceType == null || invoiceType.isBlank()) {
+			throw new IllegalArgumentException("invoiceType component cannot be null or blank.");
+		}
+		if (contact == null || contact.toString().isBlank()) {
+			throw new IllegalArgumentException("contact component cannot be blank.");
+		}
+		if (lineAmountType == null || lineAmountType.isBlank()) {
+			throw new IllegalArgumentException("lineAmountType component cannot be null or blank.");
+		}
+		if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
+			throw new IllegalArgumentException("dueDate component must be a future date.");
+		}
+		if (taxEligible == null) {
+			throw new IllegalArgumentException("taxEligible component cannot be null.");
+		}
+	}
 	public record LineItems(
 			@NotNull(message = "description component cannot be null.")
 			String description,

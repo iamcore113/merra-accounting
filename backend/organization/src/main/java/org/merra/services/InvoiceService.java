@@ -141,6 +141,9 @@ public class InvoiceService {
 
 		// Get organization ID
 		final UUID getOrganizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
+		if (getOrganizationId == null) {
+			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
+		}
 		if (!organizationRepository.existsById(getOrganizationId)) {
 			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
 		}
@@ -153,8 +156,8 @@ public class InvoiceService {
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
 		invoice.setContact(getContact);
 
-		Integer CONTACT_DEFAULT_DISCOUNT = getContact.getDefaultDiscount();
-		setLineItems(invoice, request.lineItems(), request.lineAmountType(), CONTACT_DEFAULT_DISCOUNT, getOrganizationId);
+		Integer contactDefaultDiscount = getContact.getDefaultDiscount();
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount, getOrganizationId);
 		calculateInvoice(invoice);
 
 		invoice.setDate(request.date());
