@@ -212,14 +212,12 @@ public class OrganizationService {
 		if (organizationId == null || userId == null) {
 			throw new IllegalStateException("Organization ID and User ID must be present in the tenant context");
 		}
+		Organization getOrganization = organizationRepository.findById(organizationId).orElseThrow(() -> new EntityNotFoundException("Organization not found"));
 		
-		var getUserId = userAccountService.retrieveById(userId);
-		var getOrganization = organizationRepository.findById(organizationId);
-		
-		Integer draftCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_DRAFT);
-		Integer submittedCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_SUBMITTED);
-		Integer authorisedCount = invoiceRepository.countInvoicesByStatus(InvoiceConstants.INVOICE_STATUS_AUTHORISED);
-		
+		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT, getOrganization);
+		Integer submittedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_SUBMITTED, getOrganization);
+		Integer authorisedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_AUTHORISED, getOrganization);
+
 		Map<String, Integer> invoicesCountsMap = Map.of(
 				InvoiceConstants.INVOICE_STATUS_DRAFT, draftCount,
 				InvoiceConstants.INVOICE_STATUS_SUBMITTED, submittedCount,
