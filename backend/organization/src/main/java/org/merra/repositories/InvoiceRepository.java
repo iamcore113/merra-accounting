@@ -3,6 +3,7 @@ package org.merra.repositories;
 import java.util.UUID;
 
 import org.merra.entities.Invoice;
+import org.merra.entities.Organization;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,8 +22,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 			@Param("invoiceId") UUID invoiceId,
 			@Param("status") String status);
 	
-	@Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = :status")
-	Integer countInvoicesByStatus(String status);
+	@Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = :status AND i.organization = :organization")
+	Integer countInvoiceStatusByOrganization(String status, Organization organization);
 	
 	@Query(value = "SELECT nextval('invoice_num_seq')", nativeQuery = true)
     Long getNextInvoiceSequence();
