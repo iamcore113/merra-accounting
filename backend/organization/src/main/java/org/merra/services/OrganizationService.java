@@ -1,8 +1,7 @@
 package org.merra.services;
 
-import java.lang.reflect.Member;
-import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,6 +29,7 @@ import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.projections.OrganizationsOnly;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
@@ -192,12 +192,16 @@ public class OrganizationService {
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
-	// TODO: work here
-	public UserOrganizationResponse getUserOrganizations(@NotNull UUID userId) {
-		return null;
-//		var getUserAccount = userAccountService.retrieveById(userId);
-//		Set<OrganizationUsersLookup> organizations = organizationRepository.findOrganizationsByUserId(userId);
-//		return organizationMapper.toOrganizationUserDetails(organizations, getUserAccount);
+	public List<UserOrganizationResponse> getUserOrganizations(@NotNull UUID userId) {
+		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
+		
+		if (getUserId == null) {
+			throw new IllegalStateException("User ID must be present in the tenant context");
+		}
+		UserAccount user = userAccountService.retrieveById(getUserId);
+		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser(user);
+
+		return organizationMapper.toUserOrganizationResponses(organizations, user);
 	}
 	
 	
