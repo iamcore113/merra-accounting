@@ -186,13 +186,10 @@ public class OrganizationService {
 
 	/*
 	 * This method will retrieve the list of organizations that a user belongs to.
-	 * 
-	 * @param userId - accepts {@linkplain java.util.UUID} object type.
-	 * 
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
-	public List<UserOrganizationResponse> getUserOrganizations(@NotNull UUID userId) {
+	public List<UserOrganizationResponse> getUserOrganizations() {
 		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
 		
 		if (getUserId == null) {
@@ -214,6 +211,8 @@ public class OrganizationService {
 		}
 		Organization getOrganization = organizationRepository.findById(organizationId).orElseThrow(() -> new EntityNotFoundException("Organization not found"));
 		
+		// Query the count of invoices for each status (DRAFT, SUBMITTED, AUTHORISED)
+		// and collect them into an immutable map for the dashboard response
 		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT, getOrganization);
 		Integer submittedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_SUBMITTED, getOrganization);
 		Integer authorisedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_AUTHORISED, getOrganization);
