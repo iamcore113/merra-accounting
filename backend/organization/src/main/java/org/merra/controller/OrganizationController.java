@@ -1,7 +1,6 @@
 package org.merra.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
@@ -54,11 +53,19 @@ public class OrganizationController {
 		return ResponseEntity.ok(response);
 	}
 
+	/**
+	 * Creates a new organization using the provided request data.
+	 * The request body is validated before processing via the @Valid annotation.
+	 *
+	 * @param data The CreateOrganizationRequest containing the organization details
+	 *             (e.g., display name, settings)
+	 * @return A ResponseEntity containing an ApiResponse with the newly created organization
+	 */
 	@Operation(summary = "create new organization")
-	@PostMapping("create")
-	public ResponseEntity<ApiResponse> createOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
+	@PostMapping("new")
+	public ResponseEntity<ApiResponse> newOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
 		ApiResponse response = new ApiResponse(
-				"Organization object found successfully.",
+				"Organization created successfully.",
 				true,
 				HttpStatus.OK,
 				organizationService.createNewOrganization(data));
