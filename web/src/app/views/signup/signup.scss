@@ -90,11 +90,23 @@ form {
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+      line-height: 1;
+
+      &.submit-button {
+        min-width: 150px;
+      }
+
+      .submit-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
 
       .submit-spinner {
-        display: inline-block;
+        display: inline-flex;
+        align-self: center;
         --mdc-circular-progress-active-indicator-color: white;
-        margin-right: 0.25rem;
       }
     }
 

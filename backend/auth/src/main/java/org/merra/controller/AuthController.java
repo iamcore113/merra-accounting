@@ -39,7 +39,7 @@ public class AuthController {
      */
     @GetMapping(value = "req/signup/verify")
     public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
-        final VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
+        final VerifiedAccountResponse res = authService.verifyAccountToken(tokenParam);
         final ApiResponse apiRes = new ApiResponse(
                 "Email successfully verified",
                 true,

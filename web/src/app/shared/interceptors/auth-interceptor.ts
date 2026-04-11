@@ -9,22 +9,31 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const requiresAuth = req.context.get(IS_AUTHENTICATED);
   const localStorage = inject(LocalStorageService);
   const router = inject(Router);
-  
+
   const tempToken = localStorage.getItem('temp_token');
   if (!tempToken && requiresAuth) {
     // No token and auth required - redirect to signin with message
-    router.navigate(['/account/signin'], { 
+    router.navigate(['/account/signin'], {
       queryParams: { message: 'Invalid token. Please login again.' }
     });
     return throwError(() => new Error('No authentication token found'));
   }
-  
+
   if (tempToken && requiresAuth) {
     // Add token to Authorization header
-    const authReq = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${tempToken}`)
-    });
-    
+    const user_id = localStorage.getItem('user_id');
+    const organization_id = localStorage.getItem('organization_id');
+    let headers = req.headers.set('Authorization', `Bearer ${tempToken}`);
+
+    if (user_id) {
+      headers = headers.set('X-User-Context-ID', user_id);
+    }
+    if (organization_id) {
+      headers = headers.set('X-Organization-ID', organization_id);
+    }
+
+    const authReq = req.clone({ headers });
+
     return next(authReq).pipe(
       catchError(error => {
         if (error.status === 401) {
@@ -32,7 +41,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           localStorage.removeItem('user_id');
           localStorage.removeItem('user_email');
           // Token expired or invalid - redirect to signin
-          router.navigate(['/account/signin'], { 
+          router.navigate(['/account/signin'], {
             queryParams: { message: 'Token expired. Please login again.' }
           });
         }
@@ -47,7 +56,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         localStorage.removeItem('temp_token');
         localStorage.removeItem('user_id');
         localStorage.removeItem('user_email');
-        router.navigate(['/account/signin'], { 
+        router.navigate(['/account/signin'], {
           queryParams: { message: 'Authentication failed. Please login again.' }
         });
       }

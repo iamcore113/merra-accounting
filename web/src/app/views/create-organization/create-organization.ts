@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
-import { CreateOrganizationRequest, FinancialYear, OrganizationMetaDataResponse } from '../../shared/models/organization';
+import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
@@ -36,8 +36,9 @@ export class CreateOrganization implements OnInit {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
-  private localStorage = inject(LocalStorageService);
   private countryApiService = inject(CountryApiService);
+  private new_organization: NewOrganizationResponse | null = null;
+  private localStorage = inject(LocalStorageService);
 
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
@@ -148,7 +149,7 @@ export class CreateOrganization implements OnInit {
     this.isSubmitting = true;
 
     const formValue = this.organizationForm.value;
-    
+
     const organizationRequest: CreateOrganizationRequest = {
       displayName: formValue.displayName,
       type: formValue.type,
@@ -161,15 +162,12 @@ export class CreateOrganization implements OnInit {
       currency: formValue.currency
     };
 
-    const userId = this.localStorage.getItem("user_id");
-
-    if (userId === null) {
-      console.error("User ID is null - cannot create organization");
-      return;
-    }
-
-    this.organizationService.createOrganization(organizationRequest, userId).subscribe({
-      next: (response) => {
+    let neworganization: NewOrganizationResponse | null = null;
+    this.organizationService.createOrganization(organizationRequest).subscribe({
+      next: (response: Config) => {
+        if (response.result && 'data' in response) {
+          neworganization = (response as any).data as NewOrganizationResponse;
+        }
       },
       error: (error) => {
         console.error('Error creating organization:', error);
@@ -181,6 +179,7 @@ export class CreateOrganization implements OnInit {
       },
       complete: () => {
         this.isSubmitting = false;
+        this.localStorage.setItem('organization_id', neworganization?.organizationId);
         this.snackBar.open('Organization created successfully!', 'Success', {
           duration: 3000,
           panelClass: ['success-snackbar']

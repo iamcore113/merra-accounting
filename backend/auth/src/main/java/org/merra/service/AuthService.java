@@ -62,11 +62,11 @@ public class AuthService {
   @Value("${app.frontend.url}")
   private String webUrl;
 
-    private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
-    private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
-    private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
-    private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
-    private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
+  private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+  private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
+  private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
+  private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
+  private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
@@ -93,7 +93,23 @@ public class AuthService {
     this.userAccountService = userAccountService;
   }
 
-  public VerifiedAccountResponse verifyEmail(String tokenParam) {
+  /**
+   * Verifies an email verification token, enables the corresponding account, and
+   * issues a limited
+   * access JWT for post-verification onboarding.
+   *
+   * @param tokenParam The verification token received from the account
+   *                   verification link.
+   * @return A {@link VerifiedAccountResponse} containing verification status,
+   *         user identifier,
+   *         account email, and a limited-access token.
+   * @throws BadCredentialsException If the token does not contain an email or
+   *                                 does not match the
+   *                                 stored account verification token.
+   * @throws EntityNotFoundException If no user account exists for the token
+   *                                 email.
+   */
+  public VerifiedAccountResponse verifyAccountToken(String tokenParam) {
     final String email = jwtUtils.extractUsername(tokenParam);
     if (email == null) {
       throw new BadCredentialsException("Token email not found.");
@@ -111,7 +127,8 @@ public class AuthService {
     findAccount.setIsEnabled(true);
     findAccount.setRoles(ROLE_IDLE);
     userRepository.save(findAccount);
-    limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
+    limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE), limitedAccessTokenDuration,
+        false);
 
     return new VerifiedAccountResponse(true, findAccount.getUserId(), getAccountEmail, limitedAccessToken);
   }
@@ -214,23 +231,23 @@ public class AuthService {
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
-    
+
     SigninResponse response = new SigninResponse();
-    
+
     boolean isProfileComplete = true;
     if (getUser.getFirstName() == null || getUser.getLastName() == null) {
-	  isProfileComplete = false;
-	}
+      isProfileComplete = false;
+    }
     response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled()));
 
     final Map<String, Object> claims = Map.of("role", getUser.getRoles());
     final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);
     final String refreshToken = jwtUtils.generateToken(getUser.getEmail(), claims, refreshTokenExpiration, true);
     List<String> roles = getUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-    
+
     response.setTokens(new JwtTokens(accessToken, refreshToken));
     response.setUserdetails(response.new Userdetails(getUser.getUserId(), getUser.getEmail(), roles));
-    
+
     return response;
 
   }
@@ -247,7 +264,8 @@ public class AuthService {
       } else {
         var user = findUserEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE),
+            verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
         userRepository.save(user);
@@ -261,7 +279,8 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", ROLE_IDLE),
+        verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
     sendVerificationEmail(request.email(), verificationEmailToken);
@@ -289,7 +308,8 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE),
+        verificationTokenDuration, false);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
     sendVerificationEmail(user.getEmail(), newVerificationToken);

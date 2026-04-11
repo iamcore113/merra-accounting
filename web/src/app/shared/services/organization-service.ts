@@ -14,9 +14,8 @@ export class OrganizationService {
   private http = inject(HttpClient);
   private createOrganizationUrl = CREATE_ORGANIZATION;
 
-  createOrganization(req: CreateOrganizationRequest, userId: string): Observable<Config> {
-    const url = `${this.createOrganizationUrl}/${userId}`;
-    return this.http.post<Config>(url, req, {
+  createOrganization(req: CreateOrganizationRequest): Observable<Config> {
+    return this.http.post<Config>(this.createOrganizationUrl, req, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

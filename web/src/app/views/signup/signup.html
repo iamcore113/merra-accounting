@@ -89,16 +89,22 @@
       </mat-form-field>
 
       <div class="button-container">
-        <button matButton="filled" type="submit" [disabled]="signupForm.invalid || isSubmitting()">
+        <button
+          matButton="filled"
+          type="submit"
+          class="submit-button"
+          [disabled]="signupForm.invalid || isSubmitting()">
           @if (isSubmitting()) {
-            <mat-progress-spinner
-              class="submit-spinner"
-              mode="indeterminate"
-              [diameter]="16"
-              [strokeWidth]="2"
-              color="accent"
-            ></mat-progress-spinner>
-            Signing up...
+            <span class="submit-content">
+              <mat-progress-spinner
+                class="submit-spinner"
+                mode="indeterminate"
+                [diameter]="18"
+                [strokeWidth]="3"
+                color="accent"
+              ></mat-progress-spinner>
+              <span>Signing up...</span>
+            </span>
           } @else {
             Sign Up
           }
