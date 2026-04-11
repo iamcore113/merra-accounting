@@ -1,12 +1,10 @@
 package org.merra.repositories;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.merra.entities.Organization;
 import org.merra.entities.UserAccount;
-import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

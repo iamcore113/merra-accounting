@@ -24,7 +24,19 @@ export const routes: Routes = [
   },
   {
     path: 'main',
-    component: MainLayout
+    component: MainLayout,
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./views/main-dashboard/main-dashboard').then(m => m.MainDashboard),
+        title: 'MERRA - Dashboard'
+      },
+      {
+        path: 'new-invoice',
+        loadComponent: () => import('./views/main-invoice/create-invoice/create-invoice').then(m => m.CreateInvoice),
+        title: 'MERRA - New Invoice'
+      }
+    ]
   },
   {
     path: 'create/organization/:email',

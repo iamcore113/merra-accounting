@@ -14,36 +14,29 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, UUID> {
-	
-	@Query(
-			"SELECT ac.code FROM Account ac WHERE ac.code = :code " +
-			"AND ac.organization = :organizationId"
-	)
+
+	@Query("SELECT ac.code FROM Account ac WHERE ac.code = :code " +
+			"AND ac.organization.id = :organizationId")
 	Optional<AccountLookup> findAccountByCodeAndOrganization(
 			@Param("code") String code,
-			@Param("organizationId") UUID organizationId
-	);
-	
-	@Query(
-			"SELECT ac.code FROM Account ac WHERE ac.code = :code " +
-			"AND ac.organization = :organizationId"
-	)
+			@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT ac.code FROM Account ac WHERE ac.code = :code " +
+			"AND ac.organization.id = :organizationId")
 	Optional<JournalAccountLookup> findJournalAccountDetail(
 			@Param("code") String code,
-			@Param("organizationId") UUID organizationId
-	);
-	
-	@Query("SELECT ac FROM Account ac WHERE ac.code = :code AND ac.accountId = :organizationId")
+			@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT ac FROM Account ac WHERE ac.code = :code AND ac.organization.id = :organizationId")
 	Optional<Account> findByAccountCodeAndOrganizationId(
 			@Param("code") String code,
-			@Param("organizationId") UUID organizationId
-	);
-	
+			@Param("organizationId") UUID organizationId);
+
 	boolean existsByCodeIgnoreCase(String code);
-	
+
 	@Query("SELECT ac FROM Account ac WHERE ac.archived = false")
 	Set<Account> findAllNotArchived();
-	
-	@Query("SELECT ac FROM Account ac WHERE ac.organization.id = : organizationId")
+
+	@Query("SELECT ac FROM Account ac WHERE ac.organization.id = :organizationId")
 	Set<Account> findAccountByOrganizationId(@Param("organizationId") UUID organizationId);
 }

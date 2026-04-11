@@ -1,6 +1,5 @@
 package org.merra.mapper;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +17,6 @@ import org.merra.utilities.InvoiceConstants;
 
 @Mapper(componentModel = "spring")
 public interface OrganizationMapper {
-	
 	/**
 	 * Maps a map of invoice status counts into an OrganizationDashboardResponse.
 	 * Delegates the conversion of the raw status count map to a structured
@@ -27,89 +25,102 @@ public interface OrganizationMapper {
 	 * @param invoiceStatusCounts A map where keys are invoice status strings
 	 *                            (e.g., "DRAFT", "SUBMITTED", "AUTHORISED")
 	 *                            and values are the count of invoices per status
-	 * @return An OrganizationDashboardResponse containing the structured invoice status counts
+	 * @return An OrganizationDashboardResponse containing the structured invoice
+	 *         status counts
 	 */
 	@Mappings({
-		@Mapping(target = "invoiceStatusCount", source = "invoiceStatusCounts", qualifiedByName = "mapInvoiceStatusCounts")
+			@Mapping(target = "invoiceStatusCount", source = "invoiceStatusCounts", qualifiedByName = "mapInvoiceStatusCounts")
 	})
-	OrganizationDashboardResponse toOrganizationDashboardresponse(Map<String, Integer> invoiceStatusCounts);
-	
+	OrganizationDashboardResponse toOrganizationDashboardResponse(Map<String, Integer> invoiceStatusCounts);
+
 	/**
-	 * Converts a raw map of invoice status counts into a structured InvoiceStatusCount object.
-	 * Extracts the count for each known status (DRAFT, SUBMITTED, AUTHORISED) from the map.
+	 * Converts a raw map of invoice status counts into a structured
+	 * InvoiceStatusCount object.
+	 * Extracts the count for each known status (DRAFT, SUBMITTED, AUTHORIZED) from
+	 * the map.
 	 *
 	 * @param invoiceStatusCounts The raw status-to-count map
 	 * @return A structured InvoiceStatusCount with individual count fields
 	 */
 	@Named("mapInvoiceStatusCounts")
-	default OrganizationDashboardResponse.InvoiceStatusCount mapInvoiceStatusCounts(Map<String, Integer> invoiceStatusCounts) {
+	default OrganizationDashboardResponse.InvoiceStatusCount mapInvoiceStatusCounts(
+			Map<String, Integer> invoiceStatusCounts) {
 		return new OrganizationDashboardResponse.InvoiceStatusCount(
-			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_DRAFT),
-			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_SUBMITTED),
-			invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_AUTHORISED)
-		);
+				invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_DRAFT),
+				invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_SUBMITTED),
+				invoiceStatusCounts.get(InvoiceConstants.INVOICE_STATUS_AUTHORISED));
 	}
-	
+
 	/**
-	 * Maps a single OrganizationsOnly projection and a UserAccount into a UserOrganizationResponse.
-	 * The organization data is converted to OrganizationDetails via "mapUserBelongOrganizations",
+	 * Maps a single OrganizationsOnly projection and a UserAccount into a
+	 * UserOrganizationResponse.
+	 * The organization data is converted to OrganizationDetails via
+	 * "mapUserBelongOrganizations",
 	 * and the user account is converted to UserDetails via "mapUserDetails".
 	 *
-	 * @param organizations A projection containing the organization the user belongs to
+	 * @param organizations A projection containing the organization the user
+	 *                      belongs to
 	 * @param userAccount   The authenticated user's account details
-	 * @return A UserOrganizationResponse with both user and organization details populated
+	 * @return A UserOrganizationResponse with both user and organization details
+	 *         populated
 	 */
 	@Mappings({
-		@Mapping(target = "organizations", source = "organizations", qualifiedByName = "mapUserBelongOrganizations"),
-		@Mapping(target = "userDetails", source = "userAccount", qualifiedByName = "mapUserDetails")
+			@Mapping(target = "organizations", source = "organizations", qualifiedByName = "mapUserBelongOrganizations"),
+			@Mapping(target = "userDetails", source = "userAccount", qualifiedByName = "mapUserDetails")
 	})
 	UserOrganizationResponse toUserOrganizationResponse(OrganizationsOnly organizations, UserAccount userAccount);
-	
+
 	/**
-	 * Maps a list of OrganizationsOnly projections into a list of UserOrganizationResponse objects.
+	 * Maps a list of OrganizationsOnly projections into a list of
+	 * UserOrganizationResponse objects.
 	 * Iterates over each organization and delegates to toUserOrganizationResponse,
 	 * passing the shared UserAccount to each call.
 	 *
 	 * @param organizations The list of organization projections to map
-	 * @param userAccount   The authenticated user's account details, shared across all mappings
+	 * @param userAccount   The authenticated user's account details, shared across
+	 *                      all mappings
 	 * @return A list of UserOrganizationResponse objects, one per organization
 	 */
-	default List<UserOrganizationResponse> toUserOrganizationResponses(List<OrganizationsOnly> organizations, UserAccount userAccount) {
+	default List<UserOrganizationResponse> toUserOrganizationResponses(List<OrganizationsOnly> organizations,
+			UserAccount userAccount) {
 		// MapStruct can't auto-generate list mappings with multiple parameters,
 		// so we manually iterate and delegate each element to the single-item mapper
 		return organizations.stream()
 				.map(org -> toUserOrganizationResponse(org, userAccount))
 				.toList();
 	}
-	
+
 	/**
-	 * Extracts the organization ID and display name from an OrganizationsOnly projection
+	 * Extracts the organization ID and display name from an OrganizationsOnly
+	 * projection
 	 * and wraps them in a single-element Set of OrganizationDetails.
 	 *
 	 * @param organization The projection containing the organization data
-	 * @return A Set containing one OrganizationDetails with the organization's ID and display name
+	 * @return A Set containing one OrganizationDetails with the organization's ID
+	 *         and display name
 	 */
 	@Named("mapUserBelongOrganizations")
-	default Set<UserOrganizationResponse.OrganizationDetails> mapUserBelongOrganizations(OrganizationsOnly organization) {
+	default Set<UserOrganizationResponse.OrganizationDetails> mapUserBelongOrganizations(
+			OrganizationsOnly organization) {
 		final UUID organizationId = organization.getOrganization().getId();
 		final String organizationDisplayName = organization.getOrganization().getDisplayName();
-		
+
 		return Set.of(new UserOrganizationResponse.OrganizationDetails(organizationId, organizationDisplayName));
 	}
-	
+
 	/**
 	 * Converts a UserAccount entity into a UserDetails DTO containing
 	 * the user's ID, full name, and email.
 	 *
 	 * @param userAccount The user account entity to extract details from
-	 * @return A UserDetails object populated with the user's ID, full name, and email
+	 * @return A UserDetails object populated with the user's ID, full name, and
+	 *         email
 	 */
 	@Named("mapUserDetails")
 	default UserOrganizationResponse.UserDetails mapUserDetails(UserAccount userAccount) {
 		return new UserOrganizationResponse.UserDetails(
-			userAccount.getUserId(),
-			userAccount.getFullName().get(),
-			userAccount.getEmail()
-		);
+				userAccount.getUserId(),
+				userAccount.getFullName().get(),
+				userAccount.getEmail());
 	}
 }

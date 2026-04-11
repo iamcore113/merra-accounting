@@ -7,7 +7,13 @@ import org.merra.entities.OrganizationMembers;
 import org.merra.entities.UserAccount;
 import org.merra.repositories.projections.OrganizationsOnly;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OrganizationMembersRepository extends JpaRepository<OrganizationMembers, UUID> {
-	List<OrganizationsOnly> findByOrganizationByUser(UserAccount user);
+	
+	@Query("SELECT DISTINCT om.organization AS organization " +
+	       "FROM OrganizationMembers om " +
+	       "WHERE om.user = :user")
+	List<OrganizationsOnly> findByOrganizationByUser(@Param("user") UserAccount user);
 }

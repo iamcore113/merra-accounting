@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/v1/business/organization/")
+@RequestMapping("api/v1/business/invoice/")
 public class InvoiceController {
 	private final InvoiceService invoicesService;
 
@@ -51,10 +51,8 @@ public class InvoiceController {
 	 * @param request        - accepts {@linkplain CreateInvoiceRequest} object type
 	 * @return
 	 */
-	@PostMapping(path = "{organizationId}/invoice/create")
-	public ResponseEntity<?> create(
-			@PathVariable("organizationId") UUID organizationId,
-			@Valid @RequestBody CreateInvoiceRequest request) {
+	@PostMapping(path = "new")
+	public ResponseEntity<?> newInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
 		return null;
 	}
 }

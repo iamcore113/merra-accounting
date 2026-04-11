@@ -38,9 +38,9 @@ public class Contact {
 	@Column(name = "contact_id", nullable = false, unique = true)
 	private UUID id;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
-	private Organization organization;
+	@ManyToOne
+	@JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
+	private Organization organizationId;
 
 	// Full name of contact / organization
 	@Column(name = "name", nullable = false, unique = true)
@@ -107,7 +107,7 @@ public class Contact {
 
 	public Contact(@NotBlank String name, @NotNull Organization organization) {
 		this.name = name;
-		this.organization = organization;
+		this.organizationId = organization;
 	}
 
 	public void setIsSupplier(Boolean sup) {
@@ -122,12 +122,12 @@ public class Contact {
 		return id;
 	}
 
-	public Organization getOrganization() {
-		return organization;
+	public Organization getOrganizationId() {
+		return organizationId;
 	}
 
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
+	public void setOrganizationId(Organization organizationId) {
+		this.organizationId = organizationId;
 	}
 
 	public String getName() {

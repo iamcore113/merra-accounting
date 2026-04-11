@@ -7,7 +7,15 @@
       <!-- Navigation items will go here -->
     </nav>
     <div class="user-actions">
-      <!-- User menu/actions will go here -->
+      <a
+        matButton
+        routerLink="/account/signin"
+        class="user-account-link"
+        title="User Account"
+      >
+        <mat-icon class="user-icon" fontSet="material-icons-outlined">account_circle</mat-icon>
+        <span class="user-text">Account</span>
+      </a>
     </div>
   </div>
 </header>

@@ -117,16 +117,16 @@ public class OrganizationService {
 	public NewOrganizationResponse createNewOrganization(CreateOrganizationRequest req) {
 
 		Organization org = getOrganizationObject(null); // New organization object
-		
+
 		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
 		if (getUserId == null) {
 			throw new IllegalStateException("User ID must be present in the tenant context");
 		}
 		UserAccount user = userAccountService.retrieveById(getUserId);
-		
+
 		// Set organization user as MEMBER role
 		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
-		
+
 		// Profile image will default to null; set via organization settings if needed
 		org.setProfileImage(null);
 
@@ -138,17 +138,18 @@ public class OrganizationService {
 		// Set organization basic information
 		org.setBasicInformation(req.displayName(), organizationType, req.email(), req.country(), financialYearEmb,
 				req.currency());
-		
+
 		// Set required fields: timeZone and paymentTerms
 		org.setTimeZone("UTC");
 		org.setPaymentTerms(new PaymentTermsEmb());
 
 		Organization newOrganization = organizationRepository.save(org);
-		
-		// Set the user to creator member ~ constructor for initializing the creator member
+
+		// Set the user to creator member ~ constructor for initializing the creator
+		// member
 		OrganizationMembers member = new OrganizationMembers(newOrganization, user);
 		organizationMembersRepository.save(member);
-		
+
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
 
@@ -162,8 +163,7 @@ public class OrganizationService {
 		}
 		return new NewOrganizationResponse(
 				newOrganization.getId(),
-				new NewOrganizationResponse.UserDetails(getUserId, userInfoPresent, userfullName)
-		);
+				new NewOrganizationResponse.UserDetails(getUserId, userInfoPresent, userfullName));
 
 	}
 
@@ -177,7 +177,7 @@ public class OrganizationService {
 		if (type == null) {
 			throw new IllegalArgumentException("Organization type is required");
 		}
-		
+
 		OrganizationType getOrganizationType = organizationTypeRepository.findById(type)
 				.orElseThrow(() -> new EntityNotFoundException("Organization type not found"));
 
@@ -186,12 +186,13 @@ public class OrganizationService {
 
 	/*
 	 * This method will retrieve the list of organizations that a user belongs to.
+	 * 
 	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
 	 * type.
 	 */
 	public List<UserOrganizationResponse> getUserOrganizations() {
 		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
-		
+
 		if (getUserId == null) {
 			throw new IllegalStateException("User ID must be present in the tenant context");
 		}
@@ -200,30 +201,32 @@ public class OrganizationService {
 
 		return organizationMapper.toUserOrganizationResponses(organizations, user);
 	}
-	
-	
+
 	public OrganizationDashboardResponse getOrganizationDashboard() {
 		final UUID organizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
 		final UUID userId = TenantContext.getTenantId(TenantContext.USER_TENANT);
-		
+
 		if (organizationId == null || userId == null) {
 			throw new IllegalStateException("Organization ID and User ID must be present in the tenant context");
 		}
-		Organization getOrganization = organizationRepository.findById(organizationId).orElseThrow(() -> new EntityNotFoundException("Organization not found"));
-		
+		Organization getOrganization = organizationRepository.findById(organizationId)
+				.orElseThrow(() -> new EntityNotFoundException("Organization not found"));
+
 		// Query the count of invoices for each status (DRAFT, SUBMITTED, AUTHORISED)
 		// and collect them into an immutable map for the dashboard response
-		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT, getOrganization);
-		Integer submittedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_SUBMITTED, getOrganization);
-		Integer authorisedCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_AUTHORISED, getOrganization);
+		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT,
+				getOrganization);
+		Integer submittedCount = invoiceRepository
+				.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_SUBMITTED, getOrganization);
+		Integer authorisedCount = invoiceRepository
+				.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_AUTHORISED, getOrganization);
 
 		Map<String, Integer> invoicesCountsMap = Map.of(
 				InvoiceConstants.INVOICE_STATUS_DRAFT, draftCount,
 				InvoiceConstants.INVOICE_STATUS_SUBMITTED, submittedCount,
-				InvoiceConstants.INVOICE_STATUS_AUTHORISED, authorisedCount
-		);
-		
-		return organizationMapper.toOrganizationDashboardresponse(invoicesCountsMap);
-		
+				InvoiceConstants.INVOICE_STATUS_AUTHORISED, authorisedCount);
+
+		return organizationMapper.toOrganizationDashboardResponse(invoicesCountsMap);
+
 	}
 }

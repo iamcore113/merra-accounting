@@ -12,25 +12,19 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
-	
-	@Query("SELECT tr FROM TaxRate tr WHERE tr.organization = :organizationID")
+
+	@Query("SELECT tr FROM TaxRate tr WHERE tr.organization.id = :organizationID")
 	Optional<TaxRate> findTaxRateByOrganization(@Param("organizationID") UUID organizationID);
-	
-	@Query(
-			"SELECT tr.effectiveRate FROM TaxRate tr WHERE tr.organization = :organizationId" +
-			" AND tr.taxType = :type"
-	)
+
+	@Query("SELECT tr.effectiveRate FROM TaxRate tr WHERE tr.organization.id = :organizationId" +
+			" AND tr.taxType = :type")
 	Optional<BigDecimal> findEffectiveRateByOrganziationId(
 			@Param("organizationID") UUID organizationId,
-			@Param("type") String type
-	);
-	
-	@Query(
-			"SELECT tr.name FROM TaxRate tr WHERE tr.systemDefinedName = :systemDefinedName " +
-			" AND tr.organization = :organizationId"
-	)
+			@Param("type") String type);
+
+	@Query("SELECT tr.name FROM TaxRate tr WHERE tr.systemDefinedName = :systemDefinedName " +
+			" AND tr.organization.id = :organizationId")
 	Optional<String> findBySystemDefinedNameAndOrganizationId(
 			@Param("systemDefinedName") String systemDefinedName,
-			@Param("organizationId") UUID organizationId
-	);
+			@Param("organizationId") UUID organizationId);
 }

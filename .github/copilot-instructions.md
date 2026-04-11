@@ -79,6 +79,41 @@ This is a **monorepo** with two main directories:
 - Read module-level tests under each module's `src/test/java` to learn domain specifics.
 - Search for `db/changelog` to find Liquibase changesets.
 
+# Java/Spring Boot Documentation Rules
+
+When the user provides the trigger "generate comment" for a highlighted code block, follow these specific formatting and content rules:
+
+## 1. Comment Style
+
+- Always use standard **JavaDoc format** (`/** ... */`).
+- Maintain the existing indentation of the highlighted code.
+- Use active, descriptive verbs (e.g., "Retrieves," "Calculates," "Persists") rather than "This method is for..."
+
+## 2. Method Documentation Requirements
+
+If the code is a method, include the following tags:
+
+- **Description**: A clear, one-sentence summary of what the method achieves within the Spring context.
+- **@param**: One entry for every parameter, including a brief description of its role.
+- **@return**: A description of the return value and its type.
+- **@throws**: (If applicable) Mention common exceptions like `ResourceNotFoundException` or `DataAccessException`.
+
+## 3. Class/Component Context
+
+- If the code is a **Spring Component** (@Service, @RestController, @Repository), mention its high-level responsibility in the system.
+- For **Controller methods**, briefly note the HTTP verb and the logical resource it manipulates.
+
+## 4. Example Output Pattern
+
+/\*\*
+
+- Processes the payment for a specific order and updates the inventory status.
+-
+- @param orderId The unique identifier of the order to be processed.
+- @param authToken The JWT string used for transaction authorization.
+- @return A ResponseEntity containing the updated OrderDTO and HTTP 200 status.
+  \*/
+
 ---
 
 ## Frontend Instructions (`/web` directory)
