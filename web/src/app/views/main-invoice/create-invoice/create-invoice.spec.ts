@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { CreateInvoice } from './create-invoice';
+import { ContactService } from '../../../shared/services/contact-service';
 
 describe('CreateInvoice', () => {
   let component: CreateInvoice;
@@ -8,7 +10,20 @@ describe('CreateInvoice', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateInvoice]
+      imports: [CreateInvoice],
+      providers: [
+        {
+          provide: ContactService,
+          useValue: {
+            getAllContacts: () => of({
+              message: 'ok',
+              result: true,
+              response: 200,
+              data: [],
+            }),
+          },
+        },
+      ],
     })
     .compileComponents();
 
