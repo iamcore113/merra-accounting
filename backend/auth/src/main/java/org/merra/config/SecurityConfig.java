@@ -3,6 +3,7 @@ package org.merra.config;
 import java.util.Arrays;
 
 import org.merra.enums.UserAccountStatusEn;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
     private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
     private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
@@ -80,14 +85,19 @@ public class SecurityConfig {
     }
 
     /*
-        The typical reason to do this is to keep the filter as a Spring-managed bean
-        (so it can be injected or referenced) but avoid double-registration: the filter can
-        instead be inserted explicitly into the Spring Security filter chain
-        (for example via addFilterBefore/addFilterAfter), giving precise control over ordering and execution context.
-        Gotchas: disabling registration means the servlet container won’t run the filter unless it’s
-        manually added elsewhere; ensure the TempTokenFilter bean is still injected into your Security
-        configuration and added to the Security filter chain, otherwise it will never execute. 
-    */
+     * The typical reason to do this is to keep the filter as a Spring-managed bean
+     * (so it can be injected or referenced) but avoid double-registration: the
+     * filter can
+     * instead be inserted explicitly into the Spring Security filter chain
+     * (for example via addFilterBefore/addFilterAfter), giving precise control over
+     * ordering and execution context.
+     * Gotchas: disabling registration means the servlet container won’t run the
+     * filter unless it’s
+     * manually added elsewhere; ensure the TempTokenFilter bean is still injected
+     * into your Security
+     * configuration and added to the Security filter chain, otherwise it will never
+     * execute.
+     */
     @Bean
     public FilterRegistrationBean<TokenFilter> registrationMain(TokenFilter filter) {
         FilterRegistrationBean<TokenFilter> registration = new FilterRegistrationBean<>(filter);
@@ -98,18 +108,18 @@ public class SecurityConfig {
     @Bean
     public static RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.withDefaultRolePrefix()
-            .role(ROLE_ADVISOR).implies(ROLE_STANDARD)
-            .role(ROLE_STANDARD).implies(ROLE_INVOICE_ONLY)
-            .role(ROLE_INVOICE_ONLY).implies(ROLE_READ_ONLY)
-            .role(ROLE_READ_ONLY).implies(ROLE_IDLE)
-            .build();
+                .role(ROLE_ADVISOR).implies(ROLE_STANDARD)
+                .role(ROLE_STANDARD).implies(ROLE_INVOICE_ONLY)
+                .role(ROLE_INVOICE_ONLY).implies(ROLE_READ_ONLY)
+                .role(ROLE_READ_ONLY).implies(ROLE_IDLE)
+                .build();
     }
 
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedOrigins(Arrays.asList(frontendUrl));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -136,9 +146,8 @@ public class SecurityConfig {
                          */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                            "/api/v1/metadata/**",
-                            "/api/v1/account/user/**"
-                        )
+                                "/api/v1/metadata/**",
+                                "/api/v1/account/user/**")
                         .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR)
                         .requestMatchers(
                                 "/",
