@@ -123,7 +123,8 @@ public class InvoiceService {
 	 * - Creates a new Invoice entity instance
 	 * - Validates that the organization exists in the current tenant context
 	 * - Sets the invoice type from the request
-	 * - Retrieves and assigns the contact entity, applying default discount if available
+	 * - Retrieves and assigns the contact entity, applying default discount if
+	 * available
 	 * - Processes and sets line items with discount calculations
 	 * - Calculates total invoice amounts including taxes and discounts
 	 * - Sets invoice dates (issue date and due date)
@@ -178,8 +179,10 @@ public class InvoiceService {
 	/**
 	 * Configures the available actions for an invoice based on its current status.
 	 * 
-	 * This method determines what operations can be performed on an invoice by setting
-	 * action flags in the InvoiceActionsEmb embedded object. Currently, only invoices
+	 * This method determines what operations can be performed on an invoice by
+	 * setting
+	 * action flags in the InvoiceActionsEmb embedded object. Currently, only
+	 * invoices
 	 * with "DRAFT" status can be edited or deleted.
 	 * 
 	 * Action rules:
@@ -187,7 +190,8 @@ public class InvoiceService {
 	 * - Other statuses: No actions enabled (default behavior)
 	 * 
 	 * @param invoice The Invoice entity to configure actions for
-	 * @param status The current status of the invoice (e.g., "DRAFT", "SENT", "PAID")
+	 * @param status  The current status of the invoice (e.g., "DRAFT", "SENT",
+	 *                "PAID")
 	 */
 	private void setInvoiceActions(Invoice invoice, @NotNull String status) {
 		InvoiceActionsEmb invoiceActions = new InvoiceActionsEmb();
@@ -221,7 +225,7 @@ public class InvoiceService {
 	private Invoice setLineItems(
 			@NotNull Invoice invoice,
 			@NotNull Set<CreateInvoiceRequest.LineItems> lineItemsSet,
-			String lineAmountTypeRequest,
+			String lineAmountTypeRequest, // could be null or blank if not provided in the request
 			Integer customerDefaultDiscount,
 			@NotNull UUID organizationId) {
 		/**
@@ -232,7 +236,8 @@ public class InvoiceService {
 		 * 2. Fall back to organization's default tax type if configured
 		 * 3. Default to "EXCLUSIVE" if neither is specified
 		 * 
-		 * This determines whether line item amounts include tax (INCLUSIVE) or exclude tax (EXCLUSIVE).
+		 * This determines whether line item amounts include tax (INCLUSIVE) or exclude
+		 * tax (EXCLUSIVE).
 		 */
 		Optional<String> lineAmountTypeOpt = Optional.empty();
 		Optional<String> organizationDefaultTaxPurchaseOpt = organizationRepository.findLineAmountType(organizationId);
@@ -251,8 +256,10 @@ public class InvoiceService {
 				lineAmountTypeOpt = Optional.of(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE);
 			}
 		}
+
+		final String getLineAmountType = lineAmountTypeOpt.get();
 		// Apply the determined line amount type to the invoice
-		invoice.setLineAmountTypes(lineAmountTypeOpt.get());
+		invoice.setLineAmountTypes(getLineAmountType);
 
 		Set<LineItem> lineItems = lineItemsSet
 				.stream()
@@ -303,13 +310,13 @@ public class InvoiceService {
 					BigDecimal calculateTaxAmount = BigDecimal.ZERO;
 					BigDecimal lineItemTotal = BigDecimal.ZERO;
 
-					if (lineAmountTypeRequest
+					if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE) == 0) {
 						// LineAmountTypes: "Exclusive"
 						calculateTaxAmount = netLineAmount.multiply(effectiveRate);
 						lineItemTotal = new BigDecimal(lineItem.unitAmount()).add(effectiveRate);
 
-					} else if (lineAmountTypeRequest
+					} else if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE) == 0) {
 						// LineAmountTypes: "Inclusive"
 						BigDecimal grossPrice = new BigDecimal(lineItem.unitAmount());
@@ -413,13 +420,19 @@ public class InvoiceService {
 				formerStatus,
 				currentStatus);
 	}
-	
+
+	/**
+	 * Generates the next invoice number using the invoice sequence and current
+	 * year.
+	 *
+	 * @return A formatted invoice number in the pattern INV-YYYY-NNN.
+	 */
 	private String generateInvoiceNumber() {
-        Long nextVal = invoiceRepository.getNextInvoiceSequence();
-        int year = LocalDate.now().getYear();
-        
-        // Format: INV - [Year] - [4-digit padded number]
-        return String.format("INV-%d-%03d", year, nextVal);
-    }
+		Long nextVal = invoiceRepository.getNextInvoiceSequence();
+		int year = LocalDate.now().getYear();
+
+		// Format: INV - [Year] - [4-digit padded number]
+		return String.format("INV-%d-%03d", year, nextVal);
+	}
 
 }
