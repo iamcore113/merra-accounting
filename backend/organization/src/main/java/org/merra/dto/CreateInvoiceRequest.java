@@ -19,17 +19,13 @@ import jakarta.validation.constraints.Pattern;
 public record CreateInvoiceRequest(
 		String invoiceType,
 		UUID contact,
-		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
-		String lineAmountType,
+		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.") String lineAmountType,
 		Set<LineItems> lineItems,
 		LocalDate date,
-		@Future(message = "Invalid value for dueDate component.")
-		@DateTimeFormat(iso = ISO.DATE)
-		LocalDate dueDate,
+		@Future(message = "Invalid value for dueDate component.") @DateTimeFormat(iso = ISO.DATE) LocalDate dueDate,
 		String status,
 		Boolean taxEligible,
-		String reference
-) {
+		String reference) {
 	public CreateInvoiceRequest {
 		if (lineItems != null && lineItems.isEmpty()) {
 			throw new IllegalArgumentException("lineItems component cannot be empty.");
@@ -50,20 +46,13 @@ public record CreateInvoiceRequest(
 			throw new IllegalArgumentException("taxEligible component cannot be null.");
 		}
 	}
+
 	public record LineItems(
-			@NotNull(message = "description component cannot be null.")
-			String description,
-			@NotNull(message = "quantity component cannot be null.")
-			@DecimalMin("1.0")
-			@Digits(fraction = 1, integer = 3)
-			Double quantity,
-			@NotNull(message = "unitAmount component cannot be null.")
-			@Digits(fraction = 2, integer = 6)
-			Double unitAmount,
-			@NotBlank(message = "accountCode component cannot be blank.")
-			String accountCode,
+			@NotNull(message = "description component cannot be null.") String description,
+			@NotNull(message = "quantity component cannot be null.") @DecimalMin("1.0") @Digits(fraction = 1, integer = 3) Double quantity,
+			@NotNull(message = "unitAmount component cannot be null.") @Digits(fraction = 2, integer = 6) Double unitAmount,
+			@NotBlank(message = "accountCode component cannot be blank.") String accountCode,
 			String overrideTaxType,
-			Integer discountRate
-	) {
+			Integer discountRate) {
 	}
 }

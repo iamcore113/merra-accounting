@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.constraints.NotNull;
 
 @Service
 @Validated
@@ -113,6 +112,21 @@ public class OrganizationService {
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 	}
 
+	/**
+	 * Creates a new organization for the authenticated user and initializes its
+	 * default membership and accounts.
+	 *
+	 * @param req The request payload containing the organization details to
+	 *            persist.
+	 * @return A {@linkplain NewOrganizationResponse} containing the created
+	 *         organization identifier and creator details.
+	 * @throws IllegalStateException    If the user identifier is missing from the
+	 *                                  tenant context.
+	 * @throws IllegalArgumentException If the organization type identifier in the
+	 *                                  request is null.
+	 * @throws EntityNotFoundException  If the requested organization type cannot be
+	 *                                  found.
+	 */
 	@Transactional
 	public NewOrganizationResponse createNewOrganization(CreateOrganizationRequest req) {
 
@@ -161,17 +175,20 @@ public class OrganizationService {
 		} else {
 			userfullName = checkUserFullName.get();
 		}
-		return new NewOrganizationResponse(
-				newOrganization.getId(),
-				new NewOrganizationResponse.UserDetails(getUserId, userInfoPresent, userfullName));
 
+		return organizationMapper.toNewOrganizationResponse(newOrganization.getId(), getUserId, userInfoPresent,
+				userfullName);
 	}
 
 	/**
-	 * This method will retrieve the industry type
-	 * 
-	 * @param type - the id of type java.util.UUID
-	 * @return OrganizationType object
+	 * Retrieves the organization type entity associated with the supplied
+	 * identifier.
+	 *
+	 * @param type The unique identifier of the organization type to resolve.
+	 * @return The matching {@linkplain OrganizationType} entity.
+	 * @throws IllegalArgumentException If the organization type identifier is null.
+	 * @throws EntityNotFoundException  If no organization type exists for the
+	 *                                  supplied identifier.
 	 */
 	private OrganizationType getOrganizationType(UUID type) {
 		if (type == null) {
@@ -184,11 +201,14 @@ public class OrganizationService {
 		return getOrganizationType;
 	}
 
-	/*
-	 * This method will retrieve the list of organizations that a user belongs to.
-	 * 
-	 * @return - returns a set of {@linkplain OrganziationSelectionResponse} object
-	 * type.
+	/**
+	 * Retrieves the organizations associated with the current user from the tenant
+	 * context.
+	 *
+	 * @return A list of {@linkplain UserOrganizationResponse} entries for the
+	 *         authenticated user.
+	 * @throws IllegalStateException If the user identifier is missing from the
+	 *                               tenant context.
 	 */
 	public List<UserOrganizationResponse> getUserOrganizations() {
 		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
@@ -202,6 +222,18 @@ public class OrganizationService {
 		return organizationMapper.toUserOrganizationResponses(organizations, user);
 	}
 
+	/**
+	 * Retrieves the dashboard summary for the organization resolved from the tenant
+	 * context.
+	 *
+	 * @return An {@linkplain OrganizationDashboardResponse} containing invoice
+	 *         status counts for the current organization.
+	 * @throws IllegalStateException   If the organization identifier or user
+	 *                                 identifier is missing from the tenant
+	 *                                 context.
+	 * @throws EntityNotFoundException If the organization cannot be found for the
+	 *                                 resolved tenant identifier.
+	 */
 	public OrganizationDashboardResponse getOrganizationDashboard() {
 		final UUID organizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
 		final UUID userId = TenantContext.getTenantId(TenantContext.USER_TENANT);

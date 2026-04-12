@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.UserAccount;
@@ -123,4 +124,25 @@ public interface OrganizationMapper {
 				userAccount.getFullName().get(),
 				userAccount.getEmail());
 	}
+
+	/**
+	 * Maps the created organization identifier and creator details into a nested
+	 * {@linkplain NewOrganizationResponse}.
+	 *
+	 * @param organizationId  The unique identifier of the newly created
+	 *                        organization.
+	 * @param userId          The unique identifier of the user associated with the
+	 *                        new organization.
+	 * @param userInfoPresent Indicates whether the user's display information is
+	 *                        available.
+	 * @param userfullName    The full name to populate in the nested user details.
+	 * @return A {@linkplain NewOrganizationResponse} containing the organization
+	 *         identifier and mapped user details.
+	 */
+	@Mappings({
+			@Mapping(target = "organizationId", source = "organizationId"),
+			@Mapping(target = "userDetails", expression = "java(new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName))")
+	})
+	NewOrganizationResponse toNewOrganizationResponse(UUID organizationId, UUID userId, boolean userInfoPresent,
+			String userfullName);
 }
