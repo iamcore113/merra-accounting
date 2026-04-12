@@ -58,6 +58,34 @@ public class AccountService {
 		return new AccountCodeExistsResponse(code, checkIfExists);
 	}
 
+	/**
+	 * Provisions the standard chart of accounts for a newly created organization.
+	 *
+	 * <p>
+	 * Creates and persists a predefined set of ledger accounts grouped by
+	 * category (Asset, Liability, Equity, Revenue, Expense). Account types that
+	 * do not yet exist in the database are created on-the-fly before the accounts
+	 * are saved. All persistence operations are wrapped in a single transaction
+	 * so the entire set is committed or rolled back atomically.
+	 * </p>
+	 *
+	 * <p>
+	 * Accounts provisioned per category:
+	 * </p>
+	 * <ul>
+	 * <li><b>Asset</b>: Accounts Receivable, Prepaid Expenses, Inventory, Fixed
+	 * Asset</li>
+	 * <li><b>Liability</b>: Accounts Payable, Loans Payable, Tax Payable</li>
+	 * <li><b>Equity</b>: Retained Earnings, Owner's Drawing, Owner's Capital</li>
+	 * <li><b>Revenue</b>: Sales Revenue, Service Income</li>
+	 * <li><b>Expense</b>: Office Expenses, Marketing Expenses, Consulting &amp;
+	 * Accounting,
+	 * Cost of Goods Sold, Utilities, Travel &amp; Entertainment</li>
+	 * </ul>
+	 *
+	 * @param org The {@linkplain Organization} for which the default accounts are
+	 *            created.
+	 */
 	@Transactional
 	public void createDefaultAccounts(@NotNull Organization org) {
 

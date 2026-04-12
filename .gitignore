@@ -45,6 +45,7 @@ Thumbs.db
 
 #=====BACKEND=====
 /backend/main/.env
+/backend/main/application/
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
