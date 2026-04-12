@@ -94,6 +94,25 @@ public class OrganizationService {
 		return findOrganizationOpt.get();
 	}
 
+	/**
+	 * Retrieves the static metadata required to create or configure an
+	 * organization.
+	 *
+	 * <p>
+	 * Assembles a response containing all available organization types (with
+	 * underscore-separated names normalized to spaces), all supported address
+	 * types,
+	 * and the full set of payment term configurations.
+	 * </p>
+	 *
+	 * <p>
+	 * Results are cached under the key {@code "organizationMetadata"} to avoid
+	 * repeated repository and enum lookups.
+	 * </p>
+	 *
+	 * @return An {@linkplain OrganizationMetaDataResponse} populated with
+	 *         organization types, address types, and payment term metadata.
+	 */
 	@Cacheable("organizationMetadata")
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
 		// Get organization types

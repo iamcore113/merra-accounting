@@ -267,8 +267,14 @@ public class InvoiceService {
 					LineItem createLineItem = new LineItem();
 
 					/**
-					 * Set the tax type.
-					 * If overrideTaxType() isn't provided, then get tax type by account code.
+					 * Resolve the tax type for the line item.
+					 * Priority:
+					 * 1) Use overrideTaxType when explicitly provided in the request.
+					 * 2) Otherwise, derive the tax type from the selected account code within
+					 * the current organization.
+					 *
+					 * If no account mapping exists, fail fast because tax calculation depends on
+					 * a valid tax type.
 					 */
 					String taxType = null;
 					if (lineItem.overrideTaxType().isBlank()) {
@@ -312,24 +318,24 @@ public class InvoiceService {
 
 					if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE) == 0) {
-						// LineAmountTypes: "Exclusive"
+						// Exclusive mode: line amounts are net, so tax is added on top.
 						calculateTaxAmount = netLineAmount.multiply(effectiveRate);
 						lineItemTotal = new BigDecimal(lineItem.unitAmount()).add(effectiveRate);
 
 					} else if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE) == 0) {
-						// LineAmountTypes: "Inclusive"
+						// Inclusive mode: unit amount already includes tax, so extract the tax portion.
 						BigDecimal grossPrice = new BigDecimal(lineItem.unitAmount());
 						BigDecimal taxRate = effectiveRate.divide(new BigDecimal("100"), 2, RoundingMode.HALF_DOWN);
 
-						// We should first add 1 to the effective rate before dividing.
+						// Use gross / (1 + taxRate) to derive net, then tax = gross - net.
 						BigDecimal one = new BigDecimal("1");
 						BigDecimal onePlusTaxRate = one.add(taxRate);
 						BigDecimal netPrice = grossPrice.divide(onePlusTaxRate);
 						calculateTaxAmount = grossPrice.subtract(netPrice);
 						lineItemTotal = new BigDecimal(lineItem.unitAmount());
 
-					} else { // LineAmountTypes: "NoTax"
+					} else { // NoTax mode: tax is explicitly zero and total equals unit amount.
 						calculateTaxAmount = new BigDecimal("0.00");
 						lineItemTotal = new BigDecimal(lineItem.unitAmount());
 					}
