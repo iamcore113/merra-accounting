@@ -2,16 +2,19 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public record UpdateInvoiceResponse(
-		@NotNull(message = "invoiceID component cannot be null.")
 		UUID invoiceID,
-		@NotBlank(message = "formerStatus cannot be blank.")
 		String formerStatus,
-		@NotBlank(message = "currentStatus cannot be blank.")
-		String currentStatus
-) {
-
+		String currentStatus) {
+	public UpdateInvoiceResponse {
+		if (invoiceID == null) {
+			throw new IllegalArgumentException("invoiceID cannot be null");
+		}
+		if (formerStatus == null || formerStatus.isBlank()) {
+			throw new IllegalArgumentException("formerStatus cannot be null or blank");
+		}
+		if (currentStatus == null || currentStatus.isBlank()) {
+			throw new IllegalArgumentException("currentStatus cannot be null or blank");
+		}
+	}
 }
