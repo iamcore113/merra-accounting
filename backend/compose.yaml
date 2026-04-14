@@ -1,5 +1,6 @@
 services:
   db:
+    container_name: merra-db
     image: postgres:17.4-bookworm
     restart: always
     # set shared memory limit when using docker-compose
@@ -10,6 +11,24 @@ services:
       - 'POSTGRES_USER=merra-user'
     ports:
       - '5070:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    container_name: merra-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./main/.env
+    environment:
+      # Override DB_URL to use Docker service name for container networking
+      - DB_URL=jdbc:postgresql://db:5432/merradb
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
 
 volumes:
   db_data:
