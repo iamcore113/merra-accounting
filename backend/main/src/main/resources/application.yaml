@@ -1,20 +1,22 @@
 spring:
   application:
     name: main
+  # Development tools - enables live reload for template changes
   devtools:
     livereload:
       enabled: true
+  # JPA/Hibernate configuration - DDL disabled, Liquibase handles migrations
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: true
-  # Datasource settings
+  # PostgreSQL datasource configuration (URL provided via DB_URL environment variable)
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL}
     username: merra-user
     password: password
-  # Liquibase settings
+  # Liquibase database migration configuration with merra_schema
   liquibase:
     change-log: db/changelog/db.changelog-master.xml
     default-schema: merra_schema
@@ -22,7 +24,7 @@ spring:
     url: ${DB_URL}
     user: merra-user
     password: password
-  # Mail settings
+  # SMTP mail server configuration for transactional emails (credentials via environment)
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -34,22 +36,26 @@ spring:
           auth: true
           starttls:
             enable: true
+# SpringDoc/OpenAPI configuration for Swagger documentation
 springdoc:
   api-docs:
     path: /api-docs
-# JWT tokens
+# JWT authentication token configuration (secrets and durations via environment)
 jwt:
   token:
     secret: ${JWT_TOKEN_SECRET}
+  # Access token with limited lifespan for API requests
   access:
     limited: ${JWT_LIMITED_ACCESS_TOKEN_DURATION}
     token:
       duration: ${JWT_ACCESS_TOKEN_DURATION}
+  # Refresh token for obtaining new access tokens
   refresh:
     token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
-  # Verification token
+  # Email verification token lifespan (environment variable)
   email:
     verification-duration: ${MAIL_DURATION}
+# Application configuration for frontend integration
 app:
   frontend:
     url: ${FRONTEND_URL}
