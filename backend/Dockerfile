@@ -5,6 +5,6 @@ FROM bellsoft/liberica-openjdk-debian:25
 # interactive shell access. Running as this non-root user reduces container risk.
 RUN groupadd --system spring && useradd --system --gid spring --no-create-home --shell /usr/sbin/nologin spring
 USER spring:spring
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+COPY --chown=spring:spring application app
+WORKDIR /app
+ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-jar", "main-1.0-SNAPSHOT.jar"]
