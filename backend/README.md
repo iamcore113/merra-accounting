@@ -36,6 +36,32 @@ backend/
 - **Docker** and **Docker Compose** (for local PostgreSQL database)
 - **Maven** (wrapper included: `mvnw` on macOS/Linux, `mvnw.cmd` on Windows)
 
+### Recommended for macOS/Linux: SDKMAN
+
+If you are developing on macOS or Linux, it is recommended to use SDKMAN to manage JDK and Maven versions.
+
+```bash
+# Install JDK 25 (example distribution)
+sdk install java 25.0.1.fx-librca
+
+# Install Maven
+sdk install maven
+
+# Verify versions
+java -version
+mvn -version
+```
+
+Using SDKMAN helps keep your local environment consistent across projects and makes it easy to switch versions when needed.
+
+### VS Code Toolchain Configuration
+
+If you are using VS Code for development, make sure the editor is configured to use the project-required JDK and Maven versions.
+
+- Set Java runtime to JDK 25 in VS Code Java settings
+- Ensure Maven in VS Code resolves to the expected version and Java home
+- Re-import the Maven project after changing JDK/Maven so language tooling and build tasks refresh correctly
+
 ## Environment Setup
 
 ### 1. Create `.env` file
