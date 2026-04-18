@@ -2,6 +2,7 @@ package org.merra.controller;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.UserPersonalInformationRequest;
+import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.services.UserAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,10 +40,10 @@ public class UserAccountController {
 	 *         updated profile data and HTTP 200 status.
 	 */
 	@PostMapping("complete/profile")
-	public ResponseEntity<ApiResponse> userPersonalInformation(
+	public ResponseEntity<ApiResponse<UserPersonalInformationResponse>> userPersonalInformation(
 			@Valid @RequestBody UserPersonalInformationRequest request) {
 		var resp = userAccountService.fillUserAccountInfo(request);
-		ApiResponse response = new ApiResponse(
+		ApiResponse<UserPersonalInformationResponse> response = new ApiResponse<>(
 				"User personal information filled successfully.",
 				true,
 				HttpStatus.OK,

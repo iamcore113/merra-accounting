@@ -34,9 +34,9 @@ public class InvoiceController {
 	 *         {@linkplain ApiResponse} type.
 	 */
 	@GetMapping(path = "{organizationId}/invoice/tax/eligibility")
-	public ResponseEntity<ApiResponse> checkInvoiceTaxEligibility(
+	public ResponseEntity<ApiResponse<InvoiceTaxEligibility>> checkInvoiceTaxEligibility(
 			@PathVariable("organizationId") UUID organizationId) {
-		ApiResponse response = new ApiResponse();
+		ApiResponse<InvoiceTaxEligibility> response = new ApiResponse<>();
 
 		InvoiceTaxEligibility invoiceTaxEligibility = invoicesService.taxEligibility(organizationId);
 

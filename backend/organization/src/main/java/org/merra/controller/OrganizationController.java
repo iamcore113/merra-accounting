@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
+import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.services.OrganizationService;
 import org.springframework.http.HttpStatus;
@@ -36,16 +37,17 @@ public class OrganizationController {
 
 	/**
 	 * Retrieves all organizations owned by the currently authenticated user.
-	 * The user is identified from the tenant context, so no user ID is needed in the request.
+	 * The user is identified from the tenant context, so no user ID is needed in
+	 * the request.
 	 *
 	 * @return A ResponseEntity containing an ApiResponse with a list of
 	 *         UserOrganizationResponse objects, each holding the user's details
 	 *         and the organization they belong to
 	 */
 	@GetMapping(value = "owned")
-	public ResponseEntity<ApiResponse> getOwnedOrganizations() {
+	public ResponseEntity<ApiResponse<List<UserOrganizationResponse>>> getOwnedOrganizations() {
 		List<UserOrganizationResponse> res = organizationService.getUserOrganizations();
-		ApiResponse response = new ApiResponse(
+		ApiResponse<List<UserOrganizationResponse>> response = new ApiResponse<>(
 				"Owned organizations retrieved successfully.",
 				true,
 				HttpStatus.OK,
@@ -59,12 +61,14 @@ public class OrganizationController {
 	 *
 	 * @param data The CreateOrganizationRequest containing the organization details
 	 *             (e.g., display name, settings)
-	 * @return A ResponseEntity containing an ApiResponse with the newly created organization
+	 * @return A ResponseEntity containing an ApiResponse with the newly created
+	 *         organization
 	 */
 	@Operation(summary = "create new organization")
 	@PostMapping("new")
-	public ResponseEntity<ApiResponse> newOrganization(@RequestBody @Valid CreateOrganizationRequest data) {
-		ApiResponse response = new ApiResponse(
+	public ResponseEntity<ApiResponse<NewOrganizationResponse>> newOrganization(
+			@RequestBody @Valid CreateOrganizationRequest data) {
+		ApiResponse<NewOrganizationResponse> response = new ApiResponse<>(
 				"Organization created successfully.",
 				true,
 				HttpStatus.OK,

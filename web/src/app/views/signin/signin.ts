@@ -59,7 +59,7 @@ export class Signin implements OnInit {
       const req: LoginRequest = this.signinForm.value;
       this.authService.signin(req).subscribe({
         next: (response: Config) => {
-          if (response.result && 'data' in response) {
+          if (response.success && 'data' in response) {
             verifiedData = (response as any).data as SigninResponse;
           }
         },

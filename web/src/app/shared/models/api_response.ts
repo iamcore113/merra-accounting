@@ -3,7 +3,7 @@
  */
 interface JsonResponse {
   message: string;
-  result: boolean;
+  success: boolean;
   response: number; // HttpStatus mapped to number
 }
 

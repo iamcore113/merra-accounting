@@ -36,9 +36,9 @@ public class ContactController {
 	 *         payload is a list of {@link ContactsByOrganizationResponse} items.
 	 */
 	@GetMapping("all")
-	public ResponseEntity<ApiResponse> contactByOrganization() {
+	public ResponseEntity<ApiResponse<List<ContactsByOrganizationResponse>>> contactByOrganization() {
 		List<ContactsByOrganizationResponse> contacts = contactService.getContactsByOrganizationId();
-		ApiResponse response = new ApiResponse();
+		ApiResponse<List<ContactsByOrganizationResponse>> response = new ApiResponse<>();
 		response.setData(contacts);
 		return ResponseEntity.ok(response);
 	}

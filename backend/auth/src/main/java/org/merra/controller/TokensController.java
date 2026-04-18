@@ -19,15 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 
-
 @RestController
 @RequestMapping("api/v1/tokens/")
 public class TokensController {
     private final TokenService tokenService;
-    
+
     public TokensController(TokenService ts) {
         this.tokenService = ts;
     }
+
     /**
      * Generate new access & refresh token
      * 
@@ -35,34 +35,36 @@ public class TokensController {
      * @return
      */
     @GetMapping("request/user/{userId}")
-    public ResponseEntity<ApiResponse> requestTokens(@PathVariable("userId") UUID userId) {
+    public ResponseEntity<ApiResponse<JwtTokens>> requestTokens(@PathVariable("userId") UUID userId) {
         final JwtTokens tokens = tokenService.requestTokens(userId);
-        ApiResponse response = new ApiResponse();
+        ApiResponse<JwtTokens> response = new ApiResponse<>();
         response.setMessage(AuthConstantResponses.TOKENS_ISSUED);
-        response.setResult(true);
+        response.setSuccess(true);
         response.setResponse(HttpStatus.OK);
         response.setData(tokens);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("validate")
-    public ResponseEntity<ApiResponse> validateToken(@Valid @RequestBody ValidateTokenRequest req) {
+    public ResponseEntity<ApiResponse<ValidateTokenResponse>> validateToken(
+            @Valid @RequestBody ValidateTokenRequest req) {
         final String token = req.token();
         final ValidateTokenResponse validate = tokenService.validateToken(token);
-        ApiResponse response = new ApiResponse();
-        response.setMessage(validate.isValid() ? AuthConstantResponses.TOKEN_VALID : AuthConstantResponses.TOKEN_INVALID);
-        response.setResult(validate.isValid());
+        ApiResponse<ValidateTokenResponse> response = new ApiResponse<>();
+        response.setMessage(
+                validate.isValid() ? AuthConstantResponses.TOKEN_VALID : AuthConstantResponses.TOKEN_INVALID);
+        response.setSuccess(validate.isValid());
         response.setResponse(HttpStatus.OK);
         response.setData(validate);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("obtain/new")
-    public ResponseEntity<ApiResponse> obtainNewAccessToken(@Valid @RequestBody ValidateTokenRequest req) {
+    public ResponseEntity<ApiResponse<JwtTokens>> obtainNewAccessToken(@Valid @RequestBody ValidateTokenRequest req) {
         final JwtTokens tokens = tokenService.obtainNewAccessToken(req.token());
-        ApiResponse response = new ApiResponse();
+        ApiResponse<JwtTokens> response = new ApiResponse<>();
         response.setMessage(AuthConstantResponses.TOKENS_ISSUED);
-        response.setResult(true);
+        response.setSuccess(true);
         response.setResponse(HttpStatus.OK);
         response.setData(tokens);
         return ResponseEntity.ok(response);

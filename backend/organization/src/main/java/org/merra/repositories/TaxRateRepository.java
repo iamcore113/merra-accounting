@@ -19,7 +19,7 @@ public interface TaxRateRepository extends JpaRepository<TaxRate, UUID> {
 	@Query("SELECT tr.effectiveRate FROM TaxRate tr WHERE tr.organization.id = :organizationId" +
 			" AND tr.taxType = :type")
 	Optional<BigDecimal> findEffectiveRateByOrganziationId(
-			@Param("organizationID") UUID organizationId,
+			@Param("organizationId") UUID organizationId,
 			@Param("type") String type);
 
 	@Query("SELECT tr.name FROM TaxRate tr WHERE tr.systemDefinedName = :systemDefinedName " +

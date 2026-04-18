@@ -50,7 +50,7 @@ export class VerifyAccount implements OnInit {
           this.token = token;
           this.isLoading = true;
         });
-        
+
         this.authService
           .verifyAccount(token)
           .pipe(
@@ -62,7 +62,7 @@ export class VerifyAccount implements OnInit {
           )
           .subscribe({
             next: (response: Config) => {
-              if (response.result && 'data' in response) {
+              if (response.success && 'data' in response) {
                 const verifiedData = (response as any).data as VerifiedAccountResponse;
                 this.email = verifiedData.email;
                 this.temp_token = verifiedData.temporaryAccessToken;

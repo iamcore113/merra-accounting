@@ -60,7 +60,7 @@ export class CreateInvoice implements OnInit {
     let contacts: ContactsByOrganizationResponse[] = [];
     this.contactService.getAllContacts().subscribe({
       next: (response: Config) => {
-        if (response.result && 'data' in response) {
+        if (response.success && 'data' in response) {
           contacts = (response as any).data as ContactsByOrganizationResponse[];
         }
       },

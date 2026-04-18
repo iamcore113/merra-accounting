@@ -71,7 +71,7 @@ export class PersonalDetails implements OnInit {
         this.personalDetailsForm.patchValue({ email });
       }
     });
-    
+
     let collect_response: RestCountryList;
     this.countryApiService.getCountries().subscribe({
       next: (countries: RestCountryList) => {
@@ -100,7 +100,7 @@ export class PersonalDetails implements OnInit {
 
   private _filterCountries(value: string): RestCountriesSelection {
     const filterValue = value.toLowerCase();
-    return this.countries.filter(country => 
+    return this.countries.filter(country =>
       country.name.toLowerCase().includes(filterValue)
     );
   }
@@ -116,7 +116,7 @@ export class PersonalDetails implements OnInit {
     const getEmail: string = request.email;
     this.userService.personalInformation(request).subscribe({
       next: (response: Config) => {
-        if (response.result && 'data' in response) {
+        if (response.success && 'data' in response) {
           const verifiedData = (response as any).data as UserPersonalInformationRequest;
           this.emailFromResponse = verifiedData.email;
         }

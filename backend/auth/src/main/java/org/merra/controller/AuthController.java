@@ -38,9 +38,9 @@ public class AuthController {
      *         account details
      */
     @GetMapping(value = "req/signup/verify")
-    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
+    public ResponseEntity<ApiResponse<VerifiedAccountResponse>> verifyEmail(@RequestParam("token") String tokenParam) {
         final VerifiedAccountResponse res = authService.verifyAccountToken(tokenParam);
-        final ApiResponse apiRes = new ApiResponse(
+        final ApiResponse<VerifiedAccountResponse> apiRes = new ApiResponse<>(
                 "Email successfully verified",
                 true,
                 HttpStatus.CREATED,
@@ -73,18 +73,18 @@ public class AuthController {
      * @return ResponseEntity with verification instructions and status
      */
     @PostMapping("signup")
-    public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
+    public ResponseEntity<ApiResponse<VerificationResponse>> signup(@Valid @RequestBody CreateAccountRequest req) {
         final VerificationResponse res = authService.signup(req);
 
-        ApiResponse response = new ApiResponse();
+        ApiResponse<VerificationResponse> response = new ApiResponse<>();
         if (res.resent()) {
             response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION_RESEND);
-            response.setResult(true);
+            response.setSuccess(true);
             response.setResponse(HttpStatus.OK);
             response.setData(res);
         } else {
             response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION);
-            response.setResult(true);
+            response.setSuccess(true);
             response.setResponse(HttpStatus.CREATED);
             response.setData(res);
         }
@@ -102,12 +102,13 @@ public class AuthController {
      *         resent
      */
     @PostMapping("resend/verification/email")
-    public ResponseEntity<ApiResponse> resendEmailVerification(@Valid @RequestBody ResendEmailVerification req) {
+    public ResponseEntity<ApiResponse<VerificationResponse>> resendEmailVerification(
+            @Valid @RequestBody ResendEmailVerification req) {
         final var resentToken = authService.resendEmailVerification(req);
 
-        ApiResponse response = new ApiResponse();
+        ApiResponse<VerificationResponse> response = new ApiResponse<>();
         response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION_RESEND);
-        response.setResult(true);
+        response.setSuccess(true);
         response.setResponse(HttpStatus.OK);
         response.setData(resentToken);
         return ResponseEntity.ok(response);

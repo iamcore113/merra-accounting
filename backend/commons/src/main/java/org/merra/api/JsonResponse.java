@@ -6,23 +6,24 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 sealed class JsonResponse permits ApiError, ApiResponse {
-	
+
 	@NotBlank(message = "message attribute cannot be blank.")
 	private String message;
-	
-	@NotNull(message = "result attribute cannot be null.")
-	private boolean result;
-	
+
+	@NotNull(message = "success attribute cannot be null.")
+	private boolean success;
+
 	@NotNull(message = "response attribute cannot be null.")
 	private HttpStatus response;
-	
-	public JsonResponse(String msg, boolean result, HttpStatus status) {
+
+	public JsonResponse(String msg, boolean success, HttpStatus status) {
 		this.message = msg.isBlank() ? "Request sent successfully" : msg;
-		this.result = result;
+		this.success = success;
 		this.response = status;
 	}
 
-	public JsonResponse(){}
+	public JsonResponse() {
+	}
 
 	public String getMessage() {
 		return message;
@@ -32,12 +33,12 @@ sealed class JsonResponse permits ApiError, ApiResponse {
 		this.message = message;
 	}
 
-	public boolean isResult() {
-		return result;
+	public boolean isSuccess() {
+		return success;
 	}
 
-	public void setResult(boolean result) {
-		this.result = result;
+	public void setSuccess(boolean success) {
+		this.success = success;
 	}
 
 	public HttpStatus getResponse() {
@@ -48,5 +49,4 @@ sealed class JsonResponse permits ApiError, ApiResponse {
 		this.response = response;
 	}
 
-	
 }

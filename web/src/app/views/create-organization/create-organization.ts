@@ -58,7 +58,7 @@ export class CreateOrganization implements OnInit {
     let verifiedData: OrganizationMetaDataResponse | null = null;
     this.organizationService.getOrganizationMetadata().subscribe({
       next: (response: Config) => {
-        if (response.result && 'data' in response) {
+        if (response.success && 'data' in response) {
           verifiedData = (response as any).data as OrganizationMetaDataResponse;
         }
       },
@@ -165,7 +165,7 @@ export class CreateOrganization implements OnInit {
     let neworganization: NewOrganizationResponse | null = null;
     this.organizationService.createOrganization(organizationRequest).subscribe({
       next: (response: Config) => {
-        if (response.result && 'data' in response) {
+        if (response.success && 'data' in response) {
           neworganization = (response as any).data as NewOrganizationResponse;
         }
       },
