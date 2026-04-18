@@ -31,6 +31,11 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => MainHome,
         title: 'MERRA - Dashboard'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./views/main/main-profile/main-profile').then(m => m.MainProfile),
+        title: 'MERRA - Profile'
       }
     ]
   },
