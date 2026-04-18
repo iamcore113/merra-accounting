@@ -106,6 +106,31 @@ The app will be available at `http://localhost:4200/` and will auto-reload on ch
   })
   ```
 
+### Component Lifecycle
+
+- **Always implement `OnInit`** in every component to handle initialization logic:
+
+  ```typescript
+  import { Component, OnInit } from "@angular/core";
+
+  @Component({
+    selector: "app-example",
+    standalone: true,
+    imports: [
+      /* ... */
+    ],
+    templateUrl: "./example.component.html",
+    styleUrls: ["./example.component.scss"],
+  })
+  export class ExampleComponent implements OnInit {
+    ngOnInit(): void {
+      // Initialize component logic here
+    }
+  }
+  ```
+
+- This ensures proper lifecycle management and makes the component's initialization intent explicit
+
 ---
 
 ## Routing
