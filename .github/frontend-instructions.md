@@ -138,12 +138,30 @@ The app will be available at `http://localhost:4200/` and will auto-reload on ch
 - Routes are defined in [`web/src/app/app.routes.ts`](web/src/app/app.routes.ts)
 - Use Angular Router for navigation
 - Example:
+
   ```typescript
   export const routes: Routes = [
     { path: "", redirectTo: "home", pathMatch: "full" },
     { path: "home", component: HomeComponent },
   ];
   ```
+
+- **When navigating to routes in templates, always use the `RouterLink` directive from `@angular/router` instead of plain `href`.**
+  - Import `RouterLink` in the `imports` array of your standalone component:
+    ```typescript
+    import { RouterLink } from '@angular/router';
+    // ...
+    @Component({
+      // ...
+      imports: [RouterLink, /* other modules */],
+      // ...
+    })
+    ```
+  - Use `[routerLink]` in your template for navigation:
+    ```html
+    <a matButton [routerLink]="['/home']">Go Home</a>
+    ```
+  - **Do not use `href` for internal navigation.**
 
 ---
 
