@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { RouterOutlet } from "@angular/router";
 
 @Component({
   selector: 'app-main-profile',
-  imports: [MatIconModule, MatButtonModule, RouterOutlet],
+  imports: [MatIconModule, MatButtonModule, MatCheckboxModule, RouterOutlet],
   templateUrl: './main-profile.html',
   styleUrls: ['./main-profile.scss'],
 })

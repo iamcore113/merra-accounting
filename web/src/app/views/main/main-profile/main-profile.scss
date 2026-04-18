@@ -1,3 +1,32 @@
+
+.profile-email-row {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.1rem;
+	margin-top: 0.1rem;
+}
+
+.profile-org-checkbox .mdc-form-field {
+	align-items: center;
+}
+.profile-org-checkbox .mdc-label {
+	vertical-align: middle;
+	line-height: 1.7;
+	padding-top: 2px;
+}
+
+.profile-org-checkbox {
+	margin-top: 0;
+	font-size: 1rem;
+	margin-left: -10px;
+	padding-left: 0;
+	--mdc-checkbox-selected-checkmark-color: var(--mat-sys-color-primary, #8d5524);
+	--mdc-checkbox-selected-focus-icon-color: var(--mat-sys-color-primary, #8d5524);
+	--mdc-checkbox-selected-hover-icon-color: var(--mat-sys-color-primary, #8d5524);
+	--mdc-checkbox-selected-icon-color: var(--mat-sys-color-primary, #8d5524);
+}
+
 .profile-link-animate {
 	position: relative;
 	overflow: hidden;
