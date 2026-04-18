@@ -263,13 +263,17 @@ Example for organization module sequence:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog>
-    <changeSet id="your-unique-id" author="your-name">
+    <changeSet id="2026-add-your-migration-purpose" author="your-name">
         <createTable tableName="your_table">
             <!-- table definition -->
         </createTable>
     </changeSet>
 </databaseChangeLog>
 ```
+
+Use this `changeSet` id format: `<current-year>-<what-this-migration-is-about>`
+
+Example: `2026-add-organization-members-table`
 
 2. Include it in `db.changelog-master.xml`:
 
