@@ -1,4 +1,3 @@
-
 .profile-email-row {
 	display: flex;
 	flex-direction: column;
@@ -169,4 +168,27 @@
 	align-items: center;
 	height: 1.2em;
 	margin-right: 0.1em;
+}
+
+::ng-deep .profile-org-checkbox .mdc-checkbox__background {
+  background-color: #fff !important;
+  border-color: #bdbdbd !important;
+}
+::ng-deep .profile-org-checkbox .mdc-checkbox--selected .mdc-checkbox__background {
+  background-color: #43a047 !important;
+  border-color: #43a047 !important;
+}
+::ng-deep .profile-org-checkbox .mdc-checkbox--selected .mdc-checkbox__checkmark-path {
+  stroke: #fff !important;
+}
+::ng-deep .profile-org-checkbox .mdc-checkbox--selected .mdc-checkbox__ripple {
+  background-color: #43a047 !important;
+}
+::ng-deep .profile-org-checkbox .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+  background-color: #43a047 !important;
+  border-color: #43a047 !important;
+}
+::ng-deep .profile-org-checkbox .mdc-checkbox__native-control:enabled:not(:checked) ~ .mdc-checkbox__background {
+  background-color: #fff !important;
+  border-color: #bdbdbd !important;
 }
