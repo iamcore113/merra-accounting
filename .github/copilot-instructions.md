@@ -122,7 +122,8 @@ If the code is a method, include the following tags:
 
 - Angular 20.x application using standalone components
 - Styling: **SCSS** (not CSS) — always use `.scss` files
-- UI Framework: **Angular Material** — prioritize Material components over custom HTML elements
+- UI Framework: **Angular Material v20** — prioritize Material components over custom HTML elements
+- Version alignment: The project is on Angular **20.2.14**, so use Angular Material **v20** guidance and APIs from https://v20.material.angular.dev/
 - Build tool: Angular CLI
 
 ### Development server
@@ -152,7 +153,8 @@ The app will be available at `http://localhost:4200/` and will auto-reload on ch
 
 ### Component Guidelines
 
-- **Always check `@angular/material` first** before creating custom components
+- **Always check Angular Material v20 docs first** before creating custom components: https://v20.material.angular.dev/
+- Use APIs and examples compatible with Angular Material v20; avoid snippets from older/newer major versions.
 - Use Material components for:
   - Buttons: `MatButtonModule`
   - Form fields: `MatFormFieldModule`, `MatInputModule`
