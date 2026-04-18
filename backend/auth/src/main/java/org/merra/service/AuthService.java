@@ -215,6 +215,20 @@ public class AuthService {
     return createAuthenticationResponse(request.email(), request.password());
   }
 
+  /**
+   * Authenticates a user with the provided login credentials and returns a
+   * JWT-based authentication response.
+   *
+   * @param request The login request containing the user's email and password.
+   * @return A {@link SigninResponse} containing JWT tokens and user details upon
+   *         successful authentication.
+   * @throws BadCredentialsException if authentication fails due to invalid
+   *                                 credentials.
+   */
+  public SigninResponse loginWithCredentials(LoginRequest request) {
+    return createAuthenticationResponse(request.email(), request.password());
+  }
+
   /* Create JWT tokens after successful authentication */
   private SigninResponse createAuthenticationResponse(String email, String password) {
 

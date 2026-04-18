@@ -8,6 +8,7 @@ import { PersonalDetails } from './views/personal-details/personal-details';
 import { CreateOrganization } from './views/create-organization/create-organization';
 import { ErrorPage } from './views/error-page/error-page';
 import { MainLayout } from './shared/components/main-layout/main-layout';
+import { MainHome } from './views/main/main-home/main-home';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -27,14 +28,9 @@ export const routes: Routes = [
     component: MainLayout,
     children: [
       {
-        path: 'dashboard',
-        loadComponent: () => import('./views/main-dashboard/main-dashboard').then(m => m.MainDashboard),
+        path: '',
+        loadComponent: () => MainHome,
         title: 'MERRA - Dashboard'
-      },
-      {
-        path: 'new-invoice',
-        loadComponent: () => import('./views/main-invoice/create-invoice/create-invoice').then(m => m.CreateInvoice),
-        title: 'MERRA - New Invoice'
       }
     ]
   },

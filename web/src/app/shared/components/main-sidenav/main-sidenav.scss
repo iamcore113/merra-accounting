@@ -1,0 +1,42 @@
+
+.side-nav {
+	position: sticky;
+	top: 64px;
+	height: calc(100vh - 64px);
+	padding: 1.5rem 1rem;
+	background: var(--mat-sys-surface);
+
+	.side-nav-title {
+		margin: 0 0 1rem;
+		padding: 0 1rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgba(0, 0, 0, 0.54);
+	}
+
+	.mdc-list {
+		padding: 0;
+	}
+
+	a[mat-list-item] {
+		border-radius: 0.75rem;
+		margin-bottom: 0.35rem;
+		color: rgba(0, 0, 0, 0.78);
+
+		&:hover {
+			background-color: rgba(0, 0, 0, 0.04);
+		}
+	}
+}
+
+@media (max-width: 960px) {
+	.side-nav {
+		position: static;
+		top: auto;
+		height: auto;
+		border-right: 0;
+		padding: 1rem;
+	}
+}

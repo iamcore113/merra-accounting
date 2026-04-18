@@ -1,9 +1,13 @@
 <div class="main-layout">
   <app-main-header></app-main-header>
 
-  <main class="main-content">
-    <div class="content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
-  </main>
+  <div class="layout-shell">
+    <app-main-sidenav></app-main-sidenav>
+
+    <main class="main-content">
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
 </div>
