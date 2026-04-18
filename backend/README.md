@@ -1,6 +1,6 @@
 # Merra Accounting - Backend
 
-Multi-module Java 25 Spring Boot 4.0.0 application using Maven with AOT caching support.
+Multi-module Java 25 Spring Boot 4.0.5 application using Maven with AOT caching support.
 
 ## Table of Contents
 
