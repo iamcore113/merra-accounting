@@ -1,3 +1,111 @@
+.profile-link-animate {
+	position: relative;
+	overflow: hidden;
+}
+
+.profile-link-content,
+.profile-link-arrow {
+	display: inline-flex;
+	align-items: center;
+	transition: opacity 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+		transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-link-arrow {
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%) scale(0.8);
+}
+
+.profile-link-animate:hover .profile-link-content {
+	opacity: 0;
+	transform: translateY(-10px) scale(0.95);
+}
+
+.profile-link-animate:hover .profile-link-arrow {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translate(-50%, -50%) scale(1.1);
+}
+
+.profile-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 2.5rem;
+	width: 100%;
+	align-items: flex-start;
+}
+
+.profile-grid-col {
+	min-width: 0;
+}
+
+.profile-grid-left {
+	// background: red;
+	// border-radius: 1.2rem;
+	padding: 2rem 1.5rem;
+}
+
+.profile-grid-right {
+	background: brown;
+	border-radius: 1.2rem;
+	padding: 2rem 1.5rem;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+.profile-right-placeholder {
+	padding: 2rem;
+	background: #f5f5f5;
+	border-radius: 1rem;
+	color: #888;
+	font-size: 1.1rem;
+	font-style: italic;
+}
+
+.profile-links-section {
+	display: flex;
+	gap: 2rem;
+	margin-top: 1.5rem;
+}
+
+.profile-link {
+	display: inline-flex;
+	align-items: center;
+	color: #fff;
+	text-decoration: none;
+	font-weight: 500;
+	font-size: 1rem;
+	transition: box-shadow 0.2s, filter 0.2s;
+	vertical-align: middle;
+	line-height: 1.5;
+  background-color: #8C5A3C;
+	border-radius: 2rem;
+	padding: 0.5rem 1.5rem;
+	box-shadow: 0 2px 8px 0 rgba(25, 118, 210, 0.10);
+	border: none;
+}
+
+.profile-link:hover {
+	filter: brightness(0.97) saturate(1.2);
+	box-shadow: 0 4px 16px 0 rgba(25, 118, 210, 0.18);
+	text-decoration: none;
+}
+
+.link-icon {
+	font-size: 1.25em;
+	display: inline-flex;
+	align-items: center;
+	height: 1em;
+	margin-right: 0.1em;
+	position: relative;
+	top: 0.04em;
+	color: #fff;
+}
 
 .profile-section {
 	width: 100%;

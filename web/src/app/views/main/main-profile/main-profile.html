@@ -1,11 +1,38 @@
-<section class="profile-section">
-	<div class="profile-container">
-		<div class="profile-name">
-			Jill Valentine
-		</div>
-		<div class="profile-email">
-			<mat-icon class="email-icon" aria-label="email">mail</mat-icon>
-			<span>iamcore22@gmail.com</span>
-		</div>
+<div class="profile-grid">
+	<div class="profile-grid-col profile-grid-left">
+		<section class="profile-section">
+			<div class="profile-container">
+				<div class="profile-name">
+					Jill Valentine
+				</div>
+				<div class="profile-email">
+					<mat-icon class="email-icon" aria-label="email">mail</mat-icon>
+					<span>iamcore22@gmail.com</span>
+				</div>
+			</div>
+		</section>
+		<section class="profile-links-section">
+			<a matFab extended class="profile-link profile-link-animate" href="mailto:iamcore22@gmail.com">
+				<span class="profile-link-content">
+					<mat-icon class="link-icon" aria-label="email">mail_outline</mat-icon>
+					<span class="profile-link-label">Email</span>
+				</span>
+				<span class="profile-link-arrow">
+					<mat-icon class="link-icon" aria-label="arrow">east</mat-icon>
+				</span>
+			</a>
+			<a matFab extended class="profile-link profile-link-animate" href="#account-settings">
+				<span class="profile-link-content">
+					<mat-icon class="link-icon" aria-label="settings">settings</mat-icon>
+					<span class="profile-link-label">Account Settings</span>
+				</span>
+				<span class="profile-link-arrow">
+					<mat-icon class="link-icon" aria-label="arrow">east</mat-icon>
+				</span>
+			</a>
+		</section>
 	</div>
-</section>
+	<div class="profile-grid-col profile-grid-right">
+		<router-outlet></router-outlet>
+	</div>
+</div>
