@@ -2,23 +2,23 @@
 	<div class="side-nav-title">Workspace</div>
 	<mat-nav-list>
 		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined">dashboard</mat-icon>
+			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg dashboard-gradient-bg">dashboard</mat-icon>
 			<span matListItemTitle>Dashboard</span>
 		</a>
 		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined">business</mat-icon>
+			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg business-gradient-bg">business</mat-icon>
 			<span matListItemTitle>Organization</span>
 		</a>
 		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined">account_balance</mat-icon>
+			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg accounts-gradient-bg">account_balance</mat-icon>
 			<span matListItemTitle>Accounts</span>
 		</a>
-		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined">bar_chart</mat-icon>
-			<span matListItemTitle>Reports</span>
+		<a mat-list-item [routerLink]="['profile']">
+			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg personal-gradient-bg">account_circle</mat-icon>
+			<span matListItemTitle>Personal Info</span>
 		</a>
 		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined">settings</mat-icon>
+			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg settings-gradient-bg">settings</mat-icon>
 			<span matListItemTitle>Settings</span>
 		</a>
 	</mat-nav-list>
