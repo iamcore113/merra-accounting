@@ -8,7 +8,7 @@ This file provides concise, actionable facts for AI coding agents working on the
 
 This is a **monorepo** with two main directories:
 
-- **`backend/`** — Java 25 Spring Boot 4.0.0 multi-module Maven backend
+- **`backend/`** — Java 25 Spring Boot 4.0.5 multi-module Maven backend
 - **`web/`** — Angular 20.x frontend application
 
 ---
@@ -17,9 +17,10 @@ This is a **monorepo** with two main directories:
 
 ### Overview
 
-- Multi-module Maven backend under `backend/` (Java 25, Spring Boot 4.0.0).
+- Multi-module Maven backend under `backend/` (Java 25, Spring Boot 4.0.5).
 - Top-level modules (declared in `backend/pom.xml`): `main`, `auth`, `commons`, `user`, `organization`.
 - `main` is the Spring Boot application and depends on the other modules (see [`backend/main/pom.xml`](backend/main/pom.xml)).
+- Runtime startup is optimized with Spring Boot AOT enabled (Ahead-of-Time Processing) and a generated JVM AOT cache.
 
 ### Quick architecture summary
 
@@ -34,6 +35,10 @@ This is a **monorepo** with two main directories:
 - Run only the `main` app (rebuild modules it depends on):
   - `cd backend; .\mvnw.cmd -pl main -am spring-boot:run`
   - `-pl` = project list, `-am` = also make required modules
+- Run packaged app with AOT extraction/cache script (macOS/Linux):
+  - `cd backend; ./mvnw -pl main -am clean package`
+  - `./run-main-jar.sh`
+  - The script validates `main/.env`, extracts the built JAR into `backend/application/` (`main-1.0-SNAPSHOT.jar`), generates/refreshes `backend/application/app.aot`, then starts with `-XX:AOTCache` and `-Dspring.aot.enabled=true`.
 - Run tests for a specific module:
   - `cd backend; .\mvnw.cmd -pl main test` (or replace `main` with `auth`, `user`, ...)
 - Local DB via Docker Compose (for `main`):
@@ -52,6 +57,7 @@ This is a **monorepo** with two main directories:
 - MapStruct: annotation processing is configured in [`backend/pom.xml`](backend/pom.xml) via maven-compiler-plugin; generated mappers live in target/generated-sources/annotations.
 - SpringDoc/OpenAPI available (path configured to `/api-docs` in [`application.yaml`](backend/main/src/main/resources/application.yaml)).
 - Liquibase: changeLog location referenced in [`application.yaml`](backend/main/src/main/resources/application.yaml) at `db/changelog/db.changelog-master.xml` — edit that file to add DB changesets.
+- AOT packaging/run helper: [`backend/run-main-jar.sh`](backend/run-main-jar.sh) keeps `backend/application/` in sync with the latest `main/target/main-1.0-SNAPSHOT.jar`, regenerating extraction and cache when inputs are newer.
 - Adding a module: add `<module>your-module</module>` to [`backend/pom.xml`](backend/pom.xml) and ensure its POM has `<parent>` pointing to `backend`.
 
 ### Where to look first (examples)

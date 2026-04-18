@@ -36,6 +36,11 @@ backend/
 - **Docker** and **Docker Compose** (for local PostgreSQL database)
 - **Maven** (wrapper included: `mvnw` on macOS/Linux, `mvnw.cmd` on Windows)
 
+For Maven usage:
+
+- Prefer the Maven Wrapper from the backend root (`./mvnw` or `.\mvnw.cmd`) to ensure consistent builds.
+- You can use an external Maven installation (for example from SDKMAN) as long as its version is close to the version used by the Maven Wrapper in this repository.
+
 ### Recommended for macOS/Linux: SDKMAN
 
 If you are developing on macOS or Linux, it is recommended to use SDKMAN to manage JDK and Maven versions.
@@ -239,6 +244,19 @@ Database schema and migrations are managed by **Liquibase**.
 - **Schema initialization**: Handled by `SchemaInitializer.java` on application startup
 
 ### Adding New Migrations
+
+Before creating a new Liquibase XML file, use this naming convention:
+
+- `<sub-module>-<YYYYMMDD>-<NN>-<description>.xml`
+- `sub-module`: short module prefix (for example: `org` for organization, `user` for user)
+- `YYYYMMDD`: current date with leading zeros for month/day
+- `NN`: next sequence number with leading zero when needed (`01`, `02`, ..., `27`)
+- `description`: short kebab-case summary of the change
+
+Example for organization module sequence:
+
+- Last file: `org-20260405-26-add-organization_members-table.xml`
+- Next file on 2026-04-18: `org-20260418-27-what-is-this-file.xml`
 
 1. Create a new changeset file in `db/changesets/`:
 
