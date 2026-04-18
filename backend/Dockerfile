@@ -7,4 +7,4 @@ RUN groupadd --system spring && useradd --system --gid spring --no-create-home -
 USER spring:spring
 COPY --chown=spring:spring application app
 WORKDIR /app
-ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-jar", "main-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-XX:AOTCache=app.aot", "-Dspring.aot.enabled=true", "-jar", "main-1.0-SNAPSHOT.jar"]
