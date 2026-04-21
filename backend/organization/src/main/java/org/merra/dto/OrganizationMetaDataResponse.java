@@ -8,9 +8,6 @@ import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 public record OrganizationMetaDataResponse(
                 Set<OrganizationTypesMetaData> organizationTypes,
                 EnumSet<AddressEn> addresses,
@@ -20,14 +17,15 @@ public record OrganizationMetaDataResponse(
         public record OrganizationTypesMetaData(
                         UUID id,
                         String name) {
-        	public OrganizationTypesMetaData {
-				if (id == null || name == null || name.isBlank()) {
-					throw new IllegalArgumentException("Organization type metadata fields cannot be null or blank.");
-				}
-				if (name.isBlank() || name == null) {
-					throw new IllegalArgumentException("Organization type name cannot be null or blank.");
-				}
-			}
+                public OrganizationTypesMetaData {
+                        if (id == null || name == null || name.isBlank()) {
+                                throw new IllegalArgumentException(
+                                                "Organization type metadata fields cannot be null or blank.");
+                        }
+                        if (name.isBlank() || name == null) {
+                                throw new IllegalArgumentException("Organization type name cannot be null or blank.");
+                        }
+                }
         }
 
         public record PaymentTermsMetaData(
