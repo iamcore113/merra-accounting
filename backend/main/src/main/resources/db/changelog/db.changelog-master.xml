@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>  
-<databaseChangeLog
-    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
@@ -12,20 +10,21 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <preConditions onFail="HALT" onErrorMessage="Error in preCondition">
-    	<expectedQuotingStrategy strategy="LEGACY" /> 
-       <dbms  type="postgresql"  /> 
-       <runningAs  username="merra-user" /> 
+        <expectedQuotingStrategy strategy="LEGACY" />
+        <dbms type="postgresql" />
+        <runningAs username="merra-user" />
     </preConditions>
-    
+
     <!-- Enable UUID extension (PostgreSQL specific) -->
     <changeSet id="2025-create-schema" author="brian">
         <comment>Enable uuid-ossp extension for UUID generation</comment>
         <sql>CREATE EXTENSION IF NOT EXISTS "uuid-ossp";</sql>
     </changeSet>
-    
+
     <!-- changesets from user module - processed first -->
     <includeAll path="db/changesets/user" relativeToChangelogFile="false" />
-    
+    <!-- changesets from auth module - processed first -->
+    <includeAll path="db/changesets/auth" relativeToChangelogFile="false" />
     <!-- changesets from organization module - processed after user -->
     <includeAll path="db/changesets/organization" relativeToChangelogFile="false" />
 

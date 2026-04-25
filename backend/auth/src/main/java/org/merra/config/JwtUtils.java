@@ -37,7 +37,8 @@ public class JwtUtils {
         return claims.get("role", String.class);
     }
 
-    public String generateToken(String userEmail, Map<String, Object> claims, int tokenDuration, boolean isRefreshToken) {
+    public String generateToken(String userEmail, Map<String, Object> claims, int tokenDuration,
+            boolean isRefreshToken) {
         final Date expirationDate;
 
         if (isRefreshToken) {
@@ -54,9 +55,9 @@ public class JwtUtils {
         cal.add(Calendar.DAY_OF_MONTH, tokenDuration); // add 5 days
         return cal.getTime();
     }
+
     private String tokenBuilder(Date exDate, String userEmail, Map<String, Object> claims) {
         var algo = Jwts.SIG.HS256;
-
         return Jwts
                 .builder()
                 .claims(claims)

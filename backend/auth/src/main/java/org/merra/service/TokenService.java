@@ -30,6 +30,8 @@ public class TokenService {
 
     @Value("${jwt.access.token.duration}")
     private int forAccessToken;
+    @Value("${jwt.visitor.access.token.duration}")
+    private int forVisitorAccessToken;
     @Value("${jwt.refresh.token-expiration}")
     private int refreshTokenExpiration;
     @Value("${jwt.email.verification-duration}")
@@ -42,7 +44,8 @@ public class TokenService {
     private final UserAccountService userAccountService;
     private final UserAccountRepository userRepository;
 
-    public TokenService(UserAccountRepository userRepository, UserAccountService userAccountService, JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+    public TokenService(UserAccountRepository userRepository, UserAccountService userAccountService, JwtUtils jwtUtils,
+            UserDetailsService userDetailsService) {
         this.userRepository = userRepository;
         this.userAccountService = userAccountService;
         this.jwtUtils = jwtUtils;
@@ -51,14 +54,16 @@ public class TokenService {
 
     public JwtTokens requestTokens(UUID userId) {
         if (!userRepository.existsById(userId)) {
-        throw new EntityNotFoundException("User entity not found.");
+            throw new EntityNotFoundException("User entity not found.");
         }
         UserAccount user = userAccountService.retrieveById(userId);
         final String userEmail = user.getEmail();
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-        final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), forAccessToken, false);
-        final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), refreshTokenExpiration, true);
+        final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE),
+                forAccessToken, false);
+        final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE),
+                refreshTokenExpiration, true);
         return new JwtTokens(accessToken, refreshToken);
     }
 

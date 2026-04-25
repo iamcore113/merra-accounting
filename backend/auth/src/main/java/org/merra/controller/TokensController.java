@@ -6,6 +6,7 @@ import org.merra.api.ApiResponse;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.ValidateTokenRequest;
 import org.merra.dto.ValidateTokenResponse;
+import org.merra.dto.VisitorTokenResponse;
 import org.merra.service.TokenService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.http.HttpStatus;
