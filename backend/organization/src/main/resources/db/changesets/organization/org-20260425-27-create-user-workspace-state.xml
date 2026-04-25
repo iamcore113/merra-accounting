@@ -1,0 +1,26 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <!-- create user_workspace_state table -->
+    <changeSet author="brian" id="2026-create-user_workspace_state-table">
+        <createTable tableName="user_workspace_state">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="true" unique="true" />
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" unique="true" foreignKeyName="fk_user_workspace_state__user__id" referencedTableName="user_account" referencedColumnNames="id" deleteCascade="true" />
+            </column>
+            <column name="current_organization" type="uuid">
+                <constraints foreignKeyName="fk_user_workspace_state__organization__id" referencedTableName="organization" referencedColumnNames="id" deleteCascade="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

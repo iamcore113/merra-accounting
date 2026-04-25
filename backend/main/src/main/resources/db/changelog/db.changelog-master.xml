@@ -24,7 +24,7 @@
     <!-- changesets from user module - processed first -->
     <includeAll path="db/changesets/user" relativeToChangelogFile="false" />
     <!-- changesets from auth module - processed first -->
-    <includeAll path="db/changesets/auth" relativeToChangelogFile="false" />
+    <!-- <includeAll path="db/changesets/auth" relativeToChangelogFile="false" /> -->
     <!-- changesets from organization module - processed after user -->
     <includeAll path="db/changesets/organization" relativeToChangelogFile="false" />
 

@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.merra.config.TenantContext;
 import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.dto.UpdateInvoiceResponse;
@@ -24,6 +23,7 @@ import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.TaxRateRepository;
 import org.merra.repositories.TaxTypeRepository;
+import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.AccountLookup;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.stereotype.Service;
@@ -50,16 +50,19 @@ public class InvoiceService {
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;
+	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 
 	public InvoiceService(
 			OrganizationRepository organizationRepository,
 			InvoiceRepository invoiceRepository,
 			ContactRepository contactRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			JournalService journalService,
 			AccountRepository accountRepository,
 			TaxRateRepository taxRateRepository,
 			TaxTypeRepository taxTypeRepository) {
 		this.organizationRepository = organizationRepository;
+		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.invoiceRepository = invoiceRepository;
 		this.contactRepository = contactRepository;
 		this.journalService = journalService;
@@ -142,7 +145,7 @@ public class InvoiceService {
 		Invoice invoice = retrieveInvoiceObject(null);
 
 		// Get organization ID
-		final UUID getOrganizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
+		final UUID getOrganizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal().getId();
 		if (getOrganizationId == null) {
 			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
 		}

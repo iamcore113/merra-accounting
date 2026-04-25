@@ -374,4 +374,18 @@ public class AuthService {
     userRepository.save(user);
 
   }
+
+  public UserAccount getCurrentAuthenticatedUserId() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || !auth.isAuthenticated()) {
+      throw new EntityNotFoundException("No authenticated user found.");
+    }
+
+    if (auth.getPrincipal() instanceof UserAccount principal) {
+      return principal;
+    } else {
+      throw new EntityNotFoundException("Authenticated principal is not a UserAccount.");
+    }
+  }
 }

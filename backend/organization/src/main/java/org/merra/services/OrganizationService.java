@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.merra.config.TenantContext;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
@@ -29,7 +28,9 @@ import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.OrganizationsOnly;
+import org.merra.service.AuthService;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.cache.annotation.Cacheable;
@@ -45,8 +46,10 @@ public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final OrganizationMembersRepository organizationMembersRepository;
+	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
+	private final AuthService authService;
 	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
 
@@ -55,16 +58,20 @@ public class OrganizationService {
 			UserAccountService userAccountService,
 			OrganizationTypeRepository organizationTypeRepository,
 			OrganizationMembersRepository organizationMembersRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			InvoiceRepository invoiceRepository,
 			AccountService accountService,
+			AuthService authService,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper) {
 		this.organizationRepository = organizationRepository;
 		this.organizationMembersRepository = organizationMembersRepository;
+		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.userAccountService = userAccountService;
 		this.invoiceRepository = invoiceRepository;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
+		this.authService = authService;
 		this.organizationMapper = organizationMapper;
 	}
 
@@ -151,11 +158,7 @@ public class OrganizationService {
 
 		Organization org = getOrganizationObject(null); // New organization object
 
-		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
-		if (getUserId == null) {
-			throw new IllegalStateException("User ID must be present in the tenant context");
-		}
-		UserAccount user = userAccountService.retrieveById(getUserId);
+		UserAccount user = authService.getCurrentAuthenticatedUserId();
 
 		// Set organization user as MEMBER role
 		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
@@ -186,7 +189,7 @@ public class OrganizationService {
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
 
-		var checkUserFullName = userAccountService.returnAccountFullName(getUserId);
+		Optional<String> checkUserFullName = user.getFullName();
 		boolean userInfoPresent = true;
 		String userfullName = null;
 		if (checkUserFullName.isEmpty()) {
@@ -195,7 +198,7 @@ public class OrganizationService {
 			userfullName = checkUserFullName.get();
 		}
 
-		return organizationMapper.toNewOrganizationResponse(newOrganization.getId(), getUserId, userInfoPresent,
+		return organizationMapper.toNewOrganizationResponse(newOrganization.getId(), user.getUserId(), userInfoPresent,
 				userfullName);
 	}
 
@@ -230,41 +233,29 @@ public class OrganizationService {
 	 *                               tenant context.
 	 */
 	public List<UserOrganizationResponse> getUserOrganizations() {
-		UUID getUserId = TenantContext.getTenantId(TenantContext.USER_TENANT);
-
-		if (getUserId == null) {
-			throw new IllegalStateException("User ID must be present in the tenant context");
-		}
-		UserAccount user = userAccountService.retrieveById(getUserId);
+		UserAccount user = authService.getCurrentAuthenticatedUserId();
 		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser(user);
 
 		return organizationMapper.toUserOrganizationResponses(organizations, user);
 	}
 
 	/**
-	 * Retrieves the dashboard summary for the organization resolved from the tenant
-	 * context.
+	 * Retrieves dashboard statistics for the current organization of the
+	 * authenticated user.
+	 * <p>
+	 * This method fetches the current organization from the user's workspace state,
+	 * then queries the count of invoices
+	 * for each status (DRAFT, SUBMITTED, AUTHORISED). The results are collected
+	 * into a map and mapped to a dashboard response DTO.
+	 * </p>
 	 *
-	 * @return An {@linkplain OrganizationDashboardResponse} containing invoice
-	 *         status counts for the current organization.
-	 * @throws IllegalStateException   If the organization identifier or user
-	 *                                 identifier is missing from the tenant
-	 *                                 context.
-	 * @throws EntityNotFoundException If the organization cannot be found for the
-	 *                                 resolved tenant identifier.
+	 * @return an {@link OrganizationDashboardResponse} containing invoice counts by
+	 *         status for the current organization
 	 */
 	public OrganizationDashboardResponse getOrganizationDashboard() {
-		final UUID organizationId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
-		final UUID userId = TenantContext.getTenantId(TenantContext.USER_TENANT);
-
-		if (organizationId == null || userId == null) {
-			throw new IllegalStateException("Organization ID and User ID must be present in the tenant context");
-		}
-		Organization getOrganization = organizationRepository.findById(organizationId)
-				.orElseThrow(() -> new EntityNotFoundException("Organization not found"));
+		Organization getOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
 
 		// Query the count of invoices for each status (DRAFT, SUBMITTED, AUTHORISED)
-		// and collect them into an immutable map for the dashboard response
 		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT,
 				getOrganization);
 		Integer submittedCount = invoiceRepository
@@ -278,6 +269,5 @@ public class OrganizationService {
 				InvoiceConstants.INVOICE_STATUS_AUTHORISED, authorisedCount);
 
 		return organizationMapper.toOrganizationDashboardResponse(invoicesCountsMap);
-
 	}
 }

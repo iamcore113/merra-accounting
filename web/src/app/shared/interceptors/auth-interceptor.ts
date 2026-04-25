@@ -12,7 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const tempToken = localStorage.getItem('temp_token');
   if (!tempToken && requiresAuth) {
-    // No token and auth required - redirect to signin with message
+    // No token and auth required for the request - redirect to signin with message
     router.navigate(['/account/signin'], {
       queryParams: { message: 'Invalid token. Please login again.' }
     });
@@ -26,6 +26,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     let headers = req.headers.set('Authorization', `Bearer ${tempToken}`);
 
     if (user_id) {
+      console.log(`X-User-Context-ID: ${user_id}`);
       headers = headers.set('X-User-Context-ID', user_id);
     }
     if (organization_id) {

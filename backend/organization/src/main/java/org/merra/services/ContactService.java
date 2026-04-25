@@ -3,7 +3,6 @@ package org.merra.services;
 import java.util.List;
 import java.util.UUID;
 
-import org.merra.config.TenantContext;
 import org.merra.dto.CompleteContactRequest;
 import org.merra.dto.ContactResponse;
 import org.merra.dto.ContactsByOrganizationResponse;
@@ -14,6 +13,7 @@ import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.ContactMapper;
 import org.merra.repositories.ContactRepository;
 import org.merra.repositories.OrganizationRepository;
+import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.ContactsByOrganizationSelection;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
@@ -25,14 +25,17 @@ import jakarta.validation.constraints.NotNull;
 @Validated
 public class ContactService {
 	private final OrganizationRepository organizationRepository;
+	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final ContactRepository contactRepository;
 	private final ContactMapper contactMapper;
 
 	public ContactService(
 			OrganizationRepository organizationRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			ContactRepository contactRepository,
 			ContactMapper contactMapper) {
 		this.organizationRepository = organizationRepository;
+		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.contactRepository = contactRepository;
 		this.contactMapper = contactMapper;
 	}
@@ -86,7 +89,7 @@ public class ContactService {
 	 * @throws EntityNotFoundException if no organization exists for the tenant ID
 	 */
 	public List<ContactsByOrganizationResponse> getContactsByOrganizationId() {
-		UUID getOrganizationTenantId = TenantContext.getTenantId(TenantContext.ORG_TENANT);
+		final UUID getOrganizationTenantId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal().getId();
 
 		if (getOrganizationTenantId == null) {
 			throw new IllegalStateException("Organization tenant ID is not set in the context");
