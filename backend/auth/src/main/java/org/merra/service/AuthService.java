@@ -1,7 +1,5 @@
 package org.merra.service;
 
-import static org.mockito.ArgumentMatchers.booleanThat;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -94,43 +92,50 @@ public class AuthService {
   }
 
   /**
-   * Verifies an email verification token, enables the corresponding account, and
-   * issues a limited
-   * access JWT for post-verification onboarding.
+   * Verifies the provided account verification token, enables the user account,
+   * assigns the default role, and issues a limited access JWT token.
    *
-   * @param tokenParam The verification token received from the account
-   *                   verification link.
-   * @return A {@link VerifiedAccountResponse} containing verification status,
-   *         user identifier,
-   *         account email, and a limited-access token.
-   * @throws BadCredentialsException If the token does not contain an email or
-   *                                 does not match the
-   *                                 stored account verification token.
-   * @throws EntityNotFoundException If no user account exists for the token
-   *                                 email.
+   * @param tokenParam The verification token received from the verification link
+   * @return VerifiedAccountResponse containing verification status, user ID,
+   *         email, and a limited-access token
+   * @throws BadCredentialsException if the token is invalid or does not match the
+   *                                 stored token
+   * @throws EntityNotFoundException if the user account does not exist
    */
   public VerifiedAccountResponse verifyAccountToken(String tokenParam) {
+    // Extract email from the JWT token
     final String email = jwtUtils.extractUsername(tokenParam);
     if (email == null) {
       throw new BadCredentialsException("Token email not found.");
     }
+    // Retrieve the user account by email
     UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
         .orElseThrow(() -> new EntityNotFoundException("User account not found."));
     final String accountVerificationToken = findAccount.getVerificationToken();
     final String getAccountEmail = findAccount.getEmail();
+    final UUID getUserId = findAccount.getUserId();
+    final String getPassword = findAccount.getPassword();
+    // Validate the provided token against the stored verification token
     if (!Objects.equals(accountVerificationToken, tokenParam)) {
       throw new BadCredentialsException("Invalid token.");
     }
 
-    String limitedAccessToken = null;
+    // Enable the account, clear the verification token, and assign the default role
     findAccount.setVerificationToken(null);
     findAccount.setIsEnabled(true);
     findAccount.setRoles(ROLE_IDLE);
     userRepository.save(findAccount);
-    limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE), limitedAccessTokenDuration,
+
+    // Generate a limited access JWT token for onboarding
+    String limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
+        limitedAccessTokenDuration,
         false);
 
-    return new VerifiedAccountResponse(true, findAccount.getUserId(), getAccountEmail, limitedAccessToken);
+    // Optionally authenticate the user after verification (not setting
+    // SecurityContext here)
+    authenticateUser(getAccountEmail, getPassword);
+
+    return new VerifiedAccountResponse(true, getUserId, getAccountEmail, limitedAccessToken);
   }
 
   public void sendVerificationEmail(String email, String verToken) {
@@ -211,6 +216,16 @@ public class AuthService {
     }
   }
 
+  /**
+   * Authenticates a user using the provided login request and returns a JWT-based
+   * authentication response.
+   *
+   * @param request The login request containing the user's email and password
+   * @return A {@link SigninResponse} containing JWT tokens and user details upon
+   *         successful authentication
+   * @throws BadCredentialsException if authentication fails due to invalid
+   *                                 credentials
+   */
   public SigninResponse login(LoginRequest request) {
     return createAuthenticationResponse(request.email(), request.password());
   }
@@ -226,22 +241,36 @@ public class AuthService {
    *                                 credentials.
    */
   public SigninResponse loginWithCredentials(LoginRequest request) {
-    return createAuthenticationResponse(request.email(), request.password());
+    final String email = request.email();
+    final String password = request.password();
+    return createAuthenticationResponse(email, password);
+  }
+
+  /**
+   * Attempts to authenticate a user with the provided email and password.
+   * Throws a BadCredentialsException if authentication fails.
+   *
+   * @param email    The user's email address
+   * @param password The user's password
+   * @return Authentication object if successful
+   * @throws BadCredentialsException if authentication fails
+   */
+  private Authentication authenticateUser(String email, String password) {
+    try {
+      return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    } catch (AuthenticationException e) {
+      // Wrap and rethrow authentication failures as BadCredentialsException with a
+      // custom message
+      throw new BadCredentialsException(AuthConstantResponses.INVALID_CREDENTIALS, e);
+    }
   }
 
   /* Create JWT tokens after successful authentication */
   private SigninResponse createAuthenticationResponse(String email, String password) {
 
-    Authentication authentication;
+    Authentication authentication = authenticateUser(email, password);
 
-    try {
-      authentication = authenticationManager
-          .authenticate(new UsernamePasswordAuthenticationToken(email, password));
-    } catch (AuthenticationException e) {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          AuthConstantResponses.INVALID_CREDENTIALS, e);
-    }
-
+    // Set the authenticated user in the security context
     SecurityContextHolder.getContext().setAuthentication(authentication);
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
