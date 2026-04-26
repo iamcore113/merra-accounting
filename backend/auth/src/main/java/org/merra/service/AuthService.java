@@ -34,6 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -112,9 +113,11 @@ public class AuthService {
     UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
         .orElseThrow(() -> new EntityNotFoundException("User account not found."));
     final String accountVerificationToken = findAccount.getVerificationToken();
-    final String getAccountEmail = findAccount.getEmail();
-    final UUID getUserId = findAccount.getUserId();
-    final String getPassword = findAccount.getPassword();
+
+    if (accountVerificationToken == null) {
+      throw new BadCredentialsException("No verification token found for this account.");
+    }
+
     // Validate the provided token against the stored verification token
     if (!Objects.equals(accountVerificationToken, tokenParam)) {
       throw new BadCredentialsException("Invalid token.");
@@ -126,18 +129,33 @@ public class AuthService {
     findAccount.setRoles(ROLE_IDLE);
     userRepository.save(findAccount);
 
+    final String getAccountEmail = findAccount.getEmail();
+    final UUID getUserId = findAccount.getUserId();
+
     // Generate a limited access JWT token for onboarding
     String limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
         limitedAccessTokenDuration,
         false);
 
-    // Optionally authenticate the user after verification (not setting
-    // SecurityContext here)
-    authenticateUser(getAccountEmail, getPassword);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(getAccountEmail);
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        null, // No password needed here!
+        userDetails.getAuthorities());
+
+    // Set the authenticated user in the security context
+    SecurityContextHolder.getContext().setAuthentication(auth);
 
     return new VerifiedAccountResponse(true, getUserId, getAccountEmail, limitedAccessToken);
   }
 
+  /**
+   * Sends a verification email to the specified user with a verification token
+   * link.
+   *
+   * @param email    The recipient's email address
+   * @param verToken The verification token to include in the email link
+   */
   public void sendVerificationEmail(String email, String verToken) {
     final String subject = "Email Verification";
     final String path = "account/verify";
@@ -146,6 +164,12 @@ public class AuthService {
 
   }
 
+  /**
+   * Sends a password reset email to the specified user with a reset token link.
+   *
+   * @param email      The recipient's email address
+   * @param resetToken The password reset token to include in the email link
+   */
   public void sendForgotPasswordEmail(String email, String resetToken) {
     final String subject = "Password Reset Request";
     final String path = "auth/req/reset-password/";
@@ -153,6 +177,21 @@ public class AuthService {
     sendEmail(email, resetToken, subject, path, msg);
   }
 
+  /**
+   * Sends an HTML email to the specified recipient with a verification or reset
+   * link.
+   *
+   * @param email   The recipient's email address
+   * @param token   The token to be included in the link
+   * @param subject The subject of the email
+   * @param path    The path to append to the frontend URL for the action link
+   * @param msg     The message to display in the email body
+   *
+   *                This method builds a styled HTML email containing an action
+   *                link (e.g., for verification or password reset)
+   *                and sends it using the configured mail sender. If sending
+   *                fails, the error is logged to standard error.
+   */
   private void sendEmail(String email, String token, String subject, String path, String msg) {
     try {
       UriComponents uriBuilder = UriComponentsBuilder.fromUriString(webUrl)
@@ -375,6 +414,13 @@ public class AuthService {
 
   }
 
+  /**
+   * Retrieves the currently authenticated UserAccount from the security context.
+   *
+   * @return the authenticated UserAccount
+   * @throws EntityNotFoundException if no user is authenticated or the principal
+   *                                 is not a UserAccount
+   */
   public UserAccount getCurrentAuthenticatedUserId() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
