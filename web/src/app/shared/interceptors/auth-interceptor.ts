@@ -20,18 +20,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (tempToken && requiresAuth) {
-    // Add token to Authorization header
-    const user_id = localStorage.getItem('user_id');
-    const organization_id = localStorage.getItem('organization_id');
     let headers = req.headers.set('Authorization', `Bearer ${tempToken}`);
-
-    if (user_id) {
-      console.log(`X-User-Context-ID: ${user_id}`);
-      headers = headers.set('X-User-Context-ID', user_id);
-    }
-    if (organization_id) {
-      headers = headers.set('X-Organization-ID', organization_id);
-    }
 
     const authReq = req.clone({ headers });
 
@@ -39,8 +28,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       catchError(error => {
         if (error.status === 401) {
           localStorage.removeItem('temp_token');
-          localStorage.removeItem('user_id');
-          localStorage.removeItem('user_email');
           // Token expired or invalid - redirect to signin
           router.navigate(['/account/signin'], {
             queryParams: { message: 'Token expired. Please login again.' }
@@ -55,8 +42,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => {
       if (error.status === 401) {
         localStorage.removeItem('temp_token');
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('user_email');
         router.navigate(['/account/signin'], {
           queryParams: { message: 'Authentication failed. Please login again.' }
         });

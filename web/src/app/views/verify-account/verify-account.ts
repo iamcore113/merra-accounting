@@ -87,9 +87,7 @@ export class VerifyAccount implements OnInit {
                 duration: 5000,
               });
               if (this.email) {
-                this.localStorage.setItem('user_email', this.email);
                 this.localStorage.setItem('temp_token', this.temp_token);
-                this.localStorage.setItem('user_id', this.user_id);
                 this.router.navigate(['account/personal-details', this.email]);
               } else {
                 this.router.navigate(['account/personal-details']);
