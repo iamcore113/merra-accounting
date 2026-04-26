@@ -15,7 +15,7 @@
                 <constraints primaryKey="true" nullable="true" unique="true" />
             </column>
             <column name="user_id" type="uuid">
-                <constraints nullable="false" unique="true" foreignKeyName="fk_user_workspace_state__user__id" referencedTableName="user_account" referencedColumnNames="id" deleteCascade="true" />
+                <constraints nullable="false" unique="true" foreignKeyName="fk_user_workspace_state__user__id" referencedTableName="user_account" referencedColumnNames="user_id" deleteCascade="true" />
             </column>
             <column name="current_organization" type="uuid">
                 <constraints foreignKeyName="fk_user_workspace_state__organization__id" referencedTableName="organization" referencedColumnNames="id" deleteCascade="true" />
