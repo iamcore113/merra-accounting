@@ -42,7 +42,6 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class InvoiceService {
-
 	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactRepository contactRepository;
