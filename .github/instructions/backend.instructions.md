@@ -1,6 +1,12 @@
-## merra-accounting — Backend Instructions (Java/Spring Boot)
+name: merra-accounting Backend (Java/Spring Boot)
 
-This file provides concise, actionable facts for AI coding agents working on the merra-accounting backend.
+description: |
+This file provides concise, actionable facts and conventions for AI coding agents working on the merra-accounting backend. It covers project structure, build/run workflows, environment configuration, code patterns, and documentation rules for Java 25 and Spring Boot 4.0.5. Follow these instructions to ensure consistency, maintainability, and alignment with project standards.
+
+applyTo:
+
+- backend/\*\*
+- .github/instructions/backend.instructions.md
 
 ---
 
@@ -77,26 +83,6 @@ This file provides concise, actionable facts for AI coding agents working on the
 - Mind annotation processors (MapStruct) — ensure generated sources compile.
 
 ---
-
-## Example: Build & Run Main with Local DB (macOS/Linux)
-
-```bash
-cd backend
-docker compose -f main/compose.yaml up -d
-export DB_URL='jdbc:postgresql://127.0.0.1:5070/merradb'
-./mvnw -pl main -am spring-boot:run
-```
-
----
-
-## Example: Build & Run Main with Local DB (Windows PowerShell)
-
-```powershell
-cd backend
-docker compose -f main/compose.yaml up -d
-$env:DB_URL = 'jdbc:postgresql://127.0.0.1:5070/merradb'
-.\mvnw.cmd -pl main -am spring-boot:run
-```
 
 ---
 
