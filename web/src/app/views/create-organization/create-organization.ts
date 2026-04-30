@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
@@ -39,6 +39,8 @@ export class CreateOrganization implements OnInit {
   private countryApiService = inject(CountryApiService);
   private new_organization: NewOrganizationResponse | null = null;
   private localStorage = inject(LocalStorageService);
+
+  private cdr = inject(ChangeDetectorRef);
 
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
@@ -108,6 +110,7 @@ export class CreateOrganization implements OnInit {
         }));
         setTimeout(() => {
           this.filteredCountries = [...this.countries];
+          this.cdr.detectChanges();
         });
       }
     });
@@ -122,6 +125,7 @@ export class CreateOrganization implements OnInit {
           country.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
+      this.cdr.detectChanges();
     });
   }
 
@@ -179,7 +183,6 @@ export class CreateOrganization implements OnInit {
       },
       complete: () => {
         this.isSubmitting = false;
-        this.localStorage.setItem('organization_id', neworganization?.organizationId);
         this.snackBar.open('Organization created successfully!', 'Success', {
           duration: 3000,
           panelClass: ['success-snackbar']
