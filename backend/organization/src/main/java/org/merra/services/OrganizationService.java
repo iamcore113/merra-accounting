@@ -158,7 +158,7 @@ public class OrganizationService {
 
 		Organization org = getOrganizationObject(null); // New organization object
 
-		UserAccount user = authService.getCurrentAuthenticatedUserId();
+		UserAccount user = authService.getCurrentAuthenticatedUser();
 
 		// Set organization user as MEMBER role
 		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
@@ -233,7 +233,7 @@ public class OrganizationService {
 	 *                               tenant context.
 	 */
 	public List<UserOrganizationResponse> getUserOrganizations() {
-		UserAccount user = authService.getCurrentAuthenticatedUserId();
+		UserAccount user = authService.getCurrentAuthenticatedUser();
 		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser(user);
 
 		return organizationMapper.toUserOrganizationResponses(organizations, user);

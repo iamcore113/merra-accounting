@@ -1,0 +1,29 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <!-- sequence name invoice_num_seq -->
+    <changeSet id="2026-drop-sequence" author="brian">
+        <dropSequence sequenceName="invoice_num_seq"/>
+    </changeSet>
+    <!-- drop invoice_number column in organization -->
+    <changeSet id="2026-drop-invoice_number_in_organization" author="brian">
+        <dropColumn columnName="invoice_number" schemaName="merra_schema" tableName="organization">
+        </dropColumn>
+    </changeSet>
+    <!-- create sequence and add invoice_number in invoice -->
+    <changeSet id="2026-add-invoiceColumn-organization" author="brian">
+        <createSequence sequenceName="invoice_number_seq" startValue="1" incrementBy="1"/>
+        <addColumn tableName="invoice" schemaName="merra_schema">
+            <column name="invoice_number" type="varchar(100)">
+                <constraints nullable="false" unique="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

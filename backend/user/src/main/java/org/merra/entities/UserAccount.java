@@ -248,7 +248,7 @@ public class UserAccount implements UserDetails {
 
 	@Override
 	public String toString() {
-		return "UserAccount [email=" + email + ", isEnabled=" + isEnabled + ", roles=" + roles + "]";
+		return "UserAccount [email=" + email + ", id=" + userId + "]";
 	}
 
 }
