@@ -8,6 +8,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.merra.config.JwtUtils;
 import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
@@ -48,6 +50,8 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AuthService {
+  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
   @Value("${jwt.access.token.duration}")
   private int forAccessToken;
   @Value("${jwt.refresh.token-expiration}")
@@ -421,7 +425,7 @@ public class AuthService {
    * @throws EntityNotFoundException if no user is authenticated or the principal
    *                                 is not a UserAccount
    */
-  public UserAccount getCurrentAuthenticatedUserId() {
+  public UserAccount getCurrentAuthenticatedUser() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
     if (auth == null || !auth.isAuthenticated()) {
@@ -429,6 +433,7 @@ public class AuthService {
     }
 
     if (auth.getPrincipal() instanceof UserAccount principal) {
+      logger.info("Authenticated user: {}", principal);
       return principal;
     } else {
       throw new EntityNotFoundException("Authenticated principal is not a UserAccount.");
