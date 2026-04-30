@@ -1,3 +1,7 @@
+// Add vertical gap between sidenav items
+.sidenav-list-item-gap {
+	margin-bottom: 10px;
+}
 // Gradient backgrounds for each sidenav icon
 .dashboard-gradient-bg {
 	background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
@@ -70,6 +74,7 @@
 		border-radius: 0.75rem;
 		margin-bottom: 0.35rem;
 		color: rgba(0, 0, 0, 0.78);
+		padding: 0.75rem 1.25rem;
 
 		&:hover {
 			background-color: #fff;

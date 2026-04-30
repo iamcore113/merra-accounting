@@ -7,6 +7,7 @@ This file provides concise, actionable facts for AI coding agents working on the
 ## Frontend Overview
 
 - Angular 20.x application using standalone components
+- **Strict Versioning:** When working with Angular, always strictly follow Angular version **20.2.14**. Avoid using old or outdated syntax from previous Angular versions, including deprecated or legacy directives such as `*ngFor`, `*ngIf`, etc. Use only the syntax and APIs recommended for Angular 20.2.14. Refer to the official Angular and Angular Material v20 documentation for up-to-date usage.
 - Styling: **SCSS** (not CSS) — always use `.scss` files
 - UI Framework: **Angular Material v20** — prioritize Material components over custom HTML elements
 - Version alignment: The project is on Angular **20.2.14**, so use Angular Material **v20** guidance and APIs from https://v20.material.angular.dev/

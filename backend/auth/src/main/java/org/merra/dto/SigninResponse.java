@@ -36,37 +36,51 @@ public class SigninResponse {
 		this.tokens = tokens;
 		this.accountStatus = accountStatus;
 	}
-	
-	public SigninResponse() {}
 
+	public SigninResponse() {
+	}
 
 	public class AccountStatus {
 		private boolean isComplete;
+		private boolean partOfOrganization;
 		private boolean isEnabled;
-		public AccountStatus(boolean isComplete, boolean isEnabled) {
+
+		public AccountStatus(boolean isComplete, boolean isEnabled, boolean partOfOrganization) {
 			this.isComplete = isComplete;
 			this.isEnabled = isEnabled;
+			this.partOfOrganization = partOfOrganization;
 		}
+
 		public boolean isComplete() {
 			return isComplete;
 		}
+
 		public void setComplete(boolean isComplete) {
 			this.isComplete = isComplete;
 		}
+
 		public boolean isEnabled() {
 			return isEnabled;
 		}
+
 		public void setEnabled(boolean isEnabled) {
 			this.isEnabled = isEnabled;
 		}
-		
+
+		public boolean isPartOfOrganization() {
+			return partOfOrganization;
+		}
+
+		public void setPartOfOrganization(boolean partOfOrganization) {
+			this.partOfOrganization = partOfOrganization;
+		}
 	}
-	
+
 	public class Userdetails {
 		private UUID userId;
 		private String email;
 		private List<String> roles;
-		
+
 		public UUID getUserId() {
 			return userId;
 		}

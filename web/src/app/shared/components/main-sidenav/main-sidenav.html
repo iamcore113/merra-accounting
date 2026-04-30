@@ -1,25 +1,31 @@
 <aside class="side-nav" aria-label="Main navigation">
-	<div class="side-nav-title">Workspace</div>
-	<mat-nav-list>
-		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg dashboard-gradient-bg">dashboard</mat-icon>
-			<span matListItemTitle>Dashboard</span>
-		</a>
-		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg business-gradient-bg">business</mat-icon>
-			<span matListItemTitle>Organization</span>
-		</a>
-		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg accounts-gradient-bg">account_balance</mat-icon>
-			<span matListItemTitle>Accounts</span>
-		</a>
-		<a mat-list-item [routerLink]="['profile']">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg personal-gradient-bg">account_circle</mat-icon>
-			<span matListItemTitle>Personal Info</span>
-		</a>
-		<a mat-list-item href="#" (click)="$event.preventDefault()">
-			<mat-icon matListItemIcon fontSet="material-icons-outlined" class="sidenav-icon-bg settings-gradient-bg">settings</mat-icon>
-			<span matListItemTitle>Settings</span>
-		</a>
-	</mat-nav-list>
+  <div class="side-nav-title">Workspace</div>
+  <mat-list role="list">
+    <ng-container [ngForOf]="navItems" [ngForTrackBy]="trackByNavItem" let-item let-i="index">
+      <mat-list-item role="listitem" class="sidenav-list-item-gap">
+        <a mat-listItem [routerLink]="item.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+          <mat-icon matListItemIcon fontSet="material-icons-outlined" [ngClass]="'sidenav-icon-bg ' + item.gradientClass">{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      </mat-list-item>
+      <!-- Insert the details section after Accounts -->
+      <ng-container [ngIf]="item.label === 'Accounts'">
+        <mat-list-item role="listitem" class="sidenav-list-item-gap">
+          <div>
+            <div class="side-nav-title" style="font-size:0.7rem; margin-bottom:0.5rem;">Profile</div>
+            <mat-list [dense]="true">
+              <ng-container [ngForOf]="detailsItems" [ngForTrackBy]="trackByDetailsItem" let-d>
+                <mat-list-item>
+                  <a mat-listItem [routerLink]="d.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+                    <mat-icon matListItemIcon fontSet="material-icons-outlined" [ngClass]="'sidenav-icon-bg ' + d.gradientClass">{{ d.icon }}</mat-icon>
+                    <span matListItemTitle>{{ d.label }}</span>
+                  </a>
+                </mat-list-item>
+              </ng-container>
+            </mat-list>
+          </div>
+        </mat-list-item>
+      </ng-container>
+    </ng-container>
+  </mat-list>
 </aside>

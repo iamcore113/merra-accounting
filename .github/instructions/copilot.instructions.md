@@ -41,7 +41,7 @@ See [frontend-instructions.md](frontend-instructions.md) for:
 
 ## When Editing These Files
 
-- Update [backend-instructions.md](backend-instructions.md) for backend/Java/Spring Boot changes
-- Update [frontend-instructions.md](frontend-instructions.md) for frontend/Angular changes
+- Update [backend.instructions.md](backend.instructions.md) for backend/Java/Spring Boot changes
+- Update [frontend.instructions.md](frontend.instructions.md) for frontend/Angular changes
 - Keep instructions concise and examples current
 - Ask the repo owner if you need infra credentials or CI details

@@ -53,6 +53,8 @@ export class Signin implements OnInit {
     });
   }
 
+  // TODO: Handle uncomplete profiles
+  // TODO: Handle accounts that aren't part of organizations
   onSubmit() {
     if (this.signinForm.valid) {
       let verifiedData: SigninResponse;

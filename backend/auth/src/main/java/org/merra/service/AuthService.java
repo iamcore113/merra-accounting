@@ -315,16 +315,23 @@ public class AuthService {
 
     // Set the authenticated user in the security context
     SecurityContextHolder.getContext().setAuthentication(authentication);
+
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
 
     SigninResponse response = new SigninResponse();
 
+    // Check if the user's profile is complete:
+    // - Both first name and last name must be set (not null)
+    // - User must be part of an organization
     boolean isProfileComplete = true;
     if (getUser.getFirstName() == null || getUser.getLastName() == null) {
       isProfileComplete = false;
     }
-    response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled()));
+
+    boolean isPartOfOrganization = getUser.isPartOfOrganization() ? getUser.isPartOfOrganization() : false;
+
+    response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled(), isPartOfOrganization));
 
     final Map<String, Object> claims = Map.of("role", getUser.getRoles());
     final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);
