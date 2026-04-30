@@ -23,50 +23,50 @@ public class OrganizationMembers {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
 	private Organization organization;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
 	private UserAccount user;
-	
+
 	@Column(name = "role", nullable = false)
 	@NotBlank(message = "Role cannot be blank.")
 	public String role;
-	
+
 	@Column(name = "is_creator", nullable = false)
 	@NotNull(message = "isCreator field cannot be null.")
 	private Boolean isCreator;
-	
+
 	@Column(name = "is_invited", nullable = false)
 	@NotNull(message = "isInvited field cannot be null.")
 	private Boolean isInvited;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "invitation_by", referencedColumnName = "user_id")
 	private UserAccount invitationBy;
-	
+
 	@Column(name = "invitation_date")
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDate invitationDate;
-	
+
 	@Column(name = "status", nullable = false)
 	@NotBlank(message = "Status cannot be blank.")
-	public String status;
-	
+	public String status = UserAccountStatusEn.ACTIVE.name();
+
 	@Column(name = "date_joined")
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	public LocalDate dateJoined;
-	
+
 	@Column(name = "date_updated")
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	public LocalDate dateUpdated;
 
 	public OrganizationMembers() {
 	}
-	
+
 	// for the creator member
 	public OrganizationMembers(Organization organization, UserAccount user) {
 		this.organization = organization;
@@ -155,5 +155,14 @@ public class OrganizationMembers {
 
 	public void setDateUpdated(LocalDate dateUpdated) {
 		this.dateUpdated = dateUpdated;
+	}
+
+	@Override
+	public String toString() {
+		return "OrganizationMembers{" +
+				"id=" + id +
+				", user=" + (user != null ? user.getUserId() : null) +
+				", status='" + status + '\'' +
+				'}';
 	}
 }
