@@ -59,6 +59,14 @@
 	padding-bottom: 0.5rem;
 }
 
+.profile-accordion .affiliated-empty-state {
+	margin: 0;
+	padding: 0.5rem 1.5rem 1.5rem;
+	color: #5f6b73;
+	line-height: 1.5;
+	text-align: center;
+}
+
 .profile-accordion .change-password-button {
 	--mat-button-filled-container-color: #486f9f;
 	--mat-button-filled-label-text-color: #ffffff;
@@ -240,6 +248,34 @@
 	color: #ffffff;
 }
 
+.profile-accordion .country-editor {
+	padding-top: 0.5rem;
+}
+
+.profile-accordion .country-editor-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.profile-accordion .country-editor-row mat-form-field {
+	width: 280px;
+}
+
+.profile-accordion .country-editor-row button {
+	margin-left: auto;
+	margin-top: 0.25rem;
+}
+
+.profile-accordion .country-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+}
+
 .profile-accordion .email-editor {
 	display: flex;
 	flex-direction: column;
@@ -279,10 +315,12 @@
 }
 
 @media (max-width: 640px) {
+	.profile-accordion .country-editor-row,
 	.profile-accordion .email-editor-row {
 		flex-direction: column;
 	}
 
+	.profile-accordion .country-editor-row button,
 	.profile-accordion .email-editor-row button {
 		width: 100%;
 		margin-left: 0;

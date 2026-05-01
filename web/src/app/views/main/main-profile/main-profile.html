@@ -53,7 +53,7 @@
 				</div>
 			</div>
     </mat-expansion-panel>
-    <mat-expansion-panel>
+		<mat-expansion-panel #countryPanel>
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">
           <span class="detail-text">
@@ -63,7 +63,20 @@
 		  <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <p>Add your country details here.</p>
+			<div class="country-editor">
+				<div class="country-editor-row">
+					<mat-form-field>
+						<mat-label>Country</mat-label>
+						<mat-select value="philippines">
+							<mat-option value="philippines">Philippines</mat-option>
+							<mat-option value="singapore">Singapore</mat-option>
+							<mat-option value="malaysia">Malaysia</mat-option>
+							<mat-option value="indonesia">Indonesia</mat-option>
+						</mat-select>
+					</mat-form-field>
+					<button class="country-update-button" matButton="filled" type="button" (click)="countryPanel.close()">Update</button>
+				</div>
+			</div>
     </mat-expansion-panel>
 
 		<mat-expansion-panel #emailPanel>
@@ -95,11 +108,12 @@
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">
 					<span class="detail-text affiliated-text">
-						<span class="detail-label affiliated-label" matBadge="4" matBadgeSize="medium" matBadgeColor="warn" matBadgePosition="above after">Affiliated Organizations</span>
+						<span class="detail-label affiliated-label" [matBadge]="affiliatedOrganizationsCount" matBadgeSize="medium" matBadgeColor="warn" matBadgePosition="above after">Affiliated Organizations</span>
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">corporate_fare</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
+      @if (affiliatedOrganizationsCount > 0) {
       <mat-list>
 				<mat-list-item>
 					<mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
@@ -138,6 +152,9 @@
 					</div>
 				</mat-list-item>
 			</mat-list>
+      } @else {
+      <p class="affiliated-empty-state">The user account does not have any organization affiliation.</p>
+      }
     </mat-expansion-panel>
 	</mat-accordion>
 	<div class="profile-page-actions">

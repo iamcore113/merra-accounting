@@ -118,6 +118,7 @@ export class ChangePasswordSheet {
 export class MainProfile {
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
+  readonly affiliatedOrganizationsCount = 4;
 
   openProfileImageDialog(): void {
     this.dialog.open(ProfileImageDialog);
