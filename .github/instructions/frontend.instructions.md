@@ -22,6 +22,7 @@ rules:
 - All component and global styles must be written in `.scss` files. Do not use `.css` files for styling.
 - Avoid using legacy Angular directives (e.g., `ng-deep`, `ngIf` with old syntax, etc.) and ensure all code follows the latest Angular best practices.
 - When in doubt, consult the official Angular v20 and Angular Material v20 documentation.
+- When using icons (e.g., Material Icons), always use the **outlined** style (e.g., `material-icons-outlined` CSS class or `fontSet="material-icons-outlined"`). Never use filled, rounded, sharp, or two-tone variants unless explicitly requested.
 
 examples:
 

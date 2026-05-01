@@ -1,31 +1,21 @@
 <aside class="side-nav" aria-label="Main navigation">
-  <div class="side-nav-title">Workspace</div>
-  <mat-list role="list">
-    <ng-container [ngForOf]="navItems" [ngForTrackBy]="trackByNavItem" let-item let-i="index">
-      <mat-list-item role="listitem" class="sidenav-list-item-gap">
-        <a mat-listItem [routerLink]="item.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
-          <mat-icon matListItemIcon fontSet="material-icons-outlined" [ngClass]="'sidenav-icon-bg ' + item.gradientClass">{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
-        </a>
-      </mat-list-item>
-      <!-- Insert the details section after Accounts -->
-      <ng-container [ngIf]="item.label === 'Accounts'">
-        <mat-list-item role="listitem" class="sidenav-list-item-gap">
-          <div>
-            <div class="side-nav-title" style="font-size:0.7rem; margin-bottom:0.5rem;">Profile</div>
-            <mat-list [dense]="true">
-              <ng-container [ngForOf]="detailsItems" [ngForTrackBy]="trackByDetailsItem" let-d>
-                <mat-list-item>
-                  <a mat-listItem [routerLink]="d.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
-                    <mat-icon matListItemIcon fontSet="material-icons-outlined" [ngClass]="'sidenav-icon-bg ' + d.gradientClass">{{ d.icon }}</mat-icon>
-                    <span matListItemTitle>{{ d.label }}</span>
-                  </a>
-                </mat-list-item>
-              </ng-container>
-            </mat-list>
-          </div>
-        </mat-list-item>
-      </ng-container>
-    </ng-container>
-  </mat-list>
+	<h2 class="nav-title">Navigation</h2>
+
+	<nav>
+		<mat-nav-list>
+			@for (item of navItems; track item.label; let i = $index) {
+				<a mat-list-item [routerLink]="item.route" [class.active-item]="i === 0">
+					<mat-icon matListItemIcon fontSet="material-icons-outlined" [style.background-color]="item.iconBg" [style.color]="item.iconColor">{{ item.icon }}</mat-icon>
+					<span matListItemTitle>
+						<span class="nav-item-label">{{ item.label }}</span>
+					</span>
+				</a>
+			}
+		</mat-nav-list>
+	</nav>
+
+	<div class="side-nav-bottom-links" aria-label="Secondary links">
+		<a [routerLink]="''" class="bottom-link">About</a>
+		<a [routerLink]="''" class="bottom-link">Help</a>
+	</div>
 </aside>

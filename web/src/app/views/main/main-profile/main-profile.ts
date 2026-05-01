@@ -1,14 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { RouterOutlet } from "@angular/router";
 
 @Component({
   selector: 'app-main-profile',
-  imports: [MatIconModule, MatButtonModule, MatCheckboxModule, RouterOutlet],
+  standalone: true,
+  imports: [MatExpansionModule, MatIconModule],
   templateUrl: './main-profile.html',
-  styleUrls: ['./main-profile.scss'],
+  styleUrl: './main-profile.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class MainProfile {
 

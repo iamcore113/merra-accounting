@@ -1,40 +1,30 @@
-<div class="profile-grid">
-	<div class="profile-grid-col profile-grid-left">
-		<section class="profile-section">
-			<div class="profile-container">
-				<div class="profile-name">
-					Jill Valentine
-				</div>
-				<div class="profile-email-row">
-					<div class="profile-email">
-						<span>iamcore22@gmail.com</span>
-					</div>
-					<mat-checkbox class="profile-org-checkbox" checked>Part of Organization</mat-checkbox>
-				</div>
-			</div>
-		</section>
-		<section class="profile-links-section">
-			<a matFab extended class="profile-link profile-link-animate" href="mailto:iamcore22@gmail.com">
-				<span class="profile-link-content">
-					<mat-icon class="link-icon" aria-label="email">mail_outline</mat-icon>
-					<span class="profile-link-label">Email</span>
-				</span>
-				<span class="profile-link-arrow">
-					<mat-icon class="link-icon" aria-label="arrow">east</mat-icon>
-				</span>
-			</a>
-			<a matFab extended class="profile-link profile-link-animate" href="#account-settings">
-				<span class="profile-link-content">
-					<mat-icon class="link-icon" aria-label="settings">settings</mat-icon>
-					<span class="profile-link-label">Account Settings</span>
-				</span>
-				<span class="profile-link-arrow">
-					<mat-icon class="link-icon" aria-label="arrow">east</mat-icon>
-				</span>
-			</a>
-		</section>
-	</div>
-	<div class="profile-grid-col profile-grid-right">
-		<router-outlet></router-outlet>
-	</div>
-</div>
+<section class="profile-accordion">
+	<mat-accordion>
+		<mat-expansion-panel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Name:</span>
+						<span class="detail-value">Neil Brian temblor</span>
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">account_circle</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<p>Add your personal name details here.</p>
+		</mat-expansion-panel>
+
+		<mat-expansion-panel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Email:</span>
+						<span class="detail-value">iamcore113@gmail.com</span>
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<p>Add your email details here.</p>
+		</mat-expansion-panel>
+	</mat-accordion>
+</section>
+
