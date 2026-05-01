@@ -10,11 +10,21 @@
 	--mat-expansion-header-expanded-state-height: 72px;
 }
 
+.profile-accordion mat-expansion-panel.affiliated-panel {
+	--mat-expansion-header-collapsed-state-height: 68px;
+	--mat-expansion-header-expanded-state-height: 76px;
+}
+
 .profile-accordion .detail-title {
 	display: flex;
 	align-items: center;
 	gap: 1rem;
 	width: 100%;
+	overflow: visible;
+}
+
+.profile-accordion .mat-expansion-panel-header .mat-content {
+	overflow: visible;
 }
 
 .profile-accordion .detail-text {
@@ -26,9 +36,20 @@
 	min-width: 0;
 }
 
+.profile-accordion .affiliated-text {
+	grid-template-columns: minmax(0, 1fr);
+	justify-items: start;
+}
+
 .profile-accordion .detail-label,
 .profile-accordion .detail-value {
 	white-space: nowrap;
+}
+
+.profile-accordion .affiliated-label {
+	display: inline-block;
+	padding-right: 0.25rem;
+	width: fit-content;
 }
 
 .profile-accordion .detail-icon {

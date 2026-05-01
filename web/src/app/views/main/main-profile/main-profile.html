@@ -85,17 +85,53 @@
 				<p class="email-hint">You can only change your email address once every 2 months.</p>
 			</div>
 		</mat-expansion-panel>
-    <mat-expansion-panel>
+		<mat-expansion-panel class="affiliated-panel">
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">
-          <span class="detail-text">
-            <span class="detail-label">Affiliated Organizations:</span>
-            <span class="detail-value">None</span>
+					<span class="detail-text affiliated-text">
+						<span class="detail-label affiliated-label" matBadge="4" matBadgeSize="medium" matBadgeColor="warn" matBadgePosition="above after">Affiliated Organizations</span>
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">corporate_fare</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <p>Add your affiliated organizations here.</p>
+      <mat-list>
+				<mat-list-item>
+					<mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
+					<div matListItemTitle>Pacific Data Consortium</div>
+					<div matListItemMeta>
+						<mat-chip-set>
+							<mat-chip>Board Member</mat-chip>
+						</mat-chip-set>
+					</div>
+				</mat-list-item>
+				<mat-list-item>
+          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
+					<div matListItemTitle>Merra Research Network</div>
+					<div matListItemMeta>
+						<mat-chip-set>
+							<mat-chip>Contributor</mat-chip>
+						</mat-chip-set>
+					</div>
+				</mat-list-item>
+				<mat-list-item>
+          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
+					<div matListItemTitle>Southeast Climate Alliance</div>
+					<div matListItemMeta>
+						<mat-chip-set>
+							<mat-chip>Advisor</mat-chip>
+						</mat-chip-set>
+					</div>
+				</mat-list-item>
+				<mat-list-item>
+          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
+					<div matListItemTitle>Global Sustainability Council</div>
+					<div matListItemMeta>
+						<mat-chip-set>
+							<mat-chip>Coordinator</mat-chip>
+						</mat-chip-set>
+					</div>
+				</mat-list-item>
+			</mat-list>
     </mat-expansion-panel>
 	</mat-accordion>
 </section>
