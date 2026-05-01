@@ -4,6 +4,10 @@
 	padding: 0 1rem;
 }
 
+.profile-accordion .profile-title {
+	margin: 0 0 0.75rem;
+}
+
 .profile-accordion mat-expansion-panel {
 	--mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
 	--mat-expansion-header-collapsed-state-height: 64px;
