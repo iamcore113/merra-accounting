@@ -4,6 +4,12 @@
 	padding: 0 1rem;
 }
 
+.profile-accordion mat-expansion-panel {
+	--mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
+	--mat-expansion-header-collapsed-state-height: 64px;
+	--mat-expansion-header-expanded-state-height: 72px;
+}
+
 .profile-accordion .detail-title {
 	display: flex;
 	align-items: center;
@@ -31,6 +37,7 @@
 	height: 24px;
 	margin-left: auto;
 	margin-right: -0.50rem;
+	color: #94B4C1;
 }
 
 .profile-accordion .mat-expansion-indicator {
@@ -70,6 +77,34 @@
 }
 
 .profile-accordion .name-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+}
+
+.profile-accordion .gender-editor {
+	padding-top: 0.5rem;
+}
+
+.profile-accordion .gender-editor-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.profile-accordion .gender-editor-row mat-form-field {
+	width: 280px;
+}
+
+.profile-accordion .gender-editor-row button {
+	margin-left: auto;
+	margin-top: 0.25rem;
+}
+
+.profile-accordion .gender-update-button {
 	--mat-button-filled-container-color: #84b179;
 	--mat-button-filled-label-text-color: #ffffff;
 	--mat-button-filled-state-layer-color: #ffffff;
