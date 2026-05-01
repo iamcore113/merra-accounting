@@ -8,6 +8,64 @@
 	margin: 0 0 0.75rem;
 }
 
+.profile-accordion .profile-page-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 1rem;
+	padding-bottom: 0.5rem;
+}
+
+.profile-accordion .change-password-button {
+	--mat-button-filled-container-color: #486f9f;
+	--mat-button-filled-label-text-color: #ffffff;
+	background-color: #486f9f;
+	color: #ffffff;
+}
+
+.change-password-sheet {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1rem 1rem 1.25rem;
+}
+
+.change-password-sheet .sheet-title {
+	margin: 0;
+	font-size: 1.125rem;
+	font-weight: 600;
+}
+
+.change-password-sheet .sheet-description {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: #5f6368;
+}
+
+.change-password-sheet .sheet-form-field {
+	width: 100%;
+}
+
+.change-password-sheet .sheet-note {
+	margin: 0;
+	font-size: 0.875rem;
+	line-height: 1.4;
+	color: #5f6368;
+}
+
+.change-password-sheet .sheet-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.25rem;
+}
+
+.change-password-sheet .sheet-actions button {
+	--mat-button-filled-container-color: #d32f2f;
+	--mat-button-filled-label-text-color: #ffffff;
+	background-color: #d32f2f;
+	color: #ffffff;
+}
+
 .profile-accordion mat-expansion-panel {
 	--mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
 	--mat-expansion-header-collapsed-state-height: 64px;
@@ -184,5 +242,9 @@
 	.profile-accordion .email-editor-row button {
 		width: 100%;
 		margin-left: 0;
+	}
+
+	.profile-accordion .change-password-button {
+		width: 100%;
 	}
 }
