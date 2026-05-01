@@ -49,3 +49,80 @@
 	border-width: 0 3px 3px 0;
 	padding: 4px;
 }
+
+.profile-accordion .name-editor {
+	padding-top: 0.5rem;
+}
+
+.profile-accordion .name-editor-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.profile-accordion .name-editor-row mat-form-field {
+	flex: 1;
+}
+
+.profile-accordion .name-editor-row button {
+	margin-left: auto;
+	margin-top: 0.25rem;
+}
+
+.profile-accordion .name-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+}
+
+.profile-accordion .email-editor {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	padding-top: 0.5rem;
+}
+
+.profile-accordion .email-editor-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.profile-accordion .email-hint {
+	margin: 0;
+	font-size: 0.75rem;
+	color: #888888;
+	line-height: 1.4;
+}
+
+.profile-accordion .email-editor-row mat-form-field {
+	flex: 1;
+}
+
+.profile-accordion .email-editor-row button {
+	margin-left: auto;
+	margin-top: 0.25rem;
+}
+
+.profile-accordion .email-editor .email-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+}
+
+@media (max-width: 640px) {
+	.profile-accordion .email-editor-row {
+		flex-direction: column;
+	}
+
+	.profile-accordion .email-editor-row button {
+		width: 100%;
+		margin-left: 0;
+	}
+}
