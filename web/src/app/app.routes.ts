@@ -36,6 +36,11 @@ export const routes: Routes = [
         path: 'profile',
         loadComponent: () => import('./views/main/main-profile/main-profile').then(m => m.MainProfile),
         title: 'MERRA - Profile'
+      },
+      {
+        path: 'organization',
+        loadComponent: () => import('./views/main/main-organization/main-organization').then(m => m.MainOrganization),
+        title: 'MERRA - Organization'
       }
     ]
   },

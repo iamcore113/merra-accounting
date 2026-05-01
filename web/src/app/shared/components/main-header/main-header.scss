@@ -53,6 +53,50 @@
       justify-content: center;
     }
 
+    .org-actions {
+      display: flex;
+      align-items: center;
+
+      .org-identity {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: inherit;
+        text-decoration: none;
+
+        &:hover,
+        &:focus,
+        &:visited {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        &:hover .org-name::after,
+        &:focus .org-name::after {
+          transform: scaleX(1);
+        }
+      }
+
+      .org-name {
+        position: relative;
+        display: inline-block;
+        color: inherit;
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -2px;
+          width: 100%;
+          height: 2px;
+          background-color: var(--brand-color);
+          transform: scaleX(0);
+          transform-origin: left center;
+          transition: transform 0.3s ease;
+        }
+      }
+    }
+
     .user-actions {
       display: flex;
       align-items: center;
