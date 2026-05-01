@@ -1,5 +1,10 @@
 <section class="profile-accordion">
-	<h2 class="profile-title">Personal Information</h2>
+	<div class="profile-header">
+		<h2 class="profile-title">Personal Information</h2>
+		<button class="profile-image-button" mat-icon-button type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
+			<mat-icon class="profile-image-icon">account_circle</mat-icon>
+		</button>
+	</div>
 	<mat-accordion>
 		<mat-expansion-panel #namePanel>
 			<mat-expansion-panel-header>

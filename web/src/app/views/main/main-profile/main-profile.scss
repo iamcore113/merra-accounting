@@ -8,6 +8,50 @@
 	margin: 0 0 0.75rem;
 }
 
+.profile-accordion .profile-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+
+	.profile-title {
+		margin: 0;
+	}
+
+	.profile-image-button {
+		width: 28px;
+		height: 28px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		--mat-icon-button-state-layer-color: transparent;
+		--mat-icon-button-ripple-color: transparent;
+
+		.profile-image-icon {
+			font-size: 28px;
+			width: 28px;
+			height: 28px;
+			color: #94B4C1;
+		}
+	}
+}
+
+.profile-image-dialog {
+	.profile-image-placeholder {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 1.5rem 0;
+
+		.profile-image-icon {
+			font-size: 96px;
+			width: 96px;
+			height: 96px;
+			color: #94B4C1;
+		}
+	}
+}
+
 .profile-accordion .profile-page-actions {
 	display: flex;
 	justify-content: flex-end;

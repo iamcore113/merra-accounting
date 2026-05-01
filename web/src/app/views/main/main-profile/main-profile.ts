@@ -1,6 +1,7 @@
 import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +10,33 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
+
+@Component({
+  selector: 'app-profile-image-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatIconModule, MatDialogModule],
+  template: `
+    <section class="profile-image-dialog">
+      <h3 mat-dialog-title>Profile Picture</h3>
+      <mat-dialog-content>
+        <div class="profile-image-placeholder">
+          <mat-icon class="profile-image-icon">account_circle</mat-icon>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button matButton type="button" (click)="close()">Close</button>
+        <button matButton="filled" type="button">Upload Photo</button>
+      </mat-dialog-actions>
+    </section>
+  `,
+})
+export class ProfileImageDialog {
+  private readonly dialogRef = inject(MatDialogRef<ProfileImageDialog>);
+
+  close(): void {
+    this.dialogRef.close();
+  }
+}
 
 @Component({
   selector: 'app-change-password-sheet',
@@ -82,13 +110,18 @@ export class ChangePasswordSheet {
 @Component({
   selector: 'app-main-profile',
   standalone: true,
-  imports: [MatExpansionModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatBadgeModule, MatListModule, MatChipsModule, MatBottomSheetModule],
+  imports: [MatExpansionModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatBadgeModule, MatListModule, MatChipsModule, MatBottomSheetModule, MatDialogModule],
   templateUrl: './main-profile.html',
   styleUrl: './main-profile.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class MainProfile {
   private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly dialog = inject(MatDialog);
+
+  openProfileImageDialog(): void {
+    this.dialog.open(ProfileImageDialog);
+  }
 
   openChangePasswordSheet(): void {
     this.bottomSheet.open(ChangePasswordSheet);
