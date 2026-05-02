@@ -9,6 +9,7 @@ import { CreateOrganization } from './views/create-organization/create-organizat
 import { ErrorPage } from './views/error-page/error-page';
 import { MainLayout } from './shared/components/main-layout/main-layout';
 import { MainHome } from './views/main/main-home/main-home';
+import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -43,6 +44,11 @@ export const routes: Routes = [
         title: 'MERRA - Organization'
       }
     ]
+  },
+  {
+    path: 'complete-organization-details/:email',
+    component: CompleteOrganizationDetailsForm,
+    title: 'MERRA - Complete Organization Details'
   },
   {
     path: 'create/organization/:email',
