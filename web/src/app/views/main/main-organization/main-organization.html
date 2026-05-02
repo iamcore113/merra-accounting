@@ -1,1 +1,85 @@
-<p>main-organization works!</p>
+<section class="organization-panels">
+	<div class="organization-header">
+		<h2 class="organization-title">Organization Information</h2>
+		<button class="organization-image-button" mat-icon-button type="button" aria-label="Organization profile" (click)="openOrganizationImageDialog()">
+			<mat-icon class="organization-image-icon" fontSet="material-icons-outlined">domain</mat-icon>
+		</button>
+	</div>
+	<mat-accordion>
+		<mat-expansion-panel #organizationPanel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Organization:</span>
+						<span class="detail-value">Adhance</span>
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">business</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+      <p>Organization here</p>
+		</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Country:</span>
+            <span class="detail-value">Brazil</span>
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">globe</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="organization-editor">
+        <div class="organization-editor-fields">
+					<div class="organization-country-field-group">
+						<mat-form-field>
+							<mat-label>Country</mat-label>
+							<mat-select value="brazil">
+								<mat-option value="brazil">Brazil</mat-option>
+								<mat-option value="philippines">Philippines</mat-option>
+								<mat-option value="singapore">Singapore</mat-option>
+								<mat-option value="united-states">United States</mat-option>
+							</mat-select>
+						</mat-form-field>
+						<p class="organization-currency-text">Currency: <span class="organization-currency-value">{{ currencyCode }}</span></p>
+					</div>
+
+					<mat-form-field class="organization-timezone-field">
+            <mat-label>Timezone</mat-label>
+            <input matInput type="text" value="America/Sao_Paulo" placeholder="Enter timezone">
+          </mat-form-field>
+        </div>
+
+        <div class="organization-editor-actions">
+          <button class="organization-update-button" matButton="filled" type="button"
+            (click)="organizationPanel.close()">Update</button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+		<mat-expansion-panel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Contact:</span>
+						<span class="detail-value">contact@adhance.com</span>
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<p>Organization contact information will appear here.</p>
+		</mat-expansion-panel>
+
+		<mat-expansion-panel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Membership:</span>
+						<span class="detail-value">Active</span>
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">badge</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<p>Organization membership details will appear here.</p>
+		</mat-expansion-panel>
+	</mat-accordion>
+</section>

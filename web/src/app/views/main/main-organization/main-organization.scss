@@ -1,0 +1,177 @@
+.organization-panels {
+	max-width: 720px;
+	margin: 1.5rem auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 1.5rem 1rem;
+
+	mat-accordion {
+		width: min(100%, 720px);
+	}
+}
+
+.organization-panels .organization-title {
+	margin: 0;
+}
+
+.organization-panels .organization-header {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+
+	.organization-image-button {
+		width: 36px;
+		height: 36px;
+		padding: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		overflow: visible;
+		--mat-icon-button-state-layer-color: transparent;
+		--mat-icon-button-ripple-color: transparent;
+
+		.organization-image-icon {
+			font-size: 32px;
+			width: 32px;
+			height: 32px;
+			line-height: 1;
+			color: #94B4C1;
+		}
+	}
+}
+
+.organization-image-dialog {
+	.organization-image-placeholder {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 1.5rem 0;
+
+		.organization-image-icon {
+			font-size: 96px;
+			width: 96px;
+			height: 96px;
+			color: #94B4C1;
+		}
+	}
+}
+
+.organization-panels mat-expansion-panel {
+	--mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
+	--mat-expansion-header-collapsed-state-height: 64px;
+	--mat-expansion-header-expanded-state-height: 72px;
+}
+
+.organization-panels .detail-title {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	width: 100%;
+	overflow: visible;
+}
+
+.organization-panels .mat-expansion-panel-header .mat-content {
+	overflow: visible;
+}
+
+.organization-panels .detail-text {
+	display: grid;
+	grid-template-columns: 9rem minmax(0, 1fr);
+	align-items: center;
+	column-gap: 2.5rem;
+	flex: 1;
+	min-width: 0;
+}
+
+.organization-panels .detail-label,
+.organization-panels .detail-value {
+	white-space: nowrap;
+}
+
+.organization-panels .detail-icon {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+	margin-left: auto;
+	margin-right: -0.50rem;
+	color: #94B4C1;
+}
+
+.organization-panels .mat-expansion-indicator {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.organization-panels .mat-expansion-indicator svg {
+	width: 32px;
+	height: 32px;
+	margin: 0 -4px;
+}
+
+.organization-panels .mat-expansion-indicator::after {
+	border-width: 0 3px 3px 0;
+	padding: 4px;
+}
+
+.organization-panels .organization-editor {
+	padding-top: 0.5rem;
+}
+
+.organization-panels .organization-editor-fields {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.organization-panels .organization-editor-fields mat-form-field {
+	width: 100%;
+}
+
+.organization-panels .organization-country-field-group {
+	display: flex;
+	flex-direction: column;
+}
+
+.organization-panels .organization-country-field-group mat-form-field {
+	margin-bottom: 0;
+}
+
+.organization-panels .organization-currency-text {
+	margin: -0.9rem 0 0;
+	font-size: 0.75rem;
+	font-weight: 400;
+	line-height: 1.3;
+	color: #5f6b73;
+}
+
+.organization-panels .organization-currency-value {
+	font-weight: 700;
+}
+
+.organization-panels .organization-editor-fields .organization-timezone-field {
+	grid-column: 1 / -1;
+}
+
+.organization-panels .organization-editor-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
+}
+
+.organization-panels .organization-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+}
+
+@media (max-width: 767px) {
+	.organization-panels .organization-editor-fields {
+		grid-template-columns: 1fr;
+	}
+}
