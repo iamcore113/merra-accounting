@@ -36,26 +36,6 @@ public class OrganizationController {
 	}
 
 	/**
-	 * Retrieves all organizations owned by the currently authenticated user.
-	 * The user is identified from the tenant context, so no user ID is needed in
-	 * the request.
-	 *
-	 * @return A ResponseEntity containing an ApiResponse with a list of
-	 *         UserOrganizationResponse objects, each holding the user's details
-	 *         and the organization they belong to
-	 */
-	@GetMapping(value = "owned")
-	public ResponseEntity<ApiResponse<List<UserOrganizationResponse>>> getOwnedOrganizations() {
-		List<UserOrganizationResponse> res = organizationService.getUserOrganizations();
-		ApiResponse<List<UserOrganizationResponse>> response = new ApiResponse<>(
-				"Owned organizations retrieved successfully.",
-				true,
-				HttpStatus.OK,
-				res);
-		return ResponseEntity.ok(response);
-	}
-
-	/**
 	 * Creates a new organization using the provided request data.
 	 * The request body is validated before processing via the @Valid annotation.
 	 *

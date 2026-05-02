@@ -230,21 +230,6 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Retrieves the organizations associated with the current user from the tenant
-	 * context.
-	 *
-	 * @return A list of {@linkplain UserOrganizationResponse} entries for the
-	 *         authenticated user.
-	 * @throws IllegalStateException If the user identifier is missing from the
-	 *                               tenant context.
-	 */
-	public List<UserOrganizationResponse> getUserOrganizations() {
-		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser();
-		UserAccount user = authService.getCurrentAuthenticatedUser();
-		return organizationMapper.toUserOrganizationResponses(organizations, user);
-	}
-
-	/**
 	 * Retrieves dashboard statistics for the current organization of the
 	 * authenticated user.
 	 * <p>
