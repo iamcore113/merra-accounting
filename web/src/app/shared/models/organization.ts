@@ -215,3 +215,16 @@ export interface UpdateInvoiceResponse {
   formerStatus: string;
   currentStatus: string;
 }
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations
+export interface OrganizationAffiliation {
+  organizationId: string;
+  organizationName: string;
+  role: string;
+}
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.java
+export interface UserOrganizationAffiliation {
+  count: number;
+  organizations: OrganizationAffiliation[];
+}
