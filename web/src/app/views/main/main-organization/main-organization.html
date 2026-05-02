@@ -16,7 +16,35 @@
 					<mat-icon class="detail-icon" aria-hidden="true">business</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
-      <p>Organization here</p>
+			<div class="organization-info-editor">
+				<div class="organization-info-fields-row">
+					<mat-form-field>
+						<mat-label>Display Name</mat-label>
+						<input matInput type="text" value="Adhance" placeholder="Enter display name">
+					</mat-form-field>
+
+					<mat-form-field>
+						<mat-label>Legal Name</mat-label>
+						<input matInput type="text" value="Adhance Corporation" placeholder="Enter legal name">
+					</mat-form-field>
+				</div>
+
+				<div class="organization-description-block">
+					<p class="organization-description-display-title">About this organization:</p>
+					@if (!isEditingDescription) {
+						<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationDescription }}</button>
+					} @else {
+						<mat-form-field class="organization-description-field">
+							<mat-label>Description</mat-label>
+							<textarea matInput rows="5" placeholder="Enter organization description" [value]="organizationDescription"></textarea>
+						</mat-form-field>
+					}
+				</div>
+
+				<div class="organization-info-actions">
+					<button class="organization-update-button" matButton="filled" type="button" (click)="organizationPanel.close()">Update</button>
+				</div>
+			</div>
 		</mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -25,7 +53,7 @@
             <span class="detail-label">Country:</span>
             <span class="detail-value">Brazil</span>
           </span>
-          <mat-icon class="detail-icon" aria-hidden="true">globe</mat-icon>
+          <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="organization-editor">
@@ -74,7 +102,7 @@
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
 						<span class="detail-label">Membership:</span>
-						<span class="detail-value">Active</span>
+						<span class="detail-value membership-active-value">Active</span>
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">badge</mat-icon>
 				</mat-panel-title>

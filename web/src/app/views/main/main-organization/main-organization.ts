@@ -43,8 +43,14 @@ export class OrganizationImageDialog {
 export class MainOrganization {
   private readonly dialog = inject(MatDialog);
   currencyCode = 'BRL';
+  organizationDescription = 'The wolverine is found primarily in remote reaches of the northern boreal forests and subarctic and alpine tundra of the Northern Hemisphere, with the greatest numbers in Northern Canada, the U.S. state of Alaska, the mainland Nordic countries of Europe, and throughout western Russia and Siberia. Its population has steadily declined since the 19th century owing to trapping, range reduction and habitat fragmentation. The wolverine has become essentially absent from the southern end of its range in both Europe and North America.';
+  isEditingDescription = false;
 
   openOrganizationImageDialog(): void {
     this.dialog.open(OrganizationImageDialog);
+  }
+
+  startDescriptionEditing(): void {
+    this.isEditingDescription = true;
   }
 }

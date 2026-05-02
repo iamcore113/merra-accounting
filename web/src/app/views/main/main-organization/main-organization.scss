@@ -90,6 +90,11 @@
 	white-space: nowrap;
 }
 
+.organization-panels .membership-active-value {
+	color: #2e7d32;
+	font-weight: 600;
+}
+
 .organization-panels .detail-icon {
 	font-size: 24px;
 	width: 24px;
@@ -118,6 +123,56 @@
 
 .organization-panels .organization-editor {
 	padding-top: 0.5rem;
+}
+
+.organization-panels .organization-info-editor {
+	padding-top: 0.5rem;
+}
+
+.organization-panels .organization-info-fields-row {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+}
+
+.organization-panels .organization-info-fields-row mat-form-field,
+.organization-panels .organization-description-field {
+	width: 100%;
+}
+
+.organization-panels .organization-description-display-title {
+	margin: 0 0 0.35rem;
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: #5f6b73;
+}
+
+.organization-panels .organization-description-display-text {
+	display: block;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	text-align: left;
+	line-height: 1.45;
+	color: #1f2937;
+	cursor: pointer;
+}
+
+.organization-panels .organization-description-display-text:hover {
+	text-decoration: underline;
+}
+
+.organization-panels .organization-description-display-text:focus-visible {
+	outline: 2px solid #84b179;
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+.organization-panels .organization-info-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 0.75rem;
 }
 
 .organization-panels .organization-editor-fields {
@@ -171,6 +226,7 @@
 }
 
 @media (max-width: 767px) {
+	.organization-panels .organization-info-fields-row,
 	.organization-panels .organization-editor-fields {
 		grid-template-columns: 1fr;
 	}
