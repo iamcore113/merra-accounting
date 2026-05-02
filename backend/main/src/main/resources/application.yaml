@@ -1,6 +1,11 @@
 spring:
   application:
     name: main
+  mvc:
+    apiversion:
+      default: 1.1
+      use:
+        header: API-Version
   # Development tools - enables live reload for template changes
   devtools:
     livereload:
