@@ -1,11 +1,13 @@
 package org.merra.controller;
 
 import org.merra.api.ApiResponse;
+import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.services.UserAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +47,23 @@ public class UserAccountController {
 		var resp = userAccountService.fillUserAccountInfo(request);
 		ApiResponse<UserPersonalInformationResponse> response = new ApiResponse<>(
 				"User personal information filled successfully.",
+				true,
+				HttpStatus.OK,
+				resp);
+		return ResponseEntity.ok().body(response);
+	}
+
+	/**
+	 * Retrieves the personal details of the currently authenticated user.
+	 *
+	 * @return A {@link ResponseEntity} containing an {@link ApiResponse} with the
+	 *         authenticated user's personal details and HTTP 200 status.
+	 */
+	@GetMapping("details")
+	public ResponseEntity<ApiResponse<PersonalDetailsResponse>> personalDetails() {
+		var resp = userAccountService.personalDetails();
+		ApiResponse<PersonalDetailsResponse> response = new ApiResponse<>(
+				"User personal details retrieved successfully.",
 				true,
 				HttpStatus.OK,
 				resp);

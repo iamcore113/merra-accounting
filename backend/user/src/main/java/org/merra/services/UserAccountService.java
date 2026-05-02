@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
@@ -83,7 +84,7 @@ public class UserAccountService {
 	 */
 	public UserAccount getAuthenticatedUser() {
 		UserAccount findAuthUser = userRepository.findAuthenticatedUser()
-			.orElseThrow(() -> new NoSuchElementException("Authenticated user not found in the database."));
+				.orElseThrow(() -> new NoSuchElementException("Authenticated user not found in the database."));
 
 		return findAuthUser;
 	}
@@ -127,5 +128,24 @@ public class UserAccountService {
 
 		user.setRoles(roleName);
 		userRepository.save(user);
+	}
+
+	/**
+	 * Retrieves the personal details of the currently authenticated user.
+	 *
+	 * @return a {@linkplain PersonalDetailsResponse} containing the authenticated
+	 *         user's first name, last name, full name, gender, country, and email.
+	 * @throws java.util.NoSuchElementException if no authenticated user is found
+	 *                                          in the database.
+	 */
+	public PersonalDetailsResponse personalDetails() {
+		UserAccount authUser = getAuthenticatedUser();
+		return new PersonalDetailsResponse(
+				authUser.getFirstName(),
+				authUser.getLastName(),
+				authUser.getFullName().get(),
+				authUser.getGender(),
+				authUser.getCountry(),
+				authUser.getEmail());
 	}
 }

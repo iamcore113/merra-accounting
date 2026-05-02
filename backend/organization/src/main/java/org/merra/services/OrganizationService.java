@@ -12,6 +12,7 @@ import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
+import org.merra.dto.UserOrganizationAffiliation;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
@@ -23,6 +24,7 @@ import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
+import org.merra.mapper.OrganizationAffiliationMapper;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationMembersRepository;
@@ -30,6 +32,7 @@ import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.OrganizationsOnly;
+import org.merra.repositories.projections.UserOrganizationAffiliations;
 import org.merra.service.AuthService;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
@@ -52,6 +55,7 @@ public class OrganizationService {
 	private final AuthService authService;
 	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
+	private final OrganizationAffiliationMapper organizationAffiliationMapper;
 
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
@@ -63,16 +67,18 @@ public class OrganizationService {
 			AccountService accountService,
 			AuthService authService,
 			PhoneService phoneService,
-			OrganizationMapper organizationMapper) {
+			OrganizationMapper organizationMapper,
+			OrganizationAffiliationMapper organizationAffiliationMapper) {
 		this.organizationRepository = organizationRepository;
 		this.organizationMembersRepository = organizationMembersRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.userAccountService = userAccountService;
 		this.invoiceRepository = invoiceRepository;
+		this.organizationMapper = organizationMapper;
+		this.organizationAffiliationMapper = organizationAffiliationMapper;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.authService = authService;
-		this.organizationMapper = organizationMapper;
 	}
 
 	/**
@@ -233,9 +239,8 @@ public class OrganizationService {
 	 *                               tenant context.
 	 */
 	public List<UserOrganizationResponse> getUserOrganizations() {
+		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser();
 		UserAccount user = authService.getCurrentAuthenticatedUser();
-		List<OrganizationsOnly> organizations = organizationMembersRepository.findByOrganizationByUser(user);
-
 		return organizationMapper.toUserOrganizationResponses(organizations, user);
 	}
 
@@ -269,5 +274,22 @@ public class OrganizationService {
 				InvoiceConstants.INVOICE_STATUS_AUTHORISED, authorisedCount);
 
 		return organizationMapper.toOrganizationDashboardResponse(invoicesCountsMap);
+	}
+
+	/**
+	 * Retrieves all organization affiliations for the currently authenticated user,
+	 * including the user's role in each organization and the total membership
+	 * count.
+	 *
+	 * @return a {@linkplain UserOrganizationAffiliation} containing the list of
+	 *         affiliated organizations with their roles and the total affiliation
+	 *         count.
+	 */
+	public UserOrganizationAffiliation getUserOrganizationAffiliation() {
+		List<UserOrganizationAffiliations> organizations = organizationMembersRepository
+				.findUserOrganizationAffiliations();
+		Long organizationCount = organizationMembersRepository.countByUserOrganizationAffiliation();
+
+		return organizationAffiliationMapper.toUserOrganizationAffiliation(organizations, organizationCount);
 	}
 }
