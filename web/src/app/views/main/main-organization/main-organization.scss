@@ -133,11 +133,34 @@
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 1rem;
+	margin-bottom: -1.25rem;
 }
 
 .organization-panels .organization-info-fields-row mat-form-field,
 .organization-panels .organization-description-field {
 	width: 100%;
+}
+
+.organization-panels .organization-name-difference-link {
+	margin: 0 0 0.75rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font-size: 0.72rem;
+	line-height: 1.3;
+	color: #486f9f;
+	text-align: left;
+	cursor: pointer;
+}
+
+.organization-panels .organization-name-difference-link:hover {
+	text-decoration: underline;
+}
+
+.organization-panels .organization-name-difference-link:focus-visible {
+	outline: 2px solid #84b179;
+	outline-offset: 2px;
+	border-radius: 4px;
 }
 
 .organization-panels .organization-description-display-title {
@@ -263,6 +286,30 @@
 	--mdc-switch-selected-pressed-track-color: #81c784;
 	--mdc-switch-selected-pressed-handle-color: #ffffff;
 	--mdc-switch-selected-pressed-icon-color: #111111;
+}
+
+.name-difference-sheet {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+
+	.name-difference-title {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 600;
+	}
+
+	.name-difference-text {
+		margin: 0;
+		line-height: 1.45;
+		color: #374151;
+	}
+
+	.name-difference-actions {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 0.25rem;
+	}
 }
 
 @media (max-width: 767px) {

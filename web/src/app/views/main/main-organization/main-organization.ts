@@ -1,4 +1,5 @@
 import { Component, ViewEncapsulation, inject } from '@angular/core';
+import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -35,13 +36,41 @@ export class OrganizationImageDialog {
 }
 
 @Component({
+  selector: 'app-name-difference-sheet',
+  standalone: true,
+  imports: [MatButtonModule],
+  template: `
+    <section class="name-difference-sheet">
+      <h3 class="name-difference-title">Display Name vs Legal Name</h3>
+      <p class="name-difference-text">
+        Display Name is the public-facing name shown in the app.
+      </p>
+      <p class="name-difference-text">
+        Legal Name is the registered name used for compliance, billing, and formal documents.
+      </p>
+      <div class="name-difference-actions">
+        <button matButton="filled" type="button" (click)="close()">Got it</button>
+      </div>
+    </section>
+  `,
+})
+export class NameDifferenceSheet {
+  private readonly bottomSheetRef = inject(MatBottomSheetRef<NameDifferenceSheet>);
+
+  close(): void {
+    this.bottomSheetRef.dismiss();
+  }
+}
+
+@Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule],
+  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatBottomSheetModule],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class MainOrganization {
+  private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
   currencyCode = 'BRL';
   organizationDescription = 'The wolverine is found primarily in remote reaches of the northern boreal forests and subarctic and alpine tundra of the Northern Hemisphere, with the greatest numbers in Northern Canada, the U.S. state of Alaska, the mainland Nordic countries of Europe, and throughout western Russia and Siberia. Its population has steadily declined since the 19th century owing to trapping, range reduction and habitat fragmentation. The wolverine has become essentially absent from the southern end of its range in both Europe and North America.';
@@ -53,5 +82,9 @@ export class MainOrganization {
 
   startDescriptionEditing(): void {
     this.isEditingDescription = true;
+  }
+
+  openNameDifferenceSheet(): void {
+    this.bottomSheet.open(NameDifferenceSheet);
   }
 }
