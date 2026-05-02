@@ -18,6 +18,15 @@
 			</mat-expansion-panel-header>
 			<div class="organization-info-editor">
 				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ dateCreated }}</p>
+				<mat-form-field class="organization-type-field">
+					<mat-label>Organization Type</mat-label>
+					<mat-select value="corporation">
+						<mat-option value="corporation">Corporation</mat-option>
+						<mat-option value="llc">LLC</mat-option>
+						<mat-option value="partnership">Partnership</mat-option>
+						<mat-option value="non-profit">Non-profit</mat-option>
+					</mat-select>
+				</mat-form-field>
 				<div class="organization-info-fields-row">
 					<mat-form-field>
 						<mat-label>Display Name</mat-label>
@@ -49,6 +58,29 @@
 				</div>
 			</div>
 		</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Website:</span>
+            <span class="detail-value">developer.xero.com</span>
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">link</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+			<div class="organization-editor">
+				<div class="organization-editor-fields organization-website-fields">
+					<mat-form-field>
+						<mat-label>Website</mat-label>
+						<input matInput type="text" value="developer.xero.com" placeholder="Enter website">
+					</mat-form-field>
+				</div>
+
+				<div class="organization-editor-actions">
+					<button class="organization-update-button" matButton="filled" type="button">Update</button>
+				</div>
+      </div>
+    </mat-expansion-panel>
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">

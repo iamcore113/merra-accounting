@@ -146,6 +146,10 @@
 	}
 }
 
+.organization-panels .organization-type-field {
+	width: 100%;
+}
+
 .organization-panels .organization-info-fields-row {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -223,6 +227,10 @@
 
 .organization-panels .organization-editor-fields.organization-financial-settings-fields {
 	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.organization-panels .organization-editor-fields.organization-website-fields {
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .organization-panels .organization-editor-fields mat-form-field {
