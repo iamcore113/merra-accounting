@@ -225,6 +225,46 @@
 	color: #ffffff;
 }
 
+.organization-panels .organization-status-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding-top: 0.5rem;
+}
+
+.organization-panels .organization-status-text {
+	color: #374151;
+	font-weight: 500;
+}
+
+.organization-panels .organization-status-toggle.mat-mdc-slide-toggle {
+	--mat-slide-toggle-selected-track-color: #a5d6a7;
+	--mat-slide-toggle-selected-handle-color: #ffffff;
+	--mat-slide-toggle-selected-icon-color: #111111;
+	--mat-slide-toggle-selected-hover-track-color: #9ccc65;
+	--mat-slide-toggle-selected-hover-handle-color: #ffffff;
+	--mat-slide-toggle-selected-hover-icon-color: #111111;
+	--mat-slide-toggle-selected-focus-track-color: #a5d6a7;
+	--mat-slide-toggle-selected-focus-handle-color: #ffffff;
+	--mat-slide-toggle-selected-focus-icon-color: #111111;
+	--mat-slide-toggle-selected-pressed-track-color: #81c784;
+	--mat-slide-toggle-selected-pressed-handle-color: #ffffff;
+	--mat-slide-toggle-selected-pressed-icon-color: #111111;
+
+	--mdc-switch-selected-track-color: #a5d6a7;
+	--mdc-switch-selected-handle-color: #ffffff;
+	--mdc-switch-selected-icon-color: #111111;
+	--mdc-switch-selected-focus-track-color: #a5d6a7;
+	--mdc-switch-selected-focus-handle-color: #ffffff;
+	--mdc-switch-selected-focus-icon-color: #111111;
+	--mdc-switch-selected-hover-track-color: #9ccc65;
+	--mdc-switch-selected-hover-handle-color: #ffffff;
+	--mdc-switch-selected-hover-icon-color: #111111;
+	--mdc-switch-selected-pressed-track-color: #81c784;
+	--mdc-switch-selected-pressed-handle-color: #ffffff;
+	--mdc-switch-selected-pressed-icon-color: #111111;
+}
+
 @media (max-width: 767px) {
 	.organization-panels .organization-info-fields-row,
 	.organization-panels .organization-editor-fields {

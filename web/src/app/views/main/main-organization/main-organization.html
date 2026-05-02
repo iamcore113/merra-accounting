@@ -101,13 +101,16 @@
 			<mat-expansion-panel-header>
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
-						<span class="detail-label">Membership:</span>
+						<span class="detail-label">Status:</span>
 						<span class="detail-value membership-active-value">Active</span>
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">badge</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
-			<p>Organization membership details will appear here.</p>
+			<div class="organization-status-row">
+				<mat-slide-toggle class="organization-status-toggle" [checked]="true" aria-label="Organization status toggle"></mat-slide-toggle>
+				<span class="organization-status-text">The organization is currently active with active members.</span>
+			</div>
 		</mat-expansion-panel>
 	</mat-accordion>
 </section>
