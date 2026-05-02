@@ -125,8 +125,25 @@
 	padding-top: 0.5rem;
 }
 
+.organization-panels .organization-financial-settings-helper {
+	margin: -0.35rem 0 0.75rem;
+	font-size: 0.8rem;
+	line-height: 1.4;
+	color: #5f6b73;
+}
+
 .organization-panels .organization-info-editor {
 	padding-top: 0.5rem;
+}
+
+.organization-panels .organization-info-date-created {
+	margin: 0 0 1rem;
+	font-size: 0.8rem;
+	color: #5f6b73;
+
+	.organization-info-date-label {
+		font-weight: 600;
+	}
 }
 
 .organization-panels .organization-info-fields-row {
@@ -202,6 +219,10 @@
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 1rem;
+}
+
+.organization-panels .organization-editor-fields.organization-financial-settings-fields {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .organization-panels .organization-editor-fields mat-form-field {

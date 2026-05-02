@@ -72,6 +72,7 @@ export class NameDifferenceSheet {
 export class MainOrganization {
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
+  dateCreated = 'August 30, 1999';
   currencyCode = 'BRL';
   organizationDescription = 'The wolverine is found primarily in remote reaches of the northern boreal forests and subarctic and alpine tundra of the Northern Hemisphere, with the greatest numbers in Northern Canada, the U.S. state of Alaska, the mainland Nordic countries of Europe, and throughout western Russia and Siberia. Its population has steadily declined since the 19th century owing to trapping, range reduction and habitat fragmentation. The wolverine has become essentially absent from the southern end of its range in both Europe and North America.';
   isEditingDescription = false;

@@ -17,6 +17,7 @@
 				</mat-panel-title>
 			</mat-expansion-panel-header>
 			<div class="organization-info-editor">
+				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ dateCreated }}</p>
 				<div class="organization-info-fields-row">
 					<mat-form-field>
 						<mat-label>Display Name</mat-label>
@@ -73,7 +74,7 @@
 						<p class="organization-currency-text">Currency: <span class="organization-currency-value">{{ currencyCode }}</span></p>
 					</div>
 
-					<mat-form-field class="organization-timezone-field">
+					<mat-form-field>
             <mat-label>Timezone</mat-label>
             <input matInput type="text" value="America/Sao_Paulo" placeholder="Enter timezone">
           </mat-form-field>
@@ -86,18 +87,47 @@
       </div>
     </mat-expansion-panel>
 
-		<mat-expansion-panel>
-			<mat-expansion-panel-header>
-				<mat-panel-title class="detail-title">
-					<span class="detail-text">
-						<span class="detail-label">Contact:</span>
-						<span class="detail-value">contact@adhance.com</span>
-					</span>
-					<mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
-				</mat-panel-title>
-			</mat-expansion-panel-header>
-			<p>Organization contact information will appear here.</p>
-		</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Contact:</span>
+            <span class="detail-value">contact@adhance.com</span>
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <p>Organization contact information will appear here.</p>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Financial Settings</span>
+            <span class="detail-value">Dec. 31</span>
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">payments</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+			<div class="organization-editor">
+				<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the "boundary" for your financial reports.</p>
+				<div class="organization-editor-fields organization-financial-settings-fields">
+          <mat-form-field>
+            <mat-label>Financial Year End Month</mat-label>
+            <input matInput type="text" value="December" placeholder="Enter end month">
+          </mat-form-field>
+					<mat-form-field>
+						<mat-label>Financial Year End Day</mat-label>
+						<input matInput type="text" value="31" placeholder="Enter end day">
+					</mat-form-field>
+				</div>
+
+				<div class="organization-editor-actions">
+					<button class="organization-update-button" matButton="filled" type="button">Update</button>
+				</div>
+			</div>
+    </mat-expansion-panel>
 
 		<mat-expansion-panel>
 			<mat-expansion-panel-header>
