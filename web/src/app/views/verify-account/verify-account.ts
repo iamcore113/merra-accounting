@@ -31,7 +31,7 @@ class VerifyAccountSuccessSnackBar {}
 export class VerifyAccount implements OnInit {
   token: string | null = null;
   email: string | null = null;
-  temp_token: string | null = null;
+  access_token: string | null = null;
   user_id: string | null = null;
   isLoading = true;
   constructor(
@@ -65,7 +65,7 @@ export class VerifyAccount implements OnInit {
               if (response.success && 'data' in response) {
                 const verifiedData = (response as any).data as VerifiedAccountResponse;
                 this.email = verifiedData.email;
-                this.temp_token = verifiedData.temporaryAccessToken;
+                this.access_token = verifiedData.accessToken;
                 this.user_id = verifiedData.userId;
               }
             },
@@ -87,7 +87,7 @@ export class VerifyAccount implements OnInit {
                 duration: 5000,
               });
               if (this.email) {
-                this.localStorage.setItem('temp_token', this.temp_token);
+                this.localStorage.setItem('access_token', this.access_token);
                 this.router.navigate(['account/personal-details', this.email]);
               } else {
                 this.router.navigate(['account/personal-details']);
