@@ -72,6 +72,13 @@ svg {
   max-width: 100%;
 }
 
+// Prevent CSS reset from breaking Material spinner SVG animation
+mat-progress-spinner svg,
+.mat-mdc-progress-spinner svg {
+  display: inherit;
+  max-width: none;
+}
+
 input,
 button,
 textarea,

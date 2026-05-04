@@ -4,7 +4,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../shared/services/auth-service';
-import { finalize } from 'rxjs/operators';
+import { combineLatest, timer } from 'rxjs';
 import { VerifiedAccountResponse } from '../../shared/models/auth';
 import { Config } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
@@ -46,22 +46,15 @@ export class VerifyAccount implements OnInit {
     this.route.queryParamMap.subscribe(params => {
       const token = params.get('token');
       if (token) {
-        setTimeout(() => {
-          this.token = token;
-          this.isLoading = true;
-        });
+        this.token = token;
+        this.isLoading = true;
 
-        this.authService
-          .verifyAccount(token)
-          .pipe(
-            finalize(() => {
-              setTimeout(() => {
-                this.isLoading = false;
-              });
-            })
-          )
-          .subscribe({
-            next: (response: Config) => {
+        combineLatest([
+          this.authService.verifyAccount(token),
+          timer(1500)
+        ]).subscribe({
+            next: ([response]: [Config, number]) => {
+              this.isLoading = false;
               if (response.success && 'data' in response) {
                 const verifiedData = (response as any).data as VerifiedAccountResponse;
                 this.email = verifiedData.email;
