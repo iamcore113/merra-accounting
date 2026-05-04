@@ -10,6 +10,7 @@ import { ErrorPage } from './views/error-page/error-page';
 import { MainLayout } from './shared/components/main-layout/main-layout';
 import { MainHome } from './views/main/main-home/main-home';
 import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
+import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -44,6 +45,11 @@ export const routes: Routes = [
         title: 'MERRA - Organization'
       }
     ]
+  },
+  {
+    path: 'no-organization',
+    component: NoOrganizationPage,
+    title: 'MERRA - No Organization'
   },
   {
     path: 'complete-organization-details/:email',

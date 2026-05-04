@@ -192,7 +192,7 @@ export class CreateOrganization implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/organizations']);
+    this.router.navigate(['/no-organization']);
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {

@@ -53,7 +53,6 @@ export class Signin implements OnInit {
     });
   }
 
-  // TODO: Handle uncomplete profiles
   // TODO: Handle accounts that aren't part of organizations
   onSubmit() {
     if (this.signinForm.valid) {
@@ -71,7 +70,7 @@ export class Signin implements OnInit {
         complete: () => {
           this.localStorage.setItem('access_token', verifiedData.tokens.accessToken);
           this.localStorage.setItem('refresh_token', verifiedData.tokens.refreshToken);
-          // This will redirect to the main page
+          // TODO: handle redirection
         }
       });
     }
