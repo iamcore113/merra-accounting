@@ -58,68 +58,14 @@
 	}
 }
 
-.organization-panels mat-expansion-panel {
-	--mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
-	--mat-expansion-header-collapsed-state-height: 64px;
-	--mat-expansion-header-expanded-state-height: 72px;
-}
 
-.organization-panels .detail-title {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	width: 100%;
-	overflow: visible;
-}
-
-.organization-panels .mat-expansion-panel-header .mat-content {
-	overflow: visible;
-}
-
-.organization-panels .detail-text {
-	display: grid;
-	grid-template-columns: 9rem minmax(0, 1fr);
-	align-items: center;
-	column-gap: 2.5rem;
-	flex: 1;
-	min-width: 0;
-}
-
-.organization-panels .detail-label,
-.organization-panels .detail-value {
-	white-space: nowrap;
-}
 
 .organization-panels .membership-active-value {
 	color: #2e7d32;
 	font-weight: 600;
 }
 
-.organization-panels .detail-icon {
-	font-size: 24px;
-	width: 24px;
-	height: 24px;
-	margin-left: auto;
-	margin-right: -0.50rem;
-	color: #94B4C1;
-}
 
-.organization-panels .mat-expansion-indicator {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.organization-panels .mat-expansion-indicator svg {
-	width: 32px;
-	height: 32px;
-	margin: 0 -4px;
-}
-
-.organization-panels .mat-expansion-indicator::after {
-	border-width: 0 3px 3px 0;
-	padding: 4px;
-}
 
 .organization-panels .organization-editor {
 	padding-top: 0.5rem;
