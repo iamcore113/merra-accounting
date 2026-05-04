@@ -10,8 +10,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const localStorage = inject(LocalStorageService);
   const router = inject(Router);
 
-  const tempToken = localStorage.getItem('temp_token');
-  if (!tempToken && requiresAuth) {
+  const accessToken = localStorage.getItem('access_token');
+  if (!accessToken && requiresAuth) {
     // No token and auth required for the request - redirect to signin with message
     router.navigate(['/account/signin'], {
       queryParams: { message: 'Invalid token. Please login again.' }
@@ -19,15 +19,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return throwError(() => new Error('No authentication token found'));
   }
 
-  if (tempToken && requiresAuth) {
-    let headers = req.headers.set('Authorization', `Bearer ${tempToken}`);
+  if (accessToken && requiresAuth) {
+    let headers = req.headers.set('Authorization', `Bearer ${accessToken}`);
 
     const authReq = req.clone({ headers });
 
     return next(authReq).pipe(
       catchError(error => {
         if (error.status === 401) {
-          localStorage.removeItem('temp_token');
+          localStorage.removeItem('access_token');
           // Token expired or invalid - redirect to signin
           router.navigate(['/account/signin'], {
             queryParams: { message: 'Token expired. Please login again.' }
@@ -41,7 +41,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error.status === 401) {
-        localStorage.removeItem('temp_token');
+        localStorage.removeItem('access_token');
         router.navigate(['/account/signin'], {
           queryParams: { message: 'Authentication failed. Please login again.' }
         });
