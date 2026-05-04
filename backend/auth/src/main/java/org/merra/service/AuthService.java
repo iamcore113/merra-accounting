@@ -58,8 +58,6 @@ public class AuthService {
   private int refreshTokenExpiration;
   @Value("${jwt.email.verification-duration}")
   private int verificationTokenDuration;
-  @Value("${jwt.access.limited}")
-  private int limitedAccessTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
@@ -136,9 +134,9 @@ public class AuthService {
     final String getAccountEmail = findAccount.getEmail();
     final UUID getUserId = findAccount.getUserId();
 
-    // Generate a limited access JWT token for onboarding
-    String limitedAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
-        limitedAccessTokenDuration,
+    // Generate a access JWT token.
+    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
+        forAccessToken,
         false);
 
     UserDetails userDetails = userDetailsService.loadUserByUsername(getAccountEmail);
@@ -150,7 +148,7 @@ public class AuthService {
     // Set the authenticated user in the security context
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    return new VerifiedAccountResponse(true, getUserId, getAccountEmail, limitedAccessToken);
+    return new VerifiedAccountResponse(true, getUserId, getAccountEmail, generateAccessToken);
   }
 
   /**

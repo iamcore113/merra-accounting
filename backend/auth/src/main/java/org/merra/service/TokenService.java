@@ -36,8 +36,6 @@ public class TokenService {
     private int refreshTokenExpiration;
     @Value("${jwt.email.verification-duration}")
     private int verificationTokenDuration;
-    @Value("${jwt.access.limited}")
-    private int limitedAccessTokenDuration;
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;

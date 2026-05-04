@@ -1,6 +1,10 @@
 spring:
   application:
     name: main
+  aot:
+    data:
+      accessors:
+        enabled: true
   mvc:
     apiversion:
       default: 1.1
@@ -52,9 +56,6 @@ springdoc:
 jwt:
   token:
     secret: ${JWT_TOKEN_SECRET}
-  # Access token with limited lifespan for API requests
-  access:
-    limited: ${JWT_LIMITED_ACCESS_TOKEN_DURATION}
     token:
       duration: ${JWT_ACCESS_TOKEN_DURATION}
   # Refresh token for obtaining new access tokens

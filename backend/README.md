@@ -87,7 +87,6 @@ MAIL_PASSWORD=your-app-password
 MAIL_DURATION=86400000                    # 24 hours
 JWT_TOKEN_SECRET=your-256-bit-secret-key
 JWT_ACCESS_TOKEN_DURATION=86400000        # 24 hours
-JWT_LIMITED_ACCESS_TOKEN_DURATION=600000  # 10 minutes
 JWT_REFRESH_TOKEN_EXPIRATION=604800000    # 7 days
 
 # Frontend Configuration
