@@ -20,7 +20,7 @@ public class Main {
     }
 
     @GetMapping
-    public ResponseEntity<String> main() {
+    public ResponseEntity<String> defaultLandingPage() {
         return ResponseEntity.ok("backend is now running..");
     }
 }
