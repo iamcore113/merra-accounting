@@ -1,8 +1,8 @@
 <div class="main-layout">
   <app-main-header></app-main-header>
 
-  <div class="layout-shell">
-    <app-main-sidenav></app-main-sidenav>
+  <div class="layout-shell" [class.sidenav-collapsed]="!isSidenavOpen">
+    <app-main-sidenav [isOpen]="isSidenavOpen" (isOpenChange)="isSidenavOpen = $event"></app-main-sidenav>
 
     <main class="main-content">
       <div class="content-wrapper">

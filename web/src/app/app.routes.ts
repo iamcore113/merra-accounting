@@ -43,6 +43,11 @@ export const routes: Routes = [
         path: 'organization',
         loadComponent: () => import('./views/main/main-organization/main-organization').then(m => m.MainOrganization),
         title: 'MERRA - Organization'
+      },
+      {
+        path: 'invoice',
+        loadComponent: () => import('./views/main/main-invoice/main-invoice').then(m => m.MainInvoice),
+        title: 'MERRA - Invoices'
       }
     ]
   },

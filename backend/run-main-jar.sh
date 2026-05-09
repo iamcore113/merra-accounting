@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-BACKEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # The backend directory (where the script is located).
 MAIN_DIR="$BACKEND_DIR/main"
 ENV_FILE="$MAIN_DIR/.env"
 APPLICATION_DIR="$BACKEND_DIR/application"

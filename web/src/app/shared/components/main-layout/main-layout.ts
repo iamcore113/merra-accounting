@@ -12,4 +12,6 @@ import { MainSidenav } from '../main-sidenav/main-sidenav';
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
 })
-export class MainLayout {}
+export class MainLayout {
+  isSidenavOpen = true;
+}

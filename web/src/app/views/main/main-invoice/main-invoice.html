@@ -1,0 +1,82 @@
+<section class="invoice-workspace" [class.secondary-panel-open]="isSecondaryPanelOpen">
+	<div class="primary-column">
+		<div class="section-header">
+			<div>
+				<p class="eyebrow">Invoice Workspace</p>
+				<h1>Create Invoice</h1>
+				<p class="section-copy">
+					Draft invoice details in the primary workspace and open the side panel when you need extra context.
+				</p>
+			</div>
+
+			<button
+				matButton="filled"
+				type="button"
+				class="panel-trigger"
+				[attr.aria-expanded]="isSecondaryPanelOpen"
+				aria-controls="invoice-secondary-panel"
+				(click)="toggleSecondaryPanel()">
+				<mat-icon fontSet="material-icons-outlined">right_panel_open</mat-icon>
+				{{ isSecondaryPanelOpen ? 'Hide details panel' : 'Open details panel' }}
+			</button>
+		</div>
+
+		<div class="primary-surface">
+			<div class="placeholder-card hero-card">
+				<h2>Primary Column</h2>
+				<p>
+					This column takes the full available width by default. It shrinks only when the secondary panel is opened.
+				</p>
+			</div>
+
+			<div class="placeholder-grid">
+				<article class="placeholder-card">
+					<h3>Billing Information</h3>
+					<p>Use this area for invoice form fields, customer details, and issue dates.</p>
+				</article>
+
+				<article class="placeholder-card">
+					<h3>Line Items</h3>
+					<p>Add product or service rows here with pricing, quantity, and tax breakdowns.</p>
+				</article>
+			</div>
+		</div>
+	</div>
+
+	<aside
+		id="invoice-secondary-panel"
+		class="secondary-column"
+		[class.secondary-column-hidden]="!isSecondaryPanelOpen"
+		[attr.aria-hidden]="!isSecondaryPanelOpen">
+		<div class="secondary-panel-shell">
+			<div class="secondary-panel-header">
+				<div>
+					<p class="eyebrow">Secondary Panel</p>
+					<h2>Invoice Details</h2>
+				</div>
+
+				<button
+					matIconButton
+					type="button"
+					aria-label="Close details panel"
+					(click)="closeSecondaryPanel()">
+					<mat-icon fontSet="material-icons-outlined">close</mat-icon>
+				</button>
+			</div>
+
+			<div class="secondary-panel-body">
+				<article class="secondary-card">
+					<h3>Status Overview</h3>
+					<p>Use this panel for preview data, approvals, saved drafts, or a running invoice summary.</p>
+				</article>
+
+				<article class="secondary-card accent-card">
+					<h3>Ready for Interaction</h3>
+					<p>
+						The panel opens and closes dynamically, so this area can evolve into a real drawer without changing the layout contract.
+					</p>
+				</article>
+			</div>
+		</div>
+	</aside>
+</section>

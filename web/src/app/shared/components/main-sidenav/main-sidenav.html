@@ -1,21 +1,33 @@
-<aside class="side-nav" aria-label="Main navigation">
-	<h2 class="nav-title">Navigation</h2>
+<aside class="side-nav" [class.side-nav-closed]="!isOpen" aria-label="Main navigation">
+	<button
+		matIconButton
+		class="sidenav-toggle"
+		type="button"
+		[attr.aria-expanded]="isOpen"
+		[attr.aria-label]="isOpen ? 'Close navigation' : 'Open navigation'"
+		(click)="toggleSidenav()">
+		<mat-icon fontSet="material-icons-outlined">{{ isOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+	</button>
 
-	<nav>
-		<mat-nav-list>
-			@for (item of navItems; track item.label; let i = $index) {
-				<a mat-list-item [routerLink]="item.route" [class.active-item]="i === 0">
-					<mat-icon matListItemIcon fontSet="material-icons-outlined" [style.background-color]="item.iconBg" [style.color]="item.iconColor">{{ item.icon }}</mat-icon>
-					<span matListItemTitle>
-						<span class="nav-item-label">{{ item.label }}</span>
-					</span>
-				</a>
-			}
-		</mat-nav-list>
-	</nav>
+	<div class="side-nav-content" [class.side-nav-content-hidden]="!isOpen" [attr.aria-hidden]="!isOpen">
+		<h2 class="nav-title">Navigation</h2>
 
-	<div class="side-nav-bottom-links" aria-label="Secondary links">
-		<a [routerLink]="''" class="bottom-link">About</a>
-		<a [routerLink]="''" class="bottom-link">Help</a>
+		<nav>
+			<mat-nav-list>
+				@for (item of navItems; track item.label; let i = $index) {
+					<a mat-list-item [routerLink]="item.route" [class.active-item]="i === 0">
+						<mat-icon matListItemIcon fontSet="material-icons-outlined" [style.background-color]="item.iconBg" [style.color]="item.iconColor">{{ item.icon }}</mat-icon>
+						<span matListItemTitle>
+							<span class="nav-item-label">{{ item.label }}</span>
+						</span>
+					</a>
+				}
+			</mat-nav-list>
+		</nav>
+
+		<div class="side-nav-bottom-links" aria-label="Secondary links">
+			<a [routerLink]="''" class="bottom-link">About</a>
+			<a [routerLink]="''" class="bottom-link">Help</a>
+		</div>
 	</div>
 </aside>

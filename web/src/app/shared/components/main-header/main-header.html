@@ -7,6 +7,21 @@
       <!-- Navigation items will go here -->
     </nav>
     <div class="org-actions">
+      <div class="action-menu">
+        <button
+          class="plus-button"
+          title="Add new"
+          (click)="toggleMenu()">
+          <span class="plus-icon">+</span>
+        </button>
+        @if (isMenuOpen) {
+          <div class="dropdown-menu">
+            <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Organization</a>
+            <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Invoice</a>
+            <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Project</a>
+          </div>
+        }
+      </div>
       <a class="org-identity" title="Organization" routerLink="organization">
         <span class="org-profile-img-skeleton"></span>
         <span class="org-name">Oscorp Industries</span>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, HostListener } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
@@ -10,5 +10,27 @@ import { RouterModule } from '@angular/router';
   styleUrl: './main-header.scss',
 })
 export class MainHeader {
+  isMenuOpen = false;
 
+  constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu() {
+    this.isMenuOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as Node | null;
+    if (!target) {
+      return;
+    }
+
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.closeMenu();
+    }
+  }
 }

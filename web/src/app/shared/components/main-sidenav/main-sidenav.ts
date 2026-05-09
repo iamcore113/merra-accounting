@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
@@ -6,11 +7,14 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-main-sidenav',
   standalone: true,
-  imports: [MatListModule, MatIconModule, RouterModule],
+  imports: [MatListModule, MatIconModule, MatButtonModule, RouterModule],
   templateUrl: './main-sidenav.html',
   styleUrl: './main-sidenav.scss',
 })
 export class MainSidenav {
+  @Input() isOpen = true;
+  @Output() readonly isOpenChange = new EventEmitter<boolean>();
+
   protected readonly navItems = [
     { label: 'Dashboard', route: '', icon: 'dashboard', iconBg: '#6FD1D7', iconColor: '#1A7A80' },
     { label: 'Accounts', route: '', icon: 'account_balance_wallet', iconBg: '#FF653F', iconColor: '#8C1A00' },
@@ -18,4 +22,9 @@ export class MainSidenav {
     { label: 'Activity Log', route: '', icon: 'history', iconBg: '#C9BEFF', iconColor: '#4A3A8C' },
     { label: 'Settings', route: '', icon: 'settings', iconBg: '#F08D39', iconColor: '#7A3D00' },
   ];
+
+  toggleSidenav() {
+    this.isOpen = !this.isOpen;
+    this.isOpenChange.emit(this.isOpen);
+  }
 }

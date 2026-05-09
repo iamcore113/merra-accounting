@@ -11,6 +11,11 @@
   grid-template-columns: 260px minmax(0, 1fr);
   flex: 1;
   align-items: start;
+  transition: grid-template-columns 220ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.sidenav-collapsed {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
 }
 
 
