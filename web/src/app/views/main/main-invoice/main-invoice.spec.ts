@@ -41,4 +41,24 @@ describe('MainInvoice', () => {
     expect(panel.classList).not.toContain('secondary-column-hidden');
     expect(panel.getAttribute('aria-hidden')).toBe('false');
   });
+
+  it('keeps the new invoice form hidden by default', () => {
+    const formPanel = fixture.nativeElement.querySelector('#new-invoice-form-panel');
+
+    expect(component.isNewInvoiceFormOpen).toBeFalse();
+    expect(formPanel.classList).not.toContain('new-invoice-form-open');
+    expect(formPanel.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('opens the new invoice form from the title add button', () => {
+    const trigger = fixture.debugElement.query(By.css('.title-add-button'));
+
+    trigger.nativeElement.click();
+    fixture.detectChanges();
+
+    const formPanel = fixture.nativeElement.querySelector('#new-invoice-form-panel');
+    expect(component.isNewInvoiceFormOpen).toBeTrue();
+    expect(formPanel.classList).toContain('new-invoice-form-open');
+    expect(formPanel.getAttribute('aria-hidden')).toBe('false');
+  });
 });

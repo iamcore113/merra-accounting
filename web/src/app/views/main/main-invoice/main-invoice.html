@@ -3,22 +3,103 @@
 		<div class="section-header">
 			<div>
 				<p class="eyebrow">Invoice Workspace</p>
-				<h1>Create Invoice</h1>
+				<div class="title-row">
+					<h1>Create Invoice</h1>
+					<button
+						matIconButton
+						type="button"
+						class="title-add-button"
+						[attr.aria-expanded]="isNewInvoiceFormOpen"
+						aria-controls="new-invoice-form-panel"
+						aria-label="Toggle new invoice form"
+						(click)="toggleNewInvoiceForm()">
+						<mat-icon fontSet="material-icons-outlined">add</mat-icon>
+					</button>
+				</div>
 				<p class="section-copy">
 					Draft invoice details in the primary workspace and open the side panel when you need extra context.
 				</p>
 			</div>
+		</div>
 
-			<button
-				matButton="filled"
-				type="button"
-				class="panel-trigger"
-				[attr.aria-expanded]="isSecondaryPanelOpen"
-				aria-controls="invoice-secondary-panel"
-				(click)="toggleSecondaryPanel()">
-				<mat-icon fontSet="material-icons-outlined">right_panel_open</mat-icon>
-				{{ isSecondaryPanelOpen ? 'Hide details panel' : 'Open details panel' }}
-			</button>
+		<div
+			id="new-invoice-form-panel"
+			class="new-invoice-form"
+			[class.new-invoice-form-open]="isNewInvoiceFormOpen"
+			[attr.aria-hidden]="!isNewInvoiceFormOpen">
+			<div class="new-invoice-form-shell">
+				<div class="new-invoice-form-header">
+					<h2>New Invoice Form</h2>
+					<p>Start with the core invoice details and expand this section later with full billing fields.</p>
+				</div>
+
+				<form class="invoice-form-grid">
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Invoice Type</mat-label>
+						<mat-select>
+							<mat-option value="standard">Standard</mat-option>
+							<mat-option value="credit-note">Credit Note</mat-option>
+							<mat-option value="recurring">Recurring</mat-option>
+						</mat-select>
+					</mat-form-field>
+
+					<div class="contact-field-row">
+						<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+							<mat-label>Contact Name</mat-label>
+							<mat-select>
+								<mat-option value="acme-corporation">Acme Corporation</mat-option>
+								<mat-option value="oscorp-industries">Oscorp Industries</mat-option>
+								<mat-option value="wayne-enterprises">Wayne Enterprises</mat-option>
+							</mat-select>
+						</mat-form-field>
+
+						<button
+							matIconButton
+							type="button"
+							class="contact-create-button"
+							aria-label="Create new contact"
+							(click)="openCreateContactDialog()">
+							<mat-icon fontSet="material-icons-outlined">person_add</mat-icon>
+						</button>
+					</div>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Date</mat-label>
+						<input matInput [matDatepicker]="invoiceDatePicker" [value]="invoiceDate" />
+						<mat-datepicker-toggle matIconSuffix [for]="invoiceDatePicker"></mat-datepicker-toggle>
+						<mat-datepicker #invoiceDatePicker></mat-datepicker>
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Due Date</mat-label>
+						<input matInput [matDatepicker]="dueDatePicker" />
+						<mat-datepicker-toggle matIconSuffix [for]="dueDatePicker"></mat-datepicker-toggle>
+						<mat-datepicker #dueDatePicker></mat-datepicker>
+					</mat-form-field>
+
+					<div class="line-amount-field-row">
+						<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+							<mat-label>Line Amount Type</mat-label>
+							<mat-select>
+								<mat-option value="subtotal">Subtotal</mat-option>
+								<mat-option value="tax-inclusive">Tax Inclusive</mat-option>
+								<mat-option value="tax-exclusive">Tax Exclusive</mat-option>
+							</mat-select>
+						</mat-form-field>
+
+						<button
+							matButton="filled"
+							type="button"
+							class="secondary-panel-trigger"
+							[attr.aria-expanded]="isSecondaryPanelOpen"
+							aria-controls="invoice-secondary-panel"
+							(click)="toggleSecondaryPanel()">
+							<mat-icon fontSet="material-icons-outlined">arrow_right_alt</mat-icon>
+							Add Line items
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
 
 		<div class="primary-surface">

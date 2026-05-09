@@ -1,15 +1,85 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+
+@Component({
+  selector: 'app-create-contact-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule],
+  template: `
+    <section class="create-contact-dialog">
+      <h3 mat-dialog-title>Create New Contact</h3>
+
+      <mat-dialog-content>
+        <form class="contact-dialog-form">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>First Name</mat-label>
+            <input matInput placeholder="John" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Last Name</mat-label>
+            <input matInput placeholder="Doe" />
+          </mat-form-field>
+        </form>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button matButton type="button" (click)="close()">Cancel</button>
+        <button matButton="filled" type="button" (click)="close()">Create Contact</button>
+      </mat-dialog-actions>
+    </section>
+  `,
+  styles: [`
+    .create-contact-dialog {
+      min-width: min(92vw, 28rem);
+    }
+
+    .contact-dialog-form {
+      display: grid;
+      gap: 0.8rem;
+      padding-top: 0.25rem;
+    }
+
+    .contact-dialog-form mat-form-field {
+      width: 100%;
+    }
+  `],
+})
+export class CreateContactDialog {
+  private readonly dialogRef = inject(MatDialogRef<CreateContactDialog>);
+
+  close() {
+    this.dialogRef.close();
+  }
+}
 
 @Component({
   selector: 'app-main-invoice',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatDatepickerModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatNativeDateModule, MatSelectModule],
   templateUrl: './main-invoice.html',
   styleUrl: './main-invoice.scss',
 })
 export class MainInvoice {
+  private readonly dialog = inject(MatDialog);
+
+  invoiceDate = new Date();
+  isNewInvoiceFormOpen = false;
   isSecondaryPanelOpen = false;
+
+  openCreateContactDialog() {
+    this.dialog.open(CreateContactDialog);
+  }
+
+  toggleNewInvoiceForm() {
+    this.isNewInvoiceFormOpen = !this.isNewInvoiceFormOpen;
+  }
 
   openSecondaryPanel() {
     this.isSecondaryPanelOpen = true;
