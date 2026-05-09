@@ -131,9 +131,14 @@
 		[attr.aria-hidden]="!isSecondaryPanelOpen">
 		<div class="secondary-panel-shell">
 			<div class="secondary-panel-header">
-				<div>
-					<p class="eyebrow">Secondary Panel</p>
-					<h2>Invoice Details</h2>
+				<div class="header-left">
+					<div>
+						<p class="eyebrow">Create Line items</p>
+					</div>
+					<div class="items-header">
+						<span class="item-label">Items:</span>
+						<span class="item-count-badge">{{ lineItemsCount }}</span>
+					</div>
 				</div>
 
 				<button
@@ -146,17 +151,62 @@
 			</div>
 
 			<div class="secondary-panel-body">
-				<article class="secondary-card">
-					<h3>Status Overview</h3>
-					<p>Use this panel for preview data, approvals, saved drafts, or a running invoice summary.</p>
-				</article>
+				<form class="line-items-form">
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Description</mat-label>
+						<input matInput placeholder="Product or service description" />
+					</mat-form-field>
 
-				<article class="secondary-card accent-card">
-					<h3>Ready for Interaction</h3>
-					<p>
-						The panel opens and closes dynamically, so this area can evolve into a real drawer without changing the layout contract.
-					</p>
-				</article>
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Quantity</mat-label>
+						<input matInput type="number" placeholder="0" />
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Unit Amount</mat-label>
+						<input matInput type="number" placeholder="0.00" />
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Account Code</mat-label>
+						<input matInput placeholder="E.g., 4000" />
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Line Amount</mat-label>
+						<input matInput type="number" placeholder="0.00" readonly />
+					</mat-form-field>
+
+					<div class="tax-row">
+						<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+							<mat-label>Tax Type</mat-label>
+							<mat-select>
+								<mat-option value="standard">Standard</mat-option>
+								<mat-option value="reduced">Reduced</mat-option>
+								<mat-option value="zero">Zero</mat-option>
+								<mat-option value="exempt">Exempt</mat-option>
+							</mat-select>
+						</mat-form-field>
+
+						<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+							<mat-label>Tax Amount</mat-label>
+							<input matInput type="number" placeholder="0.00" readonly />
+						</mat-form-field>
+					</div>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Discount Rate</mat-label>
+						<input matInput type="number" placeholder="0" />
+					</mat-form-field>
+
+					<button
+						matButton
+						type="button"
+						class="add-line-item-button">
+						<mat-icon fontSet="material-icons-outlined">add</mat-icon>
+						Add
+					</button>
+				</form>
 			</div>
 		</div>
 	</aside>

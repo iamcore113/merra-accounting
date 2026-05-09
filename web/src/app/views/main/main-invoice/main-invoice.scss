@@ -227,15 +227,11 @@ p {
 	line-height: 1.2;
 }
 
-.primary-surface,
-.secondary-panel-shell {
+.primary-surface {
 	border-radius: 1.5rem;
 	background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 	border: 1px solid rgba(148, 163, 184, 0.2);
 	box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-}
-
-.primary-surface {
 	padding: 1.25rem;
 }
 
@@ -265,6 +261,7 @@ p {
 }
 
 .secondary-panel-shell {
+	border-radius: 1.5rem;
 	height: 100%;
 	padding: 1rem;
 	display: flex;
@@ -288,13 +285,85 @@ p {
 	margin-bottom: 1rem;
 }
 
-.secondary-panel-header h2 {
-	margin-bottom: 0;
+.header-left {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.items-header {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.item-label {
+	display: inline;
+	font-size: 1.1rem;
+	font-weight: 500;
+	color: var(--mat-sys-on-surface);
+}
+
+.item-count-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.6rem;
+	height: 1.6rem;
+	padding: 0 0.25rem;
+	border-radius: 999px;
+	background-color: #5DADE2;
+	color: white;
+	font-size: 0.85rem;
+	font-weight: 600;
+	line-height: 1;
 }
 
 .secondary-panel-body {
 	display: grid;
 	gap: 1rem;
+}
+
+.line-items-form {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0.8rem;
+}
+
+.line-items-form mat-form-field {
+	width: 100%;
+}
+
+.tax-row {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.8rem;
+	align-items: flex-end;
+}
+
+.tax-row mat-form-field {
+	width: 100%;
+}
+
+.add-line-item-button {
+	width: 100%;
+	height: 2.7rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 0.5rem;
+	background-color: white;
+	border: 2px solid black;
+	color: black;
+	font-size: 0.92rem;
+}
+
+.add-line-item-button mat-icon {
+	font-size: 1rem;
+	width: 1rem;
+	height: 1rem;
+	line-height: 1;
 }
 
 .accent-card {

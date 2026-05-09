@@ -72,6 +72,7 @@ export class MainInvoice {
   invoiceDate = new Date();
   isNewInvoiceFormOpen = false;
   isSecondaryPanelOpen = false;
+  lineItemsCount = 0;
 
   openCreateContactDialog() {
     this.dialog.open(CreateContactDialog);
