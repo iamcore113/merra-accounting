@@ -108,7 +108,7 @@ p {
 }
 
 .new-invoice-form-open {
-	max-height: 30rem;
+	max-height: 42rem;
 	opacity: 1;
 	transform: translateY(0);
 	margin-bottom: 1rem;
@@ -213,6 +213,34 @@ p {
 	font-size: 1rem;
 	width: 1rem;
 	height: 1rem;
+	line-height: 1;
+}
+
+.submit-invoice-button {
+	width: auto;
+	height: 2.2rem;
+	padding: 0 1.2rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.4rem;
+	margin-top: 0.5rem;
+	border-radius: 6px;
+	background-color: var(--mat-sys-primary) !important;
+	color: var(--mat-sys-on-primary);
+	font-size: 0.85rem;
+	transition: background-color 180ms ease;
+}
+
+.submit-invoice-button:hover,
+.submit-invoice-button:focus-visible {
+	background-color: color-mix(in srgb, var(--mat-sys-primary) 85%, white) !important;
+}
+
+.submit-invoice-button mat-icon {
+	font-size: 0.95rem;
+	width: 0.95rem;
+	height: 0.95rem;
 	line-height: 1;
 }
 

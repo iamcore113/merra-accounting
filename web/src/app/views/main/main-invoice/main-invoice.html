@@ -98,6 +98,29 @@
 							Add Line items
 						</button>
 					</div>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Reference</mat-label>
+						<input matInput placeholder="Reference number or code" />
+					</mat-form-field>
+
+					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
+						<mat-label>Status</mat-label>
+						<mat-select value="draft">
+							<mat-option value="draft">Draft</mat-option>
+							<mat-option value="sent">Sent</mat-option>
+							<mat-option value="paid">Paid</mat-option>
+						</mat-select>
+					</mat-form-field>
+
+					<button
+						matButton="filled"
+						type="button"
+						(click)="submitInvoice()"
+						class="submit-invoice-button">
+						<mat-icon fontSet="material-icons-outlined">check</mat-icon>
+						Submit Invoice
+					</button>
 				</form>
 			</div>
 		</div>

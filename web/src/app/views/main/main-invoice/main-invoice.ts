@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-create-contact-dialog',
@@ -62,12 +63,13 @@ export class CreateContactDialog {
 
 @Component({
   selector: 'app-main-invoice',
-  imports: [MatButtonModule, MatDatepickerModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatNativeDateModule, MatSelectModule],
+  imports: [MatButtonModule, MatDatepickerModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatNativeDateModule, MatSelectModule, MatSnackBarModule],
   templateUrl: './main-invoice.html',
   styleUrl: './main-invoice.scss',
 })
 export class MainInvoice {
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
 
   invoiceDate = new Date();
   isNewInvoiceFormOpen = false;
@@ -92,5 +94,14 @@ export class MainInvoice {
 
   toggleSecondaryPanel() {
     this.isSecondaryPanelOpen = !this.isSecondaryPanelOpen;
+  }
+
+  submitInvoice() {
+    this.snackBar.open('Invoice saved as draft.', 'Close', {
+      duration: 3000,
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+    this.isNewInvoiceFormOpen = false;
   }
 }
