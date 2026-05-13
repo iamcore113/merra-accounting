@@ -1,0 +1,148 @@
+.landing-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.landing-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 1.5rem 2.5rem;
+}
+
+.landing-brand {
+  font-size: 1.75rem;
+}
+
+.landing-subbrand {
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+.landing-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  color: var(--brand-color);
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+}
+
+.hero-subtitle {
+  font-size: 1.1rem;
+  color: #5a6a7a;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+// ── Action cards ──────────────────────────────────────────────────────────────
+.action-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 860px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    max-width: 360px;
+  }
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #dce6f0;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba(2, 70, 132, 0.12);
+    transform: translateY(-3px);
+  }
+
+  &--primary {
+    background: var(--brand-color);
+    border-color: var(--brand-color);
+
+    .action-card-icon mat-icon,
+    .action-card-title,
+    .action-card-desc {
+      color: #ffffff;
+    }
+
+    .action-btn {
+      --mdc-filled-button-container-color: #ffffff;
+      --mdc-filled-button-label-text-color: var(--brand-color);
+    }
+  }
+}
+
+.action-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(2, 70, 132, 0.08);
+  margin-bottom: 0.25rem;
+
+  mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+    color: var(--brand-color);
+  }
+}
+
+.action-card--primary .action-card-icon {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--default-text-color);
+}
+
+.action-card-desc {
+  font-size: 0.875rem;
+  color: #6b7a8d;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.action-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.landing-footer {
+  padding: 1.25rem 2.5rem;
+  text-align: center;
+
+  p {
+    font-size: 0.8rem;
+    color: #8a99a8;
+  }
+}

@@ -1,0 +1,46 @@
+<div class="landing-root">
+  <header class="landing-header">
+    <span class="brand-logo landing-brand">MERRA</span>
+    <span class="sub-brand-logo landing-subbrand">ACCOUNTING</span>
+  </header>
+
+  <main class="landing-hero">
+    <div class="hero-text">
+      <h1 class="hero-title">Manage your finances<br />with clarity.</h1>
+      <p class="hero-subtitle">Invoices, organizations, and accounts — all in one place.</p>
+    </div>
+
+    <div class="action-cards">
+      <div class="action-card">
+        <div class="action-card-icon">
+          <mat-icon fontSet="material-icons-outlined">person_add</mat-icon>
+        </div>
+        <h2 class="action-card-title">New here?</h2>
+        <p class="action-card-desc">Create a free account and get started in minutes.</p>
+        <button matButton="filled" routerLink="/account/signup" class="action-btn">Sign Up</button>
+      </div>
+
+      <div class="action-card action-card--primary">
+        <div class="action-card-icon">
+          <mat-icon fontSet="material-icons-outlined">login</mat-icon>
+        </div>
+        <h2 class="action-card-title">Welcome back</h2>
+        <p class="action-card-desc">Sign in to access your dashboard and manage your account.</p>
+        <button matButton="filled" routerLink="/account/signin" class="action-btn">Sign In</button>
+      </div>
+
+      <div class="action-card">
+        <div class="action-card-icon">
+          <mat-icon fontSet="material-icons-outlined">visibility</mat-icon>
+        </div>
+        <h2 class="action-card-title">Just browsing?</h2>
+        <p class="action-card-desc">Explore the app as a visitor without an account.</p>
+        <button matButton="outlined" class="action-btn">Enter as Visitor</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="landing-footer">
+    <p>&copy; {{ currentYear }} MERRA. All rights reserved.</p>
+  </footer>
+</div>

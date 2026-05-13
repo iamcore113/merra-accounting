@@ -11,9 +11,10 @@ import { MainLayout } from './shared/components/main-layout/main-layout';
 import { MainHome } from './views/main/main-home/main-home';
 import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
 import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
+import { LandingPage } from './views/landing-page/landing-page';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
   {
     path: 'account',
     component: AuthLayout,
