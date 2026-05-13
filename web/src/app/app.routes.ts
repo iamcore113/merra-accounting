@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { Signup } from './views/signup/signup';
 import { Signin } from './views/signin/signin';
 import { VerifyEmail } from './views/verify-email/verify-email';
-import { AuthLayout } from './shared/components/auth-layout/auth-layout';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
 import { CreateOrganization } from './views/create-organization/create-organization';
@@ -15,17 +14,11 @@ import { LandingPage } from './views/landing-page/landing-page';
 
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
-  {
-    path: 'account',
-    component: AuthLayout,
-    children: [
-      { path: 'signup', component: Signup, title: 'MERRA - Create Account' },
-      { path: 'signin', component: Signin, title: 'MERRA - Sign In' },
-      { path: 'verify-email/:email', component: VerifyEmail, title: 'MERRA - Verify Email' },
-      { path: 'verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
-      { path: 'personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
-    ]
-  },
+  { path: 'account/signup', component: Signup, title: 'MERRA - Create Account' },
+  { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
+  { path: 'account/verify-email/:email', component: VerifyEmail, title: 'MERRA - Verify Email' },
+  { path: 'account/verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
+  { path: 'account/personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
   {
     path: 'main',
     component: MainLayout,

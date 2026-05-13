@@ -1,5 +1,14 @@
 @use '@angular/material' as mat;
 
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: var(--mat-sys-surface);
+}
+
 .auth-card {
   max-width: 500px;
   width: 100%;
