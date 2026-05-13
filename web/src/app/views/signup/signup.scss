@@ -9,11 +9,15 @@
   background-color: var(--mat-sys-surface);
 }
 
+::ng-deep .auth-card.mat-mdc-card {
+  background-color: transparent;
+  box-shadow: none;
+}
+
 .auth-card {
   max-width: 500px;
   width: 100%;
   padding: 1rem;
-  background-color: white;
 
   mat-card-header {
     display: flex;

@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -48,18 +48,28 @@ export class Signup {
       ]],
       confirmPassword: ['', [Validators.required]],
       gender: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+    });
+
+    const passwordCtrl = this.signupForm.get('password')!;
+    const confirmCtrl = this.signupForm.get('confirmPassword')!;
+
+    confirmCtrl.addValidators(this.confirmMatchValidator(passwordCtrl));
+
+    passwordCtrl.valueChanges.subscribe(() => {
+      confirmCtrl.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password');
-    const confirmPassword = control.get('confirmPassword');
-
-    if (!password || !confirmPassword) {
+  confirmMatchValidator(passwordCtrl: AbstractControl): ValidatorFn {
+    return (confirmCtrl: AbstractControl): ValidationErrors | null => {
+      const password: string = passwordCtrl.value ?? '';
+      const confirm: string = confirmCtrl.value ?? '';
+      if (!confirm) return null;
+      if (confirm.length > password.length || confirm !== password.slice(0, confirm.length) || (confirm.length === password.length && confirm !== password)) {
+        return { passwordMismatch: true };
+      }
       return null;
-    }
-
-    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+    };
   }
 
   togglePasswordVisibility() {
