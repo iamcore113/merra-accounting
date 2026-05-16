@@ -1,4 +1,5 @@
 import { Component, Inject, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -67,7 +68,7 @@ export class NameDifferenceSheet {
 
 @Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatBottomSheetModule],
+  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatBottomSheetModule, ReactiveFormsModule],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
@@ -76,8 +77,19 @@ export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
+  private readonly fb = inject(FormBuilder);
 
   currentOrganization: CurrentOrganizationResponse | undefined;
+
+  organizationForm: FormGroup = this.fb.group({
+    id: [{ value: '', disabled: true }],
+    organizationType: ['', Validators.required],
+    displayName: ['', Validators.required],
+    legalName: ['', Validators.required],
+    dateCreated: [{ value: '', disabled: true }],
+    status: [{ value: '', disabled: true }],
+    website: [''],
+  });
   dateCreated = 'August 30, 1999';
   currencyCode = 'BRL';
   organizationDescription = 'The wolverine is found primarily in remote reaches of the northern boreal forests and subarctic and alpine tundra of the Northern Hemisphere, with the greatest numbers in Northern Canada, the U.S. state of Alaska, the mainland Nordic countries of Europe, and throughout western Russia and Siberia. Its population has steadily declined since the 19th century owing to trapping, range reduction and habitat fragmentation. The wolverine has become essentially absent from the southern end of its range in both Europe and North America.';
@@ -89,6 +101,15 @@ export class MainOrganization implements OnInit {
       next: (response: Config) => {
         if (response.success && 'data' in response) {
           this.currentOrganization = response.data as CurrentOrganizationResponse;
+          this.organizationForm.patchValue({
+            id: this.currentOrganization.organizationId,
+            organizationType: this.currentOrganization.organizationType.name,
+            displayName: this.currentOrganization.names.displayName,
+            legalName: this.currentOrganization.names.legalName,
+            dateCreated: this.currentOrganization.createdDate,
+            status: this.currentOrganization.status,
+            website: this.currentOrganization.website,
+          });
         }
       }
     })
