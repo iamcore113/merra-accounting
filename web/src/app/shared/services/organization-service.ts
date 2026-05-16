@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { CREATE_ORGANIZATION, ORGANIZATION_METADATA_URL } from '../api/organization';
+import { CREATE_ORGANIZATION, ORGANIZATION_METADATA_URL, CURRENT_ORGANIZATION } from '../api/organization';
 import { Observable } from 'rxjs';
 import { Config } from '../models/api_response';
 import { CreateOrganizationRequest } from '../models/organization';
@@ -22,6 +22,12 @@ export class OrganizationService {
 
   getOrganizationMetadata(): Observable<Config> {
     return this.http.get<Config>(ORGANIZATION_METADATA_URL, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getCurrentOrganization(): Observable<Config> {
+    return this.http.get<Config>(CURRENT_ORGANIZATION, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

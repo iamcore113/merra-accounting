@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.merra.dto.CreateOrganizationRequest;
+import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
@@ -282,5 +283,10 @@ public class OrganizationService {
 		Long organizationCount = organizationMembersRepository.countByUserOrganizationAffiliation();
 
 		return organizationAffiliationMapper.toUserOrganizationAffiliation(organizations, organizationCount);
+	}
+
+	public CurrentOrganizationResponse getCurrentOrganization() {
+		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
 	}
 }

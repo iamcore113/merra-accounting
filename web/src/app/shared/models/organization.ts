@@ -216,6 +216,37 @@ export interface UpdateInvoiceResponse {
   currentStatus: string;
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Type
+export interface CurrentOrganizationResponseType {
+  typeId: string;
+  name: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Names
+export interface CurrentOrganizationResponseNames {
+  displayName: string;
+  legalName: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Address
+export interface CurrentOrganizationResponseAddress {
+  email: string;
+  country: string;
+  currency: string;
+  timeZone: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.java
+export interface CurrentOrganizationResponse {
+  organizationId: string;
+  organizationType: CurrentOrganizationResponseType;
+  names: CurrentOrganizationResponseNames;
+  address: CurrentOrganizationResponseAddress;
+  website: string;
+  createdDate: string;
+  status: string;
+}
+
 // Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations
 export interface OrganizationAffiliation {
   organizationId: string;

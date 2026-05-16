@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
+import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.UserOrganizationResponse;
 import org.merra.services.OrganizationService;
@@ -33,6 +34,26 @@ public class OrganizationController {
 
 	@GetMapping("dashboard")
 	public void getOrganizationDashboard() {
+	}
+
+	/**
+	 * Retrieves the current organization associated with the authenticated user's
+	 * active workspace state.
+	 *
+	 * @return a {@link ResponseEntity} containing an {@link ApiResponse} with the
+	 *         {@link CurrentOrganizationResponse} for the authenticated user's
+	 *         current organization
+	 */
+	@GetMapping("current")
+	public ResponseEntity<ApiResponse<CurrentOrganizationResponse>> getCurrentorganization() {
+		CurrentOrganizationResponse currentOrganization = organizationService.getCurrentOrganization();
+		ApiResponse<CurrentOrganizationResponse> response = new ApiResponse<>(
+				"Organization retrieved successfully.",
+				true,
+				HttpStatus.OK,
+				currentOrganization);
+
+		return ResponseEntity.ok(response);
 	}
 
 	/**

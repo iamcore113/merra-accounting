@@ -9,9 +9,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.UserOrganizationResponse;
+import org.merra.entities.Organization;
+import org.merra.entities.OrganizationType;
+import org.merra.enums.StatusEn;
 import org.merra.entities.UserAccount;
 import org.merra.repositories.projections.OrganizationsOnly;
 import org.merra.utilities.InvoiceConstants;
@@ -70,6 +74,37 @@ public interface OrganizationMapper {
 			@Mapping(target = "userDetails", source = "userAccount", qualifiedByName = "mapUserDetails")
 	})
 	UserOrganizationResponse toUserOrganizationResponse(OrganizationsOnly organizations, UserAccount userAccount);
+
+	@Mappings({
+		@Mapping(target = "organizationId", source = "id"),
+		@Mapping(target = "organizationType", source = "organizationType", qualifiedByName = "mapOrganizationTypeResponse"),
+		@Mapping(target = "names", source = "organization", qualifiedByName = "mapNamesResponse"),
+		@Mapping(target = "address", source = "organization", qualifiedByName = "mapAddressResponse"),
+		@Mapping(target = "website", source = "website"),
+		@Mapping(target = "status", source = "status", qualifiedByName = "mapStatusToString"),
+		@Mapping(target = "createdDate", source = "createdDate")
+	})
+	CurrentOrganizationResponse toCurrentOrganizationResponse(Organization organization);
+
+	@Named("mapStatusToString")
+	default String mapStatusToString(StatusEn status) {
+		return status != null ? status.name() : null;
+	}
+
+	@Named("mapOrganizationTypeResponse")
+	default CurrentOrganizationResponse.Type mapOrganizationTypeResponse(OrganizationType organizationType) {
+		return new CurrentOrganizationResponse.Type(organizationType.getId(), organizationType.getName());
+	}
+
+	@Named("mapNamesResponse")
+	default CurrentOrganizationResponse.Names mapNamesResponse(Organization organization) {
+		return new CurrentOrganizationResponse.Names(organization.getDisplayName(), organization.getLegalName());
+	}
+
+	@Named("mapAddressResponse")
+	default CurrentOrganizationResponse.Address mapAddressResponse(Organization organization) {
+		return new CurrentOrganizationResponse.Address(organization.getEmail(), organization.getCountry(), organization.getDefaultCurrency(), organization.getTimeZone());
+	}
 
 	/**
 	 * Maps a list of OrganizationsOnly projections into a list of
