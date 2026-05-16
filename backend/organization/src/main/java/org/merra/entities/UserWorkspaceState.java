@@ -1,5 +1,6 @@
 package org.merra.entities;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -11,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 
 // Implies the context (organization) in which the user is currently operating.
@@ -29,6 +31,9 @@ public class UserWorkspaceState {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "current_organization", referencedColumnName = "id")
     private Organization currentOrganization;
+
+    @Column(name = "last_active_at")
+    private OffsetDateTime lastActiveAt;
 
     public UUID getId() {
         return id;
@@ -50,12 +55,26 @@ public class UserWorkspaceState {
         this.currentOrganization = currentOrganization;
     }
 
+    public OffsetDateTime getLastActiveAt() {
+        return lastActiveAt;
+    }
+
+    public void setLastActiveAt(OffsetDateTime lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
+    }
+
     public UserWorkspaceState() {
     }
 
     public UserWorkspaceState(UserAccount user, Organization currentOrganization) {
         this.user = user;
         this.currentOrganization = currentOrganization;
+    }
+
+    public UserWorkspaceState(UserAccount user, Organization currentOrganization, OffsetDateTime lastActiveAt) {
+        this.user = user;
+        this.currentOrganization = currentOrganization;
+        this.lastActiveAt = lastActiveAt;
     }
 
 }

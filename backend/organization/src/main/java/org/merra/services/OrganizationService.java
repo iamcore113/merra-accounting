@@ -1,5 +1,6 @@
 package org.merra.services;
 
+import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.UserAccount;
+import org.merra.entities.UserWorkspaceState;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.AddressEn;
@@ -194,6 +196,10 @@ public class OrganizationService {
 
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
+		
+		// Set the newly created organization as the user's active workspace
+		UserWorkspaceState setWorkspace = new UserWorkspaceState(user, newOrganization, OffsetDateTime.now());
+		userWorkspaceStateRepository.save(setWorkspace);
 
 		Optional<String> checkUserFullName = user.getFullName();
 		boolean userInfoPresent = true;
