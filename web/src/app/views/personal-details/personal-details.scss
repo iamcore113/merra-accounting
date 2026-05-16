@@ -1,46 +1,41 @@
 
 @use '@angular/material' as mat;
 
-.auth-card {
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.personal-details-wrapper {
   max-width: 500px;
   width: 100%;
   padding: 1rem;
-  background-color: white;
+}
 
-  mat-card-header {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.5rem;
+.personal-details-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  color: var(--default-text-color);
+  margin-bottom: 1.5rem;
 
-    mat-card-title {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-      font-size: 1.75rem;
-      color: var(--default-text-color);
-      margin-bottom: 0.9rem;
-
-      .sub-text {
-        font-size: 0.890rem;
-        color: var(--default-text-color);
-        margin: 0;
-        font-weight: 400;
-        line-height: 1.4;
-        max-width: 400px;
-      }
-
-      mat-icon {
-        font-size: 2rem;
-        width: 2rem;
-        height: 2rem;
-      }
-    }
+  .sub-text {
+    font-size: 0.890rem;
+    color: var(--default-text-color);
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+    max-width: 400px;
   }
+}
 
-  mat-card-content {
-    padding: 0 1rem;
-  }
+.personal-details-content {
+  padding: 0 1rem;
 }
 
 form {
@@ -50,11 +45,6 @@ form {
 
   .full-width {
     width: 100%;
-  }
-
-  // Make only the verified email icon green
-  mat-form-field:has(input[type="email"]) mat-icon[matPrefix].email-verified {
-    color: #2e7d32;
   }
 
   .two-col-row {
@@ -67,32 +57,51 @@ form {
     }
   }
 
-  .change-email-container {
+  .email-display-row {
     display: flex;
-    justify-content: flex-start;
-    margin-top: -1.9rem;
-    margin-bottom: 0rem;
-    padding-left: 0.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+
+    .email-icon {
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+
+      &.email-verified {
+        color: #2e7d32;
+      }
+    }
+
+    .email-display-text {
+      flex: 1;
+      font-size: 0.938rem;
+      color: var(--default-text-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     .change-email-btn {
       display: flex;
       align-items: center;
-      gap: 0.15rem;
-      padding: 0.1rem 0.4rem;
-      font-size: 0.65rem;
-      min-height: 20px;
+      gap: 0.2rem;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      min-height: 24px;
       line-height: 1;
-      background: var(--default-text-color);
-      border: 1px solid var(--default-text-color);
+      background: transparent;
+      border: 1px solid var(--mat-sys-outline);
       border-radius: 4px;
-      color: white;
+      color: var(--mat-sys-on-surface-variant);
       cursor: pointer;
       transition: all 0.2s ease;
-      position: relative;
+      flex-shrink: 0;
 
       &:hover {
-        background: #555555;
-        border-color: #555555;
+        background: var(--mat-sys-surface-variant);
       }
 
       &:active {
@@ -100,9 +109,9 @@ form {
       }
 
       mat-icon {
-        font-size: 0.9rem;
-        width: 0.9rem;
-        height: 0.9rem;
+        font-size: 0.85rem;
+        width: 0.85rem;
+        height: 0.85rem;
         pointer-events: none;
       }
     }

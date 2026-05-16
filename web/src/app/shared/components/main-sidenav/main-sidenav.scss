@@ -61,14 +61,14 @@ mat-nav-list {
 a[mat-list-item] {
 	border: 0;
 	background: transparent;
-	border-radius: 0.5rem;
+	border-radius: 999px;
 	margin-bottom: 0.6rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  --mdc-list-list-item-hover-state-layer-color: transparent;
-  --mdc-list-list-item-focus-state-layer-color: transparent;
-  --mdc-list-list-item-hover-state-layer-opacity: 0;
-  --mdc-list-list-item-focus-state-layer-opacity: 0;
+	padding-top: 1.9rem;
+	padding-bottom: 1.9rem;
+	--mdc-list-list-item-hover-state-layer-color: transparent;
+	--mdc-list-list-item-focus-state-layer-color: transparent;
+	--mdc-list-list-item-hover-state-layer-opacity: 0;
+	--mdc-list-list-item-focus-state-layer-opacity: 0;
 }
 
 a[mat-list-item].mat-mdc-list-item-interactive::before,
@@ -80,22 +80,7 @@ a[mat-list-item].mat-mdc-list-item-interactive:focus-visible::before {
 }
 
 .nav-item-label {
-	position: relative;
 	display: inline-block;
-	padding-bottom: 0.12rem;
-}
-
-.nav-item-label::after {
-	content: '';
-	position: absolute;
-	left: 0;
-	bottom: 0;
-	width: 100%;
-	height: 2px;
-	background-color: currentColor;
-	transform: scaleX(0);
-	transform-origin: left;
-	transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 a[mat-list-item] mat-icon[matListItemIcon] {
@@ -114,9 +99,9 @@ a[mat-list-item] mat-icon[matListItemIcon] {
 	font-weight: 600;
 }
 
-a[mat-list-item]:hover .nav-item-label::after,
-a[mat-list-item]:focus-visible .nav-item-label::after {
-	transform: scaleX(1);
+a[mat-list-item]:hover,
+a[mat-list-item]:focus-visible {
+	background-color: #ffffff;
 }
 
 .side-nav-bottom-links {

@@ -180,13 +180,16 @@ export class CreateOrganization implements OnInit {
           panelClass: ['error-snackbar']
         });
         this.isSubmitting = false;
+        this.cdr.detectChanges();
       },
       complete: () => {
         this.isSubmitting = false;
+        this.cdr.detectChanges();
         this.snackBar.open('Organization created successfully!', 'Success', {
           duration: 3000,
           panelClass: ['success-snackbar']
         });
+        this.router.navigate(['/main']);
       }
     });
   }

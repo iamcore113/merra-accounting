@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  background-color: var(--mat-sys-background);
+}
+
 .invoice-workspace {
 	--panel-width: 22rem;
 	display: grid;

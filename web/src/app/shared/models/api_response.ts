@@ -18,7 +18,7 @@ interface SuccessResponse<T = any> extends JsonResponse {
 /**
  * Interface corresponding to ApiError.java
  */
-interface ErrorResponse extends JsonResponse {
+export interface ErrorResponse extends JsonResponse {
   // No additional properties beyond JsonResponse
 }
 

@@ -11,6 +11,7 @@ import { MainHome } from './views/main/main-home/main-home';
 import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
 import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
 import { LandingPage } from './views/landing-page/landing-page';
+import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
 
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
@@ -22,6 +23,7 @@ export const routes: Routes = [
   {
     path: 'main',
     component: MainLayout,
+    canActivate: [aUTHGUARDGuard],
     children: [
       {
         path: '',

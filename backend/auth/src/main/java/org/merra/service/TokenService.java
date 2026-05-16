@@ -28,13 +28,11 @@ public class TokenService {
     private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
     private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
-    @Value("${jwt.access.token.duration}")
+    @Value("${token.access-token-duration}")
     private int forAccessToken;
-    @Value("${jwt.visitor.access.token.duration}")
-    private int forVisitorAccessToken;
-    @Value("${jwt.refresh.token-expiration}")
+    @Value("${token.refresh-token-duration}")
     private int refreshTokenExpiration;
-    @Value("${jwt.email.verification-duration}")
+    @Value("${token.email-verification-duration}")
     private int verificationTokenDuration;
 
     private final JwtUtils jwtUtils;

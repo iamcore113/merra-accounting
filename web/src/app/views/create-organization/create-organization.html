@@ -1,11 +1,9 @@
 <div class="container">
-  <mat-card class="form-card">
-    <mat-card-header>
-      <mat-card-title>Create New Organization</mat-card-title>
-      <mat-card-subtitle>Enter your organization details to get started</mat-card-subtitle>
-    </mat-card-header>
-    
-    <mat-card-content>
+  <div class="form-wrapper">
+    <div class="form-header">
+      <h2 class="form-title">Create New Organization</h2>
+      <p class="form-subtitle">Enter your organization details to get started</p>
+    </div>
       <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="organization-form">
         
         <!-- Display Name Field -->
@@ -155,6 +153,5 @@
           </button>
         </div>
       </form>
-    </mat-card-content>
-  </mat-card>
+  </div>
 </div>

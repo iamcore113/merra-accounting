@@ -64,9 +64,14 @@ public class AuthController {
      * @return ResponseEntity containing authentication tokens and user information
      */
     @PostMapping(value = "signin")
-    public ResponseEntity<SigninResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<ApiResponse<SigninResponse>> signin(@Valid @RequestBody LoginRequest loginRequest) {
         final SigninResponse res = authService.login(loginRequest);
-        return ResponseEntity.ok(res);
+        final ApiResponse<SigninResponse> apiRes = new ApiResponse<>(
+                "Login successful",
+                true,
+                HttpStatus.OK,
+                res);
+        return ResponseEntity.ok(apiRes);
     }
 
     /**

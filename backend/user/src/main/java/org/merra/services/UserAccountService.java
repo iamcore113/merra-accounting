@@ -17,6 +17,7 @@ import org.merra.repositories.UserAccountSettingsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -147,5 +148,15 @@ public class UserAccountService {
 				authUser.getGender(),
 				authUser.getCountry(),
 				authUser.getEmail());
+	}
+
+	/**
+	 * Retrieves the currently authenticated user from the security context.
+	 *
+	 * @return the {@link UserAccount} entity of the authenticated user
+	 * @throws EntityNotFoundException if no authenticated user is found in the database
+	 */
+	public UserAccount getCurrentAuthenticatedUser() {
+		return userRepository.findAuthenticatedUser().orElseThrow(() -> new EntityNotFoundException("User entity not found."));
 	}
 }

@@ -146,13 +146,12 @@ public class SecurityConfig {
                          */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/api/v1/metadata/**",
+                                "/api/v1/metadata/**", "/api/v1/tokens/**",
                                 "/api/v1/account/user/**")
                         .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR)
                         .requestMatchers(
                                 "/",
                                 "/api/v1/auth/**",
-                                "/api/v1/tokens/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**")

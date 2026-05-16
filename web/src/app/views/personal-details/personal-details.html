@@ -1,39 +1,33 @@
 
-<mat-card class="auth-card">
-  <mat-card-header>
-    <mat-card-title>
-      Finish your personal details
-      <p class="sub-text">We collect your personal details to verify your identity, comply with financial regulations, and ensure your tax settings are accurately tailored to your specific region.</p>
-    </mat-card-title>
-  </mat-card-header>
+<div class="personal-details-wrapper">
+  <div class="personal-details-header">
+    <span>Complete Your Profile</span>
+    <p class="sub-text">Help us personalize your experience. Your details are used to verify your identity and ensure your account is set up correctly for your region.</p>
+  </div>
 
-  <mat-card-content>
+  <div class="personal-details-content">
     <form [formGroup]="personalDetailsForm" (ngSubmit)="onNext()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email" placeholder="Enter your email" [disabled]="isEmailDisabled" />
-        <mat-icon matPrefix fontSet="material-icons-outlined" [class.email-verified]="personalDetailsForm.get('email')?.value">
-          @if (personalDetailsForm.get('email')?.value) {
-            mark_email_read
-          } @else {
-            mail
-          }
-        </mat-icon>
-        @if (personalDetailsForm.get('email')?.hasError('required') && personalDetailsForm.get('email')?.touched) {
-          <mat-error>Email is required</mat-error>
-        }
-        @if (personalDetailsForm.get('email')?.hasError('email') && personalDetailsForm.get('email')?.touched) {
-          <mat-error>Please enter a valid email</mat-error>
-        }
-      </mat-form-field>
-
       @if (isEmailDisabled) {
-        <div class="change-email-container">
+        <div class="email-display-row">
+          <mat-icon fontSet="material-icons-outlined" class="email-icon email-verified">mark_email_read</mat-icon>
+          <span class="email-display-text">{{ personalDetailsForm.getRawValue().email }}</span>
           <button type="button" class="change-email-btn" (click)="enableEmailEditing()">
             <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
-            Change Email
+            Change
           </button>
         </div>
+      } @else {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="Enter your email" />
+          <mat-icon matPrefix fontSet="material-icons-outlined">mail</mat-icon>
+          @if (personalDetailsForm.get('email')?.hasError('required') && personalDetailsForm.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (personalDetailsForm.get('email')?.hasError('email') && personalDetailsForm.get('email')?.touched) {
+            <mat-error>Please enter a valid email</mat-error>
+          }
+        </mat-form-field>
       }
 
       <div class="two-col-row">
@@ -87,5 +81,5 @@
         <button matButton="filled" type="submit" [disabled]="personalDetailsForm.invalid">Next</button>
       </div>
     </form>
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>

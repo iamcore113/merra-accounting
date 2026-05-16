@@ -52,7 +52,8 @@ body {
 
   // Set a custom global background color
   background-color: #e8eef6 !important;
-  // Optionally override Material system variable for surface
+  // Override Material system variables to match custom background
+  --mat-sys-background: #e8eef6;
   --mat-sys-surface: #e8eef6;
 
   color: var(--mat-sys-on-surface);
@@ -120,6 +121,7 @@ h1, h2, h3, h4, h5, h6, p {
   --mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
   --mat-expansion-header-collapsed-state-height: 64px;
   --mat-expansion-header-expanded-state-height: 72px;
+  --mat-expansion-container-background-color: #ffffff;
 }
 
 .shared-expansion-panels .detail-title {

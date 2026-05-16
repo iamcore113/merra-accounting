@@ -1,13 +1,17 @@
 <div class="auth-container">
-<mat-card class="auth-card">
-  <mat-card-header>
-    <mat-card-title>
-      <h1 class="brand-logo">MERRA</h1>
-      <p class="sub-brand-logo">SIGN IN</p>
-    </mat-card-title>
-  </mat-card-header>
+<div class="auth-card">
+  <div class="auth-header">
+    <h1 class="brand-logo">MERRA</h1>
+    <p class="sub-brand-logo">SIGN IN</p>
+  </div>
 
-  <mat-card-content>
+  <div class="auth-content">
+    @if (errorMessage) {
+      <div class="error-alert">
+        <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
+        <span class="error-message">{{ errorMessage }}</span>
+      </div>
+    }
     <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
@@ -42,6 +46,6 @@
         <a matButton routerLink="/account/signup">Don't have an account?</a>
       </div>
     </form>
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>
 </div>

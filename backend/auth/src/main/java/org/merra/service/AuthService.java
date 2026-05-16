@@ -53,11 +53,11 @@ import jakarta.persistence.EntityNotFoundException;
 public class AuthService {
   private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
-  @Value("${jwt.access.token.duration}")
+  @Value("${token.access-token-duration}")
   private int forAccessToken;
-  @Value("${jwt.refresh.token-expiration}")
+  @Value("${token.refresh-token-duration}")
   private int refreshTokenExpiration;
-  @Value("${jwt.email.verification-duration}")
+  @Value("${token.email-verification-duration}")
   private int verificationTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
