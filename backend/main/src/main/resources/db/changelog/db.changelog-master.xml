@@ -12,7 +12,7 @@
     <preConditions onFail="HALT" onErrorMessage="Error in preCondition">
         <expectedQuotingStrategy strategy="LEGACY" />
         <dbms type="postgresql" />
-        <runningAs username="merra-user" />
+        <runningAs username="brian" />
     </preConditions>
 
     <!-- Enable UUID extension (PostgreSQL specific) -->

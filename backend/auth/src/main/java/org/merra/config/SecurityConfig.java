@@ -36,6 +36,7 @@ public class SecurityConfig {
     private String frontendUrl;
 
     private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+    private final static String ROLE_MEMBER = UserAccountStatusEn.MEMBER.toString();
     private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
     private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
     private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
@@ -146,12 +147,13 @@ public class SecurityConfig {
                          */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/api/v1/metadata/**", "/api/v1/tokens/**",
+                                "/api/v1/metadata/**",
                                 "/api/v1/account/user/**")
-                        .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR)
+                        .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR, ROLE_MEMBER)
                         .requestMatchers(
                                 "/",
                                 "/api/v1/auth/**",
+                                "/api/v1/tokens/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**")

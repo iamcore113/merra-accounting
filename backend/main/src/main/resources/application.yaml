@@ -26,16 +26,16 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL}
-    username: merra-user
-    password: password
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   # Liquibase database migration configuration with merra_schema
   liquibase:
     change-log: db/changelog/db.changelog-master.xml
     default-schema: merra_schema
     liquibase-schema: merra_schema
     url: ${DB_URL}
-    user: merra-user
-    password: password
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
   # SMTP mail server configuration for transactional emails (credentials via environment)
   mail:
     host: ${MAIL_HOST}

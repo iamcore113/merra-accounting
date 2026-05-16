@@ -1,34 +1,34 @@
 services:
   db:
-    container_name: merra-db
-    image: postgres:17.4-bookworm
+    container_name: merra-accounting-db
+    image: postgres:17-alpine
     restart: always
     # set shared memory limit when using docker-compose
     shm_size: 128mb
     environment:
-      - 'POSTGRES_DB=merradb'
+      - 'POSTGRES_DB=merra_accounting'
       - 'POSTGRES_PASSWORD=password'
-      - 'POSTGRES_USER=merra-user'
+      - 'POSTGRES_USER=brian'
     ports:
-      - '5070:5432'
+      - '5071:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
 
-  app:
-    container_name: merra-app
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    env_file:
-      - ./main/.env
-    environment:
-      # Override DB_URL to use Docker service name for container networking
-      - DB_URL=jdbc:postgresql://db:5432/merradb
-    ports:
-      - '8080:8080'
-    depends_on:
-      - db
+  # app:
+  #   container_name: merra-app
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   env_file:
+  #     - ./main/.env
+  #   environment:
+  #     # Override DB_URL to use Docker service name for container networking
+  #     - DB_URL=jdbc:postgresql://db:5432/merradb
+  #   ports:
+  #     - '8080:8080'
+  #   depends_on:
+  #     - db
 
 volumes:
   db_data:
