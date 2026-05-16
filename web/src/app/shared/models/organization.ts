@@ -226,6 +226,7 @@ export interface CurrentOrganizationResponseType {
 export interface CurrentOrganizationResponseNames {
   displayName: string;
   legalName: string;
+  description: string;
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Address

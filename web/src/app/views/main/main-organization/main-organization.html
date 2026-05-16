@@ -16,7 +16,7 @@
 					<mat-icon class="detail-icon" aria-hidden="true">business</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
-			<div class="organization-info-editor">
+			<div class="organization-info-editor" [formGroup]="organizationForm">
 				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ dateCreated }}</p>
 				<mat-form-field class="organization-type-field">
 					<mat-label>Organization Type</mat-label>
@@ -30,12 +30,12 @@
 				<div class="organization-info-fields-row">
 					<mat-form-field>
 						<mat-label>Display Name</mat-label>
-						<input matInput type="text" value="Adhance" placeholder="Enter display name">
+						<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
 					</mat-form-field>
 
 					<mat-form-field>
 						<mat-label>Legal Name</mat-label>
-						<input matInput type="text" value="Adhance Corporation" placeholder="Enter legal name">
+						<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
 					</mat-form-field>
 				</div>
 

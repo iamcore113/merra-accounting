@@ -38,7 +38,7 @@ public record CurrentOrganizationResponse(
         }
     }
 
-    public record Names(String displayName, String legalName) {
+    public record Names(String displayName, String legalName, String description) {
         public Names {
             if (displayName == null || displayName.isBlank()) {
                 throw new IllegalArgumentException("displayName cannot be null or blank");

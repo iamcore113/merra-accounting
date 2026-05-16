@@ -98,7 +98,7 @@ public interface OrganizationMapper {
 
 	@Named("mapNamesResponse")
 	default CurrentOrganizationResponse.Names mapNamesResponse(Organization organization) {
-		return new CurrentOrganizationResponse.Names(organization.getDisplayName(), organization.getLegalName());
+		return new CurrentOrganizationResponse.Names(organization.getDisplayName(), organization.getLegalName(), organization.getOrganizationDescription());
 	}
 
 	@Named("mapAddressResponse")
