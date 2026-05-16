@@ -19,6 +19,7 @@ import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
+import org.merra.dto.VisitorAccessToken;
 import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
@@ -64,6 +65,7 @@ public class AuthService {
   private String webUrl;
 
   private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+  private final static String ROLE_VISITOR = UserAccountStatusEn.VISITOR.toString();
   private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
   private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
   private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
@@ -92,6 +94,11 @@ public class AuthService {
     this.passwordEncoder = passwordEncoder;
     this.userRepository = userAccountRepository;
     this.userAccountService = userAccountService;
+  }
+
+  public VisitorAccessToken generateVisitorAccessToken() {
+    // TODO: Implement visitor access token generation
+    return new VisitorAccessToken("visitor-token");
   }
 
   /**

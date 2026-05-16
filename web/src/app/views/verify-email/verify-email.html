@@ -1,27 +1,23 @@
-<mat-card class="auth-card">
-  <mat-card-header>
-    <mat-card-title>
-      <mat-icon fontSet="material-icons-outlined">mark_email_read</mat-icon>
-      Verify Your Email
-    </mat-card-title>
-  </mat-card-header>
+<div class="verify-email-wrapper">
+  <div class="verify-email-header">
+    <mat-icon fontSet="material-icons-outlined">mark_email_read</mat-icon>
+    <span>Verify Your Email</span>
+  </div>
 
-  <mat-card-content>
-    <div class="message-container">
-      <p class="message-text">
-        We've sent a verification email to your inbox <span style="font-weight: 300; color: #1976d2;">{{ email }}</span>. Please check your email and click the
-        verification link to activate your account.
-      </p>
-      <p class="message-subtext">
-        Didn't receive the email? Check your spam folder or click the button below to resend.
-      </p>
-    </div>
+  <div class="message-container">
+    <p class="message-text">
+      We've sent a verification email to your inbox <span class="email-highlight">{{ email }}</span>. Please check your email and click the
+      verification link to activate your account.
+    </p>
+    <p class="message-subtext">
+      Didn't receive the email? Check your spam folder or click the button below to resend.
+    </p>
+  </div>
 
-    <div class="button-container">
-      <button matButton="filled" type="button" (click)="onResend()" class="orange-button">
-        <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
-        Resend Verification Email
-      </button>
-    </div>
-  </mat-card-content>
-</mat-card>
+  <div class="button-container">
+    <button matButton="filled" type="button" (click)="onResend()" class="verification-button">
+      <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
+      Resend Verification Email
+    </button>
+  </div>
+</div>

@@ -29,6 +29,11 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @GetMapping(value = "visitor")
+    public void enterAsVisitor() {
+
+    }
+
     /**
      * Verifies a user's email address using a verification token sent via email.
      * This endpoint is typically accessed through a link in the verification email.
