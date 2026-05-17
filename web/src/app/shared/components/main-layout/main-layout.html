@@ -1,8 +1,15 @@
 <div class="main-layout">
-  <app-main-header></app-main-header>
+  <app-main-header (menuToggle)="isSidenavOpen = !isSidenavOpen"></app-main-header>
 
-  <div class="layout-shell" [class.sidenav-collapsed]="!isSidenavOpen">
-    <app-main-sidenav [isOpen]="isSidenavOpen" (isOpenChange)="isSidenavOpen = $event"></app-main-sidenav>
+  <div class="layout-shell" [class.sidenav-collapsed]="!isSidenavOpen" [class.is-mobile]="isMobile">
+    @if (isMobile && isSidenavOpen) {
+      <div class="sidenav-overlay" (click)="isSidenavOpen = false" aria-hidden="true"></div>
+    }
+    <app-main-sidenav
+      [isOpen]="isSidenavOpen"
+      [isMobile]="isMobile"
+      (isOpenChange)="isSidenavOpen = $event">
+    </app-main-sidenav>
 
     <main class="main-content">
       <div class="content-wrapper">

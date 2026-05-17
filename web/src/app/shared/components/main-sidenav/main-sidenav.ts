@@ -13,6 +13,7 @@ import { RouterModule } from '@angular/router';
 })
 export class MainSidenav {
   @Input() isOpen = true;
+  @Input() isMobile = false;
   @Output() readonly isOpenChange = new EventEmitter<boolean>();
 
   protected readonly navItems = [

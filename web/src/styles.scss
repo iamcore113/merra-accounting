@@ -138,16 +138,29 @@ h1, h2, h3, h4, h5, h6, p {
 
 .shared-expansion-panels .detail-text {
   display: grid;
-  grid-template-columns: 9rem minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  column-gap: 2.5rem;
+  column-gap: 0.75rem;
   flex: 1;
   min-width: 0;
 }
 
-.shared-expansion-panels .detail-label,
+.shared-expansion-panels .detail-label {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
 .shared-expansion-panels .detail-value {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 600px) {
+  .shared-expansion-panels .detail-text {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    column-gap: 2.5rem;
+  }
 }
 
 .shared-expansion-panels .detail-icon {

@@ -11,7 +11,7 @@ interface JsonResponse {
  * Interface corresponding to ApiResponse.java
  * Generic type T allows for type-safe data property
  */
-interface SuccessResponse<T = any> extends JsonResponse {
+export interface SuccessResponse<T = any> extends JsonResponse {
   data: T;
 }
 

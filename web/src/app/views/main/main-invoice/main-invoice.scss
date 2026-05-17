@@ -434,3 +434,23 @@ p {
 		margin-top: 0.25rem;
 	}
 }
+
+@media (max-width: 480px) {
+	.primary-surface {
+		padding: 1rem 0.75rem;
+		border-radius: 1rem;
+	}
+
+	.tax-row {
+		grid-template-columns: 1fr;
+	}
+
+	.section-header h1 {
+		font-size: 1.5rem;
+	}
+
+	.secondary-panel-trigger {
+		width: 100%;
+		justify-content: center;
+	}
+}

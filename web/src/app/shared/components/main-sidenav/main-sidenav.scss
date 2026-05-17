@@ -7,11 +7,30 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	transition: padding 220ms cubic-bezier(0.4, 0, 0.2, 1);
+	transition: padding 220ms cubic-bezier(0.4, 0, 0.2, 1),
+		transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
 
 	&.side-nav-closed {
 		align-items: center;
 		padding: 1rem 0.5rem;
+	}
+
+	&.side-nav-mobile {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100vh;
+		width: 260px;
+		z-index: 100;
+		transform: translateX(0);
+		box-shadow: 4px 0 24px rgba(0, 0, 0, 0.18);
+		padding: 1rem;
+		align-items: flex-start;
+	}
+
+	&.side-nav-mobile.side-nav-closed {
+		transform: translateX(-100%);
+		pointer-events: none;
 	}
 }
 

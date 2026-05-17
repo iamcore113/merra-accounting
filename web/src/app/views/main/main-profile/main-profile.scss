@@ -263,18 +263,31 @@
 }
 
 @media (max-width: 640px) {
+	.profile-accordion .name-editor-row,
+	.profile-accordion .gender-editor-row,
 	.profile-accordion .country-editor-row,
 	.profile-accordion .email-editor-row {
 		flex-direction: column;
 	}
 
+	.profile-accordion .name-editor-row button,
+	.profile-accordion .gender-editor-row button,
 	.profile-accordion .country-editor-row button,
 	.profile-accordion .email-editor-row button {
 		width: 100%;
 		margin-left: 0;
 	}
 
+	.profile-accordion .gender-editor-row mat-form-field,
+	.profile-accordion .country-editor-row mat-form-field {
+		width: 100%;
+	}
+
 	.profile-accordion .change-password-button {
 		width: 100%;
+	}
+
+	.profile-accordion {
+		padding: 0 0.5rem;
 	}
 }

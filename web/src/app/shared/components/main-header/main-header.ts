@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
@@ -11,6 +11,11 @@ import { RouterModule } from '@angular/router';
 })
 export class MainHeader {
   isMenuOpen = false;
+  @Output() readonly menuToggle = new EventEmitter<void>();
+
+  onHamburgerClick(): void {
+    this.menuToggle.emit();
+  }
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
 
