@@ -20,6 +20,6 @@ public interface UserWorkspaceStateRepository extends JpaRepository<UserWorkspac
      * @return the current {@link Organization} for the authenticated user, or
      *         {@code null} if not found
      */
-    @Query("select w.currentOrganization from UserWorkspaceState w where w.user.userId = ?#{ principal?.id }")
+    @Query("select w.currentOrganization from UserWorkspaceState w where w.user.userId = ?#{ principal?.userId }")
     Organization findCurrentOrganizationByPrincipal();
 }

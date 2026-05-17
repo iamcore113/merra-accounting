@@ -12,6 +12,16 @@ globs: web/**
 - **Angular Material v20** — always prefer Material components over custom HTML elements; reference: https://v20.material.angular.dev/
 - **SCSS** — all component and global styles must be written in `.scss` files; do not use `.css` files for any styling
 
+**Mobile-First & Responsive Design (Obligatory)**
+- **Mobile-First Approach**: All styles must be written using a mobile-first approach. Base styles target mobile devices, and media queries (`@media (min-width: ...)` ) progressively enhance for larger screens.
+- **Responsive Layouts**: Every component and page must adapt gracefully to all screen sizes (mobile, tablet, desktop). The UI must remain usable and visually intact across all breakpoints.
+- **Flexible Units**: Prefer relative units (`rem`, `%`, `vw`, `vh`) over fixed pixel values where appropriate. Use `min-width`, `max-width`, and CSS Grid/Flexbox for fluid layouts.
+- **Material Breakpoints**: Leverage Angular Material's breakpoint utilities (`Breakpoints.Handset`, `Breakpoints.Tablet`, etc.) or CSS media queries aligned with standard breakpoints:
+  - Mobile: < 600px
+  - Tablet: 600px - 1024px
+  - Desktop: > 1024px
+- **Testing Requirement**: Verify all changes on at least mobile and desktop viewports before considering the task complete.
+
 **Key Development Principles**
 1. **Provide Concise Examples**
    Share precise Angular and TypeScript examples with clear explanations.

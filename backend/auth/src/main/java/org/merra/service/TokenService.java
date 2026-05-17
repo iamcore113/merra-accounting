@@ -64,9 +64,7 @@ public class TokenService {
     }
 
     public ValidateTokenResponse validateToken(String token) {
-        logger.info("Validating token: {}", token);
         final String email = jwtUtils.extractUsername(token);
-        logger.info("Extracted email from token: {}", email);
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
         boolean isTokenValid = true;
         if (!jwtUtils.isTokenValid(token, userDetails)) {
