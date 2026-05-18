@@ -2,12 +2,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-main-sidenav',
   standalone: true,
-  imports: [MatListModule, MatIconModule, MatButtonModule, RouterModule],
+  imports: [MatListModule, MatIconModule, MatButtonModule, MatTooltipModule, RouterModule],
   templateUrl: './main-sidenav.html',
   styleUrl: './main-sidenav.scss',
 })

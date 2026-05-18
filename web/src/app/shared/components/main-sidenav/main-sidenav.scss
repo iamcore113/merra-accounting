@@ -2,15 +2,18 @@
 	position: sticky;
 	top: 64px;
 	height: calc(100vh - 64px);
+	width: 260px;
 	padding: 1rem;
 	background-color: var(--mat-sys-surface);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	transition: padding 220ms cubic-bezier(0.4, 0, 0.2, 1),
+	transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1),
+		padding 220ms cubic-bezier(0.4, 0, 0.2, 1),
 		transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
 
 	&.side-nav-closed {
+		width: 72px;
 		align-items: center;
 		padding: 1rem 0.5rem;
 	}
@@ -44,20 +47,8 @@
 	margin-bottom: 0;
 }
 
-.side-nav-content {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	opacity: 1;
-	transform: translateX(0);
-	transition: opacity 180ms ease, transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.side-nav-content-hidden {
-	opacity: 0;
-	transform: translateX(-8px);
-	pointer-events: none;
-	user-select: none;
+nav {
+	width: 100%;
 }
 
 .nav-title {
@@ -69,9 +60,6 @@
 	letter-spacing: 0.04em;
 }
 
-nav {
-	flex: 1;
-}
 
 mat-nav-list {
 	padding-top: 0;
@@ -84,10 +72,17 @@ a[mat-list-item] {
 	margin-bottom: 0.6rem;
 	padding-top: 1.9rem;
 	padding-bottom: 1.9rem;
+	transition: padding 220ms cubic-bezier(0.4, 0, 0.2, 1);
 	--mdc-list-list-item-hover-state-layer-color: transparent;
 	--mdc-list-list-item-focus-state-layer-color: transparent;
 	--mdc-list-list-item-hover-state-layer-opacity: 0;
 	--mdc-list-list-item-focus-state-layer-opacity: 0;
+}
+
+.side-nav-closed a[mat-list-item] {
+	padding-left: 0;
+	padding-right: 0;
+	justify-content: center;
 }
 
 a[mat-list-item].mat-mdc-list-item-interactive::before,
