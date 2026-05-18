@@ -82,7 +82,8 @@ public interface OrganizationMapper {
 		@Mapping(target = "address", source = "organization", qualifiedByName = "mapAddressResponse"),
 		@Mapping(target = "website", source = "website"),
 		@Mapping(target = "status", source = "status", qualifiedByName = "mapStatusToString"),
-		@Mapping(target = "createdDate", source = "createdDate")
+		@Mapping(target = "createdDate", source = "createdDate"),
+		@Mapping(target = "financialYear", source = "organization", qualifiedByName = "mapFinancialYearResponse")
 	})
 	CurrentOrganizationResponse toCurrentOrganizationResponse(Organization organization);
 
@@ -104,6 +105,11 @@ public interface OrganizationMapper {
 	@Named("mapAddressResponse")
 	default CurrentOrganizationResponse.Address mapAddressResponse(Organization organization) {
 		return new CurrentOrganizationResponse.Address(organization.getEmail(), organization.getCountry(), organization.getDefaultCurrency(), organization.getTimeZone());
+	}
+
+	@Named("mapFinancialYearResponse")
+	default CurrentOrganizationResponse.FinancialYearEmb mapFinancialYearResponse(Organization organization) {
+		return new CurrentOrganizationResponse.FinancialYearEmb(String.valueOf(organization.getFinancialYear().getYearEndDay()), String.valueOf(organization.getFinancialYear().getYearEndMonth()));
 	}
 
 	/**

@@ -237,6 +237,12 @@ export interface CurrentOrganizationResponseAddress {
   timeZone: string;
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.FinancialYearEmb
+export interface CurrentOrganizationResponseFinancialYear {
+  yearEndDay: string;
+  yearEndMonth: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.java
 export interface CurrentOrganizationResponse {
   organizationId: string;
@@ -246,6 +252,7 @@ export interface CurrentOrganizationResponse {
   website: string;
   createdDate: string;
   status: string;
+  financialYear: CurrentOrganizationResponseFinancialYear;
 }
 
 // Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations

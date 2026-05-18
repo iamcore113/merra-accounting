@@ -10,13 +10,25 @@ public record CurrentOrganizationResponse(
     Address address,
     String website,
     LocalDate createdDate,
-    String status
+    String status,
+    FinancialYearEmb financialYear
     
 ) {
     public record Type (UUID typeId, String name) {
         public Type {
             if (typeId == null || name == null) {
                 throw new IllegalArgumentException("typeId and name cannot be null");
+            }
+        }
+    }
+
+    public record FinancialYearEmb(String yearEndDay, String yearEndMonth) {
+        public FinancialYearEmb {
+            if (yearEndDay == null || yearEndDay.isBlank()) {
+                throw new IllegalArgumentException("yearEndDay cannot be null or blank");
+            }
+            if (yearEndMonth == null || yearEndMonth.isBlank()) {
+                throw new IllegalArgumentException("yearEndMonth cannot be null or blank");
             }
         }
     }

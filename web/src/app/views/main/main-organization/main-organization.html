@@ -11,47 +11,82 @@
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
 						<span class="detail-label">Organization:</span>
-						<span class="detail-value">Adhance</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ organizationForm.get('names.displayName')?.value || '—' }}</span>
+						}
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">business</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
 			<div class="organization-info-editor" [formGroup]="organizationForm">
-				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ dateCreated }}</p>
-				<mat-form-field class="organization-type-field">
-					<mat-label>Organization Type</mat-label>
-					<mat-select value="corporation">
-						<mat-option value="corporation">Corporation</mat-option>
-						<mat-option value="llc">LLC</mat-option>
-						<mat-option value="partnership">Partnership</mat-option>
-						<mat-option value="non-profit">Non-profit</mat-option>
-					</mat-select>
-				</mat-form-field>
-				<div class="organization-info-fields-row">
-					<mat-form-field>
-						<mat-label>Display Name</mat-label>
-						<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
-					</mat-form-field>
-
-					<mat-form-field>
-						<mat-label>Legal Name</mat-label>
-						<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
-					</mat-form-field>
+				@if (isLoadingOrganization) {
+				<div class="organization-date-created-skeleton">
+					<div class="skeleton-label"></div>
+					<div class="skeleton-value"></div>
 				</div>
-
-				<button class="organization-name-difference-link" type="button" (click)="openNameDifferenceSheet()">What's the difference between legal name and display name?</button>
-
-				<div class="organization-description-block">
-					<p class="organization-description-display-title">About this organization:</p>
-					@if (!isEditingDescription) {
-						<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationDescription }}</button>
-					} @else {
-						<mat-form-field class="organization-description-field">
-							<mat-label>Description</mat-label>
-							<textarea matInput rows="5" placeholder="Enter organization description" [value]="organizationDescription"></textarea>
+			} @else {
+				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ organizationForm.get('createdDate')?.value | date:'longDate' }}</p>
+			}
+				@if (isLoadingOrganizationTypes) {
+					<div class="organization-type-skeleton">
+						<div class="skeleton-label"></div>
+						<div class="skeleton-input"></div>
+					</div>
+				} @else {
+					<mat-form-field class="organization-type-field" formGroupName="organizationType">
+						<mat-label>Organization Type</mat-label>
+						<mat-select formControlName="typeId">
+							@for (type of organizationTypesMetadata; track type.id) {
+								<mat-option [value]="type.id">{{ type.name }}</mat-option>
+							}
+						</mat-select>
+					</mat-form-field>
+				}
+				@if (isLoadingOrganization) {
+					<div class="organization-info-fields-skeleton">
+						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
+						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
+					</div>
+				} @else {
+					<div class="organization-info-fields-row" formGroupName="names">
+						<mat-form-field>
+							<mat-label>Display Name</mat-label>
+							<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
 						</mat-form-field>
-					}
-				</div>
+
+						<mat-form-field>
+							<mat-label>Legal Name</mat-label>
+							<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
+						</mat-form-field>
+					</div>
+				}
+
+				@if (!isLoadingOrganization) {
+					<button class="organization-name-difference-link" type="button" (click)="openNameDifferenceSheet()">What's the difference between legal name and display name?</button>
+				}
+
+				@if (isLoadingOrganization) {
+					<div class="organization-description-skeleton">
+						<div class="skeleton-title"></div>
+						<div class="skeleton-text"></div>
+					</div>
+				} @else {
+					<div class="organization-description-block">
+						<p class="organization-description-display-title">About this organization:</p>
+						@if (!isEditingDescription) {
+							<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationForm.get('names.description')?.value || 'No description available' }}</button>
+						} @else {
+							<div formGroupName="names">
+								<mat-form-field class="organization-description-field">
+									<mat-label>Description</mat-label>
+									<textarea matInput rows="5" placeholder="Enter organization description" formControlName="description"></textarea>
+								</mat-form-field>
+							</div>
+						}
+					</div>
+				}
 
 				<div class="organization-info-actions">
 					<button class="organization-update-button" matButton="filled" type="button" (click)="organizationPanel.close()">Update</button>
@@ -63,18 +98,29 @@
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Website:</span>
-            <span class="detail-value">developer.xero.com</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('website')?.value || '—' }}</span>
+            }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">link</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-			<div class="organization-editor">
-				<div class="organization-editor-fields organization-website-fields">
-					<mat-form-field>
-						<mat-label>Website</mat-label>
-						<input matInput type="text" value="developer.xero.com" placeholder="Enter website">
-					</mat-form-field>
-				</div>
+			<div class="organization-editor" [formGroup]="organizationForm">
+				@if (isLoadingOrganization) {
+					<div class="organization-website-skeleton">
+						<div class="skeleton-label"></div>
+						<div class="skeleton-input"></div>
+					</div>
+				} @else {
+					<div class="organization-editor-fields organization-website-fields">
+						<mat-form-field>
+							<mat-label>Website</mat-label>
+							<input matInput type="text" formControlName="website" placeholder="Enter website">
+						</mat-form-field>
+					</div>
+				}
 
 				<div class="organization-editor-actions">
 					<button class="organization-update-button" matButton="filled" type="button">Update</button>
@@ -86,30 +132,58 @@
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Country:</span>
-            <span class="detail-value">Brazil</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('address.country')?.value || '—' }}</span>
+            }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-      <div class="organization-editor">
+      <div class="organization-editor" [formGroup]="organizationForm">
         <div class="organization-editor-fields">
 					<div class="organization-country-field-group">
-						<mat-form-field>
-							<mat-label>Country</mat-label>
-							<mat-select value="brazil">
-								<mat-option value="brazil">Brazil</mat-option>
-								<mat-option value="philippines">Philippines</mat-option>
-								<mat-option value="singapore">Singapore</mat-option>
-								<mat-option value="united-states">United States</mat-option>
-							</mat-select>
-						</mat-form-field>
-						<p class="organization-currency-text">Currency: <span class="organization-currency-value">{{ currencyCode }}</span></p>
+						@if (isLoadingCountries) {
+							<div class="organization-country-skeleton">
+								<div class="skeleton-label"></div>
+								<div class="skeleton-select"></div>
+							</div>
+						} @else {
+							<div formGroupName="address">
+								<mat-form-field>
+									<mat-label>Country</mat-label>
+									<mat-select formControlName="country">
+										@for (country of countries; track country.cca2) {
+											<mat-option [value]="country.cca2">{{ country.name.common }}</mat-option>
+										}
+									</mat-select>
+								</mat-form-field>
+							</div>
+						}
+						@if (isLoadingOrganization) {
+							<div class="organization-currency-skeleton">
+								<div class="skeleton-label"></div>
+								<div class="skeleton-value"></div>
+							</div>
+						} @else {
+							<p class="organization-currency-text">Currency: <span class="organization-currency-value">{{ organizationForm.get('address.currency')?.value || '—' }}</span></p>
+						}
 					</div>
 
-					<mat-form-field>
-            <mat-label>Timezone</mat-label>
-            <input matInput type="text" value="America/Sao_Paulo" placeholder="Enter timezone">
-          </mat-form-field>
+					@if (isLoadingOrganization) {
+						<div class="organization-timezone-skeleton">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+					} @else {
+						<div formGroupName="address">
+							<mat-form-field>
+								<mat-label>Timezone</mat-label>
+								<input matInput type="text" formControlName="timeZone" placeholder="Enter timezone">
+							</mat-form-field>
+						</div>
+					}
         </div>
 
         <div class="organization-editor-actions">
@@ -124,7 +198,11 @@
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Contact:</span>
-            <span class="detail-value">contact@adhance.com</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('address.email')?.value || '—' }}</span>
+            }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
         </mat-panel-title>
@@ -137,21 +215,25 @@
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Financial Settings</span>
-            <span class="detail-value">Dec. 31</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ getFinancialYearEndDisplay() }}</span>
+            }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">payments</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-			<div class="organization-editor">
+			<div class="organization-editor" [formGroup]="organizationForm">
 				<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the "boundary" for your financial reports.</p>
-				<div class="organization-editor-fields organization-financial-settings-fields">
-          <mat-form-field>
-            <mat-label>Financial Year End Month</mat-label>
-            <input matInput type="text" value="December" placeholder="Enter end month">
-          </mat-form-field>
+				<div class="organization-editor-fields organization-financial-settings-fields" formGroupName="financialYear">
+					<mat-form-field>
+						<mat-label>Financial Year End Month</mat-label>
+						<input matInput type="number" formControlName="yearEndMonth" placeholder="Enter end month (1-12)">
+					</mat-form-field>
 					<mat-form-field>
 						<mat-label>Financial Year End Day</mat-label>
-						<input matInput type="text" value="31" placeholder="Enter end day">
+						<input matInput type="number" formControlName="yearEndDay" placeholder="Enter end day (1-31)">
 					</mat-form-field>
 				</div>
 
@@ -166,15 +248,26 @@
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
 						<span class="detail-label">Status:</span>
-						<span class="detail-value membership-active-value">Active</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value membership-active-value">{{ organizationForm.get('status')?.value === 'ACTIVE_ACCOUNT' ? 'ACTIVE' : organizationForm.get('status')?.value || '—' }}</span>
+						}
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">badge</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
-			<div class="organization-status-row">
-				<mat-slide-toggle class="organization-status-toggle" [checked]="true" aria-label="Organization status toggle"></mat-slide-toggle>
-				<span class="organization-status-text">The organization is currently active with active members.</span>
-			</div>
+			@if (isLoadingOrganization) {
+				<div class="organization-status-skeleton">
+					<div class="skeleton-toggle"></div>
+					<div class="skeleton-text"></div>
+				</div>
+			} @else {
+				<div class="organization-status-row">
+					<mat-slide-toggle class="organization-status-toggle" [checked]="true" aria-label="Organization status toggle"></mat-slide-toggle>
+					<span class="organization-status-text">The organization is currently active with active members.</span>
+				</div>
+			}
 		</mat-expansion-panel>
 	</mat-accordion>
 </section>

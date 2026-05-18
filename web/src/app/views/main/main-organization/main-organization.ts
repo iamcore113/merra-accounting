@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { delay } from 'rxjs/operators';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -9,8 +10,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { DatePipe } from '@angular/common';
 import { OrganizationService } from '../../../shared/services/organization-service';
-import { CurrentOrganizationResponse } from '../../../shared/models/organization';
+import { CountryApiService } from '../../../shared/services/country-api-service';
+import { RestCountryList } from '../../../shared/models/api_response';
+import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
 
 @Component({
@@ -68,53 +73,147 @@ export class NameDifferenceSheet {
 
 @Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatBottomSheetModule, ReactiveFormsModule],
+  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
+  private readonly countryApiService = inject(CountryApiService);
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly fb = inject(FormBuilder);
+
+  private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  getFinancialYearEndDisplay(): string {
+    const yearEndMonth = this.organizationForm.get('financialYear.yearEndMonth')?.value;
+    const yearEndDay = this.organizationForm.get('financialYear.yearEndDay')?.value;
+
+    if (!yearEndMonth || !yearEndDay) {
+      return '—';
+    }
+
+    const monthIndex = parseInt(yearEndMonth, 10) - 1;
+    const monthAbbr = this.monthAbbreviations[monthIndex] || '???';
+    return `${monthAbbr}. ${yearEndDay}`;
+  }
 
   currentOrganization: CurrentOrganizationResponse | undefined;
 
+  public organizationTypesMetadata: OrganizationTypesMetaData[] = [];
+  public isLoadingOrganizationTypes = false;
+  public isLoadingOrganization = false;
+  public countries: RestCountryList = [];
+  public isLoadingCountries = false;
   organizationForm: FormGroup = this.fb.group({
-    id: [{ value: '', disabled: true }],
-    organizationType: ['', Validators.required],
-    displayName: ['', Validators.required],
-    legalName: ['', Validators.required],
-    description: [''],
-    dateCreated: [{ value: '', disabled: true }],
-    status: [{ value: '', disabled: true }],
+    organizationId: [{ value: '', disabled: true }],
+    organizationType: this.fb.group({
+      typeId: ['', Validators.required],
+      name: ['', Validators.required],
+    }),
+    names: this.fb.group({
+      displayName: ['', Validators.required],
+      legalName: ['', Validators.required],
+      description: [''],
+    }),
+    address: this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      country: ['', Validators.required],
+      currency: ['', Validators.required],
+      timeZone: ['', Validators.required],
+    }),
     website: [''],
+    createdDate: [{ value: '', disabled: true }],
+    status: [{ value: '', disabled: true }],
+    financialYear: this.fb.group({
+      yearEndDay: [''],
+      yearEndMonth: [''],
+    }),
   });
-  dateCreated = 'August 30, 1999';
-  currencyCode = 'BRL';
-  organizationDescription = 'The wolverine is found primarily in remote reaches of the northern boreal forests and subarctic and alpine tundra of the Northern Hemisphere, with the greatest numbers in Northern Canada, the U.S. state of Alaska, the mainland Nordic countries of Europe, and throughout western Russia and Siberia. Its population has steadily declined since the 19th century owing to trapping, range reduction and habitat fragmentation. The wolverine has become essentially absent from the southern end of its range in both Europe and North America.';
   isEditingDescription = false;
 
   // TODO: finish this one
   ngOnInit(): void {
-    this.organizationService.getCurrentOrganization().subscribe({
+    this.isLoadingOrganization = true;
+    this.loadCountries();
+    this.loadOrganizationTypesMetadata();
+    this.organizationService.getCurrentOrganization().pipe(delay(2000)).subscribe({
       next: (response: Config) => {
         if (response.success && 'data' in response) {
           this.currentOrganization = response.data as CurrentOrganizationResponse;
+          console.log(this.currentOrganization);
           this.organizationForm.patchValue({
-            id: this.currentOrganization.organizationId,
-            organizationType: this.currentOrganization.organizationType.name,
-            displayName: this.currentOrganization.names.displayName,
-            legalName: this.currentOrganization.names.legalName,
-            description: this.currentOrganization.names.description,
-            dateCreated: this.currentOrganization.createdDate,
-            status: this.currentOrganization.status,
+            organizationId: this.currentOrganization.organizationId,
+            organizationType: {
+              typeId: this.currentOrganization.organizationType.typeId,
+              name: this.currentOrganization.organizationType.name,
+            },
+            names: {
+              displayName: this.currentOrganization.names.displayName,
+              legalName: this.currentOrganization.names.legalName,
+              description: this.currentOrganization.names.description,
+            },
+            address: {
+              email: this.currentOrganization.address.email,
+              country: this.currentOrganization.address.country,
+              currency: this.currentOrganization.address.currency,
+              timeZone: this.currentOrganization.address.timeZone,
+            },
             website: this.currentOrganization.website,
+            createdDate: this.currentOrganization.createdDate,
+            status: this.currentOrganization.status,
+            financialYear: {
+              yearEndDay: this.currentOrganization.financialYear?.yearEndDay,
+              yearEndMonth: this.currentOrganization.financialYear?.yearEndMonth,
+            },
           });
         }
+        this.isLoadingOrganization = false;
+      },
+      error: () => {
+        this.isLoadingOrganization = false;
       }
     })
+  }
+
+  private loadCountries(): void {
+    this.isLoadingCountries = true;
+    this.countryApiService.getCountries().pipe(delay(2000)).subscribe({
+      next: (countries: RestCountryList) => {
+        this.countries = countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        this.isLoadingCountries = false;
+      },
+      error: (error) => {
+        console.error('Failed to load countries:', error);
+        this.isLoadingCountries = false;
+      }
+    });
+  }
+
+  private loadOrganizationTypesMetadata(): void {
+    this.isLoadingOrganizationTypes = true;
+    let verifiedData: OrganizationMetaDataResponse | null = null;
+    this.organizationService.getOrganizationMetadata().pipe(delay(2000)).subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response) {
+          verifiedData = (response as any).data as OrganizationMetaDataResponse;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load organization metadata:', error);
+        this.isLoadingOrganizationTypes = false;
+        this.snackBar.open('Failed to load organization metadata', 'Close', {
+          duration: 3000
+        });
+      },
+      complete: () => {
+        this.organizationTypesMetadata = verifiedData?.organizationTypes || [];
+        this.isLoadingOrganizationTypes = false;
+      }
+    });
   }
 
   openOrganizationImageDialog(): void {

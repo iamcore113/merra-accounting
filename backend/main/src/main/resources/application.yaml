@@ -5,6 +5,10 @@ spring:
     data:
       accessors:
         enabled: true
+    repositories:
+      enabled: true
+      metadata:
+        enabled: true
   mvc:
     apiversion:
       default: 1.1
