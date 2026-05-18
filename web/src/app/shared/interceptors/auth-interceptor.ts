@@ -1,37 +1,48 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import { LocalStorageService } from '../services/local-storage-service';
 import { IS_AUTHENTICATED } from '../context/auth.token';
+import { SessionExpiredDialog } from '../components/session-expired-dialog/session-expired-dialog';
+
+let sessionDialogOpen = false;
+
+function openSessionExpiredDialog(dialog: MatDialog, message: string): void {
+  if (sessionDialogOpen) {
+    return;
+  }
+  sessionDialogOpen = true;
+  dialog.open(SessionExpiredDialog, {
+    width: '420px',
+    disableClose: true,
+    data: { message },
+  }).afterClosed().subscribe(() => {
+    sessionDialogOpen = false;
+  });
+}
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const requiresAuth = req.context.get(IS_AUTHENTICATED);
-  const localStorage = inject(LocalStorageService);
-  const router = inject(Router);
+  const localStorageService = inject(LocalStorageService);
+  const dialog = inject(MatDialog);
 
-  const accessToken = localStorage.getItem('access_token');
+  const accessToken = localStorageService.getItem('access_token');
   if (!accessToken && requiresAuth) {
-    // No token and auth required for the request - redirect to signin with message
-    router.navigate(['/account/signin'], {
-      queryParams: { message: 'Invalid token. Please login again.' }
-    });
+    localStorageService.removeItem('access_token');
+    openSessionExpiredDialog(dialog, 'Your session is invalid or has expired. Please sign in again to continue.');
     return throwError(() => new Error('No authentication token found'));
   }
 
   if (accessToken && requiresAuth) {
-    let headers = req.headers.set('Authorization', `Bearer ${accessToken}`);
-
+    const headers = req.headers.set('Authorization', `Bearer ${accessToken}`);
     const authReq = req.clone({ headers });
 
     return next(authReq).pipe(
       catchError(error => {
         if (error.status === 401) {
-          localStorage.removeItem('access_token');
-          // Token expired or invalid - redirect to signin
-          router.navigate(['/account/signin'], {
-            queryParams: { message: 'Token expired. Please login again.' }
-          });
+          localStorageService.removeItem('access_token');
+          openSessionExpiredDialog(dialog, 'Your session token has expired or is no longer valid. Please sign in again to continue.');
         }
         return throwError(() => error);
       })
@@ -41,10 +52,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error.status === 401) {
-        localStorage.removeItem('access_token');
-        router.navigate(['/account/signin'], {
-          queryParams: { message: 'Authentication failed. Please login again.' }
-        });
+        localStorageService.removeItem('access_token');
+        openSessionExpiredDialog(dialog, 'Authentication failed. Your session may have expired. Please sign in again.');
       }
       return throwError(() => error);
     })

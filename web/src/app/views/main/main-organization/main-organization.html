@@ -264,7 +264,7 @@
 				</div>
 			} @else {
 				<div class="organization-status-row">
-					<mat-slide-toggle class="organization-status-toggle" [checked]="true" aria-label="Organization status toggle"></mat-slide-toggle>
+					<mat-slide-toggle class="organization-status-toggle" [checked]="isOrganizationActive" (change)="confirmDisableOrganization($event)" aria-label="Organization status toggle"></mat-slide-toggle>
 					<span class="organization-status-text">The organization is currently active with active members.</span>
 				</div>
 			}

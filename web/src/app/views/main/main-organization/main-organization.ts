@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DatePipe } from '@angular/common';
 import { OrganizationService } from '../../../shared/services/organization-service';
@@ -70,6 +70,36 @@ export class NameDifferenceSheet {
     this.bottomSheetRef.dismiss();
   }
 }
+
+@Component({
+  selector: 'app-organization-status-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule, MatIconModule],
+  template: `
+    <section class="organization-status-dialog">
+      <div class="status-dialog-header">
+        <mat-icon class="status-dialog-icon" fontSet="material-icons-outlined">warning</mat-icon>
+        <h3 mat-dialog-title>Disable Organization?</h3>
+      </div>
+      <mat-dialog-content>
+        <p class="status-dialog-message">
+          Disabling this organization will mark it as <strong>inactive</strong>. While inactive, all associated
+          accounts, transactions, and member operations will be suspended and no further activity can be
+          recorded. This action can be reversed by re-enabling the organization, but any in-progress
+          operations at the time of deactivation may be interrupted.
+        </p>
+        <p class="status-dialog-message">
+          Are you sure you want to proceed?
+        </p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button matButton type="button" [mat-dialog-close]="false">Cancel</button>
+        <button matButton="filled" color="warn" type="button" [mat-dialog-close]="true">Disable</button>
+      </mat-dialog-actions>
+    </section>
+  `,
+})
+export class OrganizationStatusDialog {}
 
 @Component({
   selector: 'app-main-organization',
@@ -226,5 +256,20 @@ export class MainOrganization implements OnInit {
 
   openNameDifferenceSheet(): void {
     this.bottomSheet.open(NameDifferenceSheet);
+  }
+
+  isOrganizationActive = true;
+
+  confirmDisableOrganization(event: MatSlideToggleChange): void {
+    if (!event.checked) {
+      event.source.checked = true;
+      this.dialog.open(OrganizationStatusDialog, { width: '440px' }).afterClosed().subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.isOrganizationActive = false;
+        }
+      });
+    } else {
+      this.isOrganizationActive = true;
+    }
   }
 }

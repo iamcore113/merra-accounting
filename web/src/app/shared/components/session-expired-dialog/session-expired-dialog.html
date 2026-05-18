@@ -1,0 +1,21 @@
+<section class="session-expired-dialog">
+	<div class="session-expired-header">
+		<mat-icon class="session-expired-icon" fontSet="material-icons-outlined">lock_clock</mat-icon>
+		<h3 mat-dialog-title class="session-expired-title">Session Expired</h3>
+	</div>
+
+	<mat-dialog-content class="session-expired-content">
+		<p class="session-expired-message">{{ data.message }}</p>
+		<p class="session-expired-subtext">
+			You will be redirected to the sign-in page automatically in
+			<strong class="session-expired-countdown">{{ countdown }}</strong>
+			{{ countdown === 1 ? 'second' : 'seconds' }}.
+		</p>
+	</mat-dialog-content>
+
+	<mat-dialog-actions align="end">
+		<button matButton="filled" type="button" (click)="redirectToSignIn()">
+			Sign in now
+		</button>
+	</mat-dialog-actions>
+</section>
