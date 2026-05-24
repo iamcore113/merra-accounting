@@ -39,7 +39,7 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
      * @return - {@linkplain java.util.Optional} object of type
      *         {@linkplain UserAccount}
      */
-    @Query("select u from UserAccount u where u.id = ?#{ principal?.id }")
+    @Query("select u from UserAccount u where u.userId = ?#{ principal?.userId }")
     Optional<UserAccount> findAuthenticatedUser();
 
     /**

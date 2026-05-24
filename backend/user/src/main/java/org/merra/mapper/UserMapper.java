@@ -4,6 +4,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.NullValueMappingStrategy;
+import org.merra.dto.AuthenticatedUserProfile;
+import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
 
@@ -15,4 +17,10 @@ public interface UserMapper {
         @Mapping(target = "email", expression = "java(userAccount.getEmail())")
     })
     UserPersonalInformationResponse toUserPersonalInformationResponse(UserAccount userAccount);
+
+    @Mappings({
+        @Mapping(target = "fullName", source = "fullName"),
+        @Mapping(target = "organizationAffiliation", ignore = true)
+    })
+    PersonalDetailsResponse toPersonalDetailsResponse(UserAccount userAccount, String fullName);
 }

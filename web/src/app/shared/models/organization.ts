@@ -267,3 +267,14 @@ export interface UserOrganizationAffiliation {
   count: number;
   organizations: OrganizationAffiliation[];
 }
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/PersonalDetailsResponse.java
+export interface PersonalDetailsResponse {
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  gender: string;
+  country: string;
+  email: string;
+  organizationAffiliation: UserOrganizationAffiliation;
+}

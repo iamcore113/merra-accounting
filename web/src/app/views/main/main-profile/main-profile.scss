@@ -291,3 +291,109 @@
 		padding: 0 0.5rem;
 	}
 }
+
+// Skeleton loading styles
+.profile-accordion .detail-skeleton {
+	display: inline-block;
+	height: 16px;
+	width: 120px;
+	background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+	background-size: 200% 100%;
+	border-radius: 4px;
+	animation: skeleton-shimmer 1.5s infinite;
+}
+
+.profile-accordion .profile-info-fields-skeleton {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	margin-bottom: 0.75rem;
+
+	.skeleton-field {
+		.skeleton-label {
+			height: 12px;
+			width: 80px;
+			background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+			background-size: 200% 100%;
+			border-radius: 4px;
+			margin-bottom: 0.5rem;
+			animation: skeleton-shimmer 1.5s infinite;
+		}
+
+		.skeleton-input {
+			height: 48px;
+			width: 100%;
+			background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+			background-size: 200% 100%;
+			border-radius: 4px;
+			animation: skeleton-shimmer 1.5s infinite;
+		}
+	}
+}
+
+.profile-accordion .profile-select-skeleton {
+	width: 280px;
+	padding: 0.5rem 0;
+
+	.skeleton-label {
+		height: 12px;
+		width: 60px;
+		background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+		background-size: 200% 100%;
+		border-radius: 4px;
+		margin-bottom: 0.5rem;
+		animation: skeleton-shimmer 1.5s infinite;
+	}
+
+	.skeleton-select {
+		height: 48px;
+		width: 100%;
+		background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+		background-size: 200% 100%;
+		border-radius: 4px;
+		animation: skeleton-shimmer 1.5s infinite;
+	}
+}
+
+.profile-accordion .profile-input-skeleton {
+	width: 100%;
+	padding: 0.5rem 0;
+
+	.skeleton-label {
+		height: 12px;
+		width: 100px;
+		background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+		background-size: 200% 100%;
+		border-radius: 4px;
+		margin-bottom: 0.5rem;
+		animation: skeleton-shimmer 1.5s infinite;
+	}
+
+	.skeleton-input {
+		height: 48px;
+		width: 100%;
+		background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+		background-size: 200% 100%;
+		border-radius: 4px;
+		animation: skeleton-shimmer 1.5s infinite;
+	}
+}
+
+@keyframes skeleton-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+@media (max-width: 640px) {
+	.profile-accordion .profile-info-fields-skeleton {
+		grid-template-columns: 1fr;
+	}
+
+	.profile-accordion .profile-select-skeleton {
+		width: 100%;
+	}
+}

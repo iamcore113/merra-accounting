@@ -11,23 +11,40 @@
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
 						<span class="detail-label">Name:</span>
-						<span class="detail-value">Neil Brian temblor</span>
+						@if (isLoading) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ personalDetails?.fullName ?? 'Not set' }}</span>
+						}
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">account_circle</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
 			<div class="name-editor">
-				<div class="name-editor-row">
-					<mat-form-field>
-						<mat-label>First name</mat-label>
-						<input matInput type="text" value="Neil Brian" placeholder="Enter your first name">
-					</mat-form-field>
-					<mat-form-field>
-						<mat-label>Last name</mat-label>
-						<input matInput type="text" value="Temblor" placeholder="Enter your last name">
-					</mat-form-field>
-					<button class="name-update-button" matButton="filled" type="button" (click)="namePanel.close()">Update</button>
-				</div>
+				@if (isLoading) {
+					<div class="profile-info-fields-skeleton">
+						<div class="skeleton-field">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+						<div class="skeleton-field">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+					</div>
+				} @else {
+					<div class="name-editor-row">
+						<mat-form-field>
+							<mat-label>First name</mat-label>
+							<input matInput type="text" [value]="personalDetails?.firstName ?? ''" placeholder="Enter your first name">
+						</mat-form-field>
+						<mat-form-field>
+							<mat-label>Last name</mat-label>
+							<input matInput type="text" [value]="personalDetails?.lastName ?? ''" placeholder="Enter your last name">
+						</mat-form-field>
+						<button class="name-update-button" matButton="filled" type="button" (click)="namePanel.close()">Update</button>
+					</div>
+				}
 			</div>
 		</mat-expansion-panel>
     <mat-expansion-panel #genderPanel>
@@ -35,48 +52,69 @@
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Gender:</span>
-            <span class="detail-value">Male</span>
+            @if (isLoading) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ getGenderLetter() }}</span>
+            }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">group</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="gender-editor">
-				<div class="gender-editor-row">
-					<mat-form-field>
-						<mat-label>Gender</mat-label>
-						<mat-select value="male">
-							<mat-option value="male">Male</mat-option>
-							<mat-option value="female">Female</mat-option>
-						</mat-select>
-					</mat-form-field>
-					<button class="gender-update-button" matButton="filled" type="button" (click)="genderPanel.close()">Update</button>
-				</div>
-			</div>
+        @if (isLoading) {
+          <div class="profile-select-skeleton">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-select"></div>
+          </div>
+        } @else {
+          <div class="gender-editor-row">
+            <mat-form-field>
+              <mat-label>Gender</mat-label>
+              <mat-select [value]="personalDetails?.gender?.toLowerCase() ?? ''">
+                <mat-option value="male">Male</mat-option>
+                <mat-option value="female">Female</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button class="gender-update-button" matButton="filled" type="button" (click)="genderPanel.close()">Update</button>
+          </div>
+        }
+      </div>
     </mat-expansion-panel>
 		<mat-expansion-panel #countryPanel>
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">
           <span class="detail-text">
             <span class="detail-label">Country:</span>
-            <span class="detail-value">Philippines</span>
+            @if (isLoading) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ personalDetails?.country ?? 'Not set' }}</span>
+            }
           </span>
-		  <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
+          <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
-			<div class="country-editor">
-				<div class="country-editor-row">
-					<mat-form-field>
-						<mat-label>Country</mat-label>
-						<mat-select value="philippines">
-							<mat-option value="philippines">Philippines</mat-option>
-							<mat-option value="singapore">Singapore</mat-option>
-							<mat-option value="malaysia">Malaysia</mat-option>
-							<mat-option value="indonesia">Indonesia</mat-option>
-						</mat-select>
-					</mat-form-field>
-					<button class="country-update-button" matButton="filled" type="button" (click)="countryPanel.close()">Update</button>
-				</div>
-			</div>
+      <div class="country-editor">
+        @if (isLoading) {
+          <div class="profile-select-skeleton">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-select"></div>
+          </div>
+        } @else {
+          <div class="country-editor-row">
+            <mat-form-field>
+              <mat-label>Country</mat-label>
+              <mat-select [value]="personalDetails?.country ?? ''">
+                @for (country of countries; track country.cca2) {
+                <mat-option [value]="country.name">{{ country.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <button class="country-update-button" matButton="filled" type="button" (click)="countryPanel.close()">Update</button>
+          </div>
+        }
+      </div>
     </mat-expansion-panel>
 
 		<mat-expansion-panel #emailPanel>
@@ -84,24 +122,35 @@
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
 						<span class="detail-label">Email:</span>
-						<span class="detail-value">iamcore113@gmail.com</span>
+						@if (isLoading) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ personalDetails?.email ?? 'Not set' }}</span>
+						}
 					</span>
 					<mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
 				</mat-panel-title>
 			</mat-expansion-panel-header>
 			<div class="email-editor">
-				<div class="email-editor-row">
-					<mat-form-field>
-						<mat-label>Email address</mat-label>
-						<input
-							matInput
-							type="email"
-							value="iamcore113@gmail.com"
-							placeholder="Enter your email address">
-					</mat-form-field>
-					<button class="email-update-button" matButton="filled" type="button" (click)="emailPanel.close()">Update</button>
-				</div>
-				<p class="email-hint">You can only change your email address once every 2 months.</p>
+				@if (isLoading) {
+					<div class="profile-input-skeleton">
+						<div class="skeleton-label"></div>
+						<div class="skeleton-input"></div>
+					</div>
+				} @else {
+					<div class="email-editor-row">
+						<mat-form-field>
+							<mat-label>Email address</mat-label>
+							<input
+								matInput
+								type="email"
+								[value]="personalDetails?.email ?? ''"
+								placeholder="Enter your email address">
+						</mat-form-field>
+						<button class="email-update-button" matButton="filled" type="button" (click)="emailPanel.close()">Update</button>
+					</div>
+					<p class="email-hint">You can only change your email address once every 2 months.</p>
+				}
 			</div>
 		</mat-expansion-panel>
 		<mat-expansion-panel class="affiliated-panel">
@@ -115,43 +164,18 @@
       </mat-expansion-panel-header>
       @if (affiliatedOrganizationsCount > 0) {
       <mat-list>
-				<mat-list-item>
-					<mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
-					<div matListItemTitle>Pacific Data Consortium</div>
-					<div matListItemMeta>
-						<mat-chip-set>
-							<mat-chip>Board Member</mat-chip>
-						</mat-chip-set>
-					</div>
-				</mat-list-item>
-				<mat-list-item>
+        @for (org of personalDetails?.organizationAffiliation?.organizations; track org.organizationId) {
+        <mat-list-item>
           <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
-					<div matListItemTitle>Merra Research Network</div>
-					<div matListItemMeta>
-						<mat-chip-set>
-							<mat-chip>Contributor</mat-chip>
-						</mat-chip-set>
-					</div>
-				</mat-list-item>
-				<mat-list-item>
-          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
-					<div matListItemTitle>Southeast Climate Alliance</div>
-					<div matListItemMeta>
-						<mat-chip-set>
-							<mat-chip>Advisor</mat-chip>
-						</mat-chip-set>
-					</div>
-				</mat-list-item>
-				<mat-list-item>
-          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
-					<div matListItemTitle>Global Sustainability Council</div>
-					<div matListItemMeta>
-						<mat-chip-set>
-							<mat-chip>Coordinator</mat-chip>
-						</mat-chip-set>
-					</div>
-				</mat-list-item>
-			</mat-list>
+          <div matListItemTitle>{{ org.organizationName }}</div>
+          <div matListItemMeta>
+            <mat-chip-set>
+              <mat-chip>{{ org.role }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-list-item>
+        }
+      </mat-list>
       } @else {
       <p class="affiliated-empty-state">The user account does not have any organization affiliation.</p>
       }

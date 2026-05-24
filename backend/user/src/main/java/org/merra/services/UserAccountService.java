@@ -1,9 +1,12 @@
 package org.merra.services;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.merra.dto.AuthenticatedUserProfile;
+import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
@@ -120,6 +123,51 @@ public class UserAccountService {
 		userRepository.save(user);
 
 		return userMapper.toUserPersonalInformationResponse(user);
+	}
+
+
+	/**
+	 * Updates the persisted profile fields of the currently authenticated user
+	 * with the values provided in the given profile.
+	 *
+	 * <p>
+	 * Each field is only written when its value differs from what is already
+	 * stored, avoiding unnecessary dirty-marking. Email changes are persisted but
+	 * are still pending further handling (see inline TODO).
+	 * </p>
+	 *
+	 * @param profile - the {@linkplain AuthenticatedUserProfile} carrying the
+	 *                desired field values.
+	 * @throws IllegalArgumentException if the {@code profile.id()} does not match
+	 *                                  the ID of the currently authenticated user.
+	 * @throws java.util.NoSuchElementException if no authenticated user is found
+	 *                                          in the database.
+	 */
+	public void updateUserAccountProfile(AuthenticatedUserProfile profile) {
+		final UUID userId = profile.id();
+		UserAccount user = getAuthenticatedUser();
+
+		if (!user.getUserId().equals(userId)) {
+			throw new IllegalArgumentException("User ID does not match authenticated user");
+		}
+
+		if (!Objects.equals(user.getFirstName(), profile.firstName())) {
+			user.setFirstName(profile.firstName());
+		}
+		if (!Objects.equals(user.getLastName(), profile.lastName())) {
+			user.setLastName(profile.lastName());
+		}
+		if (!Objects.equals(user.getCountry(), profile.country())) {
+			user.setCountry(profile.country());
+		}
+		if (!Objects.equals(user.getGender(), profile.gender())) {
+			user.setGender(profile.gender());
+		}
+		// TODO: Still need to work more on this
+		if (!Objects.equals(user.getEmail(), profile.email())) {
+			user.setEmail(profile.email());
+		}
+		userRepository.save(user);
 	}
 
 	public void setUserRole(@NotNull UserAccount user, @NotNull UserAccountStatusEn role) {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,6 +10,10 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
+import { UserService } from '../../../shared/services/user-service';
+import { CountryApiService } from '../../../shared/services/country-api-service';
+import { PersonalDetailsResponse } from '../../../shared/models/organization';
+import { RestCountriesSelection, RestCountryList } from '../../../shared/models/api_response';
 
 @Component({
   selector: 'app-profile-image-dialog',
@@ -116,12 +120,56 @@ export class ChangePasswordSheet {
   encapsulation: ViewEncapsulation.None,
 })
 export class MainProfile implements OnInit {
+  private userService = inject(UserService);
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
-  readonly affiliatedOrganizationsCount = 4;
+  private readonly cdRef = inject(ChangeDetectorRef);
+  private readonly countryApiService = inject(CountryApiService);
+  public personalDetails: PersonalDetailsResponse | null = null;
+  affiliatedOrganizationsCount = 0;
+  isLoading = false;
+  countries: RestCountriesSelection = [];
 
   ngOnInit(): void {
-    // TODO: Fetch affiliated organizations count from API
+    this.isLoading = true;
+    this.loadCountries();
+    this.userService.getAuthenticatedUserDetails().subscribe({
+      next: (response: any) => {
+        this.personalDetails = response.data as PersonalDetailsResponse;
+        console.log('Personal details:', this.personalDetails);
+        if (this.personalDetails?.organizationAffiliation) {
+          this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count;
+        }
+        this.isLoading = false;
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to fetch user details:', error);
+        this.isLoading = false;
+        this.cdRef.detectChanges();
+      }
+    });
+  }
+
+  private loadCountries(): void {
+    this.countryApiService.getCountries().subscribe({
+      next: (countries: RestCountryList) => {
+        this.countries = countries.map(country => ({
+          name: country.name.common,
+          cca2: country.cca2,
+          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
+        })).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('Loaded countries count:', this.countries.length);
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load countries:', error);
+      },
+      complete: () => {
+        console.log('Countries loading completed');
+        console.log(this.countries);
+      }
+    });
   }
 
   openProfileImageDialog(): void {
@@ -130,5 +178,12 @@ export class MainProfile implements OnInit {
 
   openChangePasswordSheet(): void {
     this.bottomSheet.open(ChangePasswordSheet);
+  }
+
+  getGenderLetter(): string {
+    if (!this.personalDetails?.gender) {
+      return 'Not set';
+    }
+    return this.personalDetails.gender.charAt(0).toUpperCase();
   }
 }
