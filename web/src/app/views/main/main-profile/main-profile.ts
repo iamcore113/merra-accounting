@@ -7,6 +7,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -44,37 +45,6 @@ export class ProfileImageDialog {
 
   close(): void {
     this.dialogRef.close();
-  }
-}
-
-@Component({
-  selector: 'app-email-change-confirm-dialog',
-  standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatDialogModule],
-  template: `
-    <section class="email-change-confirm-dialog">
-      <h3 mat-dialog-title>Change Email Address</h3>
-      <mat-dialog-content>
-        <p>Changing your email address will log you out of your account.</p>
-        <p>You will need to sign in again using your new email address to continue.</p>
-        <p>Note: You can only change your email address once every 2 months.</p>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button matButton type="button" (click)="cancel()">Cancel</button>
-        <button matButton="filled" type="button" (click)="proceed()">Proceed</button>
-      </mat-dialog-actions>
-    </section>
-  `,
-})
-export class EmailChangeConfirmDialog {
-  private readonly dialogRef = inject(MatDialogRef<EmailChangeConfirmDialog>);
-
-  cancel(): void {
-    this.dialogRef.close(false);
-  }
-
-  proceed(): void {
-    this.dialogRef.close(true);
   }
 }
 
@@ -195,7 +165,6 @@ export class MainProfile implements OnInit {
     this.userService.getAuthenticatedUserDetails().subscribe({
       next: (response: any) => {
         this.personalDetails = response.data as PersonalDetailsResponse;
-        console.log(`hsifhsdfioghso: ${JSON.stringify(this.personalDetails)}`);
         if (this.personalDetails?.organizationAffiliation) {
           this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count;
         }
@@ -234,7 +203,6 @@ export class MainProfile implements OnInit {
       country:   value.country,
       email:     value.email,
     };
-    console.log(`GAGAGAGAGA: ${JSON.stringify(payload)}`);
     this.isUpdating = true;
     this.userService.updateProfile(payload).subscribe({
       next: (response: any) => {
@@ -265,15 +233,10 @@ export class MainProfile implements OnInit {
           cca2: country.cca2,
           currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
         })).sort((a, b) => a.name.localeCompare(b.name));
-        console.log('Loaded countries count:', this.countries.length);
         this.cdRef.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load countries:', error);
-      },
-      complete: () => {
-        console.log('Countries loading completed');
-        console.log(this.countries);
       }
     });
   }
@@ -283,7 +246,16 @@ export class MainProfile implements OnInit {
   }
 
   openEmailChangeDialog(closePanel: () => void): void {
-    const dialogRef = this.dialog.open(EmailChangeConfirmDialog);
+    const data: DialogData = {
+      title: 'Change Email Address',
+      messages: [
+        'Changing your email address will log you out of your account.',
+        'You will need to sign in again using your new email address to continue.',
+        'Note: You can only change your email address once every 2 months.',
+      ],
+      confirmLabel: 'Proceed',
+    };
+    const dialogRef = this.dialog.open(Dialog, { data });
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
         this.updateProfile();
