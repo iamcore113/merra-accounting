@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -115,10 +115,14 @@ export class ChangePasswordSheet {
   styleUrl: './main-profile.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class MainProfile {
+export class MainProfile implements OnInit {
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
   readonly affiliatedOrganizationsCount = 4;
+
+  ngOnInit(): void {
+    // TODO: Fetch affiliated organizations count from API
+  }
 
   openProfileImageDialog(): void {
     this.dialog.open(ProfileImageDialog);
