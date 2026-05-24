@@ -48,6 +48,37 @@ export class ProfileImageDialog {
 }
 
 @Component({
+  selector: 'app-email-change-confirm-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatIconModule, MatDialogModule],
+  template: `
+    <section class="email-change-confirm-dialog">
+      <h3 mat-dialog-title>Change Email Address</h3>
+      <mat-dialog-content>
+        <p>Changing your email address will log you out of your account.</p>
+        <p>You will need to sign in again using your new email address to continue.</p>
+        <p>Note: You can only change your email address once every 2 months.</p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button matButton type="button" (click)="cancel()">Cancel</button>
+        <button matButton="filled" type="button" (click)="proceed()">Proceed</button>
+      </mat-dialog-actions>
+    </section>
+  `,
+})
+export class EmailChangeConfirmDialog {
+  private readonly dialogRef = inject(MatDialogRef<EmailChangeConfirmDialog>);
+
+  cancel(): void {
+    this.dialogRef.close(false);
+  }
+
+  proceed(): void {
+    this.dialogRef.close(true);
+  }
+}
+
+@Component({
   selector: 'app-change-password-sheet',
   standalone: true,
   imports: [MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
@@ -135,6 +166,10 @@ export class MainProfile implements OnInit {
   affiliatedOrganizationsCount = 0;
   isLoading = false;
   isUpdating = false;
+  isEditingEmail = false;
+  isEditingCountry = false;
+  isEditingName = false;
+  isEditingGender = false;
   countries: RestCountriesSelection = [];
 
   profileForm: FormGroup = this.fb.group({
@@ -245,6 +280,17 @@ export class MainProfile implements OnInit {
 
   openProfileImageDialog(): void {
     this.dialog.open(ProfileImageDialog);
+  }
+
+  openEmailChangeDialog(closePanel: () => void): void {
+    const dialogRef = this.dialog.open(EmailChangeConfirmDialog);
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.updateProfile();
+        this.isEditingEmail = false;
+        closePanel();
+      }
+    });
   }
 
   openChangePasswordSheet(): void {
