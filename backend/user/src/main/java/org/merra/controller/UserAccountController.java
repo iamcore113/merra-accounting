@@ -52,22 +52,4 @@ public class UserAccountController {
 				resp);
 		return ResponseEntity.ok().body(response);
 	}
-
-	/**
-	 * Retrieves the personal details of the currently authenticated user.
-	 *
-	 * @return A {@link ResponseEntity} containing an {@link ApiResponse} with the
-	 *         authenticated user's personal details and HTTP 200 status.
-	 */
-	@GetMapping("details")
-	public ResponseEntity<ApiResponse<PersonalDetailsResponse>> personalDetails() {
-		var resp = userAccountService.personalDetails();
-		ApiResponse<PersonalDetailsResponse> response = new ApiResponse<>(
-				"User personal details retrieved successfully.",
-				true,
-				HttpStatus.OK,
-				resp);
-		return ResponseEntity.ok().body(response);
-	}
-
 }

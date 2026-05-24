@@ -4,7 +4,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
@@ -17,7 +16,6 @@ import org.merra.repositories.UserAccountSettingsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -129,25 +127,6 @@ public class UserAccountService {
 
 		user.setRoles(roleName);
 		userRepository.save(user);
-	}
-
-	/**
-	 * Retrieves the personal details of the currently authenticated user.
-	 *
-	 * @return a {@linkplain PersonalDetailsResponse} containing the authenticated
-	 *         user's first name, last name, full name, gender, country, and email.
-	 * @throws java.util.NoSuchElementException if no authenticated user is found
-	 *                                          in the database.
-	 */
-	public PersonalDetailsResponse personalDetails() {
-		UserAccount authUser = getAuthenticatedUser();
-		return new PersonalDetailsResponse(
-				authUser.getFirstName(),
-				authUser.getLastName(),
-				authUser.getFullName().get(),
-				authUser.getGender(),
-				authUser.getCountry(),
-				authUser.getEmail());
 	}
 
 	/**

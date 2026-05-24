@@ -6,7 +6,9 @@ public record PersonalDetailsResponse(
         String fullName,
         String gender,
         String country,
-        String email) {
+        String email,
+        UserOrganizationAffiliation organizationAffiliation
+) {
     public PersonalDetailsResponse {
         if (firstName == null || firstName.isBlank()) {
             throw new IllegalArgumentException("First name cannot be null or blank.");
