@@ -1,16 +1,12 @@
 package org.merra.controller;
 
 import org.merra.api.ApiResponse;
-import org.merra.dto.AuthenticatedUserProfile;
-import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.services.UserAccountService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

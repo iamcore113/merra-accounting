@@ -1,6 +1,5 @@
 package org.merra.services;
 
-import org.merra.dto.AuthenticatedUserProfile;
 import org.merra.dto.PersonalDetailsResponse;
 import org.merra.entities.UserAccount;
 import org.springframework.stereotype.Service;
@@ -26,6 +25,7 @@ public class OrganizationUsersService {
 	public PersonalDetailsResponse personalDetails() {
 		UserAccount authUser = userAccountService.getAuthenticatedUser();
 		return new PersonalDetailsResponse(
+				authUser.getUserId(),
 				authUser.getFirstName(),
 				authUser.getLastName(),
 				authUser.getFullName().get(),
@@ -39,14 +39,14 @@ public class OrganizationUsersService {
 	 * Updates the profile of the currently authenticated user and returns the
 	 * refreshed personal details.
 	 *
-	 * @param profile - the {@linkplain AuthenticatedUserProfile} containing the
+	 * @param profile - the {@linkplain PersonalDetailsResponse} containing the
 	 *                updated user information.
 	 * @return a {@linkplain PersonalDetailsResponse} reflecting the updated
 	 *         personal details.
 	 * @throws java.util.NoSuchElementException if no authenticated user is found
 	 *                                          in the database.
 	 */
-	public PersonalDetailsResponse updatePrincipalDetails(AuthenticatedUserProfile profile) {
+	public PersonalDetailsResponse updatePrincipalDetails(PersonalDetailsResponse profile) {
 		userAccountService.updateUserAccountProfile(profile);
 		return personalDetails();
 	}

@@ -1,7 +1,6 @@
 package org.merra.controller;
 
 import org.merra.api.ApiResponse;
-import org.merra.dto.AuthenticatedUserProfile;
 import org.merra.dto.PersonalDetailsResponse;
 import org.merra.services.OrganizationUsersService;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,8 @@ public class OrganizationUserController {
 	}
 
 	@PutMapping("update")
-	public ResponseEntity<ApiResponse<PersonalDetailsResponse>> updatePrincipalProfile(@Valid @RequestBody AuthenticatedUserProfile request) {
-		return ResponseEntity.ok().body(new ApiResponse<>("User account profile updated successfully.", true, HttpStatus.OK, null));
+	public ResponseEntity<ApiResponse<PersonalDetailsResponse>> updatePrincipalProfile(@Valid @RequestBody PersonalDetailsResponse request) {
+		var resp = organizationUsersService.updatePrincipalDetails(request);
+		return ResponseEntity.ok().body(new ApiResponse<>("User account profile updated successfully.", true, HttpStatus.OK, resp));
 	}
 }

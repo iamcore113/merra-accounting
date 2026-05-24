@@ -1,4 +1,5 @@
 <section class="profile-accordion shared-expansion-panels">
+	<form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
 	<div class="profile-header">
 		<h2 class="profile-title">Personal Information</h2>
 		<button class="profile-image-button" mat-icon-button type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
@@ -36,13 +37,13 @@
 					<div class="name-editor-row">
 						<mat-form-field>
 							<mat-label>First name</mat-label>
-							<input matInput type="text" [value]="personalDetails?.firstName ?? ''" placeholder="Enter your first name">
+							<input matInput type="text" formControlName="firstName" placeholder="Enter your first name">
 						</mat-form-field>
 						<mat-form-field>
 							<mat-label>Last name</mat-label>
-							<input matInput type="text" [value]="personalDetails?.lastName ?? ''" placeholder="Enter your last name">
+							<input matInput type="text" formControlName="lastName" placeholder="Enter your last name">
 						</mat-form-field>
-						<button class="name-update-button" matButton="filled" type="button" (click)="namePanel.close()">Update</button>
+						<button class="name-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); namePanel.close()">Update</button>
 					</div>
 				}
 			</div>
@@ -71,12 +72,12 @@
           <div class="gender-editor-row">
             <mat-form-field>
               <mat-label>Gender</mat-label>
-              <mat-select [value]="personalDetails?.gender?.toLowerCase() ?? ''">
+              <mat-select formControlName="gender">
                 <mat-option value="male">Male</mat-option>
                 <mat-option value="female">Female</mat-option>
               </mat-select>
             </mat-form-field>
-            <button class="gender-update-button" matButton="filled" type="button" (click)="genderPanel.close()">Update</button>
+            <button class="gender-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); genderPanel.close()">Update</button>
           </div>
         }
       </div>
@@ -105,13 +106,18 @@
           <div class="country-editor-row">
             <mat-form-field>
               <mat-label>Country</mat-label>
-              <mat-select [value]="personalDetails?.country ?? ''">
-                @for (country of countries; track country.cca2) {
-                <mat-option [value]="country.name">{{ country.name }}</mat-option>
+              <input type="text"
+                     matInput
+                     [formControl]="countryControl"
+                     placeholder="Start typing to search your country"
+                     [matAutocomplete]="countryAuto">
+              <mat-autocomplete #countryAuto="matAutocomplete">
+                @for (country of filteredCountries | async; track country.cca2) {
+                  <mat-option [value]="country.name">{{ country.name }}</mat-option>
                 }
-              </mat-select>
+              </mat-autocomplete>
             </mat-form-field>
-            <button class="country-update-button" matButton="filled" type="button" (click)="countryPanel.close()">Update</button>
+            <button class="country-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); countryPanel.close()">Update</button>
           </div>
         }
       </div>
@@ -144,10 +150,10 @@
 							<input
 								matInput
 								type="email"
-								[value]="personalDetails?.email ?? ''"
+								formControlName="email"
 								placeholder="Enter your email address">
 						</mat-form-field>
-						<button class="email-update-button" matButton="filled" type="button" (click)="emailPanel.close()">Update</button>
+						<button class="email-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); emailPanel.close()">Update</button>
 					</div>
 					<p class="email-hint">You can only change your email address once every 2 months.</p>
 				}
@@ -181,6 +187,7 @@
       }
     </mat-expansion-panel>
 	</mat-accordion>
+	</form>
 	<div class="profile-page-actions">
 		<button class="change-password-button" matButton="filled" type="button" (click)="openChangePasswordSheet()">Change Password</button>
 	</div>

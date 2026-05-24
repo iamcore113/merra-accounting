@@ -270,6 +270,7 @@ export interface UserOrganizationAffiliation {
 
 // Corresponds to: backend/user/src/main/java/org/merra/dto/PersonalDetailsResponse.java
 export interface PersonalDetailsResponse {
+  id: string;
   firstName: string;
   lastName: string;
   fullName: string;

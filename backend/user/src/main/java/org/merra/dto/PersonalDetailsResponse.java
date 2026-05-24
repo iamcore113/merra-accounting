@@ -1,6 +1,9 @@
 package org.merra.dto;
 
+import java.util.UUID;
+
 public record PersonalDetailsResponse(
+        UUID id,
         String firstName,
         String lastName,
         String fullName,
@@ -10,6 +13,9 @@ public record PersonalDetailsResponse(
         UserOrganizationAffiliation organizationAffiliation
 ) {
     public PersonalDetailsResponse {
+        if (id == null) {
+            throw new IllegalArgumentException("User ID cannot be null.");
+        }
         if (firstName == null || firstName.isBlank()) {
             throw new IllegalArgumentException("First name cannot be null or blank.");
         }

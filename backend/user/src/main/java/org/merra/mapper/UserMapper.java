@@ -4,7 +4,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.NullValueMappingStrategy;
-import org.merra.dto.AuthenticatedUserProfile;
 import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;

@@ -1,4 +1,9 @@
 import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { AsyncPipe } from '@angular/common';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -114,7 +119,7 @@ export class ChangePasswordSheet {
 @Component({
   selector: 'app-main-profile',
   standalone: true,
-  imports: [MatExpansionModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatBadgeModule, MatListModule, MatChipsModule, MatBottomSheetModule, MatDialogModule],
+  imports: [MatExpansionModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatBadgeModule, MatListModule, MatChipsModule, MatBottomSheetModule, MatDialogModule, MatAutocompleteModule, AsyncPipe, ReactiveFormsModule],
   templateUrl: './main-profile.html',
   styleUrl: './main-profile.scss',
   encapsulation: ViewEncapsulation.None,
@@ -125,10 +130,29 @@ export class MainProfile implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly cdRef = inject(ChangeDetectorRef);
   private readonly countryApiService = inject(CountryApiService);
+  private readonly fb = inject(FormBuilder);
   public personalDetails: PersonalDetailsResponse | null = null;
   affiliatedOrganizationsCount = 0;
   isLoading = false;
+  isUpdating = false;
   countries: RestCountriesSelection = [];
+
+  profileForm: FormGroup = this.fb.group({
+    firstName: ['', Validators.required],
+    lastName:  ['', Validators.required],
+    gender:    ['', Validators.required],
+    country:   ['', Validators.required],
+    email:     ['', [Validators.required, Validators.email]],
+  });
+
+  get countryControl(): FormControl {
+    return this.profileForm.get('country') as FormControl;
+  }
+
+  filteredCountries: Observable<RestCountriesSelection> = this.profileForm.get('country')!.valueChanges.pipe(
+    startWith(''),
+    map(value => this._filterCountries(value ?? ''))
+  );
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -136,10 +160,11 @@ export class MainProfile implements OnInit {
     this.userService.getAuthenticatedUserDetails().subscribe({
       next: (response: any) => {
         this.personalDetails = response.data as PersonalDetailsResponse;
-        console.log('Personal details:', this.personalDetails);
+        console.log(`hsifhsdfioghso: ${JSON.stringify(this.personalDetails)}`);
         if (this.personalDetails?.organizationAffiliation) {
           this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count;
         }
+        this.patchForm(this.personalDetails);
         this.isLoading = false;
         this.cdRef.detectChanges();
       },
@@ -147,13 +172,59 @@ export class MainProfile implements OnInit {
         console.error('Failed to fetch user details:', error);
         this.isLoading = false;
         this.cdRef.detectChanges();
-      }
+      },
     });
+  }
+
+  private patchForm(details: PersonalDetailsResponse | null): void {
+    if (!details) return;
+    this.profileForm.patchValue({
+      firstName: details.firstName ?? '',
+      lastName:  details.lastName  ?? '',
+      gender:    details.gender?.toLowerCase() ?? '',
+      country:   details.country   ?? '',
+      email:     details.email     ?? '',
+    }, { emitEvent: false });
+    this.profileForm.markAsPristine();
+  }
+
+  updateProfile(): void {
+    if (this.profileForm.invalid || this.profileForm.pristine) return;
+    const value = this.profileForm.getRawValue();
+    const payload: PersonalDetailsResponse = {
+      ...this.personalDetails!,
+      firstName: value.firstName,
+      lastName:  value.lastName,
+      gender:    value.gender,
+      country:   value.country,
+      email:     value.email,
+    };
+    console.log(`GAGAGAGAGA: ${JSON.stringify(payload)}`);
+    this.isUpdating = true;
+    this.userService.updateProfile(payload).subscribe({
+      next: (response: any) => {
+        this.personalDetails = response.data as PersonalDetailsResponse;
+        this.patchForm(this.personalDetails);
+        this.isUpdating = false;
+        this.cdRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to update profile:', error);
+        this.isUpdating = false;
+        this.cdRef.detectChanges();
+      },
+    });
+  }
+
+  private _filterCountries(value: string): RestCountriesSelection {
+    const filterValue = value.toLowerCase();
+    return this.countries.filter(c => c.name.toLowerCase().includes(filterValue));
   }
 
   private loadCountries(): void {
     this.countryApiService.getCountries().subscribe({
       next: (countries: RestCountryList) => {
+        this.profileForm.get('country')!.setValue(this.personalDetails?.country ?? '', { emitEvent: false });
         this.countries = countries.map(country => ({
           name: country.name.common,
           cca2: country.cca2,

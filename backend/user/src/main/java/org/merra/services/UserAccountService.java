@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.merra.dto.AuthenticatedUserProfile;
 import org.merra.dto.PersonalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
@@ -136,14 +135,14 @@ public class UserAccountService {
 	 * are still pending further handling (see inline TODO).
 	 * </p>
 	 *
-	 * @param profile - the {@linkplain AuthenticatedUserProfile} carrying the
+	 * @param profile - the {@linkplain PersonalDetailsResponse} carrying the
 	 *                desired field values.
 	 * @throws IllegalArgumentException if the {@code profile.id()} does not match
 	 *                                  the ID of the currently authenticated user.
 	 * @throws java.util.NoSuchElementException if no authenticated user is found
 	 *                                          in the database.
 	 */
-	public void updateUserAccountProfile(AuthenticatedUserProfile profile) {
+	public void updateUserAccountProfile(PersonalDetailsResponse profile) {
 		final UUID userId = profile.id();
 		UserAccount user = getAuthenticatedUser();
 
