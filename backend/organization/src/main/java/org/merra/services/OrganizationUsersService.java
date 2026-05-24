@@ -2,7 +2,6 @@ package org.merra.services;
 
 import org.merra.dto.AuthenticatedUserProfile;
 import org.merra.dto.PersonalDetailsResponse;
-import org.merra.dto.UserOrganizationAffiliation;
 import org.merra.entities.UserAccount;
 import org.springframework.stereotype.Service;
 
