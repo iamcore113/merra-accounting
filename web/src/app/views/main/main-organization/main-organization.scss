@@ -485,6 +485,60 @@
 	margin-top: 0.5rem;
 }
 
+.organization-panels .organization-type-display-button {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+	text-align: left;
+
+	&:hover {
+		background-color: rgba(0, 0, 0, 0.04);
+	}
+}
+
+.organization-panels .organization-type-display-value {
+	font-size: 1rem;
+	color: #333333;
+	font-weight: 500;
+}
+
+.organization-panels .organization-type-edit-icon {
+	font-size: 1.1rem;
+	width: 1.1rem;
+	height: 1.1rem;
+	color: #888888;
+}
+
+.organization-panels .organization-type-actions {
+	display: flex;
+	justify-content: flex-start;
+	margin-top: 0.5rem;
+}
+
+.organization-panels .organization-type-update-button {
+	--mat-button-filled-container-color: #84b179;
+	--mat-button-filled-label-text-color: #ffffff;
+	--mat-button-filled-state-layer-color: #ffffff;
+	--mat-button-filled-ripple-color: rgba(255, 255, 255, 0.18);
+	background-color: #84b179;
+	color: #ffffff;
+	--mat-button-filled-horizontal-padding: 1rem;
+	--mat-button-filled-vertical-padding: 0.375rem;
+	font-size: 0.875rem;
+	min-width: 80px;
+
+	mat-progress-spinner {
+		--mdc-circular-progress-active-indicator-color: #ffffff;
+	}
+}
+
 .organization-panels .organization-description-actions {
 	display: flex;
 	justify-content: flex-start;

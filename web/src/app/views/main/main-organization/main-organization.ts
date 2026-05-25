@@ -110,10 +110,13 @@ export class MainOrganization implements OnInit {
   });
   isEditingDescription = false;
   isEditingNames = false;
+  isEditingOrganizationType = false;
   isUpdatingNames = signal(false);
   isUpdatingDescription = signal(false);
+  isUpdatingOrganizationType = signal(false);
   private originalNames: { displayName: string; legalName: string } | null = null;
   private originalDescription: string | null = null;
+  private originalOrganizationTypeId: string | null = null;
 
   hasNamesChanged = (): boolean => {
     const names = this.organizationForm.get('names')?.value;
@@ -127,6 +130,19 @@ export class MainOrganization implements OnInit {
     const original = this.originalDescription ?? '';
     return description !== original;
   };
+
+  hasOrganizationTypeChanged = (): boolean => {
+    const typeId = this.organizationForm.get('organizationType.typeId')?.value;
+    if (this.originalOrganizationTypeId === null || typeId === undefined) return false;
+    return typeId !== this.originalOrganizationTypeId;
+  };
+
+  getOrganizationTypeName(): string {
+    const typeId = this.organizationForm.get('organizationType.typeId')?.value;
+    if (!typeId || !this.organizationTypesMetadata) return 'Not set';
+    const type = this.organizationTypesMetadata.find(t => t.id === typeId);
+    return type?.name || 'Unknown';
+  }
 
   // TODO: finish this one
   ngOnInit(): void {
@@ -142,6 +158,7 @@ export class MainOrganization implements OnInit {
             legalName: this.currentOrganization.names.legalName
           };
           this.originalDescription = this.currentOrganization.names.description;
+          this.originalOrganizationTypeId = this.currentOrganization.organizationType.typeId;
           this.organizationForm.patchValue({
             organizationId: this.currentOrganization.organizationId,
             organizationType: {
@@ -303,6 +320,41 @@ export class MainOrganization implements OnInit {
     if (displayName) {
       this.organizationForm.get('names.legalName')?.setValue(displayName);
     }
+  }
+
+  updateOrganizationType(): void {
+    if (!this.currentOrganization) return;
+
+    this.isUpdatingOrganizationType.set(true);
+
+    const formValue = this.organizationForm.value;
+    const request: CurrentOrganizationResponse = {
+      organizationId: this.currentOrganization.organizationId,
+      organizationType: formValue.organizationType as CurrentOrganizationResponseType,
+      names: formValue.names as CurrentOrganizationResponseNames,
+      address: formValue.address as CurrentOrganizationResponseAddress,
+      website: formValue.website,
+      createdDate: this.currentOrganization.createdDate,
+      status: this.currentOrganization.status,
+      financialYear: formValue.financialYear as CurrentOrganizationResponseFinancialYear,
+    };
+
+    this.organizationService.updateCurrentOrganization(request).subscribe({
+      next: (response) => {
+        if (response.success && 'data' in response) {
+          this.currentOrganization = response.data as CurrentOrganizationResponse;
+          this.originalOrganizationTypeId = this.currentOrganization.organizationType.typeId;
+          this.snackBar.open('Organization type updated successfully', 'Close', { duration: 3000 });
+        } else {
+          this.snackBar.open(response.message || 'Failed to update organization type', 'Close', { duration: 5000 });
+        }
+        this.isUpdatingOrganizationType.set(false);
+      },
+      error: (error) => {
+        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.isUpdatingOrganizationType.set(false);
+      }
+    });
   }
 
   updateDescription(): void {

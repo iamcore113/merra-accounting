@@ -6,7 +6,7 @@
 		</button>
 	</div>
 	<mat-accordion>
-		<mat-expansion-panel #organizationPanel (closed)="isEditingNames = false">
+		<mat-expansion-panel #organizationPanel (closed)="isEditingNames = false; isEditingOrganizationType = false; isEditingDescription = false">
 			<mat-expansion-panel-header>
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
@@ -34,6 +34,11 @@
 						<div class="skeleton-label"></div>
 						<div class="skeleton-input"></div>
 					</div>
+				} @else if (!isEditingOrganizationType) {
+					<button class="organization-type-display-button" type="button" (click)="isEditingOrganizationType = true">
+						<span class="organization-type-display-value">{{ getOrganizationTypeName() }}</span>
+						<mat-icon class="organization-type-edit-icon">edit</mat-icon>
+					</button>
 				} @else {
 					<mat-form-field class="organization-type-field" formGroupName="organizationType">
 						<mat-label>Organization Type</mat-label>
@@ -43,6 +48,15 @@
 							}
 						</mat-select>
 					</mat-form-field>
+					<div class="organization-type-actions">
+						<button class="organization-type-update-button" matButton="filled" type="button" [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()" (click)="updateOrganizationType(); organizationPanel.close()">
+							@if (isUpdatingOrganizationType()) {
+								<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+							} @else {
+								Update
+							}
+						</button>
+					</div>
 				}
 				@if (isLoadingOrganization) {
 					<div class="organization-info-fields-skeleton">
