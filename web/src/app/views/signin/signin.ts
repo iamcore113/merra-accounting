@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -20,6 +21,7 @@ import { LocalStorageService } from '../../shared/services/local-storage-service
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatProgressSpinnerModule,
     MatCardModule,
     MatIconModule,
     MatSnackBarModule,
@@ -32,6 +34,7 @@ import { LocalStorageService } from '../../shared/services/local-storage-service
 export class Signin implements OnInit, OnDestroy {
   signinForm: FormGroup;
   errorMessage: string | null = null;
+  isSubmitting = signal(false);
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -70,6 +73,7 @@ export class Signin implements OnInit, OnDestroy {
   // TODO: Handle accounts that aren't part of organizations
   onSubmit() {
     if (this.signinForm.valid) {
+      this.isSubmitting.set(true);
       let verifiedData: SigninResponse;
       const req: LoginRequest = this.signinForm.value;
       this.authService.signin(req).subscribe({
@@ -78,6 +82,7 @@ export class Signin implements OnInit, OnDestroy {
           verifiedData = (response as any).data as SigninResponse;
         },
         error: (error) => {
+          this.isSubmitting.set(false);
           const errorDict: ErrorResponse = error.error;
           this.snackBar.open(errorDict.message, 'Close', {
             duration: 5000,

@@ -6,7 +6,7 @@
 		</button>
 	</div>
 	<mat-accordion>
-		<mat-expansion-panel #organizationPanel>
+		<mat-expansion-panel #organizationPanel (closed)="isEditingNames = false">
 			<mat-expansion-panel-header>
 				<mat-panel-title class="detail-title">
 					<span class="detail-text">
@@ -49,6 +49,11 @@
 						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
 						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
 					</div>
+				} @else if (!isEditingNames) {
+					<button class="organization-names-display-button" type="button" (click)="isEditingNames = true">
+						<span class="organization-names-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
+						<mat-icon class="organization-names-edit-icon">edit</mat-icon>
+					</button>
 				} @else {
 					<div class="organization-info-fields-row" formGroupName="names">
 						<mat-form-field>
@@ -56,15 +61,30 @@
 							<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
 						</mat-form-field>
 
+						<button
+							class="organization-names-copy-button"
+							type="button"
+							mat-icon-button
+							[matTooltip]="'Copy display name to legal name'"
+							matTooltipPosition="above"
+							(click)="copyDisplayNameToLegalName()">
+							<mat-icon>arrow_forward</mat-icon>
+						</button>
+
 						<mat-form-field>
 							<mat-label>Legal Name</mat-label>
 							<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
 						</mat-form-field>
 					</div>
-				}
-
-				@if (!isLoadingOrganization) {
-					<button class="organization-name-difference-link" type="button" (click)="openNameDifferenceSheet()">What's the difference between legal name and display name?</button>
+					<div class="organization-names-actions">
+						<button class="organization-names-update-button" matButton="filled" type="button" [disabled]="isUpdatingNames() || !hasNamesChanged()" (click)="updateOrganizationNames(); isEditingNames = false; organizationPanel.close()">
+							@if (isUpdatingNames()) {
+								<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+							} @else {
+								Update
+							}
+						</button>
+					</div>
 				}
 
 				@if (isLoadingOrganization) {
@@ -74,7 +94,7 @@
 					</div>
 				} @else {
 					<div class="organization-description-block">
-						<p class="organization-description-display-title">About this organization:</p>
+							<p class="organization-description-display-title">About this organization:</p>
 						@if (!isEditingDescription) {
 							<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationForm.get('names.description')?.value || 'No description available' }}</button>
 						} @else {
@@ -84,13 +104,18 @@
 									<textarea matInput rows="5" placeholder="Enter organization description" formControlName="description"></textarea>
 								</mat-form-field>
 							</div>
+							<div class="organization-description-actions">
+								<button class="organization-description-update-button" matButton="filled" type="button" [disabled]="isUpdatingDescription() || !hasDescriptionChanged()" (click)="updateDescription()">
+									@if (isUpdatingDescription()) {
+										<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+									} @else {
+										Update
+									}
+								</button>
+							</div>
 						}
 					</div>
 				}
-
-				<div class="organization-info-actions">
-					<button class="organization-update-button" matButton="filled" type="button" (click)="organizationPanel.close()">Update</button>
-				</div>
 			</div>
 		</mat-expansion-panel>
     <mat-expansion-panel>

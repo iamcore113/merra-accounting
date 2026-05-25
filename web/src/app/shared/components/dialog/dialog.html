@@ -1,10 +1,23 @@
-<h2 mat-dialog-title>{{ data.title }}</h2>
+@if (data.icon) {
+  <div class="dialog-header">
+    <mat-icon class="dialog-icon" fontSet="material-icons-outlined">{{ data.icon }}</mat-icon>
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+  </div>
+} @else {
+  <h2 mat-dialog-title>{{ data.title }}</h2>
+}
 <mat-dialog-content>
   @for (message of data.messages; track $index) {
-    <p>{{ message }}</p>
+    @if (data.isHtml) {
+      <p [innerHTML]="message"></p>
+    } @else {
+      <p>{{ message }}</p>
+    }
   }
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button matButton type="button" (click)="cancel()">{{ data.cancelLabel ?? 'Cancel' }}</button>
-  <button matButton="filled" type="button" (click)="confirm()">{{ data.confirmLabel ?? 'Confirm' }}</button>
+  @if (!data.hideCancel) {
+    <button matButton type="button" (click)="cancel()">{{ data.cancelLabel ?? 'Cancel' }}</button>
+  }
+  <button matButton="filled" [color]="data.confirmColor ?? 'primary'" type="button" (click)="confirm()">{{ data.confirmLabel ?? 'Confirm' }}</button>
 </mat-dialog-actions>

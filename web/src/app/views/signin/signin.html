@@ -42,7 +42,26 @@
       </mat-form-field>
 
       <div class="button-container">
-        <button matButton="filled" type="submit" [disabled]="!signinForm.valid">Sign In</button>
+        <button
+          matButton="filled"
+          type="submit"
+          class="submit-button"
+          [disabled]="signinForm.invalid || isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="submit-content">
+              <mat-progress-spinner
+                class="submit-spinner"
+                mode="indeterminate"
+                [diameter]="18"
+                [strokeWidth]="3"
+                color="accent"
+              ></mat-progress-spinner>
+              <span>Signing in...</span>
+            </span>
+          } @else {
+            Sign In
+          }
+        </button>
         <a matButton routerLink="/account/signup">Don't have an account?</a>
       </div>
     </form>

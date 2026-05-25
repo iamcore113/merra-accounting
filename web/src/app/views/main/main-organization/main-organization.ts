@@ -1,6 +1,5 @@
-import { Component, Inject, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, Inject, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { delay } from 'rxjs/operators';
 import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -11,11 +10,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { DatePipe } from '@angular/common';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { CountryApiService } from '../../../shared/services/country-api-service';
 import { RestCountryList } from '../../../shared/models/api_response';
-import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData } from '../../../shared/models/organization';
+import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData, CurrentOrganizationResponseNames, CurrentOrganizationResponseType, CurrentOrganizationResponseAddress, CurrentOrganizationResponseFinancialYear } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
 
 @Component({
@@ -45,65 +47,8 @@ export class OrganizationImageDialog {
 }
 
 @Component({
-  selector: 'app-name-difference-sheet',
-  standalone: true,
-  imports: [MatButtonModule],
-  template: `
-    <section class="name-difference-sheet">
-      <h3 class="name-difference-title">Display Name vs Legal Name</h3>
-      <p class="name-difference-text">
-        Display Name is the public-facing name shown in the app.
-      </p>
-      <p class="name-difference-text">
-        Legal Name is the registered name used for compliance, billing, and formal documents.
-      </p>
-      <div class="name-difference-actions">
-        <button matButton="filled" type="button" (click)="close()">Got it</button>
-      </div>
-    </section>
-  `,
-})
-export class NameDifferenceSheet {
-  private readonly bottomSheetRef = inject(MatBottomSheetRef<NameDifferenceSheet>);
-
-  close(): void {
-    this.bottomSheetRef.dismiss();
-  }
-}
-
-@Component({
-  selector: 'app-organization-status-dialog',
-  standalone: true,
-  imports: [MatButtonModule, MatDialogModule, MatIconModule],
-  template: `
-    <section class="organization-status-dialog">
-      <div class="status-dialog-header">
-        <mat-icon class="status-dialog-icon" fontSet="material-icons-outlined">warning</mat-icon>
-        <h3 mat-dialog-title>Disable Organization?</h3>
-      </div>
-      <mat-dialog-content>
-        <p class="status-dialog-message">
-          Disabling this organization will mark it as <strong>inactive</strong>. While inactive, all associated
-          accounts, transactions, and member operations will be suspended and no further activity can be
-          recorded. This action can be reversed by re-enabling the organization, but any in-progress
-          operations at the time of deactivation may be interrupted.
-        </p>
-        <p class="status-dialog-message">
-          Are you sure you want to proceed?
-        </p>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button matButton type="button" [mat-dialog-close]="false">Cancel</button>
-        <button matButton="filled" color="warn" type="button" [mat-dialog-close]="true">Disable</button>
-      </mat-dialog-actions>
-    </section>
-  `,
-})
-export class OrganizationStatusDialog {}
-
-@Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe],
+  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatTooltipModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe, MatProgressSpinnerModule],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
@@ -164,17 +109,39 @@ export class MainOrganization implements OnInit {
     }),
   });
   isEditingDescription = false;
+  isEditingNames = false;
+  isUpdatingNames = signal(false);
+  isUpdatingDescription = signal(false);
+  private originalNames: { displayName: string; legalName: string } | null = null;
+  private originalDescription: string | null = null;
+
+  hasNamesChanged = (): boolean => {
+    const names = this.organizationForm.get('names')?.value;
+    if (!this.originalNames || !names) return false;
+    return names.displayName !== this.originalNames.displayName ||
+           names.legalName !== this.originalNames.legalName;
+  };
+
+  hasDescriptionChanged = (): boolean => {
+    const description = this.organizationForm.get('names.description')?.value ?? '';
+    const original = this.originalDescription ?? '';
+    return description !== original;
+  };
 
   // TODO: finish this one
   ngOnInit(): void {
     this.isLoadingOrganization = true;
     this.loadCountries();
     this.loadOrganizationTypesMetadata();
-    this.organizationService.getCurrentOrganization().pipe(delay(2000)).subscribe({
+    this.organizationService.getCurrentOrganization().subscribe({
       next: (response: Config) => {
         if (response.success && 'data' in response) {
           this.currentOrganization = response.data as CurrentOrganizationResponse;
-          console.log(this.currentOrganization);
+          this.originalNames = {
+            displayName: this.currentOrganization.names.displayName,
+            legalName: this.currentOrganization.names.legalName
+          };
+          this.originalDescription = this.currentOrganization.names.description;
           this.organizationForm.patchValue({
             organizationId: this.currentOrganization.organizationId,
             organizationType: {
@@ -211,7 +178,7 @@ export class MainOrganization implements OnInit {
 
   private loadCountries(): void {
     this.isLoadingCountries = true;
-    this.countryApiService.getCountries().pipe(delay(2000)).subscribe({
+    this.countryApiService.getCountries().subscribe({
       next: (countries: RestCountryList) => {
         this.countries = countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
         this.isLoadingCountries = false;
@@ -226,7 +193,7 @@ export class MainOrganization implements OnInit {
   private loadOrganizationTypesMetadata(): void {
     this.isLoadingOrganizationTypes = true;
     let verifiedData: OrganizationMetaDataResponse | null = null;
-    this.organizationService.getOrganizationMetadata().pipe(delay(2000)).subscribe({
+    this.organizationService.getOrganizationMetadata().subscribe({
       next: (response: Config) => {
         if (response.success && 'data' in response) {
           verifiedData = (response as any).data as OrganizationMetaDataResponse;
@@ -254,8 +221,17 @@ export class MainOrganization implements OnInit {
     this.isEditingDescription = true;
   }
 
-  openNameDifferenceSheet(): void {
-    this.bottomSheet.open(NameDifferenceSheet);
+  openNameDifferenceDialog(): void {
+    const data: DialogData = {
+      title: 'Display Name vs Legal Name',
+      messages: [
+        'Display Name is the public-facing name shown in the app.',
+        'Legal Name is the registered name used for compliance, billing, and formal documents.'
+      ],
+      confirmLabel: 'Got it',
+      hideCancel: true,
+    };
+    this.dialog.open(Dialog, { data });
   }
 
   isOrganizationActive = true;
@@ -263,7 +239,18 @@ export class MainOrganization implements OnInit {
   confirmDisableOrganization(event: MatSlideToggleChange): void {
     if (!event.checked) {
       event.source.checked = true;
-      this.dialog.open(OrganizationStatusDialog, { width: '440px' }).afterClosed().subscribe((confirmed: boolean) => {
+      const data: DialogData = {
+        title: 'Disable Organization?',
+        messages: [
+          'Disabling this organization will mark it as <strong>inactive</strong>. While inactive, all associated accounts, transactions, and member operations will be suspended and no further activity can be recorded. This action can be reversed by re-enabling the organization, but any in-progress operations at the time of deactivation may be interrupted.',
+          'Are you sure you want to proceed?'
+        ],
+        icon: 'warning',
+        isHtml: true,
+        confirmLabel: 'Disable',
+        confirmColor: 'warn',
+      };
+      this.dialog.open(Dialog, { data, width: '440px' }).afterClosed().subscribe((confirmed: boolean) => {
         if (confirmed) {
           this.isOrganizationActive = false;
         }
@@ -271,5 +258,90 @@ export class MainOrganization implements OnInit {
     } else {
       this.isOrganizationActive = true;
     }
+  }
+
+  updateOrganizationNames(): void {
+    if (!this.currentOrganization) return;
+
+    this.isUpdatingNames.set(true);
+
+    const formValue = this.organizationForm.value;
+    const request: CurrentOrganizationResponse = {
+      organizationId: this.currentOrganization.organizationId,
+      organizationType: formValue.organizationType as CurrentOrganizationResponseType,
+      names: formValue.names as CurrentOrganizationResponseNames,
+      address: formValue.address as CurrentOrganizationResponseAddress,
+      website: formValue.website,
+      createdDate: this.currentOrganization.createdDate,
+      status: this.currentOrganization.status,
+      financialYear: formValue.financialYear as CurrentOrganizationResponseFinancialYear,
+    };
+
+    this.organizationService.updateCurrentOrganization(request).subscribe({
+      next: (response) => {
+        if (response.success && 'data' in response) {
+          this.currentOrganization = response.data as CurrentOrganizationResponse;
+          this.originalNames = {
+            displayName: this.currentOrganization.names.displayName,
+            legalName: this.currentOrganization.names.legalName
+          };
+          this.snackBar.open('Organization updated successfully', 'Close', { duration: 3000 });
+        } else {
+          this.snackBar.open(response.message || 'Failed to update organization', 'Close', { duration: 5000 });
+        }
+        this.isUpdatingNames.set(false);
+      },
+      error: (error) => {
+        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.isUpdatingNames.set(false);
+      }
+    });
+  }
+
+  copyDisplayNameToLegalName(): void {
+    const displayName = this.organizationForm.get('names.displayName')?.value;
+    if (displayName) {
+      this.organizationForm.get('names.legalName')?.setValue(displayName);
+    }
+  }
+
+  updateDescription(): void {
+    if (!this.currentOrganization) return;
+
+    this.isUpdatingDescription.set(true);
+
+    const formValue = this.organizationForm.value;
+    const request: CurrentOrganizationResponse = {
+      organizationId: this.currentOrganization.organizationId,
+      organizationType: formValue.organizationType as CurrentOrganizationResponseType,
+      names: {
+        displayName: this.currentOrganization.names.displayName,
+        legalName: this.currentOrganization.names.legalName,
+        description: formValue.names.description
+      } as CurrentOrganizationResponseNames,
+      address: formValue.address as CurrentOrganizationResponseAddress,
+      website: formValue.website,
+      createdDate: this.currentOrganization.createdDate,
+      status: this.currentOrganization.status,
+      financialYear: formValue.financialYear as CurrentOrganizationResponseFinancialYear,
+    };
+
+    this.organizationService.updateCurrentOrganization(request).subscribe({
+      next: (response) => {
+        if (response.success && 'data' in response) {
+          this.currentOrganization = response.data as CurrentOrganizationResponse;
+          this.originalDescription = this.currentOrganization.names.description;
+          this.snackBar.open('Description updated successfully', 'Close', { duration: 3000 });
+        } else {
+          this.snackBar.open(response.message || 'Failed to update description', 'Close', { duration: 5000 });
+        }
+        this.isUpdatingDescription.set(false);
+        this.isEditingDescription = false;
+      },
+      error: (error) => {
+        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.isUpdatingDescription.set(false);
+      }
+    });
   }
 }
