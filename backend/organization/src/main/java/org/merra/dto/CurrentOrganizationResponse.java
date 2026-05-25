@@ -14,6 +14,15 @@ public record CurrentOrganizationResponse(
     FinancialYearEmb financialYear
     
 ) {
+
+    public CurrentOrganizationResponse {
+        if (organizationId == null) {
+            throw new IllegalArgumentException("organizationId cannot be null");
+        }
+        if (status == null || status.isBlank()) {
+            throw new IllegalArgumentException("status cannot be null or blank");
+        }
+    }
     public record Type (UUID typeId, String name) {
         public Type {
             if (typeId == null || name == null) {

@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -287,6 +288,52 @@ public class OrganizationService {
 
 	public CurrentOrganizationResponse getCurrentOrganization() {
 		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
+	}
+
+	public CurrentOrganizationResponse updateCurrentOrganization(CurrentOrganizationResponse req) {
+		final UUID organizationId = req.organizationId();
+		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		
+		if (currentOrganization == null) {
+			throw new EntityNotFoundException("Current organization not found.");
+		}
+		final UUID currentOrganizationId = currentOrganization.getId();
+		if (!organizationId.equals(currentOrganizationId)) {
+			throw new IllegalArgumentException("Organization ID does not match the current organization ID.");
+		}
+
+		final String requestDisplayName = req.names().displayName();
+		final String requestLegalName = req.names().legalName();
+		final String requestDescription = req.names().description();
+
+		if (!Objects.equals(requestDisplayName, currentOrganization.getDisplayName())) {
+			currentOrganization.setDisplayName(requestDisplayName);
+		}
+
+		if (!Objects.equals(requestLegalName, currentOrganization.getLegalName())) {
+			currentOrganization.setLegalName(requestLegalName);
+		}
+
+		if (!Objects.equals(requestDescription, currentOrganization.getOrganizationDescription())) {
+			currentOrganization.setOrganizationDescription(requestDescription);
+		}
+
+		final UUID requestOrganizationType = req.organizationType().typeId();
+		final UUID currentOrganizationType = currentOrganization.getOrganizationType().getId();
+		
+		if (!Objects.equals(requestOrganizationType, currentOrganizationType)) {
+			currentOrganization.setOrganizationType(organizationTypeRepository.findById(requestOrganizationType)
+					.orElseThrow(() -> new EntityNotFoundException("Organization type not found.")));
+		}
+
+		final String requestEmail = req.address().email();
+		
+		if (!Objects.equals(requestEmail, currentOrganization.getEmail())) {
+			currentOrganization.setEmail(requestEmail);
+		}
+		
+		organizationRepository.save(currentOrganization);
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
 	}
 }
