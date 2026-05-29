@@ -12,6 +12,7 @@ import { CompleteOrganizationDetailsForm } from './views/complete-organization-d
 import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
 import { LandingPage } from './views/landing-page/landing-page';
 import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
+import { MainContact } from './views/main/main-contact/main-contact';
 
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
@@ -44,6 +45,11 @@ export const routes: Routes = [
         path: 'invoice',
         loadComponent: () => import('./views/main/main-invoice/main-invoice').then(m => m.MainInvoice),
         title: 'MERRA - Invoices'
+      },
+      {
+        path: 'contacts',
+        loadComponent: () => import('./views/main/main-contact/main-contact').then(m => m.MainContact),
+        title: 'MERRA - Contacts'
       }
     ]
   },
