@@ -5,7 +5,10 @@ import java.util.UUID;
 public record ContactsByOrganizationResponse(
 		String organizationName,
 		UUID contactId,
-		String contactName
+		String contactName,
+		String accountNumber,
+		Boolean isSupplier,
+		Boolean isCustomer
 ) {
 	public ContactsByOrganizationResponse {
 		if (organizationName == null || organizationName.isBlank()) {
@@ -16,6 +19,12 @@ public record ContactsByOrganizationResponse(
 		}
 		if (contactName == null || contactName.isBlank()) {
 			throw new IllegalArgumentException("Contact name cannot be null or blank");
+		}
+		if (isSupplier == null) {
+			throw new IllegalArgumentException("Supplier status cannot be null");
+		}
+		if (isCustomer == null) {
+			throw new IllegalArgumentException("Customer status cannot be null");
 		}
 	}
 }

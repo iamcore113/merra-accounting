@@ -22,7 +22,10 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 			SELECT
 				o.displayName AS organizationName,
 				c.id AS id,
-				c.name AS name
+				c.name AS name,
+				c.accountNumber AS accountNumber,
+				c.isSupplier AS isSupplier,
+				c.isCustomer AS isCustomer
 			FROM
 				Contact c
 			JOIN
