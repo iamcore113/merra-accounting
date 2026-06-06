@@ -56,3 +56,11 @@ interface RestCountriesSelectionObj {
 }
 
 export type RestCountriesSelection = RestCountriesSelectionObj[];
+
+interface ActuatorHealth {
+  groups: string[];
+  status: string
+}
+
+export type ActuatorHealthResponse = ActuatorHealth
+

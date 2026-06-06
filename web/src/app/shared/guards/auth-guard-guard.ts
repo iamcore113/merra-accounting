@@ -13,6 +13,8 @@ export const aUTHGUARDGuard: CanActivateFn = (route, state) => {
   if (!token) {
     return router.createUrlTree(['/']);
   }
+
+
   return tokenService.validateToken(token).pipe(
     map(isValid => isValid ? true : router.createUrlTree(['/']))
   );

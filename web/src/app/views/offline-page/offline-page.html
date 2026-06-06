@@ -1,0 +1,138 @@
+<div class="offline-root">
+  <!-- Animated background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <header class="offline-header animate-fade-in">
+    <span class="brand-logo offline-brand">MERRA</span>
+    <span class="sub-brand-logo offline-subbrand">ACCOUNTING</span>
+  </header>
+
+  <main class="offline-container">
+    <div class="offline-card animate-slide-up">
+      <!-- Premium Animated SVG Illustration -->
+      <div class="illustration-container">
+        <svg class="offline-svg" viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ambient Glow -->
+          <circle cx="120" cy="80" r="50" fill="url(#alertGlow)" class="glow-pulse" />
+          
+          <defs>
+            <radialGradient id="alertGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--alert-color-rgb, #ff5252)" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="var(--alert-color-rgb, #ff5252)" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="serverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#1e293b" />
+              <stop offset="100%" stop-color="#0f172a" />
+            </linearGradient>
+            <linearGradient id="clientGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#024684" />
+              <stop offset="100%" stop-color="#0c66b6" />
+            </linearGradient>
+          </defs>
+
+          <!-- Client (Browser/Computer) Icon -->
+          <g class="client-node">
+            <rect x="25" y="55" width="45" height="32" rx="4" fill="url(#clientGrad)" stroke="#ffffff" stroke-width="1.5" />
+            <path d="M25 81H70" stroke="#ffffff" stroke-width="1.5" />
+            <path d="M40 87L35 100H60L55 87" fill="#024684" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round" />
+            <rect x="30" y="100" width="35" height="3" rx="1.5" fill="#ffffff" />
+            <!-- Client screen content lines -->
+            <rect x="32" y="62" width="12" height="3" rx="1" fill="#93c5fd" opacity="0.8" />
+            <rect x="32" y="69" width="20" height="2" rx="0.5" fill="#ffffff" opacity="0.6" />
+            <rect x="32" y="74" width="15" height="2" rx="0.5" fill="#ffffff" opacity="0.6" />
+          </g>
+
+          <!-- Connection Lines between Client and Server -->
+          <g class="connection-lines">
+            <!-- Normal connection path (faded/broken) -->
+            <path d="M78 75 C100 75, 110 50, 130 50 C140 50, 150 60, 162 65" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 4" opacity="0.3" />
+            <path d="M78 75 C100 75, 110 90, 130 90 C140 90, 150 80, 162 75" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 4" opacity="0.3" />
+            
+            <!-- Active red error connection line -->
+            <path class="signal-line" d="M78 75 H162" stroke="#ff5252" stroke-width="2" stroke-dasharray="6 4" />
+            
+            <!-- Warning sign in the center of connection -->
+            <g class="warning-badge">
+              <circle cx="120" cy="75" r="16" fill="#ff5252" stroke="#ffffff" stroke-width="2" />
+              <path d="M120 67V77M120 82H120.01" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+            </g>
+          </g>
+
+          <!-- Server Stack Icon -->
+          <g class="server-node">
+            <!-- Server Outline -->
+            <rect x="170" y="45" width="45" height="60" rx="6" fill="url(#serverGrad)" stroke="#475569" stroke-width="2" />
+            
+            <!-- Server Unit 1 -->
+            <rect x="175" y="52" width="35" height="10" rx="2" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <circle cx="202" cy="57" r="2.5" fill="#ef4444" class="led-blink-fast" />
+            <circle cx="181" cy="57" r="1.5" fill="#94a3b8" />
+            <circle cx="185" cy="57" r="1.5" fill="#94a3b8" />
+
+            <!-- Server Unit 2 -->
+            <rect x="175" y="70" width="35" height="10" rx="2" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <circle cx="202" cy="75" r="2.5" fill="#f59e0b" class="led-blink-slow" />
+            <circle cx="181" cy="75" r="1.5" fill="#94a3b8" />
+            <circle cx="185" cy="75" r="1.5" fill="#94a3b8" />
+
+            <!-- Server Unit 3 -->
+            <rect x="175" y="88" width="35" height="10" rx="2" fill="#1e293b" stroke="#334155" stroke-width="1" />
+            <circle cx="202" cy="93" r="2.5" fill="#ef4444" class="led-blink-fast" />
+            <circle cx="181" cy="93" r="1.5" fill="#94a3b8" />
+            <circle cx="185" cy="93" r="1.5" fill="#94a3b8" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="offline-content">
+        <h1 class="offline-title">Server Connection Lost</h1>
+        <p class="offline-desc">
+          We're unable to establish a connection with the MERRA accounting system. This could mean the server is down for maintenance or undergoing a live update.
+        </p>
+
+        <!-- Status Card -->
+        <div class="status-box" [class.status-box--checking]="isChecking">
+          @if (!isChecking) {
+            <span class="status-indicator-dot alert-pulse"></span>
+            <div class="status-info">
+              <span class="status-label">Server is currently offline</span>
+              <span class="status-subtext">Retrying connection in <strong>{{ countdown }}s</strong></span>
+            </div>
+          } @else {
+            <mat-spinner diameter="20" color="primary" class="status-spinner"></mat-spinner>
+            <div class="status-info">
+              <span class="status-label">Checking connection...</span>
+              <span class="status-subtext">Verifying API endpoint availability</span>
+            </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button 
+            mat-flat-button 
+            color="primary" 
+            class="btn-primary" 
+            (click)="checkConnection()" 
+            [disabled]="isChecking">
+            @if (!isChecking) {
+              <mat-icon>refresh</mat-icon>
+            }
+            {{ isChecking ? 'Connecting...' : 'Retry Now' }}
+          </button>
+          
+          <button mat-stroked-button class="btn-secondary">
+            <mat-icon>info_outline</mat-icon>
+            System Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="offline-footer animate-fade-in">
+    <p>&copy; 2026 MERRA. All rights reserved.</p>
+  </footer>
+</div>
