@@ -23,6 +23,7 @@ public class OrganizationConfig implements CommandLineRunner {
 
 	@Override
 	public void run(@SuppressWarnings("null") String... args) throws Exception {
+
 		// Create Account Categories
 		if (accountCategoryRepository.findAll().isEmpty()) {
 			accountCategoryRepository.saveAll(Set.of(
