@@ -25,7 +25,23 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        generate_statistics: true
+        format_sql: true
+        highlight_sql: true
+        cache:
+          use_second_level_cache: true #Enable the second-level cache
+          use_query_cache: true #Enable query cache (optional, if you want to cache query results too)
+          region: #Specify the JCache region factory
+            factory_class: org.hibernate.cache.jcache.internal.JCacheRegionFactory
+      jakarta:
+        persistence:
+          sharedCache: #Define the shared cache mode (ENABLE_SELECTIVE means only entities annotated with @Cacheable are cached)
+            MODE: ENABLE_SELECTIVE
+      javax:
+        cache:
+          provider: org.ehcache.jsr107.EhcacheCachingProvider
+          uri: classpath:ehcache.xml
+          missing_cache_strategy: create
   # PostgreSQL datasource configuration (URL provided via DB_URL environment variable)
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -52,6 +68,12 @@ spring:
           auth: true
           starttls:
             enable: true
+# Management endpoints - exposed for health checks and monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
 # SpringDoc/OpenAPI configuration for Swagger documentation
 springdoc:
   api-docs:

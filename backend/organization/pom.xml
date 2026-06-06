@@ -61,6 +61,16 @@
 			<artifactId>spring-boot-starter-validation-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-jcache</artifactId>
+		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/org.ehcache/ehcache -->
+		<dependency>
+			<groupId>org.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<classifier>jakarta</classifier>
+		</dependency>
 		<!-- other sub-modules -->
 		<dependency>
 			<groupId>org.merra</groupId>
