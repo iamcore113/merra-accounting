@@ -9,10 +9,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 
-@Embeddable
 public class OrganizationNameUpdate {
 	
 	@JdbcTypeCode(SqlTypes.JSON)

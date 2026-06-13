@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "sales_tax_basis", schema = "merra_schema")
+@Table(name = "sales_tax_basis")
 public class SalesTaxBasis {
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;

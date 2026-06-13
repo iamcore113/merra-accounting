@@ -1,0 +1,35 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet author="brian" id="2026-add-countries-table">
+        <createTable schemaName="merra_schema" tableName="countries">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="common" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="official" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alpha_2" type="varchar(2)">
+            </column>
+            <column name="alpha_3" type="varchar(3)">
+            </column>
+            <column name="numeric" type="varchar(3)">
+            </column>
+            <column name="symbol" type="varchar(10)"/>
+            <column name="code" type="varchar(5)"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

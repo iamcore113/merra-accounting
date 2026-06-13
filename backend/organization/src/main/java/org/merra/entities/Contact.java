@@ -30,7 +30,7 @@ import jakarta.validation.constraints.NotNull;
  * field @name is the only non optional attribute in this entity.
  */
 @Entity(name = "Contact")
-@Table(name = "contacts", schema = "merra_schema")
+@Table(name = "contacts")
 public class Contact {
 
 	@Id

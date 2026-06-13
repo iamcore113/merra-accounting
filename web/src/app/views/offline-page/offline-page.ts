@@ -4,6 +4,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BaseService } from '../../shared/services/base-service';
 import { Router } from '@angular/router';
+import { TokenCheckService } from '../../shared/services/token-check-service';
+import { LocalStorageService } from '../../shared/services/local-storage-service';
 
 @Component({
   selector: 'app-offline-page',
@@ -14,6 +16,8 @@ import { Router } from '@angular/router';
 export class OfflinePage implements OnDestroy {
   private readonly baseService = inject(BaseService);
   private readonly router = inject(Router);
+  private readonly tokenService = inject(TokenCheckService);
+  private readonly localStorageService = inject(LocalStorageService);
 
   public isChecking = false;
   public countdown = 10;
@@ -48,11 +52,29 @@ export class OfflinePage implements OnDestroy {
 
     this.baseService.getHealth().subscribe({
       next: (status) => {
-        this.isChecking = false;
         if (status?.status === 'UP') {
-          // Redirect back to home/landing page if server is back online
-          this.router.navigate(['/']);
+          const token = this.localStorageService.getItem('access_token');
+          if (token) {
+            this.tokenService.validateToken(token).subscribe({
+              next: (isValid) => {
+                this.isChecking = false;
+                if (isValid) {
+                  this.router.navigate(['/main']);
+                } else {
+                  this.router.navigate(['/']);
+                }
+              },
+              error: () => {
+                this.isChecking = false;
+                this.router.navigate(['/']);
+              }
+            });
+          } else {
+            this.isChecking = false;
+            this.router.navigate(['/']);
+          }
         } else {
+          this.isChecking = false;
           this.startCountdown();
         }
       },

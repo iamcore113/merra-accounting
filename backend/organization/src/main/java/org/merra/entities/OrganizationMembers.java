@@ -18,7 +18,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "organization_members", schema = "merra_schema")
+@Table(name = "organization_members")
 public class OrganizationMembers {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

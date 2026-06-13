@@ -2,13 +2,10 @@ package org.merra.entities.embedded;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
-
 /**
  * Embeddable class representing invoice action permissions.
  * Indicates whether an invoice can be edited or deleted.
  */
-@Embeddable
 public class InvoiceActionsEmb implements Serializable {
 
 	/**

@@ -31,7 +31,7 @@ import jakarta.validation.constraints.NotNull;
  * </p>
  */
 @Entity
-@Table(name = "user_account", schema = "merra_schema")
+@Table(name = "user_account")
 public class UserAccount implements UserDetails {
 
 	@Id

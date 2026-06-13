@@ -21,7 +21,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 @Entity
-@Table(name = "organization_addresses", schema = "merra_schema")
+@Table(name = "organization_addresses")
 public class OrganizationAddresses {
 
     @Id

@@ -25,7 +25,7 @@ import jakarta.validation.constraints.NotNull;
  * tax is handled outside of Xero's standard calculation.
  */
 @Entity
-@Table(name = "tax_type", schema = "merra_schema")
+@Table(name = "tax_type")
 public class TaxType {
 
 	@Id

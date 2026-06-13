@@ -26,7 +26,7 @@ import jakarta.validation.constraints.NotNull;
  * TODO - TO BE CONTINUED.
  */
 @Entity
-@Table(name = "journal", schema = "merra_schema")
+@Table(name = "journal")
 public class Journal {
 
 	@Id

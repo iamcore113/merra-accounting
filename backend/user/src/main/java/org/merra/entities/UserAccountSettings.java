@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "user_account_settings", schema = "merra_schema")
+@Table(name = "user_account_settings")
 public class UserAccountSettings {
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "user_setting_id", nullable = false, unique = true)

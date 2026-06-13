@@ -22,7 +22,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "tax_rate", schema = "merra_schema")
+@Table(name = "tax_rate")
 public class TaxRate {
 
 	@Id

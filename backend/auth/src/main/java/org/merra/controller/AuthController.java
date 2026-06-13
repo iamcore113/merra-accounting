@@ -124,4 +124,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("logout")
+    public ResponseEntity<ApiResponse<?>> logout() {
+        return ResponseEntity.ok(new ApiResponse<>(
+                "Logout successful",
+                true,
+                HttpStatus.OK,
+                null));
+    }
+
 }

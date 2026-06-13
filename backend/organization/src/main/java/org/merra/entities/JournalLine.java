@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "journal_line", schema = "merra_schema")
+@Table(name = "journal_line")
 public class JournalLine {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -30,7 +30,6 @@ public class JournalLine {
 	@JoinColumn(name = "journal", nullable = false, referencedColumnName = "journal_id")
 	private Journal journal;
 
-	@Embedded
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "account_details", nullable = false, columnDefinition = "jsonb")
 	@NotNull(message = "accountDetails attribute cannot be null.")

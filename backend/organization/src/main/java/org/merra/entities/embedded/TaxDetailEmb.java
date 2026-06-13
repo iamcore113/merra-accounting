@@ -3,9 +3,6 @@ package org.merra.entities.embedded;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class TaxDetailEmb implements Serializable {
 	/**
 	 * 

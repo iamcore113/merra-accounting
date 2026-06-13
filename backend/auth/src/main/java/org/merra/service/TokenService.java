@@ -64,13 +64,15 @@ public class TokenService {
     }
 
     public ValidateTokenResponse validateToken(String token) {
-        final String email = jwtUtils.extractUsername(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        boolean isTokenValid = true;
-        if (!jwtUtils.isTokenValid(token, userDetails)) {
-            isTokenValid = false;
+        try {
+            final String email = jwtUtils.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            boolean isTokenValid = jwtUtils.isTokenValid(token, userDetails);
+            return new ValidateTokenResponse(isTokenValid);
+        } catch (Exception e) {
+            logger.warn("Token validation failed: {}", e.getMessage());
+            return new ValidateTokenResponse(false);
         }
-        return new ValidateTokenResponse(isTokenValid);
     }
 
     public JwtTokens obtainNewAccessToken(String refreshToken) {

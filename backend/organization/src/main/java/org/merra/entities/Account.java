@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @SQLRestriction("archived <> true")
-@Table(name = "ledger_account", schema = "merra_schema")
+@Table(name = "ledger_account")
 public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

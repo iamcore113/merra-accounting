@@ -29,7 +29,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 @Entity
-@Table(name = "invoice", schema = "merra_schema")
+@Table(name = "invoice")
 public class Invoice {
 
 	@Id

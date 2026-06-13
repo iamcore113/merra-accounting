@@ -25,6 +25,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        default_schema: merra_schema
         generate_statistics: true
         format_sql: true
         highlight_sql: true
@@ -48,6 +49,14 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  # Redis configuration (host and port via environment)
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      password: ${REDIS_PASSWORD:merra_account_rds}
+      port: ${REDIS_PORT:6379}
   # Liquibase database migration configuration with merra_schema
   liquibase:
     change-log: db/changelog/db.changelog-master.xml
@@ -90,3 +99,6 @@ app:
     url: ${FRONTEND_URL}
   frontend-redirect:
     url: ${FRONTEND_REDIRECT_URL}
+  countries:
+    url: https://api.restcountries.com/countries/v5?response_fields=names.common,names.official,codes.alpha_2,codes.alpha_3,codes.ccn3,currencies.code,currencies.symbol&limit=50
+    code: rc_live_737d6559ef314350946f5f25aca67ddb

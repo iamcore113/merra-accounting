@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 // Implies the context (organization) in which the user is currently operating.
 // This is used to determine the current organization for a user when they have access to multiple organizations.
 @Entity
-@Table(name = "user_workspace_state", schema = "merra_schema")
+@Table(name = "user_workspace_state")
 public class UserWorkspaceState {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

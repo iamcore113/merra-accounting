@@ -2,13 +2,10 @@ package org.merra.entities.embedded;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
-
 /**
  * Embeddable class representing invoice settings.
  * Stores default line amount type and status for an invoice.
  */
-@Embeddable
 public class InvoiceSettingsEmb implements Serializable {
 
 	/**
