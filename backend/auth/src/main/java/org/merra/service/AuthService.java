@@ -48,6 +48,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 
 @Service
 public class AuthService {
@@ -112,7 +113,7 @@ public class AuthService {
    *                                 stored token
    * @throws EntityNotFoundException if the user account does not exist
    */
-  public VerifiedAccountResponse verifyAccountToken(String tokenParam) {
+  public VerifiedAccountResponse verifyAccountToken(@NotNull String tokenParam) {
     // Extract email from the JWT token
     final String email = jwtUtils.extractUsername(tokenParam);
     if (email == null) {

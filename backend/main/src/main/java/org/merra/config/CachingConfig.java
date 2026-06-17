@@ -8,10 +8,13 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.connection.RedisConfiguration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration(proxyBeanMethods = false)
 @EnableCaching
@@ -24,8 +27,19 @@ public class CachingConfig {
         @Value("${spring.data.redis.password:}")
         private String redisPassword;
 
+        /**
+         * Configures and returns a {@link LettuceConnectionFactory} for connecting to
+         * the Redis instance.
+         * <p>
+         * The connection is configured to use SSL with peer verification disabled,
+         * a command timeout of 2 seconds, and immediate shutdown (zero shutdown
+         * timeout).
+         * </p>
+         *
+         * @return the configured Lettuce connection factory
+         */
         @Bean
-        public LettuceConnectionFactory redisConnectionFactory() {
+        public LettuceConnectionFactory lettuceConnectionFactory() {
                 LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                                 .useSsl()
                                 .disablePeerVerification()
@@ -42,13 +56,25 @@ public class CachingConfig {
                 return new LettuceConnectionFactory(serverConfig, clientConfig);
         }
 
-        @Bean
-        public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
-                return (builder) -> builder
-                                .withCacheConfiguration("principal", RedisCacheConfiguration
-                                                .defaultCacheConfig().entryTtl(Duration.ofMinutes(10)))
-                                .withCacheConfiguration("cache1", RedisCacheConfiguration
-                                                .defaultCacheConfig().entryTtl(Duration.ofMinutes(10)));
+        // @Bean
+        // public RedisCacheManagerBuilderCustomizer
+        // redisCacheManagerBuilderCustomizer() {
+        // return (builder) -> builder
+        // .withCacheConfiguration("principal", RedisCacheConfiguration
+        // .defaultCacheConfig().entryTtl(Duration.ofHours(2)));
 
+        // }
+
+        @Bean
+        RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+                RedisTemplate<String, Object> template = new RedisTemplate<>();
+                template.setConnectionFactory(connectionFactory);
+
+                template.setKeySerializer(new StringRedisSerializer());
+                template.setHashKeySerializer(new StringRedisSerializer());
+                template.setValueSerializer(RedisSerializer.json());
+                template.setHashValueSerializer(RedisSerializer.json());
+                return template;
         }
+
 }

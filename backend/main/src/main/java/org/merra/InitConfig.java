@@ -3,12 +3,15 @@ package org.merra;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.merra.config.AuthEntrypointJwt;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.Country;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.CountryRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.utilities.AccountConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -18,7 +21,7 @@ import tools.jackson.databind.JsonNode;
 
 @Component
 public class InitConfig implements CommandLineRunner {
-
+    private static final Logger logger = LoggerFactory.getLogger(InitConfig.class);
     private final String restCountries;
     private final String restCountriesCode;
 
@@ -43,6 +46,7 @@ public class InitConfig implements CommandLineRunner {
     }
 
     private void seedAccountCategories() {
+        logger.debug("Seeding account categories");
         if (accountCategoryRepository.findAll().isEmpty()) {
             accountCategoryRepository.saveAll(Set.of(
                     new AccountCategory(AccountConstants.ACC_CATEGORY_ASSET),
@@ -54,6 +58,7 @@ public class InitConfig implements CommandLineRunner {
     }
 
     private void seedOrganizationTypes() {
+        logger.debug("Seeding organization types");
         if (organizationTypeRepository.findAll().isEmpty()) {
             organizationTypeRepository.saveAll(Set.of(
                     new org.merra.entities.OrganizationType("INDIVIDUAL"),
@@ -70,49 +75,44 @@ public class InitConfig implements CommandLineRunner {
     }
 
     private void seedRestCountries() {
-        try {
-            JsonNode jsonResponse = this.restClient.get().retrieve().body(JsonNode.class);
-            if (jsonResponse == null || !jsonResponse.isArray()) {
-                System.err.println("RestCountries API returned non-array response or null: " + jsonResponse);
-                if (countryRepository.findAll().isEmpty()) {
-                    countryRepository.save(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
-                }
-                return;
-            }
-            Set<Country> countries = new HashSet<>();
-            boolean philippinesPresent = false;
-            for (JsonNode country : jsonResponse) {
-                String common = country.path("names").path("common").asString();
-                String official = country.path("names").path("official").asString();
-                String alpha2 = country.path("codes").path("alpha_2").asString();
-                String alpha3 = country.path("codes").path("alpha_3").asString();
-                String numeric = country.path("codes").path("ccn3").asString();
+        if (countryRepository.findAll().isEmpty()) {
+            try {
+                JsonNode jsonResponse = this.restClient.get().retrieve().body(JsonNode.class);
+                Set<Country> countries = new HashSet<>();
+                if (jsonResponse != null) {
+                    boolean philippinesPresent = false;
+                    JsonNode objectsNode = jsonResponse.path("data").path("objects");
+                    for (JsonNode country : objectsNode) {
+                        String common = country.path("names").path("common").asString();
+                        String official = country.path("names").path("official").asString();
+                        String alpha2 = country.path("codes").path("alpha_2").asString();
+                        String alpha3 = country.path("codes").path("alpha_3").asString();
+                        String numeric = country.path("codes").path("ccn3").asString();
 
-                if (common.isEmpty() || alpha2.isEmpty()) {
-                    continue;
-                }
+                        if (common.isEmpty() || alpha2.isEmpty()) {
+                            continue;
+                        }
 
-                JsonNode currencies = country.path("currencies");
-                String code = "";
-                String symbol = "";
-                if (currencies.isArray() && !currencies.isEmpty()) {
-                    JsonNode firstCurrency = currencies.get(0);
-                    code = firstCurrency.path("code").asString();
-                    symbol = firstCurrency.path("symbol").asString();
+                        JsonNode currencies = country.path("currencies");
+                        String code = "";
+                        String symbol = "";
+                        if (currencies.isArray() && !currencies.isEmpty()) {
+                            JsonNode firstCurrency = currencies.get(0);
+                            code = firstCurrency.path("code").asString();
+                            symbol = firstCurrency.path("symbol").asString();
+                        }
+                        if ("PH".equalsIgnoreCase(alpha2) || "PHL".equalsIgnoreCase(alpha3)) {
+                            philippinesPresent = true;
+                        }
+                        countries.add(new Country(common, official, alpha2, alpha3, numeric, symbol, code));
+                    }
+                    if (!philippinesPresent) {
+                        countries.add(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
+                    }
+                    countryRepository.saveAll(countries);
                 }
-                if ("PH".equalsIgnoreCase(alpha2) || "PHL".equalsIgnoreCase(alpha3)) {
-                    philippinesPresent = true;
-                }
-                countries.add(new Country(common, official, alpha2, alpha3, numeric, symbol, code));
-            }
-            if (!philippinesPresent) {
-                countries.add(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
-            }
-            countryRepository.saveAll(countries);
-        } catch (Exception e) {
-            System.err.println("Failed to seed countries from API: " + e.getMessage());
-            if (countryRepository.findAll().isEmpty()) {
-                countryRepository.save(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
+            } catch (Exception e) {
+                System.err.println("Failed to seed countries from API: " + e.getMessage());
             }
         }
     }

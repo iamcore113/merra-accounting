@@ -1,5 +1,6 @@
 package org.merra.services;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.merra.dto.CountriesResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
@@ -17,6 +19,7 @@ import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationAffiliation;
 import org.merra.dto.UserOrganizationResponse;
+import org.merra.entities.Country;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
@@ -30,17 +33,18 @@ import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.mapper.OrganizationAffiliationMapper;
 import org.merra.mapper.OrganizationMapper;
+import org.merra.repositories.CountryRepository;
 import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
-import org.merra.repositories.projections.OrganizationsOnly;
 import org.merra.repositories.projections.UserOrganizationAffiliations;
 import org.merra.service.AuthService;
 import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
-import org.springframework.cache.annotation.Cacheable;
+import org.merra.utilities.RedisKeys;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -57,9 +61,11 @@ public class OrganizationService {
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
 	private final AuthService authService;
+	private final CountryRepository countryRepository;
 	private final UserAccountService userAccountService;
 	private final OrganizationMapper organizationMapper;
 	private final OrganizationAffiliationMapper organizationAffiliationMapper;
+	private final RedisTemplate<String, Object> redisTemplate;
 
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
@@ -70,9 +76,12 @@ public class OrganizationService {
 			InvoiceRepository invoiceRepository,
 			AccountService accountService,
 			AuthService authService,
+			CountryRepository countryRepository,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper,
-			OrganizationAffiliationMapper organizationAffiliationMapper) {
+			OrganizationAffiliationMapper organizationAffiliationMapper,
+			RedisTemplate<String, Object> redisTemplate) {
+		this.redisTemplate = redisTemplate;
 		this.organizationRepository = organizationRepository;
 		this.organizationMembersRepository = organizationMembersRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
@@ -83,6 +92,7 @@ public class OrganizationService {
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
 		this.authService = authService;
+		this.countryRepository = countryRepository;
 	}
 
 	/**
@@ -111,41 +121,42 @@ public class OrganizationService {
 		return findOrganizationOpt.get();
 	}
 
-	/**
-	 * Retrieves the static metadata required to create or configure an
-	 * organization.
-	 *
-	 * <p>
-	 * Assembles a response containing all available organization types (with
-	 * underscore-separated names normalized to spaces), all supported address
-	 * types,
-	 * and the full set of payment term configurations.
-	 * </p>
-	 *
-	 * <p>
-	 * Results are cached under the key {@code "organizationMetadata"} to avoid
-	 * repeated repository and enum lookups.
-	 * </p>
-	 *
-	 * @return An {@linkplain OrganizationMetaDataResponse} populated with
-	 *         organization types, address types, and payment term metadata.
-	 */
-	@Cacheable("organizationMetadata")
+	@SuppressWarnings("unchecked")
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
-		// Get organization types
-		Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
-				.findAll()
-				.stream()
-				.map(type -> new OrganizationMetaDataResponse.OrganizationTypesMetaData(
-						type.getId(),
-						type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
-				.collect(java.util.stream.Collectors.toSet());
+		// Get organization types from cache
+		Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = (Set<OrganizationMetaDataResponse.OrganizationTypesMetaData>) redisTemplate
+				.opsForValue().get(RedisKeys.ORGANIZATION_TYPES);
+
+		if (organizationTypes == null) {
+			organizationTypes = organizationTypeRepository
+					.findAll()
+					.stream()
+					.map(type -> new OrganizationMetaDataResponse.OrganizationTypesMetaData(
+							type.getId(),
+							type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
+					.collect(java.util.stream.Collectors.toSet());
+
+			// Cache the result for 3 hour
+			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_TYPES, organizationTypes, Duration.ofHours(3));
+		}
+
 		final EnumSet<AddressEn> addresses = EnumSet.allOf(AddressEn.class);
 		// For Payment terms
 		final EnumSet<PaymentTermsEn> subElements = EnumSet.allOf(PaymentTermsEn.class);
 		final EnumSet<PaymentTermTypes> types = EnumSet.allOf(PaymentTermTypes.class);
 		return new OrganizationMetaDataResponse(organizationTypes, addresses,
 				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
+	}
+
+	public List<CountriesResponse> fetchCountries() {
+		List<Country> countries = countryRepository.findAll();
+		return countries.stream().map(country -> new CountriesResponse(
+				country.getId(),
+				country.getOfficial(),
+				country.getAlpha2(),
+				country.getAlpha3(),
+				country.getNumeric(),
+				country.getSymbol())).toList();
 	}
 
 	/**
@@ -198,7 +209,7 @@ public class OrganizationService {
 
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);
-		
+
 		// Set the newly created organization as the user's active workspace
 		UserWorkspaceState setWorkspace = new UserWorkspaceState(user, newOrganization, OffsetDateTime.now());
 		userWorkspaceStateRepository.save(setWorkspace);
@@ -294,7 +305,7 @@ public class OrganizationService {
 	public CurrentOrganizationResponse updateCurrentOrganization(CurrentOrganizationResponse req) {
 		final UUID organizationId = req.organizationId();
 		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
-		
+
 		if (currentOrganization == null) {
 			throw new EntityNotFoundException("Current organization not found.");
 		}
@@ -321,18 +332,18 @@ public class OrganizationService {
 
 		final UUID requestOrganizationType = req.organizationType().typeId();
 		final UUID currentOrganizationType = currentOrganization.getOrganizationType().getId();
-		
+
 		if (!Objects.equals(requestOrganizationType, currentOrganizationType)) {
 			currentOrganization.setOrganizationType(organizationTypeRepository.findById(requestOrganizationType)
 					.orElseThrow(() -> new EntityNotFoundException("Organization type not found.")));
 		}
 
 		final String requestEmail = req.address().email();
-		
+
 		if (!Objects.equals(requestEmail, currentOrganization.getEmail())) {
 			currentOrganization.setEmail(requestEmail);
 		}
-		
+
 		organizationRepository.save(currentOrganization);
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
 	}
