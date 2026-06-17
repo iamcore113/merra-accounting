@@ -121,31 +121,29 @@ public class OrganizationService {
 		return findOrganizationOpt.get();
 	}
 
-	@SuppressWarnings("unchecked")
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
 		// Get organization types from cache
-		Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = (Set<OrganizationMetaDataResponse.OrganizationTypesMetaData>) redisTemplate
-				.opsForValue().get(RedisKeys.ORGANIZATION_TYPES);
+		OrganizationMetaDataResponse organizationMetaData = (OrganizationMetaDataResponse) redisTemplate
+				.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
 
-		if (organizationTypes == null) {
-			organizationTypes = organizationTypeRepository
+		if (organizationMetaData == null) {
+			Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
 					.findAll()
 					.stream()
 					.map(type -> new OrganizationMetaDataResponse.OrganizationTypesMetaData(
 							type.getId(),
 							type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
 					.collect(java.util.stream.Collectors.toSet());
-
+			final EnumSet<AddressEn> addresses = EnumSet.allOf(AddressEn.class);
+			// For Payment terms
+			final EnumSet<PaymentTermsEn> subElements = EnumSet.allOf(PaymentTermsEn.class);
+			final EnumSet<PaymentTermTypes> types = EnumSet.allOf(PaymentTermTypes.class);
+			organizationMetaData = new OrganizationMetaDataResponse(organizationTypes, addresses,
+					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 			// Cache the result for 3 hour
-			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_TYPES, organizationTypes, Duration.ofHours(3));
+			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData, Duration.ofHours(3));
 		}
-
-		final EnumSet<AddressEn> addresses = EnumSet.allOf(AddressEn.class);
-		// For Payment terms
-		final EnumSet<PaymentTermsEn> subElements = EnumSet.allOf(PaymentTermsEn.class);
-		final EnumSet<PaymentTermTypes> types = EnumSet.allOf(PaymentTermTypes.class);
-		return new OrganizationMetaDataResponse(organizationTypes, addresses,
-				new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
+		return organizationMetaData;
 	}
 
 	public List<CountriesResponse> fetchCountries() {

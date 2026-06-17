@@ -6,5 +6,5 @@ public class RedisKeys {
     }
 
     public static final String AUTHENTICATED_USER_KEY = "principal";
-    public static final String ORGANIZATION_TYPES = "organization_types";
+    public static final String ORGANIZATION_METADATA = "organization_metadata";
 }
