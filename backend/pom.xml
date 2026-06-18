@@ -20,6 +20,7 @@
     <testcontainers.version>1.21.3</testcontainers.version>
     <postgresql.version>42.7.7</postgresql.version>
     <ehcache.version>3.12.0</ehcache.version>
+    <redis-om-spring>2.0.6</redis-om-spring>
     <springboot.dependencies.version>4.0.5</springboot.dependencies.version>
   </properties>
   <dependencyManagement>
@@ -104,6 +105,12 @@
             <artifactId>jaxb-runtime</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <!-- Source: https://mvnrepository.com/artifact/com.redis.om/redis-om-spring -->
+      <dependency>
+        <groupId>com.redis.om</groupId>
+        <artifactId>redis-om-spring</artifactId>
+        <version>${redis-om-spring}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

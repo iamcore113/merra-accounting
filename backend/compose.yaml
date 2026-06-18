@@ -16,23 +16,16 @@ services:
 
   redis:
     container_name: merra-accounting-redis
-    image: redis:7-alpine
+    image: redis/redis-stack:latest
     restart: unless-stopped
     ports:
       - '6379:6379'
+      - '8001:8001'
     volumes:
       - redis_data:/data
       - ./certs:/certs:ro
-    command: >
-      redis-server
-      --requirepass merra_account_rds
-      --appendonly yes
-      --port 0
-      --tls-port 6379
-      --tls-cert-file /certs/redis.crt
-      --tls-key-file /certs/redis.key
-      --tls-ca-cert-file /certs/ca.crt
-      --tls-auth-clients no
+    environment:
+      - REDIS_ARGS=--requirepass merra_account_rds --appendonly yes --port 0 --tls-port 6379 --tls-cert-file /certs/redis.crt --tls-key-file /certs/redis.key --tls-ca-cert-file /certs/ca.crt --tls-auth-clients no
 
   app:
     container_name: merra-app

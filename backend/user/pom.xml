@@ -34,15 +34,10 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/com.redis.om/redis-om-spring -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis-test</artifactId>
-			<scope>test</scope>
+			<groupId>com.redis.om</groupId>
+			<artifactId>redis-om-spring</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

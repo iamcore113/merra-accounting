@@ -1,6 +1,5 @@
 package org.merra.services;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.EnumSet;
 import java.util.List;
@@ -18,8 +17,6 @@ import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationAffiliation;
-import org.merra.dto.UserOrganizationResponse;
-import org.merra.entities.Country;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
@@ -147,6 +144,16 @@ public class OrganizationService {
 		return organizationMetaData;
 	}
 
+	/**
+	 * Fetches all country metadata.
+	 * <p>
+	 * This method first attempts to retrieve the country metadata from the Redis cache.
+	 * If not cached, it queries the database for all countries, maps them to {@link CountriesResponse}
+	 * DTOs, saves them to the Redis cache with a constant duration, and returns the result.
+	 * </p>
+	 *
+	 * @return a list of {@link CountriesResponse} objects representing all countries
+	 */
 	public List<CountriesResponse> fetchCountries() {
 		@SuppressWarnings("unchecked")
 		List<CountriesResponse> getCountries = (List<CountriesResponse>) redisTemplate.opsForValue()

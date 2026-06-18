@@ -1,9 +1,9 @@
 package org.merra.services;
 
-import java.time.Duration;
-
 import org.merra.dto.PersonalDetailsResponse;
+import org.merra.dto.PrincipalAccountSettings;
 import org.merra.entities.UserAccount;
+import org.merra.entities.UserAccountSettings;
 import org.merra.utilities.RedisKeys;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -31,28 +31,37 @@ public class OrganizationUsersService {
 	 *                                          in the database.
 	 */
 	public PersonalDetailsResponse personalDetails() {
-		PersonalDetailsResponse authUserCache = (PersonalDetailsResponse) redisTemplate.opsForValue()
-				.get(RedisKeys.AUTHENTICATED_USER_KEY);
+		PersonalDetailsResponse principalDto = (PersonalDetailsResponse) redisTemplate.opsForValue()
+				.get(RedisKeys.PRINCIPAL);
 
-		if (authUserCache == null) {
-			UserAccount authUser = userAccountService.getAuthenticatedUser();
-			authUserCache = new PersonalDetailsResponse(
-					authUser.getUserId(),
-					authUser.getFirstName(),
-					authUser.getLastName(),
-					authUser.getFullName().get(),
-					authUser.getGender(),
-					authUser.getCountry(),
-					authUser.getEmail(),
+		if (principalDto == null) {
+			UserAccount getPrincipal = userAccountService.getAuthenticatedUser();
+			UserAccountSettings principalAccountSettings = getPrincipal.getAccountSettings();
+			PrincipalAccountSettings principalAccountSettingsDto = new PrincipalAccountSettings(
+					principalAccountSettings.getUserSettingId(),
+					principalAccountSettings.getUserAccount().getUserId(),
+					principalAccountSettings.getAutoAcceptInvitation(),
+					principalAccountSettings.getEmailChange());
+			principalDto = new PersonalDetailsResponse(
+					getPrincipal.getUserId(),
+					getPrincipal.getFirstName(),
+					getPrincipal.getLastName(),
+					getPrincipal.getFullName().get(),
+					getPrincipal.getGender(),
+					getPrincipal.getCountry(),
+					getPrincipal.getEmail(),
 					organizationService.getUserOrganizationAffiliation());
-			redisTemplate.opsForValue().set(RedisKeys.AUTHENTICATED_USER_KEY, authUserCache, Duration.ofHours(2));
+
+			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL, getPrincipal, RedisKeys.CONSTANT_DURATION);
+			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL_ACCOUNT_SETTINGS, principalAccountSettingsDto,
+					RedisKeys.CONSTANT_DURATION);
 		}
-		return authUserCache;
+		return principalDto;
 	}
 
 	public PersonalDetailsResponse updatePrincipalDetails(PersonalDetailsResponse profile) {
 		userAccountService.updateUserAccountProfile(profile);
-		redisTemplate.delete(RedisKeys.AUTHENTICATED_USER_KEY);
+		redisTemplate.delete(RedisKeys.PRINCIPAL);
 		return personalDetails();
 	}
 }

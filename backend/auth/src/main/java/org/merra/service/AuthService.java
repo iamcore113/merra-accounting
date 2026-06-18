@@ -27,6 +27,7 @@ import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -72,6 +73,7 @@ public class AuthService {
   private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
   private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
+  private final RedisTemplate<String, Object> redisTemplate;
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
   private final JwtUtils jwtUtils;
@@ -81,6 +83,7 @@ public class AuthService {
   private final UserAccountService userAccountService;
 
   public AuthService(
+      RedisTemplate<String, Object> redisTemplate,
       JavaMailSender mailSender,
       UserDetailsService userDetailsService,
       JwtUtils jwtUtils,
@@ -88,6 +91,7 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       UserAccountRepository userAccountRepository,
       UserAccountService userAccountService) {
+    this.redisTemplate = redisTemplate;
     this.mailSender = mailSender;
     this.userDetailsService = userDetailsService;
     this.jwtUtils = jwtUtils;
