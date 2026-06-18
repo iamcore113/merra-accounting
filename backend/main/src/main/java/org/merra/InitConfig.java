@@ -1,22 +1,25 @@
 package org.merra;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.merra.config.AuthEntrypointJwt;
+import org.merra.dto.CountriesResponse;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.Country;
+import org.merra.entities.OrganizationType;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.CountryRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.utilities.AccountConstants;
+import org.merra.utilities.RedisKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
 import tools.jackson.databind.JsonNode;
 
 @Component
@@ -29,17 +32,20 @@ public class InitConfig implements CommandLineRunner {
     private final OrganizationTypeRepository organizationTypeRepository;
     private final CountryRepository countryRepository;
     private final RestClient restClient;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public InitConfig(AccountCategoryRepository accountCategoryRepository,
             OrganizationTypeRepository organizationTypeRepository,
             CountryRepository countryRepository,
             @Value("${app.countries.url}") String restCountries,
-            @Value("${app.countries.code}") String restCountriesCode) {
+            @Value("${app.countries.code}") String restCountriesCode,
+            RedisTemplate<String, Object> redisTemplate) {
         this.countryRepository = countryRepository;
         this.accountCategoryRepository = accountCategoryRepository;
         this.organizationTypeRepository = organizationTypeRepository;
         this.restCountries = restCountries;
         this.restCountriesCode = restCountriesCode;
+        this.redisTemplate = redisTemplate;
         this.restClient = RestClient.builder().baseUrl(restCountries)
                 .defaultHeader("Authorization", String.format("Bearer %s", restCountriesCode))
                 .build();
@@ -48,12 +54,14 @@ public class InitConfig implements CommandLineRunner {
     private void seedAccountCategories() {
         logger.debug("Seeding account categories");
         if (accountCategoryRepository.findAll().isEmpty()) {
-            accountCategoryRepository.saveAll(Set.of(
+            List<AccountCategory> categories = accountCategoryRepository.saveAll(Set.of(
                     new AccountCategory(AccountConstants.ACC_CATEGORY_ASSET),
                     new AccountCategory(AccountConstants.ACC_CATEGORY_EQUITY),
                     new AccountCategory(AccountConstants.ACC_CATEGORY_EXPENSE),
                     new AccountCategory(AccountConstants.ACC_CATEGORY_LIABILITY),
                     new AccountCategory(AccountConstants.ACC_CATEGORY_REVENUE)));
+
+            redisTemplate.opsForValue().set(RedisKeys.ACCOUNT_CATEGORIES, categories, RedisKeys.CONSTANT_DURATION);
         }
     }
 
@@ -61,16 +69,16 @@ public class InitConfig implements CommandLineRunner {
         logger.debug("Seeding organization types");
         if (organizationTypeRepository.findAll().isEmpty()) {
             organizationTypeRepository.saveAll(Set.of(
-                    new org.merra.entities.OrganizationType("INDIVIDUAL"),
-                    new org.merra.entities.OrganizationType("SOLE_TRADER"),
-                    new org.merra.entities.OrganizationType("PARTNERSHIP"),
-                    new org.merra.entities.OrganizationType("COMPANY"),
-                    new org.merra.entities.OrganizationType("TRUST"),
-                    new org.merra.entities.OrganizationType("ESTATE"),
-                    new org.merra.entities.OrganizationType("CLUB_OR_SOCIETY"),
-                    new org.merra.entities.OrganizationType("NOT_FOR_PROFIT"),
-                    new org.merra.entities.OrganizationType("GOVERNMENT_BODY"),
-                    new org.merra.entities.OrganizationType("OTHER")));
+                    new OrganizationType("INDIVIDUAL"),
+                    new OrganizationType("SOLE_TRADER"),
+                    new OrganizationType("PARTNERSHIP"),
+                    new OrganizationType("COMPANY"),
+                    new OrganizationType("TRUST"),
+                    new OrganizationType("ESTATE"),
+                    new OrganizationType("CLUB_OR_SOCIETY"),
+                    new OrganizationType("NOT_FOR_PROFIT"),
+                    new OrganizationType("GOVERNMENT_BODY"),
+                    new OrganizationType("OTHER")));
         }
     }
 
@@ -109,7 +117,15 @@ public class InitConfig implements CommandLineRunner {
                     if (!philippinesPresent) {
                         countries.add(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
                     }
-                    countryRepository.saveAll(countries);
+                    List<CountriesResponse> countryList = countries.stream().map(country -> new CountriesResponse(
+                            country.getId(),
+                            country.getOfficial(),
+                            country.getAlpha2(),
+                            country.getAlpha3(),
+                            country.getNumeric(),
+                            country.getSymbol())).toList();
+                    redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, countryList,
+                            RedisKeys.CONSTANT_DURATION);
                 }
             } catch (Exception e) {
                 System.err.println("Failed to seed countries from API: " + e.getMessage());

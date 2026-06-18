@@ -141,20 +141,27 @@ public class OrganizationService {
 			organizationMetaData = new OrganizationMetaDataResponse(organizationTypes, addresses,
 					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
 			// Cache the result for 3 hour
-			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData, Duration.ofHours(3));
+			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
+					RedisKeys.CONSTANT_DURATION);
 		}
 		return organizationMetaData;
 	}
 
 	public List<CountriesResponse> fetchCountries() {
-		List<Country> countries = countryRepository.findAll();
-		return countries.stream().map(country -> new CountriesResponse(
-				country.getId(),
-				country.getOfficial(),
-				country.getAlpha2(),
-				country.getAlpha3(),
-				country.getNumeric(),
-				country.getSymbol())).toList();
+		@SuppressWarnings("unchecked")
+		List<CountriesResponse> getCountries = (List<CountriesResponse>) redisTemplate.opsForValue()
+				.get(RedisKeys.COUNTRY_METADATA);
+		if (getCountries == null) {
+			getCountries = countryRepository.findAll().stream().map(country -> new CountriesResponse(
+					country.getId(),
+					country.getOfficial(),
+					country.getAlpha2(),
+					country.getAlpha3(),
+					country.getNumeric(),
+					country.getSymbol())).toList();
+			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, getCountries, RedisKeys.CONSTANT_DURATION);
+		}
+		return getCountries;
 	}
 
 	/**
