@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LocalStorageService } from '../services/local-storage-service';
 import { IS_AUTHENTICATED } from '../context/auth.token';
 import { SessionExpiredDialog } from '../components/session-expired-dialog/session-expired-dialog';
+import { API_VERSION } from '../api/base';
 
 let sessionDialogOpen = false;
 
@@ -27,6 +28,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const localStorageService = inject(LocalStorageService);
   const dialog = inject(MatDialog);
 
+  let headers = req.headers.set('API-Version', API_VERSION);
+
   const accessToken = localStorageService.getItem('access_token');
   if (!accessToken && requiresAuth) {
     localStorageService.removeItem('access_token');
@@ -35,7 +38,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (accessToken && requiresAuth) {
-    const headers = req.headers.set('Authorization', `Bearer ${accessToken}`);
+    headers = headers.set('Authorization', `Bearer ${accessToken}`);
     const authReq = req.clone({ headers });
 
     return next(authReq).pipe(
@@ -49,7 +52,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-  return next(req).pipe(
+  const versionedReq = req.clone({ headers });
+  return next(versionedReq).pipe(
     catchError(error => {
       if (error.status === 401) {
         localStorageService.removeItem('access_token');
