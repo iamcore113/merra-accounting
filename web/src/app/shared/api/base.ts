@@ -1,3 +1,3 @@
-const address = "http://localhost:8080/";
-export const BASE_URL = `${address}api/v1/`;
-export const HEALTH_URL = `${address}actuator/health/`;
+const address: string = "http://localhost:8080/";
+export const BASE_URL: string = `${address}api/`;
+export const HEALTH_URL: string = `${address}actuator/health/`;
