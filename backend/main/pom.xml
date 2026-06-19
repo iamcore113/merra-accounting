@@ -14,6 +14,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-aws-starter-s3</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>me.paulschwarz</groupId>
 			<artifactId>springboot4-dotenv</artifactId>
 			<optional>true</optional>
@@ -34,7 +38,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
-		<!-- Source: https://mvnrepository.com/artifact/com.redis.om/redis-om-spring -->
 		<dependency>
 			<groupId>com.redis.om</groupId>
 			<artifactId>redis-om-spring</artifactId>

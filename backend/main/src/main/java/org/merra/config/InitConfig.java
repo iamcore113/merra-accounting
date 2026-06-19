@@ -1,4 +1,4 @@
-package org.merra;
+package org.merra.config;
 
 import java.util.HashSet;
 import java.util.List;

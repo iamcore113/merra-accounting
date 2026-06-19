@@ -7,7 +7,7 @@ Multi-module Java 25 Spring Boot 4.0.5 application using Maven with AOT caching 
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Environment Setup](#environment-setup)
-- [Database Setup](#database-setup)
+- [Database and Caching Setup](#database-and-caching-setup)
 - [Building the Project](#building-the-project)
 - [Running the Application](#running-the-application)
 - [Database Migrations](#database-migrations)
@@ -33,7 +33,7 @@ backend/
 ## Prerequisites
 
 - **Java 25** or higher (required for AOT caching)
-- **Docker** and **Docker Compose** (for local PostgreSQL database)
+- **Docker** and **Docker Compose** (for local PostgreSQL and Redis Stack services)
 - **Maven** (wrapper included: `mvnw` on macOS/Linux, `mvnw.cmd` on Windows)
 
 For Maven usage:
@@ -75,7 +75,7 @@ Copy `.env.example` to `backend/main/.env` and configure your environment:
 
 ```env
 # Database Configuration (REQUIRED)
-DB_URL=jdbc:postgresql://localhost:5070/merradb
+DB_URL=jdbc:postgresql://localhost:5071/merra_accounting
 
 # Mail Configuration (REQUIRED for AOT cache generation)
 MAIL_HOST=smtp.gmail.com
@@ -89,6 +89,11 @@ JWT_TOKEN_SECRET=your-256-bit-secret-key
 JWT_ACCESS_TOKEN_DURATION=86400000        # 24 hours
 JWT_REFRESH_TOKEN_EXPIRATION=604800000    # 7 days
 
+# Redis Configuration (REQUIRED for caching)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=merra_account_rds
+
 # Frontend Configuration
 FRONTEND_URL=http://localhost:4200
 FRONTEND_REDIRECT_URL=http://localhost:4200
@@ -96,13 +101,13 @@ FRONTEND_REDIRECT_URL=http://localhost:4200
 
 **Important:** The `.env` file contains sensitive information and is **git-ignored**. Never commit this to version control.
 
-## Database Setup
+## Database and Caching Setup
 
-### Start PostgreSQL with Docker Compose
+### Start PostgreSQL and Redis Stack with Docker Compose
 
-The project includes a `compose.yaml` at the backend root that sets up both the database and application services.
+The project includes a `compose.yaml` at the backend root that sets up database, caching, and application services.
 
-#### Option 1: Full Stack (Database + Application)
+#### Option 1: Full Stack (Database, Redis Stack, + Application)
 
 ```bash
 cd backend
@@ -111,21 +116,22 @@ docker compose up
 
 This starts:
 
-- **PostgreSQL** (`merra-db`) on port `5070`
+- **PostgreSQL** (`merra-accounting-db`) on port `5071`
+- **Redis Stack** (`merra-accounting-redis`) on port `6379` (Redis) and `8001` (Redis Insight UI)
 - **Spring Boot App** (`merra-app`) on port `8080`
 
-#### Option 2: Database Only
+#### Option 2: Database and Redis Stack Only (For Local Development)
 
 ```bash
 cd backend
-docker compose up db
+docker compose up db redis -d
 ```
 
-This starts only PostgreSQL on port `5070`:
+This starts only the database and Redis Stack in the background:
 
-- Database: `merradb`
-- User: `merra-user`
-- Password: `password`
+- **PostgreSQL**: `jdbc:postgresql://localhost:5071/merra_accounting`
+- **Redis Stack**: `localhost:6379` (with password `merra_account_rds`)
+- **Redis Insight UI**: http://localhost:8001 (Web GUI to inspect Redis cache/data)
 
 #### Stop Services
 
@@ -133,7 +139,7 @@ This starts only PostgreSQL on port `5070`:
 docker compose down
 ```
 
-**Note:** Data persists in the `db_data` volume. To reset the database, use:
+**Note:** Data persists in the volumes (`db_data` and `redis_data`). To reset the services and clear data, use:
 
 ```bash
 docker compose down -v
@@ -330,18 +336,24 @@ Sensitive values are loaded from `.env` at runtime, **never** embedded in the bu
 
 ## Troubleshooting
 
-### Application won't start - Database connection error
+### Application won't start - Database/Redis connection error
 
 **Check:**
 
-1. Is PostgreSQL running? `docker ps`
-2. Is port 5070 accessible? `telnet localhost 5070`
-3. Verify `DB_URL` in `.env` matches: `jdbc:postgresql://localhost:5070/merradb`
+1. Are PostgreSQL and Redis running? `docker ps`
+2. Are port 5071 (PostgreSQL) and 6379 (Redis) accessible?
+3. Verify `DB_URL` in `.env` matches: `jdbc:postgresql://localhost:5071/merra_accounting`
+4. Verify Redis variables in `.env` match:
+   ```env
+   REDIS_HOST=localhost
+   REDIS_PORT=6379
+   REDIS_PASSWORD=merra_account_rds
+   ```
 
 **Fix:**
 
 ```bash
-docker compose up db -d
+docker compose up db redis -d
 ```
 
 ### AOT cache generation fails with missing environment variables
@@ -385,10 +397,11 @@ docker compose up db -d
 | Build main module    | `./mvnw clean package -pl main -am`   |
 | Run with AOT cache   | `./run-main-jar.sh`                   |
 | Run with Maven       | `./mvnw spring-boot:run -pl main -am` |
-| Start database       | `docker compose up db -d`             |
+| Start DB & Redis     | `docker compose up db redis -d`       |
 | Start full stack     | `docker compose up`                   |
 | Run tests            | `./mvnw test`                         |
 | Test specific module | `./mvnw test -pl auth`                |
+| View Redis UI        | http://localhost:8001 (Redis Insight) |
 | View database        | http://localhost:7777 (Adminer)       |
 | View API docs        | http://localhost:8080/swagger-ui.html |
 

@@ -13,6 +13,18 @@ services:
       - '5071:5432'
     volumes:
       - db_data:/var/lib/postgresql/data
+  minio:
+    image: minio/minio:latest
+    container_name: merra-accounting-local-minio
+    ports:
+      - "9000:9000" # S3 API Port
+      - "9001:9001" # Web Console Port
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
 
   redis:
     container_name: merra-accounting-redis
@@ -47,7 +59,9 @@ services:
     depends_on:
       - db
       - redis
+      - minio
 
 volumes:
   db_data:
   redis_data:
+  minio_data:

@@ -1,6 +1,18 @@
 spring:
   application:
     name: main
+  cloud:
+    aws:
+      credentials:
+        access-key: ${MINIO_ACCESS_KEY:minioadmin}
+        secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      region:
+        static: ${MINIO_REGION_STATIC:us-east-1}
+      s3:
+        endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+        # CRITICAL: Local MinIO requires path-style access
+        # Enabling path-style-access-enabled tells the AWS SDK to construct the HTTP requests in a format that MinIO can route properly.
+        path-style-access-enabled: true
   aot:
     data:
       accessors:
