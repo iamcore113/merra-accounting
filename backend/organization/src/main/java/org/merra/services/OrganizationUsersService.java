@@ -1,6 +1,6 @@
 package org.merra.services;
 
-import org.merra.dto.PersonalDetailsResponse;
+import org.merra.dto.PrincipalDetailsResponse;
 import org.merra.dto.PrincipalAccountSettings;
 import org.merra.entities.UserAccount;
 import org.merra.entities.UserAccountSettings;
@@ -25,13 +25,13 @@ public class OrganizationUsersService {
 	 * Retrieves the personal details of the currently authenticated user.
 	 * The results are cached per user in Redis to improve performance.
 	 *
-	 * @return a {@linkplain PersonalDetailsResponse} containing the authenticated
+	 * @return a {@linkplain PrincipalDetailsResponse} containing the authenticated
 	 *         user's first name, last name, full name, gender, country, and email.
 	 * @throws java.util.NoSuchElementException if no authenticated user is found
 	 *                                          in the database.
 	 */
-	public PersonalDetailsResponse personalDetails() {
-		PersonalDetailsResponse principalDto = (PersonalDetailsResponse) redisTemplate.opsForValue()
+	public PrincipalDetailsResponse personalDetails() {
+		PrincipalDetailsResponse principalDto = (PrincipalDetailsResponse) redisTemplate.opsForValue()
 				.get(RedisKeys.PRINCIPAL);
 
 		if (principalDto == null) {
@@ -42,7 +42,7 @@ public class OrganizationUsersService {
 					principalAccountSettings.getUserAccount().getUserId(),
 					principalAccountSettings.getAutoAcceptInvitation(),
 					principalAccountSettings.getEmailChange());
-			principalDto = new PersonalDetailsResponse(
+			principalDto = new PrincipalDetailsResponse(
 					getPrincipal.getUserId(),
 					getPrincipal.getFirstName(),
 					getPrincipal.getLastName(),
@@ -52,14 +52,14 @@ public class OrganizationUsersService {
 					getPrincipal.getEmail(),
 					organizationService.getUserOrganizationAffiliation());
 
-			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL, getPrincipal, RedisKeys.CONSTANT_DURATION);
+			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL, principalDto, RedisKeys.CONSTANT_DURATION);
 			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL_ACCOUNT_SETTINGS, principalAccountSettingsDto,
 					RedisKeys.CONSTANT_DURATION);
 		}
 		return principalDto;
 	}
 
-	public PersonalDetailsResponse updatePrincipalDetails(PersonalDetailsResponse profile) {
+	public PrincipalDetailsResponse updatePrincipalDetails(PrincipalDetailsResponse profile) {
 		userAccountService.updateUserAccountProfile(profile);
 		redisTemplate.delete(RedisKeys.PRINCIPAL);
 		return personalDetails();

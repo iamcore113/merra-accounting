@@ -268,8 +268,8 @@ export interface UserOrganizationAffiliation {
   organizations: OrganizationAffiliation[];
 }
 
-// Corresponds to: backend/user/src/main/java/org/merra/dto/PersonalDetailsResponse.java
-export interface PersonalDetailsResponse {
+// Corresponds to: backend/user/src/main/java/org/merra/dto/PrincipalDetailsResponse.java
+export interface PrincipalDetailsResponse {
   id: string;
   firstName: string;
   lastName: string;

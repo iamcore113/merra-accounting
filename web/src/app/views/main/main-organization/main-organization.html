@@ -194,7 +194,7 @@
 									<mat-label>Country</mat-label>
 									<mat-select formControlName="country">
 										@for (country of countries; track country.cca2) {
-											<mat-option [value]="country.cca2">{{ country.name.common }}</mat-option>
+											<mat-option [value]="country.cca2">{{ country.name }}</mat-option>
 										}
 									</mat-select>
 								</mat-form-field>

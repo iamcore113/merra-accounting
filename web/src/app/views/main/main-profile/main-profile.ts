@@ -17,9 +17,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatListModule } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../../../shared/services/user-service';
-import { CountryApiService } from '../../../shared/services/country-api-service';
-import { PersonalDetailsResponse } from '../../../shared/models/organization';
-import { RestCountriesSelection, RestCountryList } from '../../../shared/models/api_response';
+import { PrincipalDetailsResponse } from '../../../shared/models/organization';
+import { RestCountriesSelection, Config } from '../../../shared/models/api_response';
+import { OrganizationService } from '../../../shared/services/organization-service';
+import { UtilityService } from '../../../shared/services/utility-service';
 
 @Component({
   selector: 'app-profile-image-dialog',
@@ -130,9 +131,10 @@ export class MainProfile implements OnInit {
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
   private readonly cdRef = inject(ChangeDetectorRef);
-  private readonly countryApiService = inject(CountryApiService);
+  private readonly organizationService = inject(OrganizationService);
+  private readonly utilityService = inject(UtilityService);
   private readonly fb = inject(FormBuilder);
-  public personalDetails: PersonalDetailsResponse | null = null;
+  public personalDetails: PrincipalDetailsResponse | null = null;
   affiliatedOrganizationsCount = 0;
   isLoading = false;
   isUpdating = false;
@@ -144,10 +146,10 @@ export class MainProfile implements OnInit {
 
   profileForm: FormGroup = this.fb.group({
     firstName: ['', Validators.required],
-    lastName:  ['', Validators.required],
-    gender:    ['', Validators.required],
-    country:   ['', Validators.required],
-    email:     ['', [Validators.required, Validators.email]],
+    lastName: ['', Validators.required],
+    gender: ['', Validators.required],
+    country: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
   });
 
   get countryControl(): FormControl {
@@ -164,7 +166,7 @@ export class MainProfile implements OnInit {
     this.loadCountries();
     this.userService.getAuthenticatedUserDetails().subscribe({
       next: (response: any) => {
-        this.personalDetails = response.data as PersonalDetailsResponse;
+        this.personalDetails = response.data as PrincipalDetailsResponse;
         if (this.personalDetails?.organizationAffiliation) {
           this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count;
         }
@@ -180,14 +182,14 @@ export class MainProfile implements OnInit {
     });
   }
 
-  private patchForm(details: PersonalDetailsResponse | null): void {
+  private patchForm(details: PrincipalDetailsResponse | null): void {
     if (!details) return;
     this.profileForm.patchValue({
       firstName: details.firstName ?? '',
-      lastName:  details.lastName  ?? '',
-      gender:    details.gender?.toLowerCase() ?? '',
-      country:   details.country   ?? '',
-      email:     details.email     ?? '',
+      lastName: details.lastName ?? '',
+      gender: details.gender?.toLowerCase() ?? '',
+      country: details.country ?? '',
+      email: details.email ?? '',
     }, { emitEvent: false });
     this.profileForm.markAsPristine();
   }
@@ -195,18 +197,18 @@ export class MainProfile implements OnInit {
   updateProfile(): void {
     if (this.profileForm.invalid || this.profileForm.pristine) return;
     const value = this.profileForm.getRawValue();
-    const payload: PersonalDetailsResponse = {
+    const payload: PrincipalDetailsResponse = {
       ...this.personalDetails!,
       firstName: value.firstName,
-      lastName:  value.lastName,
-      gender:    value.gender,
-      country:   value.country,
-      email:     value.email,
+      lastName: value.lastName,
+      gender: value.gender,
+      country: value.country,
+      email: value.email,
     };
     this.isUpdating = true;
     this.userService.updateProfile(payload).subscribe({
       next: (response: any) => {
-        this.personalDetails = response.data as PersonalDetailsResponse;
+        this.personalDetails = response.data as PrincipalDetailsResponse;
         this.patchForm(this.personalDetails);
         this.isUpdating = false;
         this.cdRef.detectChanges();
@@ -225,15 +227,18 @@ export class MainProfile implements OnInit {
   }
 
   private loadCountries(): void {
-    this.countryApiService.getCountries().subscribe({
-      next: (countries: RestCountryList) => {
-        this.profileForm.get('country')!.setValue(this.personalDetails?.country ?? '', { emitEvent: false });
-        this.countries = countries.map(country => ({
-          name: country.name.common,
-          cca2: country.cca2,
-          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
-        })).sort((a, b) => a.name.localeCompare(b.name));
-        this.cdRef.detectChanges();
+    this.utilityService.getCountries().subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response) {
+          this.profileForm.get('country')!.setValue(this.personalDetails?.country ?? '', { emitEvent: false });
+          const countryList = response.data as any[];
+          this.countries = countryList.map(country => ({
+            name: country.countryName,
+            cca2: country.isoAlpha2Code,
+            currency: country.symbol || 'N/A'
+          })).sort((a, b) => a.name.localeCompare(b.name));
+          this.cdRef.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Failed to load countries:', error);

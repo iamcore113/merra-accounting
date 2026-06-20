@@ -7,7 +7,7 @@ import { Config } from '../models/api_response';
 import { HttpContext } from '@angular/common/http';
 import { IS_AUTHENTICATED } from '../context/auth.token';
 import { AUTHENTICATED_USER_DETAILS, AUTHENTICATED_USER_UPDATE_PROFILE } from '../api/organization';
-import { PersonalDetailsResponse } from '../models/organization';
+import { PrincipalDetailsResponse } from '../models/organization';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class UserService {
     });
   }
 
-  updateProfile(req: PersonalDetailsResponse): Observable<Config> {
+  updateProfile(req: PrincipalDetailsResponse): Observable<Config> {
     return this.http.put<Config>(AUTHENTICATED_USER_UPDATE_PROFILE, req, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });

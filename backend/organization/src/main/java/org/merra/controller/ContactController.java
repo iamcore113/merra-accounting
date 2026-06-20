@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  * Exposes REST endpoints for managing and retrieving business contacts data.
  */
 @RestController
-@RequestMapping("api/v1/business/contact/")
+@RequestMapping("api/business/contact/")
 public class ContactController {
 	private final ContactService contactService;
 

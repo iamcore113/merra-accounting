@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.merra.dto.CountriesCache;
 import org.merra.dto.CountriesResponse;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.Country;
@@ -123,8 +124,9 @@ public class InitConfig implements CommandLineRunner {
                             country.getAlpha2(),
                             country.getAlpha3(),
                             country.getNumeric(),
-                            country.getSymbol())).toList();
-                    redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, countryList,
+                            country.getSymbol(),
+                            country.getCode())).toList();
+                    redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(countryList),
                             RedisKeys.CONSTANT_DURATION);
                 }
             } catch (Exception e) {

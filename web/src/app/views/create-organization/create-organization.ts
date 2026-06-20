@@ -11,9 +11,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { CommonModule } from '@angular/common';
-import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
-import { CountryApiService } from '../../shared/services/country-api-service';
+import { Config, RestCountriesSelection } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
+import { UtilityService } from '../../shared/services/utility-service';
 
 @Component({
   selector: 'app-create-organization',
@@ -32,11 +32,11 @@ import { LocalStorageService } from '../../shared/services/local-storage-service
 })
 export class CreateOrganization implements OnInit {
   private organizationService = inject(OrganizationService);
+  private utilityService = inject(UtilityService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private activatedRoute = inject(ActivatedRoute);
-  private countryApiService = inject(CountryApiService);
   private new_organization: NewOrganizationResponse | null = null;
   private localStorage = inject(LocalStorageService);
 
@@ -90,27 +90,25 @@ export class CreateOrganization implements OnInit {
   }
 
   private loadCountries(): void {
-    let collect_response: RestCountryList;
-    this.countryApiService.getCountries().subscribe({
-      next: (response: RestCountryList) => {
-        collect_response = response;
+    this.utilityService.getCountries().subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response) {
+          const countryList = response.data as any[];
+          this.countries = countryList.map(c => ({
+            name: c.countryName,
+            cca2: c.isoAlpha2Code,
+            currency: c.symbol || 'N/A'
+          }));
+          setTimeout(() => {
+            this.filteredCountries = [...this.countries];
+            this.cdr.detectChanges();
+          });
+        }
       },
       error: (error) => {
         console.error('Failed to load countries:', error);
         this.snackBar.open('Failed to load countries', 'Close', {
           duration: 3000
-        });
-      },
-      complete: () => {
-        // Transform the response to the format we need
-        this.countries = collect_response.map(country => ({
-          name: country.name.common,
-          cca2: country.cca2,
-          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
-        }));
-        setTimeout(() => {
-          this.filteredCountries = [...this.countries];
-          this.cdr.detectChanges();
         });
       }
     });

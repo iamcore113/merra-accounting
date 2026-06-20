@@ -37,16 +37,4 @@ public class OrganizationMetadataController {
     public String getUserOrganizationMetadata(@PathVariable("userId") String userId) {
         return new String();
     }
-
-    @GetMapping("countries")
-    public ResponseEntity<ApiResponse<List<CountriesResponse>>> countries() {
-        List<CountriesResponse> res = organizationService.fetchCountries();
-        ApiResponse<List<CountriesResponse>> response = new ApiResponse<>(
-                "Countries metadata found successfully.",
-                true,
-                HttpStatus.OK,
-                res);
-        return ResponseEntity.ok(response);
-    }
-
 }

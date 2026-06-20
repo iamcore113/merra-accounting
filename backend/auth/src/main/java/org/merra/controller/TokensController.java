@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/v1/tokens/")
+@RequestMapping("api/tokens/")
 public class TokensController {
     private final TokenService tokenService;
 

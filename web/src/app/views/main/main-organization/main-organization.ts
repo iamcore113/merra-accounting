@@ -15,10 +15,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { DatePipe } from '@angular/common';
 import { OrganizationService } from '../../../shared/services/organization-service';
-import { CountryApiService } from '../../../shared/services/country-api-service';
-import { RestCountryList } from '../../../shared/models/api_response';
 import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData, CurrentOrganizationResponseNames, CurrentOrganizationResponseType, CurrentOrganizationResponseAddress, CurrentOrganizationResponseFinancialYear } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
+import { UtilityService } from '../../../shared/services/utility-service';
 
 @Component({
   selector: 'app-organization-image-dialog',
@@ -55,7 +54,7 @@ export class OrganizationImageDialog {
 })
 export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
-  private readonly countryApiService = inject(CountryApiService);
+  private readonly utilityService = inject(UtilityService);
   private readonly bottomSheet = inject(MatBottomSheet);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
@@ -81,7 +80,7 @@ export class MainOrganization implements OnInit {
   public organizationTypesMetadata: OrganizationTypesMetaData[] = [];
   public isLoadingOrganizationTypes = false;
   public isLoadingOrganization = false;
-  public countries: RestCountryList = [];
+  public countries: any[] = [];
   public isLoadingCountries = false;
   organizationForm: FormGroup = this.fb.group({
     organizationId: [{ value: '', disabled: true }],
@@ -122,7 +121,7 @@ export class MainOrganization implements OnInit {
     const names = this.organizationForm.get('names')?.value;
     if (!this.originalNames || !names) return false;
     return names.displayName !== this.originalNames.displayName ||
-           names.legalName !== this.originalNames.legalName;
+      names.legalName !== this.originalNames.legalName;
   };
 
   hasDescriptionChanged = (): boolean => {
@@ -195,9 +194,16 @@ export class MainOrganization implements OnInit {
 
   private loadCountries(): void {
     this.isLoadingCountries = true;
-    this.countryApiService.getCountries().subscribe({
-      next: (countries: RestCountryList) => {
-        this.countries = countries.sort((a, b) => a.name.common.localeCompare(b.name.common));
+    this.utilityService.getCountries().subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response) {
+          const countryList = response.data as any[];
+          this.countries = countryList.map(c => ({
+            name: c.countryName,
+            cca2: c.isoAlpha2Code,
+            currency: c.code || 'N/A'
+          })).sort((a, b) => a.name.localeCompare(b.name));
+        }
         this.isLoadingCountries = false;
       },
       error: (error) => {

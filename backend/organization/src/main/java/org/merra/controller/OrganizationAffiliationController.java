@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Handles organization affiliation endpoints for the authenticated user.
  */
 @RestController
-@RequestMapping("api/v1/organization/affiliations/")
+@RequestMapping("api/organization/affiliations/")
 public class OrganizationAffiliationController {
     private final OrganizationService organizationService;
 

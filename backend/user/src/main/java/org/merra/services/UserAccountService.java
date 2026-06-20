@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.merra.dto.PersonalDetailsResponse;
+import org.merra.dto.PrincipalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
@@ -124,7 +124,6 @@ public class UserAccountService {
 		return userMapper.toUserPersonalInformationResponse(user);
 	}
 
-
 	/**
 	 * Updates the persisted profile fields of the currently authenticated user
 	 * with the values provided in the given profile.
@@ -135,14 +134,16 @@ public class UserAccountService {
 	 * are still pending further handling (see inline TODO).
 	 * </p>
 	 *
-	 * @param profile - the {@linkplain PersonalDetailsResponse} carrying the
+	 * @param profile - the {@linkplain PrincipalDetailsResponse} carrying the
 	 *                desired field values.
-	 * @throws IllegalArgumentException if the {@code profile.id()} does not match
-	 *                                  the ID of the currently authenticated user.
+	 * @throws IllegalArgumentException         if the {@code profile.id()} does not
+	 *                                          match
+	 *                                          the ID of the currently
+	 *                                          authenticated user.
 	 * @throws java.util.NoSuchElementException if no authenticated user is found
 	 *                                          in the database.
 	 */
-	public void updateUserAccountProfile(PersonalDetailsResponse profile) {
+	public void updateUserAccountProfile(PrincipalDetailsResponse profile) {
 		final UUID userId = profile.id();
 		UserAccount user = getAuthenticatedUser();
 
@@ -180,9 +181,11 @@ public class UserAccountService {
 	 * Retrieves the currently authenticated user from the security context.
 	 *
 	 * @return the {@link UserAccount} entity of the authenticated user
-	 * @throws EntityNotFoundException if no authenticated user is found in the database
+	 * @throws EntityNotFoundException if no authenticated user is found in the
+	 *                                 database
 	 */
 	public UserAccount getCurrentAuthenticatedUser() {
-		return userRepository.findAuthenticatedUser().orElseThrow(() -> new EntityNotFoundException("User entity not found."));
+		return userRepository.findAuthenticatedUser()
+				.orElseThrow(() -> new EntityNotFoundException("User entity not found."));
 	}
 }

@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.merra.dto.CountriesCache;
 import org.merra.dto.CountriesResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
@@ -147,17 +148,21 @@ public class OrganizationService {
 	/**
 	 * Fetches all country metadata.
 	 * <p>
-	 * This method first attempts to retrieve the country metadata from the Redis cache.
-	 * If not cached, it queries the database for all countries, maps them to {@link CountriesResponse}
-	 * DTOs, saves them to the Redis cache with a constant duration, and returns the result.
+	 * This method first attempts to retrieve the country metadata from the Redis
+	 * cache.
+	 * If not cached, it queries the database for all countries, maps them to
+	 * {@link CountriesResponse}
+	 * DTOs, saves them to the Redis cache with a constant duration, and returns the
+	 * result.
 	 * </p>
 	 *
-	 * @return a list of {@link CountriesResponse} objects representing all countries
+	 * @return a list of {@link CountriesResponse} objects representing all
+	 *         countries
 	 */
 	public List<CountriesResponse> fetchCountries() {
-		@SuppressWarnings("unchecked")
-		List<CountriesResponse> getCountries = (List<CountriesResponse>) redisTemplate.opsForValue()
+		CountriesCache countriesCache = (CountriesCache) redisTemplate.opsForValue()
 				.get(RedisKeys.COUNTRY_METADATA);
+		List<CountriesResponse> getCountries = countriesCache != null ? countriesCache.countries() : null;
 		if (getCountries == null) {
 			getCountries = countryRepository.findAll().stream().map(country -> new CountriesResponse(
 					country.getId(),
@@ -165,8 +170,9 @@ public class OrganizationService {
 					country.getAlpha2(),
 					country.getAlpha3(),
 					country.getNumeric(),
-					country.getSymbol())).toList();
-			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, getCountries, RedisKeys.CONSTANT_DURATION);
+					country.getSymbol(),
+					country.getCode())).toList();
+			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries), RedisKeys.CONSTANT_DURATION);
 		}
 		return getCountries;
 	}

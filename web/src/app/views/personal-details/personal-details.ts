@@ -14,7 +14,8 @@ import { AsyncPipe } from '@angular/common';
 import { UserPersonalInformationRequest } from '../../shared/models/user';
 import { UserService } from '../../shared/services/user-service';
 import { Config, RestCountriesSelection, RestCountryList } from '../../shared/models/api_response';
-import { CountryApiService } from '../../shared/services/country-api-service';
+import { OrganizationService } from '../../shared/services/organization-service';
+import { UtilityService } from '../../shared/services/utility-service';
 
 @Component({
   selector: 'app-personal-details',
@@ -44,8 +45,8 @@ export class PersonalDetails implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private userService: UserService,
-    private countryApiService: CountryApiService
-  ) {}
+    private utilityService: UtilityService
+  ) { }
 
   ngOnInit(): void {
     // Reactive forms keep validation rules in one place (here in TS),
@@ -73,19 +74,21 @@ export class PersonalDetails implements OnInit {
     });
 
     let collect_response: RestCountryList;
-    this.countryApiService.getCountries().subscribe({
-      next: (countries: RestCountryList) => {
-        collect_response = countries;
-        console.log('Countries loaded:', countries);
+    this.utilityService.getCountries().subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response) {
+          collect_response = response.data as RestCountryList;
+          console.log('Countries loaded:', collect_response);
+        }
       },
       error: (error) => {
         console.error('Error loading countries:', error);
       },
       complete: () => {
         this.countries = collect_response.map(country => ({
-          name: country.name.common,
-          cca2: country.cca2,
-          currency: country.currencies && Object.values(country.currencies)[0]?.name || 'N/A'
+          name: country.countryName,
+          cca2: country.isoAlpha2Code,
+          currency: country.code || 'N/A'
         }));
         // Trigger a new emission to update the filtered list with loaded countries
         this.personalDetailsForm.get('country')?.updateValueAndValidity();

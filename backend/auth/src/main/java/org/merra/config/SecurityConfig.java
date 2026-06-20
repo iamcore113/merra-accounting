@@ -147,15 +147,16 @@ public class SecurityConfig {
                          */
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
-                                "/api/v1/metadata/**",
-                                "/api/v1/account/user/**")
+                                "/api/metadata/**",
+                                "/api/account/user/**")
                         .hasAnyRole(ROLE_IDLE, ROLE_READ_ONLY, ROLE_INVOICE_ONLY, ROLE_STANDARD, ROLE_ADVISOR,
                                 ROLE_MEMBER)
                         .requestMatchers(
                                 "/",
+                                "/api/main/utilities/**",
                                 "/actuator/**",
-                                "/api/v1/auth/**",
-                                "/api/v1/tokens/**",
+                                "/api/auth/**",
+                                "/api/tokens/**",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**")

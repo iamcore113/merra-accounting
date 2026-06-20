@@ -2,7 +2,7 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-public record PersonalDetailsResponse(
+public record PrincipalDetailsResponse(
         UUID id,
         String firstName,
         String lastName,
@@ -10,9 +10,8 @@ public record PersonalDetailsResponse(
         String gender,
         String country,
         String email,
-        UserOrganizationAffiliation organizationAffiliation
-) {
-    public PersonalDetailsResponse {
+        UserOrganizationAffiliation organizationAffiliation) {
+    public PrincipalDetailsResponse {
         if (id == null) {
             throw new IllegalArgumentException("User ID cannot be null.");
         }

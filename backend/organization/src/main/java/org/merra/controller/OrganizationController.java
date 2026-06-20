@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
  * accessing existing organization entity.
  */
 @RestController
-@RequestMapping("api/v1/business/organization/")
+@RequestMapping("api/business/organization/")
 public class OrganizationController {
 	private final OrganizationService organizationService;
 

@@ -25,27 +25,16 @@ export interface ErrorResponse extends JsonResponse {
 export type Config = SuccessResponse | ErrorResponse;
 
 /**
- * Interface for REST Countries API response
- * Based on https://restcountries.com/v3.1/all?fields=name,cca2,currencies
+ * Interface corresponding to CountriesResponse.java DTO
  */
-interface RestCountry {
-  name: {
-    common: string;
-    official: string;
-    nativeName: {
-      [languageCode: string]: {
-        official: string;
-        common: string;
-      };
-    };
-  };
-  currencies: {
-    [currencyCode: string]: {
-      name: string;
-      symbol: string;
-    };
-  };
-  cca2: string;
+export interface RestCountry {
+  countryId: string;
+  countryName: string;
+  isoAlpha2Code: string;
+  isoAlpha3Code: string;
+  isoNumericCode: string;
+  symbol: string;
+  code: string;
 }
 export type RestCountryList = RestCountry[];
 

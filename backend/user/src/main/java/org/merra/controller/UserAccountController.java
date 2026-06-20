@@ -17,7 +17,7 @@ import jakarta.validation.Valid;
  * Handles user account profile completion operations.
  */
 @RestController
-@RequestMapping("api/v1/account/user/")
+@RequestMapping("api/account/user/")
 public class UserAccountController {
 	private final UserAccountService userAccountService;
 
