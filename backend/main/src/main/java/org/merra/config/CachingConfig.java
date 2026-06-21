@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
@@ -34,17 +35,8 @@ public class CachingConfig {
         @Value("${spring.data.redis.password:}")
         private String redisPassword;
 
-        /**
-         * Configures and returns a {@link JedisConnectionFactory} for connecting to
-         * the Redis instance.
-         * <p>
-         * The connection is configured to use SSL with peer verification disabled,
-         * and a connect and read timeout of 2 seconds.
-         * </p>
-         *
-         * @return the configured Jedis connection factory
-         */
         @Bean
+        @Profile("dev")
         public JedisConnectionFactory redisConnectionFactory() {
                 TrustManager[] trustAllCerts = new TrustManager[] {
                                 new X509TrustManager() {
@@ -93,15 +85,6 @@ public class CachingConfig {
 
                 return new JedisConnectionFactory(serverConfig, clientConfig);
         }
-
-        // @Bean
-        // public RedisCacheManagerBuilderCustomizer
-        // redisCacheManagerBuilderCustomizer() {
-        // return (builder) -> builder
-        // .withCacheConfiguration("principal", RedisCacheConfiguration
-        // .defaultCacheConfig().entryTtl(Duration.ofHours(2)));
-
-        // }
 
         @Bean
         RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

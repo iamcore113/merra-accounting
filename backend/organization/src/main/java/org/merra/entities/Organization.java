@@ -23,7 +23,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -69,7 +68,7 @@ public class Organization {
 	@NotNull(message = "defaultCurrency attribute cannot be null.")
 	private String defaultCurrency;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "organization_type", nullable = false)
 	@NotNull(message = "organizationType attribute cannot be null.")
 	private OrganizationType organizationType;
@@ -97,7 +96,7 @@ public class Organization {
 	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
 	private Set<OrganizationAddressEmb> address;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "organization")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization")
 	private List<OrganizationAddresses> addresses;
 
 	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
