@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class OrganizationAddressEmb implements Serializable {
+public class EOrganizationAddresses implements Serializable {
     private String addressType;
     private Set<String> linkedSet; // new LinkedHashSet<>()
     private String city;
@@ -12,10 +12,10 @@ public class OrganizationAddressEmb implements Serializable {
     private String country;
     private String attentionTo;
 
-    public OrganizationAddressEmb() {
+    public EOrganizationAddresses() {
     }
 
-    public OrganizationAddressEmb(String addressType, Set<String> linkedSet, String city, String postalCode,
+    public EOrganizationAddresses(String addressType, Set<String> linkedSet, String city, String postalCode,
             String country, String attentionTo) {
         this.addressType = addressType;
         this.linkedSet = linkedSet;

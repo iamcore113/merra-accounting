@@ -15,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,7 +35,7 @@ public class Invoice {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "invoice_id", nullable = false, unique = true)
 	private UUID invoiceId;
-	
+
 	@Column(name = "invoice_number", nullable = false, unique = true)
 	@NotBlank(message = "Invoice number cannot be blank")
 	private String invoiceNumber;
@@ -55,7 +54,7 @@ public class Invoice {
 	@NotNull(message = "contact attribute cannot be null.")
 	private Contact contact;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "invoice")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
 	private Set<LineItem> lineItems;
 
 	@Column(name = "line_amount_type")
@@ -159,7 +158,7 @@ public class Invoice {
 				grandTotal, totalTax, actions);
 		this.invoiceId = invoiceId;
 	}
-	
+
 	public String getInvoiceNumber() {
 		return invoiceNumber;
 	}

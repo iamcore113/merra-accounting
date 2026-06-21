@@ -13,7 +13,7 @@ import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
-import org.merra.entities.embedded.OrganizationAddressEmb;
+import org.merra.entities.embedded.EOrganizationAddresses;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
 
@@ -94,7 +94,7 @@ public class Organization {
 	private FinancialYearEmb financialYear;
 
 	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
-	private Set<OrganizationAddressEmb> address;
+	private Set<EOrganizationAddresses> address;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization")
 	private List<OrganizationAddresses> addresses;
@@ -148,7 +148,7 @@ public class Organization {
 	public void setContactDetails(
 			String countryCode,
 			String defaultCurrency,
-			Set<OrganizationAddressEmb> address,
+			Set<EOrganizationAddresses> address,
 			LinkedHashSet<PhoneDetailsEmb> phones,
 			String email,
 			String website,
@@ -265,11 +265,11 @@ public class Organization {
 		this.financialYear = financialYear;
 	}
 
-	public Set<OrganizationAddressEmb> getAddress() {
+	public Set<EOrganizationAddresses> getAddress() {
 		return address;
 	}
 
-	public void setAddress(Set<OrganizationAddressEmb> address) {
+	public void setAddress(Set<EOrganizationAddresses> address) {
 		this.address = address;
 	}
 
