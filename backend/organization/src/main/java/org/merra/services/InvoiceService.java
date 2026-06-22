@@ -3,6 +3,7 @@ package org.merra.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -10,6 +11,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.merra.dto.CreateInvoiceRequest;
+import org.merra.dto.InvoiceMetaDataResponse;
 import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
@@ -20,6 +22,9 @@ import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.ContactRepository;
 import org.merra.repositories.InvoiceRepository;
+import org.merra.repositories.InvoiceStatusCodeRepository;
+import org.merra.repositories.InvoiceTypeRepository;
+import org.merra.repositories.LineAmountTypeRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.TaxRateRepository;
 import org.merra.repositories.TaxTypeRepository;
@@ -49,6 +54,9 @@ public class InvoiceService {
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
 	private final TaxTypeRepository taxTypeRepository;
+	private final InvoiceTypeRepository invoiceTypeRepository;
+	public final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
+	private final LineAmountTypeRepository lineAmountTypeRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 
 	public InvoiceService(
@@ -59,7 +67,10 @@ public class InvoiceService {
 			JournalService journalService,
 			AccountRepository accountRepository,
 			TaxRateRepository taxRateRepository,
-			TaxTypeRepository taxTypeRepository) {
+			TaxTypeRepository taxTypeRepository,
+			InvoiceTypeRepository invoiceTypeRepository,
+			InvoiceStatusCodeRepository invoiceStatusCodeRepository,
+			LineAmountTypeRepository lineAmountTypeRepository) {
 		this.organizationRepository = organizationRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.invoiceRepository = invoiceRepository;
@@ -68,6 +79,9 @@ public class InvoiceService {
 		this.accountRepository = accountRepository;
 		this.taxRateRepository = taxRateRepository;
 		this.taxTypeRepository = taxTypeRepository;
+		this.invoiceTypeRepository = invoiceTypeRepository;
+		this.invoiceStatusCodeRepository = invoiceStatusCodeRepository;
+		this.lineAmountTypeRepository = lineAmountTypeRepository;
 	}
 
 	/**
@@ -441,6 +455,22 @@ public class InvoiceService {
 
 		// Format: INV - [Year] - [4-digit padded number]
 		return String.format("INV-%d-%03d", year, nextVal);
+	}
+
+	public InvoiceMetaDataResponse metadata() {
+		Set<InvoiceMetaDataResponse.InvoiceStatusCode> statusCodes = invoiceStatusCodeRepository.findAll().stream()
+				.map(s -> new InvoiceMetaDataResponse.InvoiceStatusCode(s.getId(), s.getCode()))
+				.collect(Collectors.toSet());
+
+		Set<InvoiceMetaDataResponse.InvoiceType> invoiceTypes = invoiceTypeRepository.findAll().stream()
+				.map(t -> new InvoiceMetaDataResponse.InvoiceType(t.getId(), t.getType()))
+				.collect(Collectors.toSet());
+
+		Set<InvoiceMetaDataResponse.LineAmountType> lineAmountTypes = lineAmountTypeRepository.findAll().stream()
+				.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType()))
+				.collect(Collectors.toSet());
+
+		return new InvoiceMetaDataResponse(invoiceTypes, statusCodes, lineAmountTypes);
 	}
 
 }

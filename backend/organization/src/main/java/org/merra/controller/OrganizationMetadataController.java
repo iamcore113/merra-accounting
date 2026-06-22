@@ -1,9 +1,6 @@
 package org.merra.controller;
 
-import java.util.List;
-
 import org.merra.api.ApiResponse;
-import org.merra.dto.CountriesResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.services.OrganizationService;
 import org.springframework.http.HttpStatus;

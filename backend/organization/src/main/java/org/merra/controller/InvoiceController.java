@@ -1,11 +1,14 @@
 package org.merra.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.CreateInvoiceRequest;
+import org.merra.dto.InvoiceMetaDataResponse;
 import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.services.InvoiceService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +26,17 @@ public class InvoiceController {
 
 	public InvoiceController(InvoiceService invoicesService) {
 		this.invoicesService = invoicesService;
+	}
+
+	@GetMapping(path = "metadata")
+	public ResponseEntity<ApiResponse<InvoiceMetaDataResponse>> metadata() {
+		InvoiceMetaDataResponse metadata = invoicesService.metadata();
+		ApiResponse<InvoiceMetaDataResponse> response = new ApiResponse<>(
+				"Invoice metadata retrieved successfully.",
+				true,
+				HttpStatus.OK,
+				metadata);
+		return ResponseEntity.ok(response);
 	}
 
 	/**

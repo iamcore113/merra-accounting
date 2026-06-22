@@ -8,9 +8,15 @@ import org.merra.dto.CountriesCache;
 import org.merra.dto.CountriesResponse;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.Country;
+import org.merra.entities.InvoiceStatusCode;
+import org.merra.entities.InvoiceType;
+import org.merra.entities.LineAmountType;
 import org.merra.entities.OrganizationType;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.CountryRepository;
+import org.merra.repositories.InvoiceStatusCodeRepository;
+import org.merra.repositories.InvoiceTypeRepository;
+import org.merra.repositories.LineAmountTypeRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.utilities.AccountConstants;
 import org.merra.utilities.RedisKeys;
@@ -31,16 +37,25 @@ public class InitConfig implements CommandLineRunner {
 
     private final AccountCategoryRepository accountCategoryRepository;
     private final OrganizationTypeRepository organizationTypeRepository;
+    private final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
+    private final InvoiceTypeRepository invoiceTypeRepository;
+    private final LineAmountTypeRepository lineAmountTypeRepository;
     private final CountryRepository countryRepository;
     private final RestClient restClient;
     private final RedisTemplate<String, Object> redisTemplate;
 
     public InitConfig(AccountCategoryRepository accountCategoryRepository,
             OrganizationTypeRepository organizationTypeRepository,
+            InvoiceStatusCodeRepository invoiceStatusCodeRepository,
+            InvoiceTypeRepository invoiceTypeRepository,
+            LineAmountTypeRepository lineAmountTypeRepository,
             CountryRepository countryRepository,
             @Value("${app.countries.url}") String restCountries,
             @Value("${app.countries.code}") String restCountriesCode,
             RedisTemplate<String, Object> redisTemplate) {
+        this.invoiceStatusCodeRepository = invoiceStatusCodeRepository;
+        this.invoiceTypeRepository = invoiceTypeRepository;
+        this.lineAmountTypeRepository = lineAmountTypeRepository;
         this.countryRepository = countryRepository;
         this.accountCategoryRepository = accountCategoryRepository;
         this.organizationTypeRepository = organizationTypeRepository;
@@ -50,6 +65,37 @@ public class InitConfig implements CommandLineRunner {
         this.restClient = RestClient.builder().baseUrl(restCountries)
                 .defaultHeader("Authorization", String.format("Bearer %s", restCountriesCode))
                 .build();
+    }
+
+    private void seedInvoiceStatusCodes() {
+        logger.debug("Seeding invoice status codes");
+        if (invoiceStatusCodeRepository.findAll().isEmpty()) {
+            invoiceStatusCodeRepository.saveAll(List.of(
+                    new InvoiceStatusCode("DRAFT"),
+                    new InvoiceStatusCode("SUBMITTED"),
+                    new InvoiceStatusCode("VOID"),
+                    new InvoiceStatusCode("AUTHORISED"),
+                    new InvoiceStatusCode("PAID")));
+        }
+    }
+
+    private void seedInvoiceTypes() {
+        logger.debug("Seeding invoice types");
+        if (invoiceTypeRepository.findAll().isEmpty()) {
+            invoiceTypeRepository.saveAll(Set.of(
+                    new InvoiceType("PAYABLE"),
+                    new InvoiceType("RECEIVABLE")));
+        }
+    }
+
+    private void seedLineAmountTypes() {
+        logger.debug("Seeding line amount types");
+        if (lineAmountTypeRepository.findAll().isEmpty()) {
+            lineAmountTypeRepository.saveAll(Set.of(
+                    new LineAmountType("NO_TAX"),
+                    new LineAmountType("INCLUSIVE"),
+                    new LineAmountType("EXCLUSIVE")));
+        }
     }
 
     private void seedAccountCategories() {
@@ -140,6 +186,9 @@ public class InitConfig implements CommandLineRunner {
         seedAccountCategories();
         seedOrganizationTypes();
         seedRestCountries();
+        seedInvoiceStatusCodes();
+        seedInvoiceTypes();
+        seedLineAmountTypes();
     }
 
 }
