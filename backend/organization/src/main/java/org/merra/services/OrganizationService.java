@@ -119,6 +119,18 @@ public class OrganizationService {
 		return findOrganizationOpt.get();
 	}
 
+	/**
+	 * Retrieves metadata for organization configuration, including organization types,
+	 * supported address fields, and payment terms metadata.
+	 * <p>
+	 * This method first attempts to fetch the metadata from Redis cache. If it is a cache miss,
+	 * it queries all organization types from the database, maps their names to a user-friendly format,
+	 * collects supported address and payment term configurations, caches the assembled metadata response,
+	 * and returns it.
+	 * </p>
+	 *
+	 * @return an {@link OrganizationMetaDataResponse} containing the organization metadata.
+	 */
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
 		// Get organization types from cache
 		OrganizationMetaDataResponse organizationMetaData = (OrganizationMetaDataResponse) redisTemplate
