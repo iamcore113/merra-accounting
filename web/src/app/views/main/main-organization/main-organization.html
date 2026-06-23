@@ -29,77 +29,88 @@
 			} @else {
 				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ organizationForm.get('createdDate')?.value | date:'longDate' }}</p>
 			}
-				@if (isLoadingOrganizationTypes) {
-					<div class="organization-type-skeleton">
-						<div class="skeleton-label"></div>
-						<div class="skeleton-input"></div>
-					</div>
-				} @else if (!isEditingOrganizationType) {
-					<button class="organization-type-display-button" type="button" (click)="isEditingOrganizationType = true">
-						<span class="organization-type-display-value">{{ getOrganizationTypeName() }}</span>
-						<mat-icon class="organization-type-edit-icon">edit</mat-icon>
-					</button>
-				} @else {
-					<mat-form-field class="organization-type-field" formGroupName="organizationType">
-						<mat-label>Organization Type</mat-label>
-						<mat-select formControlName="typeId">
-							@for (type of organizationTypesMetadata; track type.id) {
-								<mat-option [value]="type.id">{{ type.name }}</mat-option>
-							}
-						</mat-select>
-					</mat-form-field>
-					<div class="organization-type-actions">
-						<button class="organization-type-update-button" matButton="filled" type="button" [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()" (click)="updateOrganizationType(); organizationPanel.close()">
-							@if (isUpdatingOrganizationType()) {
-								<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
-							} @else {
-								Update
-							}
+				<div class="organization-type-block">
+					<p class="organization-type-display-title">Organization Type</p>
+					@if (isLoadingOrganizationTypes) {
+						<div class="organization-type-skeleton">
+							<div class="skeleton-input"></div>
+						</div>
+					} @else if (!isEditingOrganizationType) {
+						<button class="organization-type-display-button" type="button" (click)="isEditingOrganizationType = true">
+							<span class="organization-type-display-value">{{ getOrganizationTypeName() }}</span>
+							<mat-icon class="organization-type-edit-icon">edit</mat-icon>
 						</button>
-					</div>
-				}
-				@if (isLoadingOrganization) {
-					<div class="organization-info-fields-skeleton">
-						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
-						<div class="skeleton-field"><div class="skeleton-label"></div><div class="skeleton-input"></div></div>
-					</div>
-				} @else if (!isEditingNames) {
-					<button class="organization-names-display-button" type="button" (click)="isEditingNames = true">
-						<span class="organization-names-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
-						<mat-icon class="organization-names-edit-icon">edit</mat-icon>
-					</button>
-				} @else {
-					<div class="organization-info-fields-row" formGroupName="names">
-						<mat-form-field>
-							<mat-label>Display Name</mat-label>
-							<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
+					} @else {
+						<mat-form-field class="organization-type-field" formGroupName="organizationType">
+							<mat-label>Organization Type</mat-label>
+							<mat-select formControlName="typeId">
+								@for (type of organizationTypesMetadata; track type.id) {
+									<mat-option [value]="type.id">{{ type.name }}</mat-option>
+								}
+							</mat-select>
 						</mat-form-field>
-
-						<button
-							class="organization-names-copy-button"
-							type="button"
-							mat-icon-button
-							[matTooltip]="'Copy display name to legal name'"
-							matTooltipPosition="above"
-							(click)="copyDisplayNameToLegalName()">
-							<mat-icon>arrow_forward</mat-icon>
+						<div class="organization-type-actions">
+							<button class="organization-type-update-button" matButton="filled" type="button" [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()" (click)="updateOrganizationType(); organizationPanel.close()">
+								@if (isUpdatingOrganizationType()) {
+									<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+								} @else {
+									Update
+								}
+							</button>
+							<button class="organization-type-cancel-button" matButton="outlined" type="button" (click)="isEditingOrganizationType = false">
+								Cancel
+							</button>
+						</div>
+					}
+				</div>
+				<div class="organization-names-block">
+					<p class="organization-names-display-title">Organization Name</p>
+					@if (isLoadingOrganization) {
+						<div class="organization-info-fields-skeleton">
+							<div class="skeleton-field"><div class="skeleton-input"></div></div>
+							<div class="skeleton-field"><div class="skeleton-input"></div></div>
+						</div>
+					} @else if (!isEditingNames) {
+						<button class="organization-names-display-button" type="button" (click)="isEditingNames = true">
+							<span class="organization-names-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
+							<mat-icon class="organization-names-edit-icon">edit</mat-icon>
 						</button>
+					} @else {
+						<div class="organization-info-fields-row" formGroupName="names">
+							<mat-form-field>
+								<mat-label>Display Name</mat-label>
+								<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
+							</mat-form-field>
 
-						<mat-form-field>
-							<mat-label>Legal Name</mat-label>
-							<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
-						</mat-form-field>
-					</div>
-					<div class="organization-names-actions">
-						<button class="organization-names-update-button" matButton="filled" type="button" [disabled]="isUpdatingNames() || !hasNamesChanged()" (click)="updateOrganizationNames(); isEditingNames = false; organizationPanel.close()">
-							@if (isUpdatingNames()) {
-								<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
-							} @else {
-								Update
-							}
-						</button>
-					</div>
-				}
+							<button
+								class="organization-names-copy-button"
+								type="button"
+								mat-icon-button
+								[matTooltip]="'Copy display name to legal name'"
+								matTooltipPosition="above"
+								(click)="copyDisplayNameToLegalName()">
+								<mat-icon>arrow_forward</mat-icon>
+							</button>
+
+							<mat-form-field>
+								<mat-label>Legal Name</mat-label>
+								<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
+							</mat-form-field>
+						</div>
+						<div class="organization-names-actions">
+							<button class="organization-names-update-button" matButton="filled" type="button" [disabled]="isUpdatingNames() || !hasNamesChanged()" (click)="updateOrganizationNames(); isEditingNames = false; organizationPanel.close()">
+								@if (isUpdatingNames()) {
+									<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+								} @else {
+									Update
+								}
+							</button>
+							<button class="organization-names-cancel-button" matButton="outlined" type="button" (click)="isEditingNames = false">
+								Cancel
+							</button>
+						</div>
+					}
+				</div>
 
 				@if (isLoadingOrganization) {
 					<div class="organization-description-skeleton">
