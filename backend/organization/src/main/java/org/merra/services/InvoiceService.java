@@ -158,11 +158,14 @@ public class InvoiceService {
 		Invoice invoice = retrieveInvoiceObject(null);
 
 		// Get organization ID
-		final UUID getOrganizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal().getId();
-		if (getOrganizationId == null) {
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
+
+		if (organizationId == null) {
 			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
 		}
-		if (!organizationRepository.existsById(getOrganizationId)) {
+		if (!organizationRepository.existsById(organizationId)) {
 			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
 		}
 
@@ -175,7 +178,7 @@ public class InvoiceService {
 		invoice.setContact(getContact);
 
 		Integer contactDefaultDiscount = getContact.getDefaultDiscount();
-		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount, getOrganizationId);
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount, organizationId);
 		calculateInvoice(invoice);
 
 		invoice.setDate(request.date());

@@ -1,5 +1,6 @@
 package org.merra.repositories;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.merra.entities.Organization;
@@ -21,5 +22,5 @@ public interface UserWorkspaceStateRepository extends JpaRepository<UserWorkspac
      *         {@code null} if not found
      */
     @Query("select w.currentOrganization from UserWorkspaceState w where w.user.userId = ?#{ principal?.userId }")
-    Organization findCurrentOrganizationByPrincipal();
+    Optional<Organization> findCurrentOrganizationByPrincipal();
 }

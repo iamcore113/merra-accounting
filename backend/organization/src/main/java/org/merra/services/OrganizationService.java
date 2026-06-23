@@ -29,6 +29,7 @@ import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
+import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.OrganizationAffiliationMapper;
 import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.CountryRepository;
@@ -120,16 +121,21 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Retrieves metadata for organization configuration, including organization types,
+	 * Retrieves metadata for organization configuration, including organization
+	 * types,
 	 * supported address fields, and payment terms metadata.
 	 * <p>
-	 * This method first attempts to fetch the metadata from Redis cache. If it is a cache miss,
-	 * it queries all organization types from the database, maps their names to a user-friendly format,
-	 * collects supported address and payment term configurations, caches the assembled metadata response,
+	 * This method first attempts to fetch the metadata from Redis cache. If it is a
+	 * cache miss,
+	 * it queries all organization types from the database, maps their names to a
+	 * user-friendly format,
+	 * collects supported address and payment term configurations, caches the
+	 * assembled metadata response,
 	 * and returns it.
 	 * </p>
 	 *
-	 * @return an {@link OrganizationMetaDataResponse} containing the organization metadata.
+	 * @return an {@link OrganizationMetaDataResponse} containing the organization
+	 *         metadata.
 	 */
 	public OrganizationMetaDataResponse returnOrganizationMetaData() {
 		// Get organization types from cache
@@ -184,7 +190,8 @@ public class OrganizationService {
 					country.getNumeric(),
 					country.getSymbol(),
 					country.getCode())).toList();
-			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries), RedisKeys.CONSTANT_DURATION);
+			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries),
+					RedisKeys.CONSTANT_DURATION);
 		}
 		return getCountries;
 	}
@@ -292,7 +299,8 @@ public class OrganizationService {
 	 *         status for the current organization
 	 */
 	public OrganizationDashboardResponse getOrganizationDashboard() {
-		Organization getOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		Organization getOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 
 		// Query the count of invoices for each status (DRAFT, SUBMITTED, AUTHORISED)
 		Integer draftCount = invoiceRepository.countInvoiceStatusByOrganization(InvoiceConstants.INVOICE_STATUS_DRAFT,
@@ -327,17 +335,26 @@ public class OrganizationService {
 		return organizationAffiliationMapper.toUserOrganizationAffiliation(organizations, organizationCount);
 	}
 
+	/**
+	 * Retrieves the current organization details for the currently authenticated
+	 * user based on their active workspace state session.
+	 *
+	 * @return a {@link CurrentOrganizationResponse} containing the current
+	 *         organization details.
+	 */
 	public CurrentOrganizationResponse getCurrentOrganization() {
-		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
 	}
 
 	public CurrentOrganizationResponse updateCurrentOrganization(CurrentOrganizationResponse req) {
 		final UUID organizationId = req.organizationId();
-		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		Optional<Organization> organizationOpt = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal();
+		Organization currentOrganization = organizationOpt.get();
 
 		if (currentOrganization == null) {
-			throw new EntityNotFoundException("Current organization not found.");
+			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION);
 		}
 		final UUID currentOrganizationId = currentOrganization.getId();
 		if (!organizationId.equals(currentOrganizationId)) {
@@ -365,7 +382,8 @@ public class OrganizationService {
 
 		if (!Objects.equals(requestOrganizationType, currentOrganizationType)) {
 			currentOrganization.setOrganizationType(organizationTypeRepository.findById(requestOrganizationType)
-					.orElseThrow(() -> new EntityNotFoundException("Organization type not found.")));
+					.orElseThrow(
+							() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION_TYPE)));
 		}
 
 		final String requestEmail = req.address().email();

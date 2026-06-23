@@ -89,17 +89,19 @@ public class ContactService {
 	 * @throws EntityNotFoundException if no organization exists for the tenant ID
 	 */
 	public List<ContactsByOrganizationResponse> getContactsByOrganizationId() {
-		final UUID getOrganizationTenantId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal().getId();
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
 
-		if (getOrganizationTenantId == null) {
+		if (organizationId == null) {
 			throw new IllegalStateException("Organization tenant ID is not set in the context");
 		}
-		if (!organizationRepository.existsById(getOrganizationTenantId)) {
+		if (!organizationRepository.existsById(organizationId)) {
 			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
 		}
 
 		List<ContactsByOrganizationSelection> contactsByOrganization = contactRepository
-				.findContactsByOrganizationId(getOrganizationTenantId);
+				.findContactsByOrganizationId(organizationId);
 		return contactMapper.toContactsByOrganizationSelections(contactsByOrganization);
 	}
 

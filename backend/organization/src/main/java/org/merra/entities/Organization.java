@@ -23,6 +23,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -96,7 +97,7 @@ public class Organization {
 	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
 	private Set<EOrganizationAddresses> address;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
 	private List<OrganizationAddresses> addresses;
 
 	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
