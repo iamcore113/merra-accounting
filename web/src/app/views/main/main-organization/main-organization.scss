@@ -762,6 +762,61 @@
 	}
 }
 
+.organization-panels .organization-addresses-container {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	padding: 0.5rem 0;
+
+	@media (max-width: 600px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.organization-panels .organization-address-card {
+	background-color: var(--mat-sys-surface-container-low, #f8f9fa);
+	border: 1px solid var(--mat-sys-outline-variant, #e0e0e0);
+	border-radius: 8px;
+	padding: 1rem;
+	transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+	&:hover {
+		background-color: var(--mat-sys-surface-container-high, #f1f3f4);
+		border-color: var(--mat-sys-outline, #c0c0c0);
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+	}
+
+	.address-header {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+		color: var(--mat-sys-on-surface, #202124);
+
+		.address-icon {
+			font-size: 1.25rem;
+			width: 1.25rem;
+			height: 1.25rem;
+			color: #84b179;
+		}
+
+		.address-type-label {
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+	}
+
+	.address-content {
+		font-size: 0.85rem;
+		line-height: 1.5;
+		color: var(--mat-sys-on-surface-variant, #5f6b73);
+
+		.address-line {
+			margin: 0;
+		}
+	}
+}
+
 @media (max-width: 767px) {
 	.organization-panels .organization-info-fields-row,
 	.organization-panels .organization-editor-fields {

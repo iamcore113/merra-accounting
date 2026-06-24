@@ -48,9 +48,22 @@
   width: 100%;
 }
 
+.organization-card {
+  margin-bottom: 1rem;
+  background-color: var(--mat-sys-background);
+}
+
+.organization-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1rem !important;
+}
+
+
 .financial-year-section {
-  margin: 1rem 0;
-  padding: 1rem;
+  margin: 0;
+  padding: 0;
   background-color: transparent;
   border-radius: 6px;
 
@@ -92,6 +105,97 @@
     flex: 1;
     min-width: 200px;
   }
+}
+
+.address-row-two-col {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .city-field {
+    flex: 2;
+    min-width: 150px;
+  }
+
+  .postal-field {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+.address-section-header {
+  margin-bottom: 1.5rem;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.address-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &.not-first-address {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--mat-sys-outline-variant);
+  }
+}
+
+.address-lines-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.address-line-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  button {
+    margin-bottom: 22px;
+  }
+}
+
+.add-line-button-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: -0.5rem;
+}
+
+.address-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.add-address-action-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1.5rem;
 }
 
 .form-actions {
@@ -150,9 +254,21 @@
     }
   }
 
+  .address-row-two-col {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    mat-form-field,
+    .city-field,
+    .postal-field {
+      flex: 1;
+      min-width: 100% !important;
+    }
+  }
+
   .form-actions {
     flex-direction: column;
-
+ 
     button {
       width: 100%;
     }

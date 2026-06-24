@@ -4,154 +4,269 @@
       <h2 class="form-title">Create New Organization</h2>
       <p class="form-subtitle">Enter your organization details to get started</p>
     </div>
-      <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="organization-form">
-        
-        <!-- Display Name Field -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Display Name</mat-label>
-          <input matInput placeholder="Enter organization display name" formControlName="displayName" required>
-          @if (organizationForm.get('displayName')?.hasError('required')) {
+    <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="organization-form">
+
+      <mat-card class="organization-card">
+        <mat-card-content class="organization-card-content">
+          <!-- Display Name Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Display Name</mat-label>
+            <input matInput placeholder="Enter organization display name" formControlName="displayName" required>
+            @if (organizationForm.get('displayName')?.hasError('required')) {
             <mat-error>
               Display name is required
             </mat-error>
-          }
-          @if (organizationForm.get('displayName')?.hasError('minlength')) {
+            }
+            @if (organizationForm.get('displayName')?.hasError('minlength')) {
             <mat-error>
               Display name must be at least 2 characters long
             </mat-error>
-          }
-        </mat-form-field>
-
-        <!-- Type Field -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Organization Type</mat-label>
-          <mat-select formControlName="type" required>
-            <mat-option value="">Select organization type</mat-option>
-            @if (organizationMetadata && organizationMetadata.organizationTypes) {
-              @for (orgType of organizationMetadata.organizationTypes; track orgType.id) {
-                <mat-option [value]="orgType.id">{{ orgType.name }}</mat-option>
-              }
             }
-          </mat-select>
-          @if (organizationForm.get('type')?.hasError('required')) {
+          </mat-form-field>
+
+          <!-- Type Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Organization Type</mat-label>
+            <mat-select formControlName="type" required>
+              <mat-option value="">Select organization type</mat-option>
+              @if (organizationMetadata && organizationMetadata.organizationTypes) {
+              @for (orgType of organizationMetadata.organizationTypes; track orgType.id) {
+              <mat-option [value]="orgType.id">{{ orgType.name }}</mat-option>
+              }
+              }
+            </mat-select>
+            @if (organizationForm.get('type')?.hasError('required')) {
             <mat-error>
               Organization type is required
             </mat-error>
-          }
-        </mat-form-field>
+            }
+          </mat-form-field>
 
-        <!-- Email Field -->
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email Address</mat-label>
-          <input matInput type="email" placeholder="Enter organization email" formControlName="email" required>
-          @if (organizationForm.get('email')?.hasError('required')) {
+          <!-- Email Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email Address</mat-label>
+            <input matInput type="email" placeholder="Enter organization email" formControlName="email" required>
+            @if (organizationForm.get('email')?.hasError('required')) {
             <mat-error>
               Email is required
             </mat-error>
-          }
-          @if (organizationForm.get('email')?.hasError('email')) {
+            }
+            @if (organizationForm.get('email')?.hasError('email')) {
             <mat-error>
               Please enter a valid email address
             </mat-error>
-          }
-        </mat-form-field>
+            }
+          </mat-form-field>
 
-        <!-- Country and Currency Row -->
-        <div class="country-currency-row">
-          <!-- Country Field -->
-          <mat-form-field appearance="outline" class="country-field">
-            <mat-label>Country</mat-label>
-            <input matInput 
-                   formControlName="country" 
-                   required
-                   [matAutocomplete]="auto"
-                   (input)="onCountryInput($event.target.value)">
-            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onCountrySelected($event.option.value)">
-              @if (filteredCountries && filteredCountries.length > 0) {
+          <!-- Country and Currency Row -->
+          <div class="country-currency-row">
+            <!-- Country Field -->
+            <mat-form-field appearance="outline" class="country-field">
+              <mat-label>Country</mat-label>
+              <input matInput formControlName="country" required [matAutocomplete]="auto"
+                (input)="onCountryInput($event.target.value)">
+              <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onCountrySelected($event.option.value)">
+                @if (filteredCountries && filteredCountries.length > 0) {
                 @for (country of filteredCountries; track country.cca2) {
-                  <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+                <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
                 }
-              }
-            </mat-autocomplete>
-            @if (organizationForm.get('country')?.hasError('required')) {
+                }
+              </mat-autocomplete>
+              @if (organizationForm.get('country')?.hasError('required')) {
               <mat-error>
                 Country is required
               </mat-error>
-            }
-          </mat-form-field>
+              }
+            </mat-form-field>
 
-          <!-- Currency Field -->
-          <mat-form-field appearance="outline" class="currency-field">
-            <mat-label>Currency</mat-label>
-            <input matInput formControlName="currency" required readonly>
-            @if (organizationForm.get('currency')?.hasError('required')) {
+            <!-- Currency Field -->
+            <mat-form-field appearance="outline" class="currency-field">
+              <mat-label>Currency</mat-label>
+              <input matInput formControlName="currency" required readonly>
+              @if (organizationForm.get('currency')?.hasError('required')) {
               <mat-error>
                 Currency is required
               </mat-error>
-            }
-          </mat-form-field>
-        </div>
-
-        <!-- Financial Year Section -->
-        <div class="financial-year-section">
-          <h3>Financial Year Settings</h3>
-          
-          <div class="year-end-row">
-            <!-- Year End Month -->
-            <mat-form-field appearance="outline" class="month-field">
-              <mat-label>Year End Month</mat-label>
-              <input matInput type="number" placeholder="Enter month (1-12)" formControlName="yearEndMonth" min="1" max="12" required>
-              @if (organizationForm.get('yearEndMonth')?.hasError('required')) {
-                <mat-error>
-                  Year end month is required
-                </mat-error>
-              }
-              @if (organizationForm.get('yearEndMonth')?.hasError('min')) {
-                <mat-error>
-                  Month must be at least 1
-                </mat-error>
-              }
-              @if (organizationForm.get('yearEndMonth')?.hasError('max')) {
-                <mat-error>
-                  Month must be at most 12
-                </mat-error>
-              }
-            </mat-form-field>
-
-            <!-- Year End Day -->
-            <mat-form-field appearance="outline" class="day-field">
-              <mat-label>Year End Day</mat-label>
-              <input matInput type="number" placeholder="Enter day (1-31)" formControlName="yearEndDay" min="1" max="31" required>
-              @if (organizationForm.get('yearEndDay')?.hasError('required')) {
-                <mat-error>
-                  Year end day is required
-                </mat-error>
-              }
-              @if (organizationForm.get('yearEndDay')?.hasError('min')) {
-                <mat-error>
-                  Day must be at least 1
-                </mat-error>
-              }
-              @if (organizationForm.get('yearEndDay')?.hasError('max')) {
-                <mat-error>
-                  Day must be at most 31
-                </mat-error>
               }
             </mat-form-field>
           </div>
-        </div>
+        </mat-card-content>
+      </mat-card>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button matButton="outlined" type="button" (click)="onCancel()">Cancel</button>
-          <button matButton="filled" type="submit" [disabled]="!organizationForm.valid || isSubmitting">
-            @if (!isSubmitting) {
-              <span>Create Organization</span>
-            } @else {
-              <span>Creating...</span>
-            }
-          </button>
-        </div>
-      </form>
+      <!-- Address Section -->
+      <mat-card class="organization-card">
+        <mat-card-content class="organization-card-content" formArrayName="addresses">
+          <div class="address-section-header">
+            <h3>Organization Addresses</h3>
+          </div>
+
+          @for (address of addresses.controls; track $index; let addrIndex = $index) {
+            <div [formGroupName]="addrIndex" class="address-block" [class.not-first-address]="!$first">
+              <div class="address-header-row">
+                <h4>Address #{{ addrIndex + 1 }}</h4>
+                @if (addresses.length > 1) {
+                  <button mat-icon-button type="button" color="warn" aria-label="Remove address" (click)="removeAddress(addrIndex)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </div>
+
+              <!-- Address Type & Attention To Row -->
+              <div class="address-row-two-col">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Address Type</mat-label>
+                  <mat-select placeholder="Select address type" formControlName="type">
+                    <mat-option value="physical">Physical Address</mat-option>
+                    <mat-option value="postal">Postal/Billing Address</mat-option>
+                    <mat-option value="shipping">Shipping Address</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Attention To</mat-label>
+                  <input matInput placeholder="Enter attention to name" formControlName="attentionTo">
+                </mat-form-field>
+              </div>
+
+              <!-- Address Lines -->
+              <div formArrayName="addresses" class="address-lines-container">
+                @for (line of getAddressLines(address).controls; track $index; let lineIndex = $index) {
+                  <div class="address-line-row">
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Address Line {{ lineIndex + 1 }}</mat-label>
+                      <input matInput placeholder="Enter address line {{ lineIndex + 1 }}" [formControlName]="lineIndex" required>
+                      @if (line.hasError('required') && line.touched) {
+                        <mat-error>Address line is required</mat-error>
+                      }
+                    </mat-form-field>
+                    @if (getAddressLines(address).length > 1) {
+                      <button mat-icon-button type="button" color="warn" (click)="removeAddressLine(address, lineIndex)" aria-label="Remove line">
+                        <mat-icon>remove_circle_outline</mat-icon>
+                      </button>
+                    }
+                  </div>
+                }
+                <div class="add-line-button-row">
+                  <button mat-button type="button" color="primary" (click)="addAddressLine(address)" [disabled]="getAddressLines(address).length >= 2">
+                    <mat-icon>add</mat-icon> Add Address Line
+                  </button>
+                </div>
+              </div>
+
+              <!-- Country Field -->
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Country</mat-label>
+                <input matInput 
+                       formControlName="country" 
+                       required 
+                       [matAutocomplete]="autoAddress"
+                       (input)="onCountryInput($event.target.value)">
+                <mat-autocomplete #autoAddress="matAutocomplete">
+                  @if (filteredCountries && filteredCountries.length > 0) {
+                    @for (country of filteredCountries; track country.cca2) {
+                      <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+                    }
+                  }
+                </mat-autocomplete>
+                @if (address.get('country')?.hasError('required') && address.get('country')?.touched) {
+                  <mat-error>
+                    Country is required
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <!-- City & Postal Code Row -->
+              <div class="address-row-two-col">
+                <mat-form-field appearance="outline" class="city-field">
+                  <mat-label>City</mat-label>
+                  <input matInput placeholder="City" formControlName="city">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="postal-field">
+                  <mat-label>Postal Code</mat-label>
+                  <input matInput placeholder="Postal Code" formControlName="postalCode">
+                </mat-form-field>
+              </div>
+
+            </div>
+          }
+
+          <div class="add-address-action-row">
+            <button mat-button type="button" color="primary" (click)="addAddress()">
+              <mat-icon>add</mat-icon> Add Another Address
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+
+      <!-- Financial Year Section -->
+      <mat-card class="organization-card">
+        <mat-card-content class="organization-card-content">
+          <div class="financial-year-section">
+            <h3>Financial Year Settings</h3>
+
+            <div class="year-end-row">
+              <!-- Year End Month -->
+              <mat-form-field appearance="outline" class="month-field">
+                <mat-label>Year End Month</mat-label>
+                <input matInput type="number" placeholder="Enter month (1-12)" formControlName="yearEndMonth" min="1"
+                  max="12" required>
+                @if (organizationForm.get('yearEndMonth')?.hasError('required')) {
+                <mat-error>
+                  Year end month is required
+                </mat-error>
+                }
+                @if (organizationForm.get('yearEndMonth')?.hasError('min')) {
+                <mat-error>
+                  Month must be at least 1
+                </mat-error>
+                }
+                @if (organizationForm.get('yearEndMonth')?.hasError('max')) {
+                <mat-error>
+                  Month must be at most 12
+                </mat-error>
+                }
+              </mat-form-field>
+
+              <!-- Year End Day -->
+              <mat-form-field appearance="outline" class="day-field">
+                <mat-label>Year End Day</mat-label>
+                <input matInput type="number" placeholder="Enter day (1-31)" formControlName="yearEndDay" min="1"
+                  max="31" required>
+                @if (organizationForm.get('yearEndDay')?.hasError('required')) {
+                <mat-error>
+                  Year end day is required
+                </mat-error>
+                }
+                @if (organizationForm.get('yearEndDay')?.hasError('min')) {
+                <mat-error>
+                  Day must be at least 1
+                </mat-error>
+                }
+                @if (organizationForm.get('yearEndDay')?.hasError('max')) {
+                <mat-error>
+                  Day must be at most 31
+                </mat-error>
+                }
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button matButton="outlined" type="button" (click)="onCancel()">Cancel</button>
+        <button matButton="filled" type="submit" [disabled]="!organizationForm.valid || isSubmitting">
+          @if (!isSubmitting) {
+          <span>Create Organization</span>
+          } @else {
+          <span>Creating...</span>
+          }
+        </button>
+      </div>
+    </form>
   </div>
 </div>

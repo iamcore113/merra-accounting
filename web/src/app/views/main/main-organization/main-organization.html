@@ -264,6 +264,47 @@
       <mat-expansion-panel-header>
         <mat-panel-title class="detail-title">
           <span class="detail-text">
+            <span class="detail-label">Addresses:</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">2 addresses configured</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">place</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="organization-addresses-container">
+        <div class="organization-address-card">
+          <div class="address-header">
+            <mat-icon class="address-icon">receipt</mat-icon>
+            <span class="address-type-label">Billing Address</span>
+          </div>
+          <div class="address-content">
+            <p class="address-line">123 Business Rd, Suite 100</p>
+            <p class="address-line">Metropolis, NY 10001</p>
+            <p class="address-line">United States</p>
+          </div>
+        </div>
+
+        <div class="organization-address-card">
+          <div class="address-header">
+            <mat-icon class="address-icon">local_shipping</mat-icon>
+            <span class="address-type-label">Shipping Address</span>
+          </div>
+          <div class="address-content">
+            <p class="address-line">456 Warehouse Ave, Dock 4</p>
+            <p class="address-line">Industrial Park, NJ 07001</p>
+            <p class="address-line">United States</p>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
             <span class="detail-label">Financial Settings</span>
             @if (isLoadingOrganization) {
               <span class="detail-skeleton"></span>

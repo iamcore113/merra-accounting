@@ -47,6 +47,17 @@ export interface FinancialYear {
   yearEndMonth: number;
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/entities/OrganizationAddresses.java
+export interface OrganizationAddress {
+  id?: string;
+  type: string;
+  addresses: string[];
+  city: string;
+  postalCode: string;
+  country: string;
+  attentionTo?: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CreateOrganizationRequest.java
 export interface CreateOrganizationRequest {
   displayName: string;
@@ -55,6 +66,7 @@ export interface CreateOrganizationRequest {
   country: string;
   financialYear: FinancialYear;
   currency: string;
+  addresses?: OrganizationAddress[];
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/NewOrganizationResponse.UserDetails

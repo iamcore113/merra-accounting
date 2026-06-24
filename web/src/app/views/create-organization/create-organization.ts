@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { Config, RestCountriesSelection } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
@@ -25,7 +26,8 @@ import { UtilityService } from '../../shared/services/utility-service';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatIconModule
   ],
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.scss',
@@ -48,6 +50,9 @@ export class CreateOrganization implements OnInit {
   organizationForm!: FormGroup;
   isSubmitting = false;
   daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+  get addresses(): FormArray {
+    return this.organizationForm.get('addresses') as FormArray;
+  }
 
   ngOnInit(): void {
     const email = this.activatedRoute.snapshot.paramMap.get('email');
@@ -77,6 +82,30 @@ export class CreateOrganization implements OnInit {
     });
   }
 
+  createAddressGroup(): FormGroup {
+    const defaultCountry = this.organizationForm?.get('country')?.value || '';
+    return this.fb.group({
+      type: ['', Validators.required],
+      attentionTo: [''],
+      addresses: this.fb.array(
+        [this.fb.control('', Validators.required)],
+        { validators: [Validators.required, this.atLeastOneRequired.bind(this)] }
+      ),
+      city: ['', Validators.required],
+      postalCode: ['', Validators.required],
+      country: [defaultCountry, Validators.required]
+    });
+  }
+
+  atLeastOneRequired(control: AbstractControl): ValidationErrors | null {
+    const array = control as FormArray;
+    if (!array || array.length === 0) {
+      return { required: true };
+    }
+    const hasValue = array.controls.some(ctrl => ctrl.value && ctrl.value.trim() !== '');
+    return hasValue ? null : { required: true };
+  }
+
   private initializeForm(email?: string | null): void {
     this.organizationForm = this.fb.group({
       displayName: ['', [Validators.required, Validators.minLength(2)]],
@@ -85,7 +114,8 @@ export class CreateOrganization implements OnInit {
       country: ['', Validators.required],
       yearEndMonth: [null, Validators.required],
       yearEndDay: [null, Validators.required],
-      currency: ['', Validators.required]
+      currency: ['', Validators.required],
+      addresses: this.fb.array([this.createAddressGroup()])
     });
   }
 
@@ -129,6 +159,13 @@ export class CreateOrganization implements OnInit {
 
   onCountrySelected(countryCode: string): void {
     this.onCountryChange(countryCode);
+    const addressControls = this.addresses.controls;
+    addressControls.forEach(control => {
+      const addrCountry = control.get('country');
+      if (addrCountry && (!addrCountry.value || addrCountry.pristine)) {
+        addrCountry.setValue(countryCode);
+      }
+    });
   }
 
   onCountryChange(countryCode: string): void {
@@ -151,6 +188,7 @@ export class CreateOrganization implements OnInit {
     this.isSubmitting = true;
 
     const formValue = this.organizationForm.value;
+    console.log("form value => ", formValue);
 
     const organizationRequest: CreateOrganizationRequest = {
       displayName: formValue.displayName,
@@ -161,7 +199,8 @@ export class CreateOrganization implements OnInit {
         yearEndMonth: formValue.yearEndMonth,
         yearEndDay: formValue.yearEndDay
       } as FinancialYear,
-      currency: formValue.currency
+      currency: formValue.currency,
+      addresses: formValue.addresses
     };
 
     let neworganization: NewOrganizationResponse | null = null;
@@ -196,6 +235,34 @@ export class CreateOrganization implements OnInit {
     this.router.navigate(['/no-organization']);
   }
 
+  addAddress(): void {
+    this.addresses.push(this.createAddressGroup());
+  }
+
+  removeAddress(index: number): void {
+    if (this.addresses.length > 1) {
+      this.addresses.removeAt(index);
+    }
+  }
+
+  getAddressLines(addressGroup: any): FormArray {
+    return addressGroup.get('addresses') as FormArray;
+  }
+
+  addAddressLine(addressGroup: any): void {
+    const lines = this.getAddressLines(addressGroup);
+    if (lines.length < 2) {
+      lines.push(this.fb.control(''));
+    }
+  }
+
+  removeAddressLine(addressGroup: any, index: number): void {
+    const lines = this.getAddressLines(addressGroup);
+    if (lines.length > 1) {
+      lines.removeAt(index);
+    }
+  }
+
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -205,3 +272,4 @@ export class CreateOrganization implements OnInit {
     });
   }
 }
+
