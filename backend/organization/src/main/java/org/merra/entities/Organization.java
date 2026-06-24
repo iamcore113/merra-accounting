@@ -46,7 +46,7 @@ public class Organization {
 	private UUID id;
 
 	@Column(name = "profile_image")
-	private String profileImage;
+	private String logo;
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
@@ -170,12 +170,12 @@ public class Organization {
 		return id;
 	}
 
-	public String getProfileImage() {
-		return profileImage;
+	public String getLogo() {
+		return logo;
 	}
 
-	public void setProfileImage(String profileImage) {
-		this.profileImage = profileImage;
+	public void setLogo(String logo) {
+		this.logo = logo;
 	}
 
 	public String getDisplayName() {

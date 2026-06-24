@@ -222,7 +222,7 @@ public class OrganizationService {
 		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
 
 		// Profile image will default to null; set via organization settings if needed
-		org.setProfileImage(null);
+		org.setLogo(null);
 
 		OrganizationType organizationType = getOrganizationType(req.type());
 		FinancialYearEmb financialYearEmb = new FinancialYearEmb(
