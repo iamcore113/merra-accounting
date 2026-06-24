@@ -38,6 +38,9 @@ globs: web/**
 5. **File Naming**
    Enforce kebab-case naming for files (e.g., `user-profile.component.ts`) and match Angular's conventions for file suffixes (e.g., `.component.ts`, `.service.ts`, etc.).
 
+6. **Build Verification**
+   Do not execute, prompt, or ask the user to run `npm run build` or any other build/compilation checks after editing code, unless the user has explicitly requested a build verification in their prompt.
+
 **Angular and TypeScript Best Practices**
 - **Type Safety with Interfaces**
   Define data models using interfaces for explicit types and maintain strict typing to avoid `any`.
