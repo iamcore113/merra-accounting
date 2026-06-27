@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xmlns:pro="http://www.liquibase.org/xml/ns/pro"
-    logicalFilePath="db/changesets/organization/org-20260622-35.xml"
+    logicalFilePath="db/changesets/organization/org-20260627-37.xml"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext
@@ -11,13 +11,16 @@
         http://www.liquibase.org/xml/ns/pro
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
-    <changeSet id="2026-create-line_amount_type-table" author="brian">
-        <createTable tableName="line_amount_type">
+    <changeSet id="2026-create-address_type-table" author="brian">
+        <createTable tableName="address_type">
             <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false" unique="true"/>
             </column>
-            <column name="type" type="varchar(255)">
+            <column name="name" type="varchar(255)">
                 <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="TEXT">
+                <constraints nullable="true"/>
             </column>
         </createTable>
     </changeSet>
