@@ -12,11 +12,13 @@
   align-items: center;
   width: 100%;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .form-wrapper {
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .form-header {
@@ -49,26 +51,27 @@
 }
 
 .organization-card {
-  margin-bottom: 1rem;
   background-color: var(--mat-sys-background);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  box-shadow: none;
 }
 
 .organization-card-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem 1rem !important;
+  gap: 1.25rem;
+  padding: 1.75rem 1.5rem !important;
 }
 
-
+/* Form Styles */
 .financial-year-section {
   margin: 0;
   padding: 0;
   background-color: transparent;
-  border-radius: 6px;
 
   h3 {
-    margin: 0 0 1rem 0;
+    margin: 0 0 1.25rem 0;
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--mat-sys-on-surface);
@@ -82,12 +85,12 @@
 
   .month-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
   }
 
   .day-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
   }
 }
 
@@ -98,12 +101,12 @@
 
   .country-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
   }
 
   .currency-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
   }
 }
 
@@ -114,7 +117,7 @@
 
   mat-form-field {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
   }
 
   .city-field {
@@ -129,7 +132,7 @@
 }
 
 .address-section-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   
   h3 {
     margin: 0;
@@ -142,7 +145,7 @@
 .address-block {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 
   &.not-first-address {
     margin-top: 1.5rem;
@@ -195,15 +198,16 @@
 .add-address-action-row {
   display: flex;
   justify-content: flex-start;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
-.form-actions {
+/* Step Action Buttons */
+.step-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--mat-sys-outline-variant);
 
   button {
@@ -211,7 +215,21 @@
   }
 }
 
-// Success and error snackbar styles
+/* Material Stepper Styling */
+.organization-stepper {
+  background: transparent !important;
+  
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 1.5rem 0 0 0 !important;
+    overflow: visible !important;
+  }
+  
+  ::ng-deep .mat-horizontal-stepper-wrapper {
+    overflow: visible !important;
+  }
+}
+
+/* Success and error snackbar styles */
 ::ng-deep .success-snackbar {
   background-color: #4caf50 !important;
   color: white !important;
@@ -222,14 +240,10 @@
   color: white !important;
 }
 
-// Responsive design
+/* Responsive design */
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
-  }
-
-  .form-wrapper {
-    max-width: 100%;
   }
 
   .year-end-row {
@@ -266,17 +280,11 @@
     }
   }
 
-  .form-actions {
-    flex-direction: column;
+  .step-actions {
+    flex-direction: column-reverse;
  
     button {
       width: 100%;
     }
-  }
-}
-
-@media (max-width: 480px) {
-  .financial-year-section {
-    padding: 0.75rem;
   }
 }

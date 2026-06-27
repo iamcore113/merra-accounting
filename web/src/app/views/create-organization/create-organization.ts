@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
+import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { CommonModule } from '@angular/common';
 import { Config, RestCountriesSelection } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
@@ -27,7 +28,8 @@ import { UtilityService } from '../../shared/services/utility-service';
     MatSelectModule,
     MatButtonModule,
     MatAutocompleteModule,
-    MatIconModule
+    MatIconModule,
+    MatStepperModule
   ],
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.scss',
@@ -44,14 +46,29 @@ export class CreateOrganization implements OnInit {
 
   private cdr = inject(ChangeDetectorRef);
 
+  @ViewChild('stepper') stepper!: MatStepper;
+
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
   public filteredCountries: RestCountriesSelection = [];
   organizationForm!: FormGroup;
   isSubmitting = false;
   daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+
   get addresses(): FormArray {
-    return this.organizationForm.get('addresses') as FormArray;
+    return this.organizationForm.get('addressStep.addresses') as FormArray;
+  }
+
+  get nameStep(): FormGroup {
+    return this.organizationForm.get('nameStep') as FormGroup;
+  }
+
+  get addressStep(): FormGroup {
+    return this.organizationForm.get('addressStep') as FormGroup;
+  }
+
+  get financialStep(): FormGroup {
+    return this.organizationForm.get('financialStep') as FormGroup;
   }
 
   ngOnInit(): void {
@@ -83,7 +100,7 @@ export class CreateOrganization implements OnInit {
   }
 
   createAddressGroup(): FormGroup {
-    const defaultCountry = this.organizationForm?.get('country')?.value || '';
+    const defaultCountry = this.organizationForm?.get('nameStep.country')?.value || '';
     return this.fb.group({
       type: ['', Validators.required],
       attentionTo: [''],
@@ -108,15 +125,23 @@ export class CreateOrganization implements OnInit {
 
   private initializeForm(email?: string | null): void {
     this.organizationForm = this.fb.group({
-      displayName: ['', [Validators.required, Validators.minLength(2)]],
-      type: ['', Validators.required],
-      email: [email || '', [Validators.required, Validators.email]],
-      country: ['', Validators.required],
-      yearEndMonth: [null, Validators.required],
-      yearEndDay: [null, Validators.required],
-      currency: ['', Validators.required],
-      addresses: this.fb.array([this.createAddressGroup()])
+      nameStep: this.fb.group({
+        displayName: ['', [Validators.required, Validators.minLength(2)]],
+        type: ['', Validators.required],
+        email: [email || '', [Validators.required, Validators.email]],
+        country: ['', Validators.required],
+        currency: ['', Validators.required]
+      }),
+      addressStep: this.fb.group({
+        addresses: this.fb.array([])
+      }),
+      financialStep: this.fb.group({
+        yearEndMonth: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
+        yearEndDay: [null, [Validators.required, Validators.min(1), Validators.max(31)]]
+      })
     });
+
+    this.addresses.push(this.createAddressGroup());
   }
 
   private loadCountries(): void {
@@ -172,10 +197,10 @@ export class CreateOrganization implements OnInit {
     if (countryCode) {
       const selectedCountry = this.countries.find(country => country.cca2 === countryCode);
       if (selectedCountry && selectedCountry.currency !== 'N/A') {
-        this.organizationForm.patchValue({ currency: selectedCountry.currency });
+        this.organizationForm.get('nameStep')?.patchValue({ currency: selectedCountry.currency });
       }
     } else {
-      this.organizationForm.patchValue({ currency: '' });
+      this.organizationForm.get('nameStep')?.patchValue({ currency: '' });
     }
   }
 
@@ -187,21 +212,25 @@ export class CreateOrganization implements OnInit {
 
     this.isSubmitting = true;
 
-    const formValue = this.organizationForm.value;
-    console.log("form value => ", formValue);
+    const nameVal = this.organizationForm.get('nameStep')?.value;
+    const addrVal = this.organizationForm.get('addressStep')?.value;
+    const finVal = this.organizationForm.get('financialStep')?.value;
 
     const organizationRequest: CreateOrganizationRequest = {
-      displayName: formValue.displayName,
-      type: formValue.type,
-      email: formValue.email,
-      country: formValue.country,
+      displayName: nameVal.displayName,
+      type: nameVal.type,
+      email: nameVal.email,
+      country: nameVal.country,
       financialYear: {
-        yearEndMonth: formValue.yearEndMonth,
-        yearEndDay: formValue.yearEndDay
+        yearEndMonth: finVal.yearEndMonth,
+        yearEndDay: finVal.yearEndDay
       } as FinancialYear,
-      currency: formValue.currency,
-      addresses: formValue.addresses
+      currency: nameVal.currency,
+      addresses: addrVal.addresses
     };
+
+    console.log("=========");
+    console.log(organizationRequest);
 
     let neworganization: NewOrganizationResponse | null = null;
     this.organizationService.createOrganization(organizationRequest).subscribe({
@@ -263,6 +292,37 @@ export class CreateOrganization implements OnInit {
     }
   }
 
+  goToStep(index: number): void {
+    if (!this.stepper) return;
+
+    if (index < this.stepper.selectedIndex) {
+      this.stepper.selectedIndex = index;
+    } else if (index > this.stepper.selectedIndex) {
+      const steps = this.stepper.steps.toArray();
+      let allValid = true;
+      for (let i = 0; i < index; i++) {
+        if (steps[i]?.stepControl && !steps[i].stepControl.valid) {
+          steps[i].stepControl.markAllAsTouched();
+          allValid = false;
+          break;
+        }
+      }
+      if (allValid) {
+        this.stepper.selectedIndex = index;
+      }
+    }
+  }
+
+  isStepActive(index: number): boolean {
+    return this.stepper ? this.stepper.selectedIndex === index : index === 0;
+  }
+
+  isStepCompleted(index: number): boolean {
+    if (!this.stepper) return false;
+    const steps = this.stepper.steps.toArray();
+    return index < this.stepper.selectedIndex && (steps[index]?.stepControl?.valid ?? false);
+  }
+
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
@@ -272,4 +332,3 @@ export class CreateOrganization implements OnInit {
     });
   }
 }
-

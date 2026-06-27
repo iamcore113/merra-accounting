@@ -1,7 +1,9 @@
 package org.merra.services;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -18,7 +20,9 @@ import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationAffiliation;
+import org.merra.entities.AddressType;
 import org.merra.entities.Organization;
+import org.merra.entities.OrganizationAddresses;
 import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.UserAccount;
@@ -32,8 +36,10 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.OrganizationAffiliationMapper;
 import org.merra.mapper.OrganizationMapper;
+import org.merra.repositories.AddressTypeRepository;
 import org.merra.repositories.CountryRepository;
 import org.merra.repositories.InvoiceRepository;
+import org.merra.repositories.OrganizationAddressesRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
@@ -56,6 +62,7 @@ public class OrganizationService {
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final OrganizationMembersRepository organizationMembersRepository;
+	private final AddressTypeRepository addressTypeRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
@@ -70,6 +77,7 @@ public class OrganizationService {
 			OrganizationRepository organizationRepository,
 			UserAccountService userAccountService,
 			OrganizationTypeRepository organizationTypeRepository,
+			AddressTypeRepository addressTypeRepository,
 			OrganizationMembersRepository organizationMembersRepository,
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			InvoiceRepository invoiceRepository,
@@ -92,6 +100,7 @@ public class OrganizationService {
 		this.accountService = accountService;
 		this.authService = authService;
 		this.countryRepository = countryRepository;
+		this.addressTypeRepository = addressTypeRepository;
 	}
 
 	/**
@@ -137,7 +146,7 @@ public class OrganizationService {
 	 * @return an {@link OrganizationMetaDataResponse} containing the organization
 	 *         metadata.
 	 */
-	public OrganizationMetaDataResponse returnOrganizationMetaData() {
+	public OrganizationMetaDataResponse metadata() {
 		// Get organization types from cache
 		OrganizationMetaDataResponse organizationMetaData = (OrganizationMetaDataResponse) redisTemplate
 				.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
@@ -150,12 +159,22 @@ public class OrganizationService {
 							type.getId(),
 							type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
 					.collect(java.util.stream.Collectors.toSet());
+			Set<OrganizationMetaDataResponse.OrganizationAddressType> organizationAddressTypes = addressTypeRepository
+					.findAll()
+					.stream()
+					.map(type -> new OrganizationMetaDataResponse.OrganizationAddressType(
+							type.getId(),
+							type.getName().contains("_") ? type.getName().replace("_", " ") : type.getName()))
+					.collect(java.util.stream.Collectors.toSet());
 			final EnumSet<AddressEn> addresses = EnumSet.allOf(AddressEn.class);
 			// For Payment terms
 			final EnumSet<PaymentTermsEn> subElements = EnumSet.allOf(PaymentTermsEn.class);
 			final EnumSet<PaymentTermTypes> types = EnumSet.allOf(PaymentTermTypes.class);
-			organizationMetaData = new OrganizationMetaDataResponse(organizationTypes, addresses,
-					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types));
+			organizationMetaData = new OrganizationMetaDataResponse(
+					organizationTypes,
+					addresses,
+					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types),
+					organizationAddressTypes);
 			// Cache the result for 3 hour
 			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
 					RedisKeys.CONSTANT_DURATION);
@@ -236,6 +255,8 @@ public class OrganizationService {
 		// Set required fields: timeZone and paymentTerms
 		org.setTimeZone("UTC");
 		org.setPaymentTerms(new PaymentTermsEmb());
+		// Set the organization address
+		setAddresses(org, req.addresses());
 
 		Organization newOrganization = organizationRepository.save(org);
 
@@ -262,6 +283,35 @@ public class OrganizationService {
 
 		return organizationMapper.toNewOrganizationResponse(newOrganization.getId(), user.getUserId(), userInfoPresent,
 				userfullName);
+	}
+
+	private void setAddresses(Organization org, List<CreateOrganizationRequest.Addresses> addresses) {
+		List<OrganizationAddresses> organizationAddresses = new ArrayList<>();
+		for (CreateOrganizationRequest.Addresses add : addresses) {
+			AddressType type = addressTypeRepository.findById(add.type())
+					.orElseThrow(() -> new EntityNotFoundException("Address type not found"));
+			Map<String, String> addressess = new HashMap<>();
+			if (add.addresses().size() > 1) {
+				addressess = Map.of(
+						"address1", add.addresses().get(0),
+						"address2", add.addresses().get(1));
+			} else {
+				addressess = Map.of(
+						"address1", add.addresses().get(0));
+			}
+
+			OrganizationAddresses orgAddress = new OrganizationAddresses();
+			orgAddress.setAddresses(addressess);
+			orgAddress.setCity(add.city());
+			orgAddress.setPostalCode(add.postalCode());
+			orgAddress.setCountry(add.country());
+			orgAddress.setAttentionTo(add.attentionTo());
+			orgAddress.setType(type);
+			orgAddress.setOrganization(org);
+
+			organizationAddresses.add(orgAddress);
+		}
+		org.setAddresses(organizationAddresses);
 	}
 
 	/**

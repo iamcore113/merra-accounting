@@ -21,7 +21,7 @@ public class OrganizationMetadataController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<OrganizationMetaDataResponse>> getOrganizationMetadata() {
-        var res = organizationService.returnOrganizationMetaData();
+        var res = organizationService.metadata();
         ApiResponse<OrganizationMetaDataResponse> response = new ApiResponse<>(
                 "Organization metadata found successfully.",
                 true,

@@ -1,12 +1,9 @@
 package org.merra.dto;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 
 public record CreateOrganizationRequest(
 		String displayName,
@@ -14,7 +11,8 @@ public record CreateOrganizationRequest(
 		@Email(message = "Email component must be valid") String email,
 		String country,
 		FinancialYear financialYear,
-		String currency, List<Addresses> addresses) {
+		String currency,
+		List<Addresses> addresses) {
 
 	public CreateOrganizationRequest {
 		if (displayName == null || displayName.isBlank()) {

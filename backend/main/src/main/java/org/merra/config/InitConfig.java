@@ -7,12 +7,14 @@ import java.util.Set;
 import org.merra.dto.CountriesCache;
 import org.merra.dto.CountriesResponse;
 import org.merra.entities.AccountCategory;
+import org.merra.entities.AddressType;
 import org.merra.entities.Country;
 import org.merra.entities.InvoiceStatusCode;
 import org.merra.entities.InvoiceType;
 import org.merra.entities.LineAmountType;
 import org.merra.entities.OrganizationType;
 import org.merra.repositories.AccountCategoryRepository;
+import org.merra.repositories.AddressTypeRepository;
 import org.merra.repositories.CountryRepository;
 import org.merra.repositories.InvoiceStatusCodeRepository;
 import org.merra.repositories.InvoiceTypeRepository;
@@ -41,6 +43,7 @@ public class InitConfig implements CommandLineRunner {
     private final InvoiceTypeRepository invoiceTypeRepository;
     private final LineAmountTypeRepository lineAmountTypeRepository;
     private final CountryRepository countryRepository;
+    private final AddressTypeRepository addressTypeRepository;
     private final RestClient restClient;
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -50,6 +53,7 @@ public class InitConfig implements CommandLineRunner {
             InvoiceTypeRepository invoiceTypeRepository,
             LineAmountTypeRepository lineAmountTypeRepository,
             CountryRepository countryRepository,
+            AddressTypeRepository addressTypeRepository,
             @Value("${app.countries.url}") String restCountries,
             @Value("${app.countries.code}") String restCountriesCode,
             RedisTemplate<String, Object> redisTemplate) {
@@ -57,6 +61,7 @@ public class InitConfig implements CommandLineRunner {
         this.invoiceTypeRepository = invoiceTypeRepository;
         this.lineAmountTypeRepository = lineAmountTypeRepository;
         this.countryRepository = countryRepository;
+        this.addressTypeRepository = addressTypeRepository;
         this.accountCategoryRepository = accountCategoryRepository;
         this.organizationTypeRepository = organizationTypeRepository;
         this.restCountries = restCountries;
@@ -109,6 +114,15 @@ public class InitConfig implements CommandLineRunner {
                     new AccountCategory(AccountConstants.ACC_CATEGORY_REVENUE)));
 
             redisTemplate.opsForValue().set(RedisKeys.ACCOUNT_CATEGORIES, categories, RedisKeys.CONSTANT_DURATION);
+        }
+    }
+
+    private void seedAddressTypes() {
+        logger.debug("Seeding address types");
+        if (addressTypeRepository.findAll().isEmpty()) {
+            addressTypeRepository.saveAll(Set.of(
+                    new AddressType("POBOX", "Post Office Box"),
+                    new AddressType("STREET", "Street Address")));
         }
     }
 
@@ -189,6 +203,7 @@ public class InitConfig implements CommandLineRunner {
         seedInvoiceStatusCodes();
         seedInvoiceTypes();
         seedLineAmountTypes();
+        seedAddressTypes();
     }
 
 }

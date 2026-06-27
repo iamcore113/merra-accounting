@@ -11,9 +11,8 @@ import org.merra.enums.PaymentTermsEn;
 public record OrganizationMetaDataResponse(
                 Set<OrganizationTypesMetaData> organizationTypes,
                 EnumSet<AddressEn> addresses,
-                PaymentTermsMetaData paymentTerms
-
-) {
+                PaymentTermsMetaData paymentTerms,
+                Set<OrganizationAddressType> organizationAddressTypes) {
         public record OrganizationTypesMetaData(
                         UUID id,
                         String name) {
@@ -31,5 +30,20 @@ public record OrganizationMetaDataResponse(
         public record PaymentTermsMetaData(
                         EnumSet<PaymentTermsEn> subElements,
                         EnumSet<PaymentTermTypes> types) {
+        }
+
+        public record OrganizationAddressType(
+                        UUID id,
+                        String name) {
+                public OrganizationAddressType {
+                        if (id == null || name == null || name.isBlank()) {
+                                throw new IllegalArgumentException(
+                                                "Organization address type metadata fields cannot be null or blank.");
+                        }
+                        if (name.isBlank() || name == null) {
+                                throw new IllegalArgumentException(
+                                                "Organization address type name cannot be null or blank.");
+                        }
+                }
         }
 }

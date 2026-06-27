@@ -94,8 +94,8 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
-	private Set<EOrganizationAddresses> address;
+	// @Column(name = "address", columnDefinition = "jsonb", nullable = true)
+	// private Set<EOrganizationAddresses> address;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
 	private List<OrganizationAddresses> addresses;
@@ -156,7 +156,7 @@ public class Organization {
 			Set<ExternalLinksEmb> externalLinks) {
 		this.setCountry(countryCode);
 		this.setDefaultCurrency(defaultCurrency);
-		this.setAddress(address);
+		// this.setAddress(address);
 		this.setPhoneNo(phones);
 		this.setEmail(email);
 		this.setWebsite(website);
@@ -164,6 +164,14 @@ public class Organization {
 	}
 
 	public Organization() {
+	}
+
+	public List<OrganizationAddresses> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(List<OrganizationAddresses> addresses) {
+		this.addresses = addresses;
 	}
 
 	public UUID getId() {
@@ -266,13 +274,13 @@ public class Organization {
 		this.financialYear = financialYear;
 	}
 
-	public Set<EOrganizationAddresses> getAddress() {
-		return address;
-	}
+	// public Set<EOrganizationAddresses> getAddress() {
+	// return address;
+	// }
 
-	public void setAddress(Set<EOrganizationAddresses> address) {
-		this.address = address;
-	}
+	// public void setAddress(Set<EOrganizationAddresses> address) {
+	// this.address = address;
+	// }
 
 	public Set<ExternalLinksEmb> getExternalLinks() {
 		return externalLinks;

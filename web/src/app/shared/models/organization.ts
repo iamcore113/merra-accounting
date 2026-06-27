@@ -94,11 +94,18 @@ export interface PaymentTermsMetaData {
   types: PaymentTermTypes[];
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationMetaDataResponse.OrganizationAddressType
+export interface OrganizationAddressType {
+  id: string;
+  name: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationMetaDataResponse.java
 export interface OrganizationMetaDataResponse {
   organizationTypes: OrganizationTypesMetaData[];
   addresses: AddressEn[];
   paymentTerms: PaymentTermsMetaData;
+  organizationAddressTypes: OrganizationAddressType[];
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/AccountByOrganizationResponse.java

@@ -29,12 +29,12 @@ public class OrganizationAddresses {
     private UUID id;
 
     @ManyToOne
+    @JoinColumn(name = "type_id", nullable = false, referencedColumnName = "id")
+    private AddressType type;
+
+    @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
     private Organization organization;
-
-    @Column(name = "type", nullable = false)
-    @NotBlank(message = "Type cannot be blank")
-    private String type;
 
     @Column(name = "addresses", columnDefinition = "jsonb", nullable = false)
     @JdbcTypeCode(SqlTypes.JSON)
@@ -71,17 +71,17 @@ public class OrganizationAddresses {
         this.organization = organization;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     @JsonAnyGetter
     public Map<String, String> getAddresses() {
         return addresses;
+    }
+
+    public AddressType getType() {
+        return type;
+    }
+
+    public void setType(AddressType type) {
+        this.type = type;
     }
 
     @JsonAnySetter
