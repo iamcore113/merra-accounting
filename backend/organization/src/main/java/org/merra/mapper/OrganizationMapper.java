@@ -103,8 +103,39 @@ public interface OrganizationMapper {
 	}
 
 	@Named("mapAddressResponse")
-	default CurrentOrganizationResponse.Address mapAddressResponse(Organization organization) {
-		return new CurrentOrganizationResponse.Address(organization.getEmail(), organization.getCountry(), organization.getDefaultCurrency(), organization.getTimeZone());
+	default CurrentOrganizationResponse.Contact mapAddressResponse(Organization organization) {
+		List<CurrentOrganizationResponse.Contact.Address> addressList = List.of();
+		if (organization.getAddresses() != null) {
+			addressList = organization.getAddresses().stream()
+					.map(orgAddress -> {
+						List<String> addressLines = new java.util.ArrayList<>();
+						if (orgAddress.getAddresses() != null) {
+							if (orgAddress.getAddresses().containsKey("address1")) {
+								addressLines.add(orgAddress.getAddresses().get("address1"));
+							}
+							if (orgAddress.getAddresses().containsKey("address2")) {
+								addressLines.add(orgAddress.getAddresses().get("address2"));
+							}
+							if (addressLines.isEmpty() && !orgAddress.getAddresses().isEmpty()) {
+								addressLines.addAll(orgAddress.getAddresses().values());
+							}
+						}
+						return new CurrentOrganizationResponse.Contact.Address(
+								orgAddress.getType().getName(),
+								addressLines,
+								orgAddress.getCity(),
+								orgAddress.getCountry(),
+								orgAddress.getPostalCode());
+					})
+					.toList();
+		}
+
+		return new CurrentOrganizationResponse.Contact(
+				organization.getEmail(),
+				organization.getCountry(),
+				organization.getDefaultCurrency(),
+				organization.getTimeZone(),
+				addressList);
 	}
 
 	@Named("mapFinancialYearResponse")
