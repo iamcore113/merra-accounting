@@ -13,9 +13,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
-import { DatePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { OrganizationService } from '../../../shared/services/organization-service';
-import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData, CurrentOrganizationResponseNames, CurrentOrganizationResponseType, CurrentOrganizationResponseAddress, CurrentOrganizationResponseFinancialYear } from '../../../shared/models/organization';
+import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData, CurrentOrganizationResponseNames, CurrentOrganizationResponseType, CurrentOrganizationResponseContact, CurrentOrganizationResponseFinancialYear } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
 import { UtilityService } from '../../../shared/services/utility-service';
 
@@ -47,7 +47,7 @@ export class OrganizationImageDialog {
 
 @Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatTooltipModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe, MatProgressSpinnerModule],
+  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatTooltipModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe, TitleCasePipe, MatProgressSpinnerModule],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
@@ -293,7 +293,10 @@ export class MainOrganization implements OnInit {
       organizationId: this.currentOrganization.organizationId,
       organizationType: formValue.organizationType as CurrentOrganizationResponseType,
       names: formValue.names as CurrentOrganizationResponseNames,
-      address: formValue.address as CurrentOrganizationResponseAddress,
+      address: {
+        ...(formValue.address as CurrentOrganizationResponseContact),
+        addresses: this.currentOrganization.address?.addresses || []
+      },
       website: formValue.website,
       createdDate: this.currentOrganization.createdDate,
       status: this.currentOrganization.status,
@@ -338,7 +341,10 @@ export class MainOrganization implements OnInit {
       organizationId: this.currentOrganization.organizationId,
       organizationType: formValue.organizationType as CurrentOrganizationResponseType,
       names: formValue.names as CurrentOrganizationResponseNames,
-      address: formValue.address as CurrentOrganizationResponseAddress,
+      address: {
+        ...(formValue.address as CurrentOrganizationResponseContact),
+        addresses: this.currentOrganization.address?.addresses || []
+      },
       website: formValue.website,
       createdDate: this.currentOrganization.createdDate,
       status: this.currentOrganization.status,
@@ -377,7 +383,10 @@ export class MainOrganization implements OnInit {
         legalName: this.currentOrganization.names.legalName,
         description: formValue.names.description
       } as CurrentOrganizationResponseNames,
-      address: formValue.address as CurrentOrganizationResponseAddress,
+      address: {
+        ...(formValue.address as CurrentOrganizationResponseContact),
+        addresses: this.currentOrganization.address?.addresses || []
+      },
       website: formValue.website,
       createdDate: this.currentOrganization.createdDate,
       status: this.currentOrganization.status,

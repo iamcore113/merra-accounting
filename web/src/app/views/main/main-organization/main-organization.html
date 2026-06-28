@@ -268,36 +268,30 @@
             @if (isLoadingOrganization) {
               <span class="detail-skeleton"></span>
             } @else {
-              <span class="detail-value">2 addresses configured</span>
+              <span class="detail-value">{{ currentOrganization?.address?.addresses?.length || 0 }} addresses configured</span>
             }
           </span>
           <mat-icon class="detail-icon" aria-hidden="true">place</mat-icon>
         </mat-panel-title>
       </mat-expansion-panel-header>
       <div class="organization-addresses-container">
-        <div class="organization-address-card">
-          <div class="address-header">
-            <mat-icon class="address-icon">receipt</mat-icon>
-            <span class="address-type-label">Billing Address</span>
+        @for (addr of currentOrganization?.address?.addresses; track addr.type) {
+          <div class="organization-address-card">
+            <div class="address-header">
+              <mat-icon class="address-icon">{{ addr.type === 'BILLING' ? 'receipt' : (addr.type === 'SHIPPING' ? 'local_shipping' : 'place') }}</mat-icon>
+              <span class="address-type-label">{{ addr.type | titlecase }} Address</span>
+            </div>
+            <div class="address-content">
+              @for (line of addr.addresses; track line) {
+                <p class="address-line">{{ line }}</p>
+              }
+              <p class="address-line">{{ addr.city }}, {{ addr.postalCode }}</p>
+              <p class="address-line">{{ addr.country }}</p>
+            </div>
           </div>
-          <div class="address-content">
-            <p class="address-line">123 Business Rd, Suite 100</p>
-            <p class="address-line">Metropolis, NY 10001</p>
-            <p class="address-line">United States</p>
-          </div>
-        </div>
-
-        <div class="organization-address-card">
-          <div class="address-header">
-            <mat-icon class="address-icon">local_shipping</mat-icon>
-            <span class="address-type-label">Shipping Address</span>
-          </div>
-          <div class="address-content">
-            <p class="address-line">456 Warehouse Ave, Dock 4</p>
-            <p class="address-line">Industrial Park, NJ 07001</p>
-            <p class="address-line">United States</p>
-          </div>
-        </div>
+        } @empty {
+          <p>No addresses configured.</p>
+        }
       </div>
     </mat-expansion-panel>
 

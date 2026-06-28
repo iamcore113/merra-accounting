@@ -248,12 +248,22 @@ export interface CurrentOrganizationResponseNames {
   description: string;
 }
 
-// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Address
-export interface CurrentOrganizationResponseAddress {
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Contact.Address
+export interface CurrentOrganizationResponseContactAddress {
+  type: string;
+  addresses: string[];
+  city: string;
+  country: string;
+  postalCode: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Contact
+export interface CurrentOrganizationResponseContact {
   email: string;
   country: string;
   currency: string;
   timeZone: string;
+  addresses: CurrentOrganizationResponseContactAddress[];
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.FinancialYearEmb
@@ -267,7 +277,7 @@ export interface CurrentOrganizationResponse {
   organizationId: string;
   organizationType: CurrentOrganizationResponseType;
   names: CurrentOrganizationResponseNames;
-  address: CurrentOrganizationResponseAddress;
+  address: CurrentOrganizationResponseContact;
   website: string;
   createdDate: string;
   status: string;
