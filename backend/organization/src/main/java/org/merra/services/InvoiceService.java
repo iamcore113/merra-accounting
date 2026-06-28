@@ -31,6 +31,8 @@ import org.merra.repositories.TaxTypeRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.AccountLookup;
 import org.merra.utilities.InvoiceConstants;
+import org.merra.utilities.RedisKeys;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -58,6 +60,7 @@ public class InvoiceService {
 	public final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
 	private final LineAmountTypeRepository lineAmountTypeRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
+	private final RedisTemplate<String, Object> redisTemplate;
 
 	public InvoiceService(
 			OrganizationRepository organizationRepository,
@@ -70,7 +73,9 @@ public class InvoiceService {
 			TaxTypeRepository taxTypeRepository,
 			InvoiceTypeRepository invoiceTypeRepository,
 			InvoiceStatusCodeRepository invoiceStatusCodeRepository,
-			LineAmountTypeRepository lineAmountTypeRepository) {
+			LineAmountTypeRepository lineAmountTypeRepository,
+			RedisTemplate<String, Object> redisTemplate) {
+		this.redisTemplate = redisTemplate;
 		this.organizationRepository = organizationRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.invoiceRepository = invoiceRepository;
@@ -459,21 +464,36 @@ public class InvoiceService {
 		// Format: INV - [Year] - [4-digit padded number]
 		return String.format("INV-%d-%03d", year, nextVal);
 	}
-
+	/**
+	 * Retrieves the invoice metadata, including status codes, types, and line amount types.
+	 * The metadata is retrieved from Redis cache if present; otherwise, it is queried from the
+	 * database, cached for a constant duration, and returned.
+	 *
+	 * @return The InvoiceMetaDataResponse containing the sets of status codes, types, and line amount types.
+	 */
 	public InvoiceMetaDataResponse metadata() {
-		Set<InvoiceMetaDataResponse.InvoiceStatusCode> statusCodes = invoiceStatusCodeRepository.findAll().stream()
-				.map(s -> new InvoiceMetaDataResponse.InvoiceStatusCode(s.getId(), s.getCode()))
-				.collect(Collectors.toSet());
+		InvoiceMetaDataResponse metaDataCache = (InvoiceMetaDataResponse) redisTemplate.opsForValue()
+				.get(RedisKeys.INVOICE_METADATA);
 
-		Set<InvoiceMetaDataResponse.InvoiceType> invoiceTypes = invoiceTypeRepository.findAll().stream()
-				.map(t -> new InvoiceMetaDataResponse.InvoiceType(t.getId(), t.getType()))
-				.collect(Collectors.toSet());
+		if (metaDataCache == null) {
+			Set<InvoiceMetaDataResponse.InvoiceStatusCode> statusCodes = invoiceStatusCodeRepository.findAll().stream()
+					.map(s -> new InvoiceMetaDataResponse.InvoiceStatusCode(s.getId(), s.getCode()))
+					.collect(Collectors.toSet());
 
-		Set<InvoiceMetaDataResponse.LineAmountType> lineAmountTypes = lineAmountTypeRepository.findAll().stream()
-				.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType()))
-				.collect(Collectors.toSet());
+			Set<InvoiceMetaDataResponse.InvoiceType> invoiceTypes = invoiceTypeRepository.findAll().stream()
+					.map(t -> new InvoiceMetaDataResponse.InvoiceType(t.getId(), t.getType()))
+					.collect(Collectors.toSet());
 
-		return new InvoiceMetaDataResponse(invoiceTypes, statusCodes, lineAmountTypes);
+			Set<InvoiceMetaDataResponse.LineAmountType> lineAmountTypes = lineAmountTypeRepository.findAll().stream()
+					.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType()))
+					.collect(Collectors.toSet());
+
+			metaDataCache = new InvoiceMetaDataResponse(invoiceTypes, statusCodes, lineAmountTypes);
+
+			redisTemplate.opsForValue().set(RedisKeys.INVOICE_METADATA, metaDataCache, RedisKeys.CONSTANT_DURATION);
+		}
+
+		return metaDataCache;
 	}
 
 }
