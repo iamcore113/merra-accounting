@@ -485,7 +485,7 @@ public class InvoiceService {
 					.collect(Collectors.toSet());
 
 			Set<InvoiceMetaDataResponse.LineAmountType> lineAmountTypes = lineAmountTypeRepository.findAll().stream()
-					.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType()))
+					.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType().replace('_', ' ')))
 					.collect(Collectors.toSet());
 
 			metaDataCache = new InvoiceMetaDataResponse(invoiceTypes, statusCodes, lineAmountTypes);
