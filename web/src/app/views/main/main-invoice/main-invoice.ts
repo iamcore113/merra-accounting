@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { InvoiceService } from '../../../shared/services/invoice-service';
+import { InvoiceMetaDataResponse } from '../../../shared/models/invoice';
 
 @Component({
   selector: 'app-create-contact-dialog',
@@ -67,14 +69,36 @@ export class CreateContactDialog {
   templateUrl: './main-invoice.html',
   styleUrl: './main-invoice.scss',
 })
-export class MainInvoice {
+export class MainInvoice implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly invoiceService = inject(InvoiceService);
 
   invoiceDate = new Date();
   isNewInvoiceFormOpen = false;
   isSecondaryPanelOpen = false;
   lineItemsCount = 0;
+  invoiceMetadata: InvoiceMetaDataResponse | null = null;
+
+  ngOnInit(): void {
+    this.loadInvoiceMetadata();
+  }
+
+  private loadInvoiceMetadata(): void {
+    this.invoiceService.getInvoiceMetadata().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.invoiceMetadata = response.data;
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load invoice metadata:', error);
+        this.snackBar.open('Failed to load invoice metadata', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
+  }
 
   openCreateContactDialog() {
     this.dialog.open(CreateContactDialog);

@@ -37,9 +37,9 @@
 					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
 						<mat-label>Invoice Type</mat-label>
 						<mat-select>
-							<mat-option value="standard">Standard</mat-option>
-							<mat-option value="credit-note">Credit Note</mat-option>
-							<mat-option value="recurring">Recurring</mat-option>
+							@for (type of invoiceMetadata?.invoiceTypes; track type.id) {
+								<mat-option [value]="type.id">{{ type.name }}</mat-option>
+							}
 						</mat-select>
 					</mat-form-field>
 
@@ -81,9 +81,9 @@
 						<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
 							<mat-label>Line Amount Type</mat-label>
 							<mat-select>
-								<mat-option value="subtotal">Subtotal</mat-option>
-								<mat-option value="tax-inclusive">Tax Inclusive</mat-option>
-								<mat-option value="tax-exclusive">Tax Exclusive</mat-option>
+								@for (type of invoiceMetadata?.lineAmountTypes; track type.id) {
+									<mat-option [value]="type.id">{{ type.name }}</mat-option>
+								}
 							</mat-select>
 						</mat-form-field>
 
@@ -106,10 +106,10 @@
 
 					<mat-form-field appearance="outline" subscriptSizing="dynamic" class="compact-form-field">
 						<mat-label>Status</mat-label>
-						<mat-select value="draft">
-							<mat-option value="draft">Draft</mat-option>
-							<mat-option value="sent">Sent</mat-option>
-							<mat-option value="paid">Paid</mat-option>
+						<mat-select>
+							@for (status of invoiceMetadata?.invoiceStatusCodes; track status.id) {
+								<mat-option [value]="status.id">{{ status.code }}</mat-option>
+							}
 						</mat-select>
 					</mat-form-field>
 
