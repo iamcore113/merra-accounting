@@ -94,9 +94,6 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	// @Column(name = "address", columnDefinition = "jsonb", nullable = true)
-	// private Set<EOrganizationAddresses> address;
-
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
 	private List<OrganizationAddresses> addresses;
 
