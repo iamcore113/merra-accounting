@@ -94,6 +94,7 @@ export class CreateOrganization implements OnInit {
       },
       complete: () => {
         this.organizationMetadata = verifiedData;
+        this.cdr.detectChanges();
         console.log('Organization metadata loaded:', this.organizationMetadata);
       }
     });

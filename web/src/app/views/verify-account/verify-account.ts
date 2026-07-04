@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -39,7 +39,8 @@ export class VerifyAccount implements OnInit {
     private router: Router,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private localStorage: LocalStorageService
+    private localStorage: LocalStorageService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -61,6 +62,7 @@ export class VerifyAccount implements OnInit {
               this.access_token = verifiedData.accessToken;
               this.user_id = verifiedData.userId;
             }
+            this.cdr.detectChanges();
           },
           error: (error: any) => {
             console.error('Error verifying account', error);
