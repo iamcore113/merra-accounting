@@ -10,11 +10,21 @@ import org.merra.repositories.projections.JournalAccountLookup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface AccountRepository extends JpaRepository<Account, UUID> {
 
+	/**
+	 * Finds and retrieves a lightweight lookup projection of an account by its unique code 
+	 * and associated organization ID.
+	 * <p>
+	 * This is typically used as a fast validation query to check if an account exists 
+	 * and is active for the specified organization before processing invoices or journals.
+	 *
+	 * @param code           the unique code of the account (e.g., "200" for Accounts Payable)
+	 * @param organizationId the UUID of the organization the account belongs to
+	 * @return an {@link Optional} containing the {@link AccountLookup} projection if found, 
+	 *         or empty if no matching account exists for the organization
+	 */
 	@Query("SELECT ac.code FROM Account ac WHERE ac.code = :code " +
 			"AND ac.organization.id = :organizationId")
 	Optional<AccountLookup> findAccountByCodeAndOrganization(

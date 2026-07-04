@@ -156,7 +156,6 @@ public class Organization {
 			Set<ExternalLinksEmb> externalLinks) {
 		this.setCountry(countryCode);
 		this.setDefaultCurrency(defaultCurrency);
-		// this.setAddress(address);
 		this.setPhoneNo(phones);
 		this.setEmail(email);
 		this.setWebsite(website);
@@ -273,14 +272,6 @@ public class Organization {
 	public void setFinancialYear(FinancialYearEmb financialYear) {
 		this.financialYear = financialYear;
 	}
-
-	// public Set<EOrganizationAddresses> getAddress() {
-	// return address;
-	// }
-
-	// public void setAddress(Set<EOrganizationAddresses> address) {
-	// this.address = address;
-	// }
 
 	public Set<ExternalLinksEmb> getExternalLinks() {
 		return externalLinks;

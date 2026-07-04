@@ -45,9 +45,10 @@ public class Invoice {
 	@NotNull(message = "organization attribute cannot be null.")
 	private Organization organization;
 
-	@Column(name = "invoice_type", nullable = false)
-	@NotNull(message = "Invoice type cannot be null")
-	private String type;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "invoice_type", nullable = false)
+	@NotNull(message = "invoice type cannot be null.")
+	private InvoiceType type;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "contact", referencedColumnName = "contact_id", nullable = false)
@@ -105,20 +106,15 @@ public class Invoice {
 		}
 	}
 
-	public void setType(String type) {
-		if (!Set.of(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE, InvoiceConstants.INVOICE_TYPE_SUPPLIER_INVOICE)
-				.contains(type.toLowerCase())) {
-			throw new NoSuchElementException("Invalid invoice type value.");
-		} else {
-			this.type = type.toUpperCase();
-		}
+	public void setType(InvoiceType type) {
+		this.type = type;
 	}
 
 	public Invoice() {
 	}
 
 	public Invoice(@NotNull(message = "organization attribute cannot be null.") Organization organization,
-			@NotNull(message = "Invoice type cannot be null") String type,
+			@NotNull(message = "Invoice type cannot be null") InvoiceType type,
 			@NotNull(message = "contact attribute cannot be null.") Contact contact, Set<LineItem> lineItems,
 			String lineAmountTypes, @PastOrPresent(message = "Invalid value for date field.") LocalDate date,
 			@FutureOrPresent(message = "Due date must be today or in the future") @NotNull(message = "Due date cannot be null") LocalDate dueDate,
@@ -144,7 +140,7 @@ public class Invoice {
 
 	public Invoice(UUID invoiceId,
 			@NotNull(message = "organization attribute cannot be null.") Organization organization,
-			@NotNull(message = "Invoice type cannot be null") String type,
+			@NotNull(message = "Invoice type cannot be null") InvoiceType type,
 			@NotNull(message = "contact attribute cannot be null.") Contact contact, Set<LineItem> lineItems,
 			String lineAmountTypes, @PastOrPresent(message = "Invalid value for date field.") LocalDate date,
 			@FutureOrPresent(message = "Due date must be today or in the future") @NotNull(message = "Due date cannot be null") LocalDate dueDate,
@@ -179,7 +175,7 @@ public class Invoice {
 		this.organization = organization;
 	}
 
-	public String getType() {
+	public InvoiceType getType() {
 		return type;
 	}
 

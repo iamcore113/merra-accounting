@@ -18,14 +18,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 			" AND user_role = 'SUBSCRIBER'", nativeQuery = true)
 	Optional<UserAccount> findOrganizationSubscriber(UUID organizationId);
 
-	/**
-	 * This will retrieve lineAmountType value using organization's value
-	 * 
-	 * @param id - accepts {@linkplain java.util.UUID} object type
-	 * @return - returns a {@linkplain java.util.Optional} object type.
-	 */
-	@Query("SELECT org.organizationType FROM Organization org WHERE org.id = :id")
-	Optional<String> findLineAmountType(@Param("id") UUID id);
+
 
 	/**
 	 * This will retrieve the organization's country using organization ID

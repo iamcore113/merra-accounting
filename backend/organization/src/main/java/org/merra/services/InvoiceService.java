@@ -3,7 +3,6 @@ package org.merra.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
@@ -16,7 +15,9 @@ import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
 import org.merra.entities.Invoice;
+import org.merra.entities.InvoiceType;
 import org.merra.entities.LineItem;
+import org.merra.entities.Organization;
 import org.merra.entities.embedded.InvoiceActionsEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
@@ -114,30 +115,6 @@ public class InvoiceService {
 	}
 
 	/**
-	 * This method will retrieve an invoice object
-	 * 
-	 * @param obj - accepts {@linkplain Object} type
-	 *            If @param obj is null, return a new invoice object.
-	 *            If @param obj is instance of {@linkplain java.util.UUID} fetch
-	 *            invoice object
-	 *            using it's ID
-	 * @return - {@linkplain Invoice} object type.
-	 */
-	private Invoice retrieveInvoiceObject(Object obj) {
-		Optional<Invoice> findInvoiceOpt = Optional.empty();
-		if (obj == null) {
-			findInvoiceOpt = Optional.of(new Invoice());
-		} else if (obj instanceof UUID id) {
-			findInvoiceOpt = invoiceRepository.findById(id);
-			if (findInvoiceOpt.isEmpty()) {
-				throw new NoSuchElementException(OrganizationExceptions.NOT_FOUND_INVOICE);
-			}
-		}
-
-		return findInvoiceOpt.get();
-	}
-
-	/**
 	 * Creates a new invoice object from the provided request data.
 	 * 
 	 * This method performs the following operations:
@@ -160,30 +137,27 @@ public class InvoiceService {
 	 */
 	public void createNewInvoiceObject(@NotNull CreateInvoiceRequest request) {
 		// Create new Invoice object
-		Invoice invoice = retrieveInvoiceObject(null);
+		Invoice invoice = new Invoice();
 
-		// Get organization ID
-		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
-				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
-				.getId();
-
-		if (organizationId == null) {
-			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
-		}
-		if (!organizationRepository.existsById(organizationId)) {
-			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
-		}
+		// Get current organization
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+		invoice.setOrganization(currentOrganization);
 
 		// Set the invoice type
-		invoice.setType(request.invoiceType());
+		final InvoiceType invoiceType = invoiceTypeRepository.findById(request.invoiceType())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE_TYPE));
+		invoice.setType(invoiceType);
 
 		// Set invoice contact
 		Contact getContact = contactRepository.findById(request.contact())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
 		invoice.setContact(getContact);
 
-		Integer contactDefaultDiscount = getContact.getDefaultDiscount();
-		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount, organizationId);
+		final Integer contactDefaultDiscount = getContact.getDefaultDiscount();
+
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount,
+				currentOrganization.getId());
 		calculateInvoice(invoice);
 
 		invoice.setDate(request.date());
@@ -257,31 +231,15 @@ public class InvoiceService {
 		 * 
 		 * Priority order:
 		 * 1. Use the lineAmountTypeRequest parameter if provided (not blank)
-		 * 2. Fall back to organization's default tax type if configured
-		 * 3. Default to "EXCLUSIVE" if neither is specified
+		 * 2. Default to "EXCLUSIVE" if not specified
 		 * 
 		 * This determines whether line item amounts include tax (INCLUSIVE) or exclude
 		 * tax (EXCLUSIVE).
 		 */
-		Optional<String> lineAmountTypeOpt = Optional.empty();
-		Optional<String> organizationDefaultTaxPurchaseOpt = organizationRepository.findLineAmountType(organizationId);
+		final String getLineAmountType = (lineAmountTypeRequest != null && !lineAmountTypeRequest.isBlank())
+				? lineAmountTypeRequest
+				: InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE;
 
-		// Apply line amount type selection logic following the priority order
-		if (lineAmountTypeRequest != null && !lineAmountTypeRequest.isBlank()) {
-			// Priority 1: Use explicitly provided line amount type
-			lineAmountTypeOpt = Optional.of(lineAmountTypeRequest);
-		} else {
-			// Priority 2: Check for organization's default tax type
-			if (organizationDefaultTaxPurchaseOpt.isPresent()) {
-				lineAmountTypeOpt = Optional.of(organizationDefaultTaxPurchaseOpt.get());
-			} else {
-				// Priority 3: Fall back to EXCLUSIVE as the system default
-				// This is used when neither request nor organization specifies a type
-				lineAmountTypeOpt = Optional.of(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE);
-			}
-		}
-
-		final String getLineAmountType = lineAmountTypeOpt.get();
 		// Apply the determined line amount type to the invoice
 		invoice.setLineAmountTypes(getLineAmountType);
 
@@ -314,18 +272,18 @@ public class InvoiceService {
 
 					// Check if line item discount rate is specified.
 					// If not, check if customer's default discount rate is specified.
-					Integer discountRateIfExists = lineItem.discountRate() != null
+					Integer discountRate = lineItem.discountRate() != null
 							|| lineItem.discountRate() != 0 ? lineItem.discountRate()
 									: customerDefaultDiscount != null ? customerDefaultDiscount : null;
 
 					// Calculate the line amount
 					Double calculateLineAmount = null;
-					calculateLineAmount = discountRateIfExists != null
-							? lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRateIfExists) / 100)
+					calculateLineAmount = discountRate != null
+							? lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRate) / 100)
 							: lineItem.quantity() * lineItem.unitAmount();
 
 					if (calculateLineAmount != null) {
-						createLineItem.setDiscountRate(discountRateIfExists);
+						createLineItem.setDiscountRate(discountRate);
 					}
 
 					/**
@@ -464,12 +422,16 @@ public class InvoiceService {
 		// Format: INV - [Year] - [4-digit padded number]
 		return String.format("INV-%d-%03d", year, nextVal);
 	}
+
 	/**
-	 * Retrieves the invoice metadata, including status codes, types, and line amount types.
-	 * The metadata is retrieved from Redis cache if present; otherwise, it is queried from the
+	 * Retrieves the invoice metadata, including status codes, types, and line
+	 * amount types.
+	 * The metadata is retrieved from Redis cache if present; otherwise, it is
+	 * queried from the
 	 * database, cached for a constant duration, and returned.
 	 *
-	 * @return The InvoiceMetaDataResponse containing the sets of status codes, types, and line amount types.
+	 * @return The InvoiceMetaDataResponse containing the sets of status codes,
+	 *         types, and line amount types.
 	 */
 	public InvoiceMetaDataResponse metadata() {
 		InvoiceMetaDataResponse metaDataCache = (InvoiceMetaDataResponse) redisTemplate.opsForValue()

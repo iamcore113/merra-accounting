@@ -43,6 +43,7 @@ import org.merra.repositories.OrganizationAddressesRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.UserOrganizationAffiliations;
 import org.merra.service.AuthService;
@@ -69,6 +70,7 @@ public class OrganizationService {
 	private final AuthService authService;
 	private final CountryRepository countryRepository;
 	private final UserAccountService userAccountService;
+	private final UserAccountRepository userAccountRepository;
 	private final OrganizationMapper organizationMapper;
 	private final OrganizationAffiliationMapper organizationAffiliationMapper;
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -84,6 +86,7 @@ public class OrganizationService {
 			AccountService accountService,
 			AuthService authService,
 			CountryRepository countryRepository,
+			UserAccountRepository userAccountRepository,
 			PhoneService phoneService,
 			OrganizationMapper organizationMapper,
 			OrganizationAffiliationMapper organizationAffiliationMapper,
@@ -101,6 +104,7 @@ public class OrganizationService {
 		this.authService = authService;
 		this.countryRepository = countryRepository;
 		this.addressTypeRepository = addressTypeRepository;
+		this.userAccountRepository = userAccountRepository;
 	}
 
 	/**
@@ -260,10 +264,19 @@ public class OrganizationService {
 
 		Organization newOrganization = organizationRepository.save(org);
 
-		// Set the user to creator member ~ constructor for initializing the creator
-		// member
-		OrganizationMembers member = new OrganizationMembers(newOrganization, user);
-		organizationMembersRepository.save(member);
+		try {
+			// Set the user to creator member ~ constructor for initializing the creator
+			// member
+			OrganizationMembers member = new OrganizationMembers(newOrganization, user);
+			organizationMembersRepository.save(member);
+
+			// Update the user instance
+			user.setOwner(true);
+			user.setPartOfOrganization(true);
+			userAccountRepository.save(user);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to register creator member: " + e.getMessage(), e);
+		}
 
 		// create organization's default ledger accounts
 		accountService.createDefaultAccounts(newOrganization);

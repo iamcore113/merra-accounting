@@ -61,7 +61,7 @@ public class JournalService {
 		Optional<JournalLine> accountReceivableJournalEntryOpt = Optional.empty();
 		// If invoice is a customer invoice
 		// Create an entry for account receivable
-		if (findInvoiceById.getType().equalsIgnoreCase(CUSTOMER_INVOICE)) {
+		if (findInvoiceById.getType().getType().equalsIgnoreCase(CUSTOMER_INVOICE)) {
 			Account getAccReceivable = accountRepository
 					.findByAccountCodeAndOrganizationId(AccountConstants.ACC_CODE_ACC_RECEIVABLE, org.getId())
 					.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
