@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -11,6 +12,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { InvoiceService } from '../../../../shared/services/invoice-service';
+import { ContactService } from '../../../../shared/services/contact-service';
 
 export interface InvoiceLineItem {
   itemCode: string;
@@ -58,12 +61,7 @@ export class NewInvoice implements OnInit {
     { code: 'ACCOUNTS_PAYABLE', name: 'Accounts Payable (Bills)' }
   ];
 
-  contacts = [
-    { id: 'c1', name: 'Bruce Wayne' },
-    { id: 'c2', name: 'Peter Parker' },
-    { id: 'c3', name: 'Tony Stark' },
-    { id: 'c4', name: 'Norman Osborn' }
-  ];
+  contacts: any[] = [];
 
   lineAmountTypesOptions = [
     { value: 'EXCLUSIVE', label: 'Tax Exclusive' },
@@ -102,20 +100,28 @@ export class NewInvoice implements OnInit {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly invoiceService: InvoiceService,
+    private readonly contactService: ContactService,
+    private readonly router: Router
   ) {}
+
+  goToCreateContact(event: Event): void {
+    event.stopPropagation(); // Prevents select dropdown from opening
+    this.router.navigate(['/main/invoice']);
+  }
 
   ngOnInit(): void {
     // Build reactive form mapping standard Invoice entity fields
     this.invoiceForm = this.fb.group({
       invoiceNumber: ['INV-0001', Validators.required],
       organization: ['oscorp', Validators.required],
-      type: ['ACCOUNTS_RECEIVABLE', Validators.required],
+      type: ['', Validators.required],
       contact: ['', Validators.required],
       lineAmountTypes: ['EXCLUSIVE', Validators.required],
       date: [new Date(), Validators.required],
       dueDate: [new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), Validators.required], // 30 days from now
-      status: ['DRAFT', Validators.required],
+      status: ['', Validators.required],
       reference: ['']
     });
 
@@ -125,6 +131,73 @@ export class NewInvoice implements OnInit {
     // Recalculate if form settings like lineAmountTypes change
     this.invoiceForm.get('lineAmountTypes')?.valueChanges.subscribe(() => {
       this.calculateTotals();
+    });
+
+    // Fetch dynamic options from backend endpoints
+    this.loadInvoiceMetadata();
+    this.loadContacts();
+  }
+
+  loadInvoiceMetadata(): void {
+    this.invoiceService.getInvoiceMetadata().subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const metadata = res.data;
+          
+          // Populate Invoice Types (from metadata.invoiceTypes)
+          if (metadata.invoiceTypes && metadata.invoiceTypes.length > 0) {
+            this.types = metadata.invoiceTypes.map(t => ({
+              code: t.id,
+              name: t.name
+            }));
+            // Auto-select first type
+            this.invoiceForm.patchValue({ type: this.types[0].code });
+          }
+
+          // Populate Statuses (from metadata.invoiceStatusCodes)
+          if (metadata.invoiceStatusCodes && metadata.invoiceStatusCodes.length > 0) {
+            this.statuses = metadata.invoiceStatusCodes.map(s => ({
+              value: s.code,
+              label: s.code.charAt(0).toUpperCase() + s.code.slice(1).toLowerCase()
+            }));
+            // Auto-select DRAFT status if present, otherwise first status
+            const draftStatus = this.statuses.find(s => s.value === 'DRAFT');
+            this.invoiceForm.patchValue({ status: draftStatus ? draftStatus.value : this.statuses[0].value });
+          }
+
+          // Populate Line Amount Types
+          if (metadata.lineAmountTypes && metadata.lineAmountTypes.length > 0) {
+            this.lineAmountTypesOptions = metadata.lineAmountTypes.map(lat => ({
+              value: lat.name.replace(' ', '_').toUpperCase(),
+              label: lat.name
+            }));
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load invoice metadata:', err);
+        this.snackBar.open('Error loading invoice metadata.', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  loadContacts(): void {
+    this.contactService.getAllContacts().subscribe({
+      next: (res) => {
+        if (res.success && 'data' in res) {
+          const contactList = res.data as any[];
+          if (contactList && contactList.length > 0) {
+            this.contacts = contactList.map(c => ({
+              id: c.contactId,
+              name: c.contactName
+            }));
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load contacts:', err);
+        this.snackBar.open('Error loading contacts.', 'Close', { duration: 3000 });
+      }
     });
   }
 

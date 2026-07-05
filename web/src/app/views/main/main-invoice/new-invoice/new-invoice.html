@@ -53,16 +53,21 @@
   <!-- Form container card -->
   <div class="invoice-card">
     <form [formGroup]="invoiceForm" class="invoice-form-grid">
-      <!-- To, Issue date, Due date, Invoice number, Reference -->
+      <!-- To, Invoice Type, Invoice number, Reference -->
       <div class="form-field-wrapper">
-        <label class="field-label">To</label>
+        <label class="field-label">Contact</label>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-icon matPrefix class="field-icon">person</mat-icon>
           <mat-select formControlName="contact" placeholder="Select contact">
+            @if (contacts && contacts.length > 0) {
             @for (contact of contacts; track contact.id) {
             <mat-option [value]="contact.id">{{ contact.name }}</mat-option>
             }
+            } @else {
+            <mat-option disabled>No contacts found</mat-option>
+            }
           </mat-select>
+          <mat-icon matSuffix class="add-contact-icon" (click)="goToCreateContact($event)" title="Add new contact">add</mat-icon>
         </mat-form-field>
       </div>
       <div class="form-field-wrapper">
@@ -84,6 +89,15 @@
         </mat-form-field>
       </div>
 
+      <div class="form-field-wrapper">
+        <label class="field-label">Reference</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">bookmark</mat-icon>
+          <input matInput formControlName="reference">
+        </mat-form-field>
+      </div>
+
+      <!-- Row 2: Issue date, Due date, Amounts are, Status -->
       <div class="form-field-wrapper">
         <label class="field-label">Issue date</label>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -108,18 +122,6 @@
         </mat-form-field>
       </div>
 
-      <!-- Second Row of fields: Organization, Type, Status, Amounts are (lineAmountTypes) -->
-      <div class="form-field-wrapper">
-        <label class="field-label">Organization</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select formControlName="organization">
-            @for (org of organizations; track org.id) {
-            <mat-option [value]="org.id">{{ org.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
-
       <div class="form-field-wrapper">
         <label class="field-label">Amounts are</label>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -128,14 +130,6 @@
             <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
             }
           </mat-select>
-        </mat-form-field>
-      </div>
-
-      <div class="form-field-wrapper">
-        <label class="field-label">Reference</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">bookmark</mat-icon>
-          <input matInput formControlName="reference" placeholder="Enter reference">
         </mat-form-field>
       </div>
 
