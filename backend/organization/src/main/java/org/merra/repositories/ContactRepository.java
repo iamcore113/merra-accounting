@@ -7,9 +7,7 @@ import org.merra.entities.Contact;
 import org.merra.repositories.projections.ContactsByOrganizationSelection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface ContactRepository extends JpaRepository<Contact, UUID> {
 	// Contact status
 	static final String CONTACT_STATUS_ACTIVE = "ACTIVE"; // The Contact is active and can be used in transactions

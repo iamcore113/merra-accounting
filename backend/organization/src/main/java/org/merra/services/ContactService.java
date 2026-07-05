@@ -62,7 +62,7 @@ public class ContactService {
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION));
 
 		Contact contact = new Contact();
-		contact.setOrganizationId(getOrganization);
+		contact.setOrganization(getOrganization);
 		contact.setName(request.name());
 		contact.setFirstName(request.firstName());
 		contact.setLastName(request.lastName());

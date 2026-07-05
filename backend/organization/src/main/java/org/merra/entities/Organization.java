@@ -48,6 +48,9 @@ public class Organization {
 	@Column(name = "profile_image")
 	private String logo;
 
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+	private Set<Contact> contacts;
+
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
 	private String displayName;
@@ -126,6 +129,14 @@ public class Organization {
 
 	public void setActiveSubscription(Boolean isActiveSubscription) {
 		this.activeSubscription = isActiveSubscription == null || isActiveSubscription;
+	}
+
+	public Set<Contact> getContacts() {
+		return contacts;
+	}
+
+	public void setContacts(Set<Contact> contacts) {
+		this.contacts = contacts;
 	}
 
 	public void setBasicInformation(String displayName,

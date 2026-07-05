@@ -40,7 +40,7 @@ public class Contact {
 
 	@ManyToOne
 	@JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
-	private Organization organizationId;
+	private Organization organization;
 
 	// Full name of contact / organization
 	@Column(name = "name", nullable = false, unique = true)
@@ -107,7 +107,7 @@ public class Contact {
 
 	public Contact(@NotBlank String name, @NotNull Organization organization) {
 		this.name = name;
-		this.organizationId = organization;
+		this.organization = organization;
 	}
 
 	public void setIsSupplier(Boolean sup) {
@@ -122,12 +122,12 @@ public class Contact {
 		return id;
 	}
 
-	public Organization getOrganizationId() {
-		return organizationId;
+	public Organization getOrganization() {
+		return organization;
 	}
 
-	public void setOrganizationId(Organization organizationId) {
-		this.organizationId = organizationId;
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
 	}
 
 	public String getName() {
