@@ -72,11 +72,6 @@
           text-transform: capitalize;
         }
       }
-
-      .status-helper-text {
-        font-size: 0.875rem;
-        color: #64748b;
-      }
     }
 
     .header-right {
@@ -246,7 +241,7 @@
         width: 100%;
         --mdc-outlined-text-field-container-shape: 4px;
         --mdc-outlined-text-field-container-height: 38px;
-        
+
         .mat-mdc-text-field-wrapper {
           padding-left: 0.75rem;
           padding-right: 0.75rem;
@@ -297,24 +292,31 @@
       .mat-column-itemCode {
         width: 15%;
       }
+
       .mat-column-description {
         width: 30%;
       }
+
       .mat-column-quantity {
         width: 10%;
       }
+
       .mat-column-price {
         width: 12%;
       }
+
       .mat-column-account {
         width: 15%;
       }
+
       .mat-column-taxRate {
         width: 10%;
       }
+
       .mat-column-amount {
         width: 10%;
       }
+
       .mat-column-actions {
         width: 4%;
         text-align: center;

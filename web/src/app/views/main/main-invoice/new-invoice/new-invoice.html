@@ -12,7 +12,6 @@
         <h2 class="page-title">New invoice</h2>
         <span class="status-badge">Draft</span>
       </div>
-      <span class="status-helper-text">Add a contact to start saving</span>
     </div>
     <div class="header-right">
       <!-- Approve & Email split button -->
@@ -67,7 +66,8 @@
             <mat-option disabled>No contacts found</mat-option>
             }
           </mat-select>
-          <mat-icon matSuffix class="add-contact-icon" (click)="goToCreateContact($event)" title="Add new contact">add</mat-icon>
+          <mat-icon matSuffix class="add-contact-icon" (click)="goToCreateContact($event)"
+            title="Add new contact">add</mat-icon>
         </mat-form-field>
       </div>
       <div class="form-field-wrapper">

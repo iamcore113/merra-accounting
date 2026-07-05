@@ -433,6 +433,28 @@ public class InvoiceService {
 	 * @return The InvoiceMetaDataResponse containing the sets of status codes,
 	 *         types, and line amount types.
 	 */
+	private String toTitleCase(String input) {
+		if (input == null || input.isEmpty()) {
+			return input;
+		}
+		StringBuilder titleCase = new StringBuilder();
+		boolean nextTitleCase = true;
+
+		for (char c : input.toCharArray()) {
+			if (c == '_' || c == ' ' || c == '-') {
+				titleCase.append(' ');
+				nextTitleCase = true;
+			} else if (nextTitleCase) {
+				titleCase.append(Character.toTitleCase(c));
+				nextTitleCase = false;
+			} else {
+				titleCase.append(Character.toLowerCase(c));
+			}
+		}
+
+		return titleCase.toString().trim();
+	}
+
 	public InvoiceMetaDataResponse metadata() {
 		InvoiceMetaDataResponse metaDataCache = (InvoiceMetaDataResponse) redisTemplate.opsForValue()
 				.get(RedisKeys.INVOICE_METADATA);
@@ -443,11 +465,11 @@ public class InvoiceService {
 					.collect(Collectors.toSet());
 
 			Set<InvoiceMetaDataResponse.InvoiceType> invoiceTypes = invoiceTypeRepository.findAll().stream()
-					.map(t -> new InvoiceMetaDataResponse.InvoiceType(t.getId(), t.getType()))
+					.map(t -> new InvoiceMetaDataResponse.InvoiceType(t.getId(), toTitleCase(t.getType())))
 					.collect(Collectors.toSet());
 
 			Set<InvoiceMetaDataResponse.LineAmountType> lineAmountTypes = lineAmountTypeRepository.findAll().stream()
-					.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), t.getType().replace('_', ' ')))
+					.map(t -> new InvoiceMetaDataResponse.LineAmountType(t.getId(), toTitleCase(t.getType())))
 					.collect(Collectors.toSet());
 
 			metaDataCache = new InvoiceMetaDataResponse(invoiceTypes, statusCodes, lineAmountTypes);
