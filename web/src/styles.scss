@@ -189,3 +189,26 @@ h1, h2, h3, h4, h5, h6, p {
   padding: 4px;
 }
 
+// Customizing mat-select dropdown arrow size to match date field arrows globally
+.mat-mdc-select-arrow-wrapper {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-mdc-select-arrow {
+  width: 20px !important;
+  height: 20px !important;
+  color: #64748b !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: currentColor !important;
+  }
+}
+

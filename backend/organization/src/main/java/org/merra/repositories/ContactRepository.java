@@ -27,7 +27,7 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 			FROM
 				Contact c
 			JOIN
-				c.organizationId o
+				c.organization o
 			WHERE
 				o.id = :organizationId
 			""")

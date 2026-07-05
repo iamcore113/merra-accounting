@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.merra.dto.CompleteContactRequest;
 import org.merra.dto.ContactResponse;
 import org.merra.dto.ContactsByOrganizationResponse;
-import org.merra.dto.SimpleContactRequest;
+import org.merra.dto.NewContactrequest;
 import org.merra.entities.Contact;
 import org.merra.entities.Organization;
 import org.merra.exceptions.OrganizationExceptions;
@@ -41,25 +41,33 @@ public class ContactService {
 	}
 
 	/**
-	 * This method will create a contact object that contains only the name field.
-	 * useful when creating invoice and creating new contact.
+	 * Creates a new contact with the provided first and last name for the currently
+	 * authenticated user's organization.
 	 * 
-	 * @param request - accepts {@linkplain SimpleContactRequest} object.
-	 * @return - {@linkplain ContactResponse} object.
+	 * @param request - accepts {@linkplain NewContactrequest} object containing the
+	 *                first and last name.
+	 * @return - {@linkplain ContactResponse} object containing the newly created
+	 *         contact's ID and full name.
+	 * @throws EntityNotFoundException if the current organization cannot be
+	 *                                 determined.
 	 */
-	public ContactResponse createSimpleContact(@NotNull SimpleContactRequest request) {
-		Organization getOrganization = organizationRepository.findById(request.organizationId())
-				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION));
-		final String contactName = request.name();
-		Contact obj = new Contact(contactName, getOrganization);
-		Contact newContact = contactRepository.save(obj);
+	public ContactResponse newSimpleContact(@NotNull NewContactrequest request) {
+		Contact contact = new Contact();
+		contact.setName(request.firstName() + " " + request.lastName());
+		contact.setFirstName(request.firstName());
+		contact.setLastName(request.lastName());
+
+		Organization currentOrg = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+		contact.setOrganization(currentOrg);
+		Contact newContact = contactRepository.save(contact);
 
 		return new ContactResponse(newContact.getId(), newContact.getName());
 	}
 
-	public CompleteContactRequest createCompleteContact(@NotNull CompleteContactRequest request) {
-		Organization getOrganization = organizationRepository.findById(request.organizationId())
-				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION));
+	public CompleteContactRequest newCompleteContact(@NotNull CompleteContactRequest request) {
+		Organization getOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 
 		Contact contact = new Contact();
 		contact.setOrganization(getOrganization);

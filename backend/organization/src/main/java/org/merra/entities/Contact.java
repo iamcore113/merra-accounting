@@ -58,7 +58,7 @@ public class Contact {
 	private String emailAddress;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
+	@Column(name = "phone_no", columnDefinition = "jsonb[]")
 	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "account_number")

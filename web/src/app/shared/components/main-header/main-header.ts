@@ -11,6 +11,7 @@ import { RouterModule } from '@angular/router';
 })
 export class MainHeader {
   isMenuOpen = false;
+  isInvoiceSubmenuOpen = false;
   @Output() readonly menuToggle = new EventEmitter<void>();
 
   onHamburgerClick(): void {
@@ -21,10 +22,20 @@ export class MainHeader {
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
+    if (!this.isMenuOpen) {
+      this.isInvoiceSubmenuOpen = false;
+    }
+  }
+
+  toggleInvoiceSubmenu(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isInvoiceSubmenuOpen = !this.isInvoiceSubmenuOpen;
   }
 
   closeMenu() {
     this.isMenuOpen = false;
+    this.isInvoiceSubmenuOpen = false;
   }
 
   @HostListener('document:click', ['$event'])

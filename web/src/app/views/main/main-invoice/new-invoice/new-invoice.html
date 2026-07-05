@@ -1,0 +1,276 @@
+<div class="new-invoice-page">
+  <!-- Breadcrumb and page headers -->
+  <div class="header-breadcrumb">
+    <a href="#" class="breadcrumb-link" (click)="$event.preventDefault()">Sales overview</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-active">Invoices</span>
+  </div>
+
+  <div class="header-action-row">
+    <div class="header-left">
+      <div class="title-with-badge">
+        <h2 class="page-title">New invoice</h2>
+        <span class="status-badge">Draft</span>
+      </div>
+      <span class="status-helper-text">Add a contact to start saving</span>
+    </div>
+    <div class="header-right">
+      <!-- Approve & Email split button -->
+      <div class="split-button-container primary-split">
+        <button mat-flat-button color="primary" class="split-main-btn" (click)="saveInvoice('APPROVED')">
+          Approve
+        </button>
+        <button mat-flat-button color="primary" class="split-arrow-btn" [matMenuTriggerFor]="approveMenu">
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #approveMenu="matMenu">
+          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve Only</button>
+          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve & Email</button>
+          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve & Print</button>
+        </mat-menu>
+      </div>
+
+      <!-- Save & Close split button -->
+      <div class="split-button-container">
+        <button mat-flat-button class="split-main-btn" (click)="saveInvoice('DRAFT')">
+          Save & close
+        </button>
+        <button mat-flat-button class="split-arrow-btn" [matMenuTriggerFor]="saveMenu">
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #saveMenu="matMenu">
+          <button mat-menu-item (click)="saveInvoice('DRAFT')">Save as Draft</button>
+          <button mat-menu-item (click)="saveInvoice('SUBMITTED')">Save & Submit</button>
+        </mat-menu>
+      </div>
+      <button mat-button class="preview-btn">
+        <mat-icon>visibility</mat-icon>
+        <span>Preview</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Form container card -->
+  <div class="invoice-card">
+    <form [formGroup]="invoiceForm" class="invoice-form-grid">
+      <!-- To, Issue date, Due date, Invoice number, Reference -->
+      <div class="form-field-wrapper">
+        <label class="field-label">To</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">person</mat-icon>
+          <mat-select formControlName="contact" placeholder="Select contact">
+            @for (contact of contacts; track contact.id) {
+            <mat-option [value]="contact.id">{{ contact.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-field-wrapper">
+        <label class="field-label">Invoice Type</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="type">
+            @for (t of types; track t.code) {
+            <mat-option [value]="t.code">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Invoice number</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">tag</mat-icon>
+          <input matInput formControlName="invoiceNumber">
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Issue date</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">calendar_today</mat-icon>
+          <input matInput [matDatepicker]="issueDatePicker" formControlName="date">
+          <mat-datepicker-toggle matIconSuffix [for]="issueDatePicker">
+            <mat-icon matDatepickerToggleIcon>arrow_drop_down</mat-icon>
+          </mat-datepicker-toggle>
+          <mat-datepicker #issueDatePicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Due date</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">calendar_today</mat-icon>
+          <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate">
+          <mat-datepicker-toggle matIconSuffix [for]="dueDatePicker">
+            <mat-icon matDatepickerToggleIcon>arrow_drop_down</mat-icon>
+          </mat-datepicker-toggle>
+          <mat-datepicker #dueDatePicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Second Row of fields: Organization, Type, Status, Amounts are (lineAmountTypes) -->
+      <div class="form-field-wrapper">
+        <label class="field-label">Organization</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="organization">
+            @for (org of organizations; track org.id) {
+            <mat-option [value]="org.id">{{ org.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Amounts are</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="lineAmountTypes">
+            @for (opt of lineAmountTypesOptions; track opt.value) {
+            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Reference</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-icon matPrefix class="field-icon">bookmark</mat-icon>
+          <input matInput formControlName="reference" placeholder="Enter reference">
+        </mat-form-field>
+      </div>
+
+      <div class="form-field-wrapper">
+        <label class="field-label">Status</label>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-select formControlName="status">
+            @for (st of statuses; track st.value) {
+            <mat-option [value]="st.value">{{ st.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
+
+    <!-- Table of line items -->
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="line-items-table">
+
+        <!-- Item Column -->
+        <ng-container matColumnDef="itemCode">
+          <th mat-header-cell *matHeaderCellDef> Item </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
+              <input matInput [(ngModel)]="element.itemCode" placeholder="Search item...">
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Description Column -->
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef> Description </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
+              <input matInput [(ngModel)]="element.description" placeholder="Description...">
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Qty Column -->
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef class="number-header"> Qty. </th>
+          <td mat-cell *matCellDef="let element; let i = index" class="number-cell">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field number-input">
+              <input matInput type="number" [(ngModel)]="element.quantity" (ngModelChange)="onItemChange(element)"
+                min="0">
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Price Column -->
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef class="number-header"> Price </th>
+          <td mat-cell *matCellDef="let element; let i = index" class="number-cell">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field number-input">
+              <input matInput type="number" [(ngModel)]="element.price" (ngModelChange)="onItemChange(element)" min="0"
+                step="0.01">
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Account Column -->
+        <ng-container matColumnDef="account">
+          <th mat-header-cell *matHeaderCellDef> Account </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
+              <mat-select [(ngModel)]="element.account">
+                @for (acc of accounts; track acc.code) {
+                <mat-option [value]="acc.code">{{ acc.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Tax Rate Column -->
+        <ng-container matColumnDef="taxRate">
+          <th mat-header-cell *matHeaderCellDef> Tax rate </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
+              <mat-select [(ngModel)]="element.taxRate" (ngModelChange)="onItemChange(element)">
+                @for (tr of taxRates; track tr.value) {
+                <mat-option [value]="tr.value">{{ tr.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <!-- Amount Column -->
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef class="number-header"> Amount </th>
+          <td mat-cell *matCellDef="let element" class="amount-cell number-cell">
+            {{ element.amount | number:'1.2-2' }}
+          </td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="actions-header"></th>
+          <td mat-cell *matCellDef="let element; let i = index" class="actions-cell">
+            <button mat-icon-button color="warn" class="delete-btn" (click)="deleteLineItem(i)" title="Delete row">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+
+    <!-- Add Line Button directly below the table -->
+    <div class="add-line-container">
+      <button mat-button class="add-row-btn" (click)="addLineItem()">
+        <mat-icon>add</mat-icon>
+        <span>Add line</span>
+      </button>
+    </div>
+
+    <!-- Totals card display on the left side -->
+    <div class="invoice-bottom-actions">
+      <div class="bottom-left-totals">
+        <div class="totals-row">
+          <span class="totals-label">Subtotal</span>
+          <span class="totals-value">{{ subTotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="totals-row">
+          <span class="totals-label">Total Tax</span>
+          <span class="totals-value">{{ totalTax | number:'1.2-2' }}</span>
+        </div>
+        <div class="totals-row grand-total-row">
+          <span class="totals-label">Total</span>
+          <span class="totals-value">{{ grandTotal | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>

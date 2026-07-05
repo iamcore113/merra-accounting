@@ -46,8 +46,13 @@ export const routes: Routes = [
       },
       {
         path: 'invoice',
-        loadComponent: () => import('./views/main/main-invoice/main-invoice').then(m => m.MainInvoice),
+        loadComponent: () => import('./views/main/main-invoice/list-invoice/list-invoice').then(m => m.ListInvoice),
         title: 'MERRA - Invoices'
+      },
+      {
+        path: 'invoice/new',
+        loadComponent: () => import('./views/main/main-invoice/new-invoice/new-invoice').then(m => m.NewInvoice),
+        title: 'MERRA - New Invoice'
       },
       {
         path: 'contacts',

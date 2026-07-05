@@ -1,10 +1,6 @@
 <header class="main-header">
   <div class="header-content">
-    <button
-      class="hamburger-button"
-      matIconButton
-      type="button"
-      aria-label="Open navigation"
+    <button class="hamburger-button" matIconButton type="button" aria-label="Open navigation"
       (click)="onHamburgerClick()">
       <mat-icon fontSet="material-icons-outlined">menu</mat-icon>
     </button>
@@ -16,19 +12,26 @@
     </nav>
     <div class="org-actions">
       <div class="action-menu">
-        <button
-          class="plus-button"
-          title="Add new"
-          (click)="toggleMenu()">
+        <button class="plus-button" title="Add new" (click)="toggleMenu()">
           <span class="plus-icon">+</span>
         </button>
         @if (isMenuOpen) {
-          <div class="dropdown-menu">
-            <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Organization</a>
-            <a class="menu-item" routerLink="invoice" (click)="closeMenu()">New Invoice</a>
-            <a class="menu-item" routerLink="contacts" (click)="closeMenu()">New Contact</a>
-            <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Project</a>
+        <div class="dropdown-menu">
+          <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Organization</a>
+          <div class="menu-item-with-submenu">
+            <button class="menu-item submenu-trigger" (click)="toggleInvoiceSubmenu($event)">
+              <span>Invoice</span>
+              <mat-icon class="chevron" [class.rotated]="isInvoiceSubmenuOpen">chevron_right</mat-icon>
+            </button>
+            <div class="submenu" [class.open]="isInvoiceSubmenuOpen">
+              <a class="submenu-item" routerLink="invoice" (click)="closeMenu()">All Invoices</a>
+              <a class="submenu-item" routerLink="invoice/new" (click)="closeMenu()">Create Invoice</a>
+              <a class="submenu-item" [routerLink]="['invoice']" [queryParams]="{status: 'draft'}" (click)="closeMenu()">Draft Invoices</a>
+            </div>
           </div>
+          <a class="menu-item" routerLink="contacts" (click)="closeMenu()">New Contact</a>
+          <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Project</a>
+        </div>
         }
       </div>
       <a class="org-identity" title="Organization" routerLink="organization">

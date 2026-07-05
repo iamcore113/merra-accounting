@@ -13,20 +13,19 @@ import org.merra.repositories.projections.ContactsByOrganizationSelection;
 
 @Mapper(nullValueMappingStrategy = NullValueMappingStrategy.RETURN_NULL, componentModel = "spring")
 public interface ContactMapper {
-	
-	@Mappings({
-		@Mapping(target = "organizationId", expression = "java(ct.getOrganizationId().getId())")
-	})
+
 	CompleteContactRequest toCompleteContactRequest(Contact ct);
-	
+
 	@Mappings({
-		@Mapping(target = "organizationName", source = "organizationName"),
-		@Mapping(target = "contactId", source = "id"),
-		@Mapping(target = "contactName", source = "name"),
-		@Mapping(target = "accountNumber", source = "accountNumber"),
-		@Mapping(target = "isSupplier", source = "isSupplier"),
-		@Mapping(target = "isCustomer", source = "isCustomer")
+			@Mapping(target = "organizationName", source = "organizationName"),
+			@Mapping(target = "contactId", source = "id"),
+			@Mapping(target = "contactName", source = "name"),
+			@Mapping(target = "accountNumber", source = "accountNumber"),
+			@Mapping(target = "isSupplier", source = "isSupplier"),
+			@Mapping(target = "isCustomer", source = "isCustomer")
 	})
 	ContactsByOrganizationResponse toContactsByOrganizationSelections(ContactsByOrganizationSelection contact);
-	List<ContactsByOrganizationResponse> toContactsByOrganizationSelections(List<ContactsByOrganizationSelection> contacts);
+
+	List<ContactsByOrganizationResponse> toContactsByOrganizationSelections(
+			List<ContactsByOrganizationSelection> contacts);
 }
