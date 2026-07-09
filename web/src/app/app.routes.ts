@@ -19,7 +19,7 @@ import { offlineGuard } from './shared/guards/offline-guard';
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
   { path: 'offline', component: OfflinePage, canActivate: [offlineGuard], title: 'MERRA - Offline' },
-  { path: 'account/signup', component: Signup, title: 'MERRA - Create Account' },
+  { path: 'account/signup', component: Signup, title: 'Signup for free | MERRA' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
   { path: 'account/verify-email/:email', component: VerifyEmail, title: 'MERRA - Verify Email' },
   { path: 'account/verify', component: VerifyAccount, title: 'MERRA - Verify Account' },

@@ -111,6 +111,14 @@ form {
     .terms-checkbox {
       font-size: 0.875rem;
       color: var(--mat-sys-on-surface-variant);
+
+      @include mat.checkbox-overrides((
+        selected-icon-color: green,
+        selected-focus-icon-color: green,
+        selected-hover-icon-color: green,
+        selected-pressed-icon-color: green,
+        selected-checkmark-color: white
+      ));
     }
 
     .terms-error {
