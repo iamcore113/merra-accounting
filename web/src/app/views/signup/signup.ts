@@ -8,8 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { finalize } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../shared/services/auth-service';
 import { CreateAccountRequest } from '../../shared/models/auth';
 
@@ -24,7 +25,9 @@ import { CreateAccountRequest } from '../../shared/models/auth';
     MatIconModule,
     MatProgressSpinnerModule,
     MatRadioModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatCheckboxModule,
+    RouterLink
   ],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
@@ -47,7 +50,8 @@ export class Signup {
         Validators.pattern(/^(?=.*[A-Z])(?=.*\d).+$/)
       ]],
       confirmPassword: ['', [Validators.required]],
-      gender: ['', [Validators.required]]
+      gender: ['', [Validators.required]],
+      agreeToTerms: [false, [Validators.requiredTrue]]
     });
 
     const passwordCtrl = this.signupForm.get('password')!;
@@ -121,6 +125,8 @@ export class Signup {
           void this.router.navigate(['account/verify-email', this.signupForm.value.email]);
         }
       });
+    } else {
+      this.signupForm.markAllAsTouched();
     }
   }
 }

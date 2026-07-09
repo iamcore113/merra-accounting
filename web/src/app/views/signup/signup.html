@@ -1,4 +1,7 @@
 <div class="auth-container">
+  <nav class="top-navbar">
+    <a matButton routerLink="/account/signin">Already have an account?</a>
+  </nav>
 <mat-card class="auth-card">
   <mat-card-header>
     <mat-card-title>
@@ -85,12 +88,21 @@
         }
       </mat-form-field>
 
+      <div class="terms-container">
+        <mat-checkbox formControlName="agreeToTerms" class="terms-checkbox">
+          I agree to the Terms of Service and Privacy Policy.
+        </mat-checkbox>
+        @if (signupForm.get('agreeToTerms')?.hasError('required') && signupForm.get('agreeToTerms')?.touched) {
+          <mat-error class="terms-error">You must agree to the Terms of Service and Privacy Policy</mat-error>
+        }
+      </div>
+
       <div class="button-container">
         <button
           matButton="filled"
           type="submit"
           class="submit-button"
-          [disabled]="signupForm.invalid || isSubmitting()">
+          [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <span class="submit-content">
               <mat-progress-spinner
@@ -100,13 +112,12 @@
                 [strokeWidth]="3"
                 color="accent"
               ></mat-progress-spinner>
-              <span>Signing up...</span>
+              <span>SIGNING UP...</span>
             </span>
           } @else {
-            Sign Up
+            SIGNUP FOR FREE
           }
         </button>
-        <a matButton href="#">Do you have an account?</a>
       </div>
     </form>
   </mat-card-content>

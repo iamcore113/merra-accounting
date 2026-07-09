@@ -1,12 +1,26 @@
 @use '@angular/material' as mat;
 
 .auth-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   padding: 2rem;
   background-color: var(--mat-sys-surface);
+}
+
+.top-navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 2rem;
+  box-sizing: border-box;
 }
 
 ::ng-deep .auth-card.mat-mdc-card {
@@ -88,26 +102,40 @@ form {
     }
   }
 
-  .button-container {
+  .terms-container {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
+    flex-direction: column;
 
-    button {
+    .terms-checkbox {
+      font-size: 0.875rem;
+      color: var(--mat-sys-on-surface-variant);
+    }
+
+    .terms-error {
+      font-size: 0.75rem;
+      color: var(--mat-sys-error);
+      margin-top: 0.25rem;
+    }
+  }
+
+  .button-container {
+    width: 100%;
+    margin-top: 0.25rem;
+
+    button.submit-button {
+      width: 100%;
       padding: 0.75rem 2rem;
       font-size: 1rem;
-      min-width: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
       line-height: 1;
-
-      &.submit-button {
-        min-width: 150px;
-      }
+      border-radius: 8px !important;
+      background-color: black !important;
+      color: white !important;
 
       .submit-content {
         display: inline-flex;
@@ -122,6 +150,5 @@ form {
         --mdc-circular-progress-active-indicator-color: white;
       }
     }
-
   }
 }
