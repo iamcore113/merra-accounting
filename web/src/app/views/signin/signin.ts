@@ -34,6 +34,7 @@ import { LocalStorageService } from '../../shared/services/local-storage-service
 export class Signin implements OnInit, OnDestroy {
   signinForm: FormGroup;
   errorMessage: string | null = null;
+  hidePassword = true;
   isSubmitting = signal(false);
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -68,6 +69,10 @@ export class Signin implements OnInit, OnDestroy {
     if (this.errorTimeout) clearTimeout(this.errorTimeout);
     this.errorMessage = message;
     this.errorTimeout = setTimeout(() => this.errorMessage = null, 5000);
+  }
+
+  togglePasswordVisibility() {
+    this.hidePassword = !this.hidePassword;
   }
 
   // TODO: Handle accounts that aren't part of organizations

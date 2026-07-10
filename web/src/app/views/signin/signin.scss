@@ -1,3 +1,5 @@
+@use '@angular/material' as mat;
+
 :host {
   display: flex;
   justify-content: center;
@@ -7,63 +9,79 @@
 }
 
 .auth-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
+  min-height: 100vh;
   padding: 2rem;
+  background-color: var(--mat-sys-surface);
+}
+
+.top-navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+::ng-deep .auth-card.mat-mdc-card {
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .auth-card {
   max-width: 500px;
   width: 100%;
   padding: 1rem;
-}
 
-.auth-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.auth-content {
-  padding: 0 1rem;
-
-  .alert-container {
-    margin-bottom: 1rem;
-  }
-
-  .error-alert {
+  mat-card-header {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    color: #dc2626;
-    font-size: 0.875rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
 
-    .error-message {
-      flex: 1;
+    mat-card-title {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.75rem;
+      color: var(--mat-sys-primary);
+
+      mat-icon {
+        font-size: 2rem;
+        width: 2rem;
+        height: 2rem;
+      }
     }
   }
 
-  .error-message {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    background-color: #fef2f2;
-    border: 1px solid #fecaca;
-    border-radius: 0.5rem;
-    color: #dc2626;
-    font-size: 0.875rem;
+  mat-card-content {
+    padding: 0 1rem;
+
+    .error-alert {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 0.5rem;
+      color: #dc2626;
+      font-size: 0.875rem;
+
+      .error-message {
+        flex: 1;
+      }
+    }
   }
 }
 
@@ -77,15 +95,34 @@ form {
   }
 
   .button-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 1rem;
+    width: 100%;
+    margin-top: 0.25rem;
 
-    button {
+    button.submit-button {
+      width: 100%;
       padding: 0.75rem 2rem;
       font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      line-height: 1;
+      border-radius: 8px !important;
+      background-color: black !important;
+      color: white !important;
+
+      .submit-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .submit-spinner {
+        display: inline-flex;
+        align-self: center;
+        --mdc-circular-progress-active-indicator-color: white;
+      }
     }
   }
 }
