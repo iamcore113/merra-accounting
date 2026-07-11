@@ -152,6 +152,14 @@
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
     </dependency>
+    <!-- NOTE: This will not break in production! If your production environment is a standard
+    Linux container (like Docker on AWS, GCP, etc.), Netty is smart enough to completely ignore this
+    macOS dependency. It will only load it when it detects it's running locally on your M2 Mac -->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns-native-macos</artifactId>
+      <classifier>osx-aarch_64</classifier>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

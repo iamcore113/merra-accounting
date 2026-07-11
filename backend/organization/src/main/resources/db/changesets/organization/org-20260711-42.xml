@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        logicalFilePath="db/changesets/organization/org-20260711-42.xml"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="2026-tax_type-update-column-name-label-country" author="brian">
+        <renameColumn 
+            tableName="tax_type"
+            oldColumnName="label"
+            newColumnName="country"
+            columnDataType="varchar(100)"/>
+    </changeSet>
+    <changeSet id="2026-tax_type-add-column-country_code" author="brian">
+        <addColumn tableName="tax_type">
+            <column name="country_code" type="varchar(5)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

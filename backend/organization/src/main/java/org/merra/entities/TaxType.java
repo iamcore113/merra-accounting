@@ -33,9 +33,13 @@ public class TaxType {
 	private UUID id;
 
 	// Usually will hold a country name
-	@Column(name = "label", nullable = false, unique = true)
-	@NotNull(message = "label cannot be null.")
-	private String label;
+	@Column(name = "country", nullable = false, unique = true)
+	@NotNull(message = "country cannot be null.")
+	private String country;
+
+	@Column(name = "country_code", nullable = false, unique = true)
+	@NotNull(message = "countryCode cannot be null.")
+	private String countryCode;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "type_collections", columnDefinition = "jsonb", nullable = false)
@@ -45,21 +49,29 @@ public class TaxType {
 	public TaxType() {
 	}
 
-	public TaxType(String label, Set<TaxTypesEmb> typeCollections) {
-		this.label = label;
+	public TaxType(String country, Set<TaxTypesEmb> typeCollections) {
+		this.country = country;
 		this.typeCollections = typeCollections;
+	}
+
+	public String getCountryCode() {
+		return countryCode;
+	}
+
+	public void setCountryCode(String countryCode) {
+		this.countryCode = countryCode;
 	}
 
 	public UUID getId() {
 		return id;
 	}
 
-	public String getLabel() {
-		return label;
+	public String getCountry() {
+		return country;
 	}
 
-	public void setLabel(String label) {
-		this.label = label;
+	public void setCountry(String country) {
+		this.country = country;
 	}
 
 	public Set<TaxTypesEmb> getTypeCollections() {

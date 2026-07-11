@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceMetaDataResponse;
 import org.merra.dto.InvoiceTaxEligibility;
+import org.merra.dto.InvoiceTaxEligibilityResponse;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
 import org.merra.entities.Invoice;
@@ -96,22 +97,22 @@ public class InvoiceService {
 	 * This method checks if tax can be applied to the invoice base on the
 	 * organization's country code.
 	 * 
-	 * @param organizationID - accepts {@linkplain java.util.UUID} object type.
-	 * @return - {@linkplain InvoiceTaxEligibility} object type.
+	 * @return - {@linkplain InvoiceTaxEligibilityResponse} object type.
 	 */
-	public InvoiceTaxEligibility taxEligibility(@NotNull UUID organizationID) {
-		Optional<String> countryOpt = organizationRepository
-				.findCountryUsingOrganizationId(organizationID);
-		Boolean existsByLabel = taxTypeRepository.existsByLabelIgnoreCase(countryOpt.get());
+	public InvoiceTaxEligibilityResponse taxEligibility() {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+		final String organizationCountryCode = currentOrganization.getCountry();
+		Boolean existsByLabel = taxTypeRepository.existsByCountryCodeIgnoreCase(organizationCountryCode);
 
-		if (existsByLabel) {
-			return new InvoiceTaxEligibility(organizationID, existsByLabel, TaxTypeRepository.COUNTRY_ELIGIBLE_FOR_TAX);
-		}
+		InvoiceTaxEligibilityResponse taxEligibility = new InvoiceTaxEligibilityResponse(currentOrganization.getId(),
+				existsByLabel);
+		if (existsByLabel)
+			taxEligibility.setMessage(TaxTypeRepository.COUNTRY_ELIGIBLE_FOR_TAX);
+		else
+			taxEligibility.setMessage(TaxTypeRepository.COUNTRY_INELIGIBLE_FOR_TAX);
 
-		return new InvoiceTaxEligibility(
-				organizationID,
-				existsByLabel,
-				TaxTypeRepository.COUNTRY_INELIGIBLE_FOR_TAX);
+		return taxEligibility;
 	}
 
 	/**
