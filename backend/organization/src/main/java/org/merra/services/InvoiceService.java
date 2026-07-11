@@ -3,7 +3,6 @@ package org.merra.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -11,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceMetaDataResponse;
-import org.merra.dto.InvoiceTaxEligibility;
 import org.merra.dto.InvoiceTaxEligibilityResponse;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
