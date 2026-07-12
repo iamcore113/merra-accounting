@@ -11,6 +11,7 @@ import org.hibernate.annotations.TimeZoneStorageType;
 import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ContactAddressEmb;
+import org.merra.entities.templates.TenantAuditableEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -31,7 +32,7 @@ import jakarta.validation.constraints.NotNull;
  */
 @Entity(name = "Contact")
 @Table(name = "contacts")
-public class Contact {
+public class Contact extends TenantAuditableEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

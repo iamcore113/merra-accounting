@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceMetaDataResponse;
-import org.merra.dto.InvoiceTaxEligibilityResponse;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
 import org.merra.entities.Invoice;
@@ -27,7 +26,6 @@ import org.merra.repositories.InvoiceTypeRepository;
 import org.merra.repositories.LineAmountTypeRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.TaxRateRepository;
-import org.merra.repositories.TaxTypeRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.AccountLookup;
 import org.merra.utilities.InvoiceConstants;
@@ -55,7 +53,6 @@ public class InvoiceService {
 	private final JournalService journalService;
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
-	private final TaxTypeRepository taxTypeRepository;
 	private final InvoiceTypeRepository invoiceTypeRepository;
 	public final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
 	private final LineAmountTypeRepository lineAmountTypeRepository;
@@ -70,7 +67,6 @@ public class InvoiceService {
 			JournalService journalService,
 			AccountRepository accountRepository,
 			TaxRateRepository taxRateRepository,
-			TaxTypeRepository taxTypeRepository,
 			InvoiceTypeRepository invoiceTypeRepository,
 			InvoiceStatusCodeRepository invoiceStatusCodeRepository,
 			LineAmountTypeRepository lineAmountTypeRepository,
@@ -83,34 +79,9 @@ public class InvoiceService {
 		this.journalService = journalService;
 		this.accountRepository = accountRepository;
 		this.taxRateRepository = taxRateRepository;
-		this.taxTypeRepository = taxTypeRepository;
 		this.invoiceTypeRepository = invoiceTypeRepository;
 		this.invoiceStatusCodeRepository = invoiceStatusCodeRepository;
 		this.lineAmountTypeRepository = lineAmountTypeRepository;
-	}
-
-	/**
-	 * When the user creates an invoice (e.g. clicks the button for creating
-	 * new invoice) a request (GET) will be sent and this will be the response.
-	 * This method checks if tax can be applied to the invoice base on the
-	 * organization's country code.
-	 * 
-	 * @return - {@linkplain InvoiceTaxEligibilityResponse} object type.
-	 */
-	public InvoiceTaxEligibilityResponse taxEligibility() {
-		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
-				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
-		final String organizationCountryCode = currentOrganization.getCountry();
-		Boolean existsByLabel = taxTypeRepository.existsByCountryCodeIgnoreCase(organizationCountryCode);
-
-		InvoiceTaxEligibilityResponse taxEligibility = new InvoiceTaxEligibilityResponse(currentOrganization.getId(),
-				existsByLabel);
-		if (existsByLabel)
-			taxEligibility.setMessage(TaxTypeRepository.COUNTRY_ELIGIBLE_FOR_TAX);
-		else
-			taxEligibility.setMessage(TaxTypeRepository.COUNTRY_INELIGIBLE_FOR_TAX);
-
-		return taxEligibility;
 	}
 
 	/**

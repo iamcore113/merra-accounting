@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.merra.entities.TaxType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
@@ -28,11 +30,9 @@ public interface TaxTypeRepository extends JpaRepository<TaxType, UUID> {
 	// query a tax type by country name - label holds a country name
 	Optional<TaxType> findByCountryCodeIgnoreCase(String countryCode);
 
-	/**
-	 * This will check if a record label exists.
-	 * 
-	 * @param countryCode - accepts {@linkplain java.util.String} object type.
-	 * @return - {@linkplain Boolean}
-	 */
+	@Query("SELECT EXISTS(SELECT 1 FROM TaxType t WHERE t.country = :country AND t.countryCode = :countryCode)")
+	Boolean existsGlobalTemplate(@Param("country") String country,
+			@Param("countryCode") String countryCode);
+
 	Boolean existsByCountryCodeIgnoreCase(String countryCode);
 }

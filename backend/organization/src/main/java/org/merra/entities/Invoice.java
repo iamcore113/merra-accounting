@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.entities.embedded.InvoiceActionsEmb;
-import org.merra.utilities.InvoiceConstants;
+import org.merra.entities.templates.TenantAuditableEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.CascadeType;
@@ -29,7 +29,7 @@ import jakarta.validation.constraints.PastOrPresent;
 
 @Entity
 @Table(name = "invoice")
-public class Invoice {
+public class Invoice extends TenantAuditableEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)

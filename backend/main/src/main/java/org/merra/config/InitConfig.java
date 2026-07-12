@@ -13,6 +13,8 @@ import org.merra.entities.InvoiceStatusCode;
 import org.merra.entities.InvoiceType;
 import org.merra.entities.LineAmountType;
 import org.merra.entities.OrganizationType;
+import org.merra.entities.TaxType;
+import org.merra.entities.embedded.TaxTypesEmb;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.AddressTypeRepository;
 import org.merra.repositories.CountryRepository;
@@ -20,6 +22,7 @@ import org.merra.repositories.InvoiceStatusCodeRepository;
 import org.merra.repositories.InvoiceTypeRepository;
 import org.merra.repositories.LineAmountTypeRepository;
 import org.merra.repositories.OrganizationTypeRepository;
+import org.merra.repositories.TaxTypeRepository;
 import org.merra.utilities.AccountConstants;
 import org.merra.utilities.RedisKeys;
 import org.slf4j.Logger;
@@ -38,6 +41,7 @@ public class InitConfig implements CommandLineRunner {
     private final String restCountriesCode;
 
     private final AccountCategoryRepository accountCategoryRepository;
+    private final TaxTypeRepository taxTypeRepository;
     private final OrganizationTypeRepository organizationTypeRepository;
     private final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
     private final InvoiceTypeRepository invoiceTypeRepository;
@@ -49,6 +53,7 @@ public class InitConfig implements CommandLineRunner {
 
     public InitConfig(AccountCategoryRepository accountCategoryRepository,
             OrganizationTypeRepository organizationTypeRepository,
+            TaxTypeRepository taxTypeRepository,
             InvoiceStatusCodeRepository invoiceStatusCodeRepository,
             InvoiceTypeRepository invoiceTypeRepository,
             LineAmountTypeRepository lineAmountTypeRepository,
@@ -64,6 +69,7 @@ public class InitConfig implements CommandLineRunner {
         this.addressTypeRepository = addressTypeRepository;
         this.accountCategoryRepository = accountCategoryRepository;
         this.organizationTypeRepository = organizationTypeRepository;
+        this.taxTypeRepository = taxTypeRepository;
         this.restCountries = restCountries;
         this.restCountriesCode = restCountriesCode;
         this.redisTemplate = redisTemplate;
@@ -195,6 +201,45 @@ public class InitConfig implements CommandLineRunner {
         }
     }
 
+    private void globalEditionTaxTypes() {
+        if (!taxTypeRepository.existsGlobalTemplate("GLOBAL", "GL")) {
+            final TaxType global = new TaxType("GLOBAL", "GL", Set.of(
+                    new TaxTypesEmb("INPUT", 0.00, "Tax on purchases", null),
+                    new TaxTypesEmb("NONE", 0.00, "Tax Exempt", Boolean.TRUE),
+                    new TaxTypesEmb("OUTPUT", 0.00, "Tax on sales", null),
+                    new TaxTypesEmb("GSTONIMPORTS", 0.00, "Sales Tax on Imports", Boolean.TRUE)));
+            taxTypeRepository.save(global);
+        }
+    }
+
+    private void seedTaxTypes() {
+        logger.debug("Seeding tax types");
+        if (taxTypeRepository.findAll().isEmpty()) {
+            // When a country doesn't have its own dedicated MERRA edition (like Australia
+            // or
+            // the UK), MERRA gives them the Global Edition.
+            globalEditionTaxTypes();
+            final TaxType newZealand = new TaxType("NEW_ZEALAND", "NZ", Set.of(
+                    new TaxTypesEmb("INPUT", 0.00, "Tax on purchases", null),
+                    new TaxTypesEmb("NONE", 0.00, "Tax Exempt", Boolean.TRUE),
+                    new TaxTypesEmb("OUTPUT", 0.00, "Tax on sales", null),
+                    new TaxTypesEmb("GSTONIMPORTS", 0.00, "Sales Tax on Imports", Boolean.TRUE)));
+            final TaxType australia = new TaxType("AUSTRALIA", "AU", Set.of(
+                    new TaxTypesEmb("OUTPUT", 10.00, "GST on income", null),
+                    new TaxTypesEmb("INPUT", 10.00, "GST on Expenses", null),
+                    new TaxTypesEmb("EXEMPTEXPENSES", 0.00, "GST Free Expenses", Boolean.TRUE),
+                    new TaxTypesEmb("EXEMPTOUTPUT", 0.00, "GST Free Income", null),
+                    new TaxTypesEmb("BASEXCLUDED", 0.00, "BAS Excluded", null),
+                    new TaxTypesEmb("GSTONIMPORTS", 0.00, "GST on Imports", Boolean.TRUE)));
+            final TaxType unitedStates = new TaxType("UNITED_STATES", "US", Set.of(
+                    new TaxTypesEmb("OUTPUT", 0.00, "Tax on Sales", null),
+                    new TaxTypesEmb("INPUT", 0.00, "Tax on Purchases", null),
+                    new TaxTypesEmb("NONE", 0.00, "Tax Exempt", Boolean.TRUE),
+                    new TaxTypesEmb("GSTONIMPORTS", 0.00, "Sales Tax on Imports", Boolean.TRUE)));
+            taxTypeRepository.saveAll(Set.of(newZealand, australia, unitedStates));
+        }
+    }
+
     @Override
     public void run(String... args) throws Exception {
         seedAccountCategories();
@@ -204,6 +249,7 @@ public class InitConfig implements CommandLineRunner {
         seedInvoiceTypes();
         seedLineAmountTypes();
         seedAddressTypes();
+        seedTaxTypes();
     }
 
 }

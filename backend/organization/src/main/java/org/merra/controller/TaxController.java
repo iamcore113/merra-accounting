@@ -2,7 +2,7 @@ package org.merra.controller;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.InvoiceTaxEligibilityResponse;
-import org.merra.services.InvoiceService;
+import org.merra.services.TaxService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/business/tax/")
 @RestController
 public class TaxController {
-    private final InvoiceService invoicesService;
+    private final TaxService taxService;
 
-    public TaxController(InvoiceService invoicesService) {
-        this.invoicesService = invoicesService;
+    public TaxController(TaxService taxservice) {
+        this.taxService = taxservice;
     }
 
     // TODO: NEXT work on this one
@@ -28,7 +28,7 @@ public class TaxController {
     @GetMapping("eligibility")
     public ResponseEntity<ApiResponse<InvoiceTaxEligibilityResponse>> checkInvoiceTaxEligibility() {
         ApiResponse<InvoiceTaxEligibilityResponse> response = new ApiResponse<>();
-        InvoiceTaxEligibilityResponse invoiceTaxEligibility = invoicesService.taxEligibility();
+        InvoiceTaxEligibilityResponse invoiceTaxEligibility = taxService.taxEligibility();
         response.setData(invoiceTaxEligibility);
         return ResponseEntity.ok(response);
     }

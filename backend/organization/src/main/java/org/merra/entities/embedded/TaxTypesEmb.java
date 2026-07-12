@@ -19,11 +19,8 @@ public class TaxTypesEmb implements Serializable {
 	@Digits(integer = 4, fraction = 2)
 	private Double rate;
 
-	@NotBlank(message = "name attribute cannot be blank.")
+	@NotNull(message = "name attribute cannot be null.")
 	private String name;
-
-	// VAT or GST
-	private String component;
 
 	@NotNull(message = "systemDefined attribute cannot be null.")
 	private Boolean systemDefined;
@@ -33,13 +30,11 @@ public class TaxTypesEmb implements Serializable {
 
 	public TaxTypesEmb(@NotBlank(message = "type atrribute cannot be blank.") String type,
 			@NotNull(message = "rate attribute cannot be null.") @Digits(integer = 4, fraction = 2) Double rate,
-			@NotBlank(message = "name attribute cannot be blank.") String name, String component,
-			@NotNull(message = "systemDefined attribute cannot be null.") Boolean systemDefined) {
+			@NotNull(message = "name attribute cannot be null.") String name, Boolean systemDefined) {
 		this.type = type;
 		this.rate = rate;
 		this.name = name;
-		this.component = component;
-		this.systemDefined = systemDefined;
+		this.systemDefined = systemDefined == null ? Boolean.FALSE : systemDefined;
 	}
 
 	public String getType() {
@@ -52,10 +47,6 @@ public class TaxTypesEmb implements Serializable {
 
 	public String getName() {
 		return name;
-	}
-
-	public String getComponent() {
-		return component;
 	}
 
 	public Boolean getSystemDefined() {
@@ -72,10 +63,6 @@ public class TaxTypesEmb implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public void setComponent(String component) {
-		this.component = component;
 	}
 
 	public void setSystemDefined(Boolean systemDefined) {

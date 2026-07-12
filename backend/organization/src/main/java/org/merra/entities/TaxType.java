@@ -49,8 +49,9 @@ public class TaxType {
 	public TaxType() {
 	}
 
-	public TaxType(String country, Set<TaxTypesEmb> typeCollections) {
+	public TaxType(String country, String countryCode, Set<TaxTypesEmb> typeCollections) {
 		this.country = country;
+		this.countryCode = countryCode;
 		this.typeCollections = typeCollections;
 	}
 
