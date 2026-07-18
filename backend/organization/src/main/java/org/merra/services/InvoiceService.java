@@ -24,7 +24,6 @@ import org.merra.repositories.InvoiceRepository;
 import org.merra.repositories.InvoiceStatusCodeRepository;
 import org.merra.repositories.InvoiceTypeRepository;
 import org.merra.repositories.LineAmountTypeRepository;
-import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.TaxRateRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.AccountLookup;
@@ -47,7 +46,6 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class InvoiceService {
-	private final OrganizationRepository organizationRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final ContactRepository contactRepository;
 	private final JournalService journalService;
@@ -60,7 +58,6 @@ public class InvoiceService {
 	private final RedisTemplate<String, Object> redisTemplate;
 
 	public InvoiceService(
-			OrganizationRepository organizationRepository,
 			InvoiceRepository invoiceRepository,
 			ContactRepository contactRepository,
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
@@ -72,7 +69,6 @@ public class InvoiceService {
 			LineAmountTypeRepository lineAmountTypeRepository,
 			RedisTemplate<String, Object> redisTemplate) {
 		this.redisTemplate = redisTemplate;
-		this.organizationRepository = organizationRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.invoiceRepository = invoiceRepository;
 		this.contactRepository = contactRepository;
@@ -330,13 +326,13 @@ public class InvoiceService {
 
 		// Calculate and set total tax
 		BigDecimal totalTax = invoice.getLineItems().stream()
-				.map(tx -> tx.getTaxAmount())
+				.map(LineItem::getTaxAmount)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		invoice.setTotalTax(totalTax);
 
 		// Calculate and set grand total
-		BigDecimal grandTotal = new BigDecimal(subTotal).add(totalTax);
+		BigDecimal grandTotal = BigDecimal.valueOf(subTotal).add(totalTax);
 		invoice.setGrandTotal(grandTotal);
 
 		return invoice;

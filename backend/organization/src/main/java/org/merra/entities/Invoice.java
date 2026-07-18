@@ -56,6 +56,7 @@ public class Invoice extends TenantAuditableEntity {
 	private Contact contact;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
+	@NotNull(message = "Line items cannot be empty.")
 	private Set<LineItem> lineItems;
 
 	@Column(name = "line_amount_type")
