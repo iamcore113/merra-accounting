@@ -14,7 +14,7 @@
         <!-- drop username column from user_account table -->
         <changeSet id="2025-drop-username-col" author="brian">
         	<dropColumn
-        		schemaName="merra_schema"
+        		schemaName="app"
         		tableName="user_account"
         		columnName="username"
         	></dropColumn>

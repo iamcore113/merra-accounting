@@ -13,7 +13,7 @@
     <changeSet id="2025-drop-contact_number_column-user_account" author="brian">
         <dropColumn 
             columnName="contact_number"
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="user_account">
         </dropColumn>
     </changeSet>

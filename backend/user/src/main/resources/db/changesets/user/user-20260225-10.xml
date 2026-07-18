@@ -11,7 +11,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
   <changeSet author="brian" id="2026-add-gender-column-to-user_account">
     <addColumn
-            schemaName= "merra_schema"
+            schemaName= "app"
             tableName="user_account">
       <column name="gender" type="varchar(255)">
         <constraints nullable="false"/>

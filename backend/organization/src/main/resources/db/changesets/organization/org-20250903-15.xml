@@ -12,7 +12,7 @@
 	
 	<!-- add total column to journal table -->
 	<changeSet id="2025-add-total-column-journal-table" author="brian">
-		<addColumn schemaName="merra_schema" tableName="journal">
+		<addColumn schemaName="app" tableName="journal">
 			<column name="total" type="jsonb"></column>
 		</addColumn>
 	</changeSet>

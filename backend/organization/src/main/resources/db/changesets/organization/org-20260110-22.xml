@@ -14,7 +14,7 @@
       <dbms type="postgresql"/>
     </preConditions>
     <sql>
-      ALTER TABLE merra_schema.organization
+      ALTER TABLE app.organization
       ALTER COLUMN address TYPE jsonb
       USING array_to_json(address)::jsonb;
     </sql>
@@ -24,7 +24,7 @@
       <dbms type="postgresql"/>
     </preConditions>
     <sql>
-      ALTER TABLE merra_schema.organization
+      ALTER TABLE app.organization
       ALTER COLUMN external_links TYPE jsonb
       USING array_to_json(external_links)::jsonb;
     </sql>

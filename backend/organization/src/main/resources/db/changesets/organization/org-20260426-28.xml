@@ -16,13 +16,13 @@
     </changeSet>
     <!-- drop invoice_number column in organization -->
     <changeSet id="2026-drop-invoice_number_in_organization" author="brian">
-        <dropColumn columnName="invoice_number" schemaName="merra_schema" tableName="organization">
+        <dropColumn columnName="invoice_number" schemaName="app" tableName="organization">
         </dropColumn>
     </changeSet>
     <!-- create sequence and add invoice_number in invoice -->
     <changeSet id="2026-add-invoiceColumn-organization" author="brian">
         <createSequence sequenceName="invoice_number_seq" startValue="1" incrementBy="1"/>
-        <addColumn tableName="invoice" schemaName="merra_schema">
+        <addColumn tableName="invoice" schemaName="app">
             <column name="invoice_number" type="varchar(100)">
                 <constraints nullable="false" unique="true" />
             </column>

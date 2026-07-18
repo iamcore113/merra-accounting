@@ -13,7 +13,7 @@
 	<!-- drop column: gross_amount and net_amount journal_line table -->
 	<changeSet id="2025-remove-some-columns-journal_line-table" author="brian">
 		<dropColumn
-			schemaName="merra_schema"
+			schemaName="app"
 			tableName="journal_line"
 			columnName="gross_amount">
 			<column name="net_amount"></column>

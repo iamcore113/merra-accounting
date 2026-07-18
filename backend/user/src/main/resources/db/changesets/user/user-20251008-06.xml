@@ -10,7 +10,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet id="2025-add-verification_token-column-to-user_account" author="brian">
-        <addColumn schemaName="merra_schema" tableName="user_account">
+        <addColumn schemaName="app" tableName="user_account">
             <column name="verification_token" type="varchar(255)">
             </column>
         </addColumn>

@@ -11,7 +11,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
   <changeSet author="brian" id="2026-add-email_change-column-to-user_account_settings">
     <addColumn
-            schemaName= "merra_schema"
+            schemaName= "app"
             tableName="user_account_settings">
       <column name="email_change" type="date">
         <constraints nullable="true"/>

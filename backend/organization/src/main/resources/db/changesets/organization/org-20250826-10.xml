@@ -13,7 +13,7 @@
 	<!-- create actions column to table invoice -->
 	<changeSet id="2025-create-actions-column-invoice" author="brian">
 		<addColumn
-			schemaName="merra_schema"
+			schemaName="app"
 			tableName="invoice"
 		>
 			<column name="actions" type="jsonb">

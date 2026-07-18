@@ -11,7 +11,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
   <changeSet  author="brian"  id="2026-drop-organization_users-table">
     <dropTable  cascadeConstraints="true"
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="organization_users"/>
   </changeSet>
 </databaseChangeLog>

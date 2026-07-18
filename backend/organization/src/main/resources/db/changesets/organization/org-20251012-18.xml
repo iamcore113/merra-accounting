@@ -12,11 +12,11 @@
 	
 	<!-- add remove default_currency jsonb column -->
 	<changeSet id="2025-remove-default_currency-column-organization" author="brian">
-        <dropColumn schemaName="merra_schema" tableName="organization" columnName="default_currency"/>
+        <dropColumn schemaName="app" tableName="organization" columnName="default_currency"/>
 	</changeSet>
     <!-- add default_currency varchar type column -->
      <changeSet id="2025-add-default_currency-varchar-col-organization" author="brian">
-        <addColumn tableName="organization" schemaName="merra_schema">
+        <addColumn tableName="organization" schemaName="app">
             <column name="default_currency" type="varchar(100)">
                 <constraints nullable="false" />
             </column>

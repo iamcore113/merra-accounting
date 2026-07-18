@@ -10,7 +10,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet id="2025-add_enabled_column-to-user_account" author="brian">
-        <addColumn schemaName="merra_schema" tableName="user_account">
+        <addColumn schemaName="app" tableName="user_account">
             <column name="is_enabled" type="boolean" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>

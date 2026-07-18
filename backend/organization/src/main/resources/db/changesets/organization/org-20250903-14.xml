@@ -12,7 +12,7 @@
 	
 	<!-- add debit and credit columns to journal_line journal_line table -->
 	<changeSet id="2025-add-debit-and-credit-columns-journal_line-table" author="brian">
-		<addColumn schemaName="merra_schema" tableName="journal_line">
+		<addColumn schemaName="app" tableName="journal_line">
 			<column name="debit" type="numeric(7,2)"></column>
 			<column name="credit" type="numeric(7,2)"></column>
 		</addColumn>

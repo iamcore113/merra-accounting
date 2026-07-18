@@ -13,7 +13,7 @@
 	<!-- drop journal_number column from journal table -->
 	<changeSet id="2025-create-journal-table" author="brian">
 		<dropColumn
-			schemaName="merra_schema"
+			schemaName="app"
 			tableName="journal"
 			columnName="journal_number"
 		></dropColumn>
@@ -22,7 +22,7 @@
 	<!-- recreate journal_number column with different data type -->
 	<changeSet id="2025-create-journal_line-table" author="brian">
 		<addColumn
-			schemaName="merra_schema"
+			schemaName="app"
 			tableName="journal"
 		>
 			<column

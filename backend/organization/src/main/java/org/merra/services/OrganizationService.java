@@ -39,7 +39,6 @@ import org.merra.mapper.OrganizationMapper;
 import org.merra.repositories.AddressTypeRepository;
 import org.merra.repositories.CountryRepository;
 import org.merra.repositories.InvoiceRepository;
-import org.merra.repositories.OrganizationAddressesRepository;
 import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.OrganizationTypeRepository;

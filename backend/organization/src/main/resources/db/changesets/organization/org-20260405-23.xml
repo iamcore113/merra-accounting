@@ -13,7 +13,7 @@
 	<!-- add invoiceNumber column -->
      <changeSet id="2026-add-invoiceColumn-organization" author="brian">
      	<createSequence sequenceName="invoice_num_seq" startValue="1" incrementBy="1"/>
-        <addColumn tableName="organization" schemaName="merra_schema">
+        <addColumn tableName="organization" schemaName="app">
             <column name="invoice_number" type="varchar(100)">
                 <constraints nullable="false" unique="true" />
             </column>

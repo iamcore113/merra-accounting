@@ -11,7 +11,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet author="brian" id="2026-add-countries-table">
-        <createTable schemaName="merra_schema" tableName="countries">
+        <createTable schemaName="app" tableName="countries">
             <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>

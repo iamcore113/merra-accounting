@@ -13,7 +13,7 @@
 	<!-- drop tax_detail column from journal_line table -->
 	<changeSet id="2025-drop-tax_detail-col-journal_line-table" author="brian">
 		<dropColumn
-			schemaName="merra_schema"
+			schemaName="app"
 			tableName="journal_line"
 			columnName="tax_detail"></dropColumn>
 	</changeSet>

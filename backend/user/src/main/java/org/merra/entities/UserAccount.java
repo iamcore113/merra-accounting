@@ -23,7 +23,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 /**
- * Represents a user account persisted in {@code merra_schema.user_account}.
+ * Represents a user account persisted in {@code app.user_account}.
  *
  * <p>
  * This entity also implements {@link UserDetails} so it can be used directly

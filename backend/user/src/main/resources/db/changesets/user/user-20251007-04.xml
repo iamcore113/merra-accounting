@@ -12,7 +12,7 @@
     <!-- drop username column from user_account table -->
     <changeSet id="2025-add-country-col-user_account" author="brian">
         <addColumn
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="user_account"
         >
             <column name="country" type="varchar(255)">

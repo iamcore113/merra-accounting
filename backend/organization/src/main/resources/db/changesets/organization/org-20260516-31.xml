@@ -11,7 +11,7 @@
         http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
 
     <changeSet author="brian" id="2026-add-last_active_at-column">
-        <addColumn schemaName="merra_schema"
+        <addColumn schemaName="app"
             tableName="user_workspace_state">
             <column name="last_active_at" type="timestamptz"/>
         </addColumn>

@@ -14,7 +14,7 @@
         <!-- Create user_account table with UUID primary key -->
     <changeSet id="2025-create-user-account-table" author="brian">
         <comment>Create user_account table with UUID PK</comment>
-        <createTable tableName="user_account" schemaName="merra_schema">
+        <createTable tableName="user_account" schemaName="app">
             <column name="user_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
                 <constraints primaryKey="true" nullable="false"/>
             </column>

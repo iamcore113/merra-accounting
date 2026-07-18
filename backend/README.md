@@ -245,7 +245,7 @@ Database schema and migrations are managed by **Liquibase**.
 
 - **Master changelog**: `backend/main/src/main/resources/db/changelog/db.changelog-master.xml`
 - **Change sets**: `backend/main/src/main/resources/db/changesets/`
-- **Default schema**: `merra_schema`
+- **Default schema**: `app`
 - **Schema initialization**: Handled by `SchemaInitializer.java` on application startup
 
 ### Adding New Migrations

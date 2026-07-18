@@ -14,7 +14,7 @@
       <dbms type="postgresql"/>
     </preConditions>
     <sql>
-      ALTER TABLE merra_schema.organization
+      ALTER TABLE app.organization
       ALTER COLUMN phone_no TYPE jsonb
       USING array_to_json(phone_no)::jsonb;
     </sql>

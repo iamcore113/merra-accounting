@@ -13,12 +13,12 @@
     <changeSet id="2025-drop-tokens-column-user_account" author="brian">
         <dropColumn 
             columnName="tokens"
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="user_account">
         </dropColumn>
     </changeSet>
     <changeSet id="2025-add-verification_token-column-user_account" author="brian">
-        <addColumn tableName="user_account" schemaName="merra_schema">
+        <addColumn tableName="user_account" schemaName="app">
             <column name="verification_token" type="text"></column>
         </addColumn>
     </changeSet>

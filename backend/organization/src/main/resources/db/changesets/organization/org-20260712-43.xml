@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" logicalFilePath="db/changesets/organization/org-20260712-43.xml" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="2026-invoice-add-new-tenant-auditable-columns" author="brian">
-        <addColumn tableName="invoice" schemaName="merra_schema">
+        <addColumn tableName="invoice" schemaName="app">
             <column name="created_at" type="TIMESTAMPTZ">
                 <constraints nullable="false"/>
             </column>
@@ -14,7 +14,7 @@
     </changeSet>
 
     <changeSet id="2026-contacts-add-new-tenant-auditable-columns" author="brian">
-        <addColumn tableName="contacts" schemaName="merra_schema">
+        <addColumn tableName="contacts" schemaName="app">
             <column name="created_at" type="TIMESTAMPTZ">
                 <constraints nullable="false"/>
             </column>

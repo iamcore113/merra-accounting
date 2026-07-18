@@ -14,7 +14,7 @@
         <addNotNullConstraint
             columnDataType="varchar(255)"
             columnName="email"
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="user_account"
             validate="true"/>
     </changeSet>

@@ -13,14 +13,14 @@
     <dropNotNullConstraint  catalogName="cat"
             columnDataType="jsonb[]"
             columnName="address"
-            schemaName="merra_schema"
+            schemaName="app"
             tableName="organization"/>
   </changeSet>
     <changeSet  author="brian"  id="2025-drop-not-null-constraint-phone_no-organization-table">
         <dropNotNullConstraint  catalogName="cat"
                 columnDataType="jsonb[]"
                 columnName="phone_no"
-                schemaName="merra_schema"
+                schemaName="app"
                 tableName="organization"/>
     </changeSet>
 </databaseChangeLog>
