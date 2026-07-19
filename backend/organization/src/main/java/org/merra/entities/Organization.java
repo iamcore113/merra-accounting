@@ -34,6 +34,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "organization")
@@ -53,11 +54,13 @@ public class Organization {
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
+	@Size(min = 3, max = 100, message = "displayName attribute must be between 3 and 100 characters.")
 	private String displayName;
 
 	// The official legal name or trading name of the business
-	@Column(name = "legal_name", nullable = false, unique = true)
-	@NotBlank(message = "legalName cannot be blank.")
+	@Column(name = "legal_name", nullable = false)
+	@NotBlank(message = "legalName attribute cannot be blank.")
+	@Size(min = 8, max = 200, message = "legalName attribute must be between 8 and 200 characters.")
 	private String legalName;
 
 	@Column(name = "organization_description")
