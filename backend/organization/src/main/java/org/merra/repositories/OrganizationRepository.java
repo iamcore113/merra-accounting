@@ -18,8 +18,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 			" AND user_role = 'SUBSCRIBER'", nativeQuery = true)
 	Optional<UserAccount> findOrganizationSubscriber(UUID organizationId);
 
-
-
 	/**
 	 * This will retrieve the organization's country using organization ID
 	 * 
@@ -28,4 +26,11 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	 */
 	@Query("SELECT org.country FROM Organization org WHERE org.id = :id")
 	Optional<String> findCountryUsingOrganizationId(@Param("id") UUID id);
+
+	@Query("SELECT EXISTS(SELECT 1 FROM Organization org WHERE LOWER(org.displayName) = LOWER(:name) OR LOWER(org.legalName) = LOWER(:name))")
+	boolean existsByDisplayNameOrLegalNameIgnoreCase(@Param("name") String name);
+
+	@Query("SELECT EXISTS(SELECT 1 FROM Organization org WHERE LOWER(org.displayName) = LOWER(:name))")
+	boolean existsByDisplayNameIgnoreCase(@Param("name") String displayName);
+
 }

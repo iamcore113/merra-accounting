@@ -33,6 +33,7 @@ import org.merra.enums.AddressEn;
 import org.merra.enums.PaymentTermTypes;
 import org.merra.enums.PaymentTermsEn;
 import org.merra.enums.UserAccountStatusEn;
+import org.merra.exception.ResourceAlreadyExistsException;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.OrganizationAffiliationMapper;
 import org.merra.mapper.OrganizationMapper;
@@ -239,6 +240,14 @@ public class OrganizationService {
 		Organization org = getOrganizationObject(null); // New organization object
 
 		UserAccount user = authService.getCurrentAuthenticatedUser();
+
+		boolean checkNameExist = organizationRepository.existsByDisplayNameOrLegalNameIgnoreCase(req.displayName());
+
+		if (checkNameExist) {
+			throw new ResourceAlreadyExistsException("Organization name already exists: " + req.displayName());
+		}
+
+		String organizationSchema = "org_" + req.displayName().replace(" ", "_");
 
 		// Set organization user as MEMBER role
 		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
