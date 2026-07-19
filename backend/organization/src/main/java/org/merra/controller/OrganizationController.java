@@ -92,7 +92,7 @@ public class OrganizationController {
 				"Organization created successfully.",
 				true,
 				HttpStatus.OK,
-				organizationService.createNewOrganization(data));
+				organizationService.newOrganization(data));
 
 		return ResponseEntity.ok(response);
 	}

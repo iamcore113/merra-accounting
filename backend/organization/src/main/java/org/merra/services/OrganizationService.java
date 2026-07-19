@@ -116,20 +116,20 @@ public class OrganizationService {
 	 * @return - {@linkplain Organization} object type.
 	 */
 	protected Organization getOrganizationObject(Object obj) {
-		Optional<Organization> findOrganizationOpt = Optional.empty();
+		Optional<Organization> OptOrganization = Optional.empty();
 
 		if (obj == null) {
-			findOrganizationOpt = Optional.of(new Organization());
+			OptOrganization = Optional.of(new Organization());
 		} else if (obj instanceof UUID id) {
-			findOrganizationOpt = organizationRepository
+			OptOrganization = organizationRepository
 					.findById(id);
 
-			if (findOrganizationOpt.isEmpty()) {
+			if (OptOrganization.isEmpty()) {
 				throw new NoSuchElementException("Organization entity cannot be found.");
 			}
 		}
 
-		return findOrganizationOpt.get();
+		return OptOrganization.get();
 	}
 
 	/**
@@ -234,7 +234,7 @@ public class OrganizationService {
 	 *                                  found.
 	 */
 	@Transactional
-	public NewOrganizationResponse createNewOrganization(CreateOrganizationRequest req) {
+	public NewOrganizationResponse newOrganization(CreateOrganizationRequest req) {
 
 		Organization org = getOrganizationObject(null); // New organization object
 
@@ -293,7 +293,7 @@ public class OrganizationService {
 			userfullName = checkUserFullName.get();
 		}
 
-		return organizationMapper.toNewOrganizationResponse(newOrganization.getId(), user.getUserId(), userInfoPresent,
+		return organizationMapper.newOrganizationResponse(newOrganization.getId(), user.getUserId(), userInfoPresent,
 				userfullName);
 	}
 

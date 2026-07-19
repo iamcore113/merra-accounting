@@ -76,14 +76,14 @@ public interface OrganizationMapper {
 	UserOrganizationResponse toUserOrganizationResponse(OrganizationsOnly organizations, UserAccount userAccount);
 
 	@Mappings({
-		@Mapping(target = "organizationId", source = "id"),
-		@Mapping(target = "organizationType", source = "organizationType", qualifiedByName = "mapOrganizationTypeResponse"),
-		@Mapping(target = "names", source = "organization", qualifiedByName = "mapNamesResponse"),
-		@Mapping(target = "address", source = "organization", qualifiedByName = "mapAddressResponse"),
-		@Mapping(target = "website", source = "website"),
-		@Mapping(target = "status", source = "status", qualifiedByName = "mapStatusToString"),
-		@Mapping(target = "createdDate", source = "createdDate"),
-		@Mapping(target = "financialYear", source = "organization", qualifiedByName = "mapFinancialYearResponse")
+			@Mapping(target = "organizationId", source = "id"),
+			@Mapping(target = "organizationType", source = "organizationType", qualifiedByName = "mapOrganizationTypeResponse"),
+			@Mapping(target = "names", source = "organization", qualifiedByName = "mapNamesResponse"),
+			@Mapping(target = "address", source = "organization", qualifiedByName = "mapAddressResponse"),
+			@Mapping(target = "website", source = "website"),
+			@Mapping(target = "status", source = "status", qualifiedByName = "mapStatusToString"),
+			@Mapping(target = "createdDate", source = "createdDate"),
+			@Mapping(target = "financialYear", source = "organization", qualifiedByName = "mapFinancialYearResponse")
 	})
 	CurrentOrganizationResponse toCurrentOrganizationResponse(Organization organization);
 
@@ -99,7 +99,8 @@ public interface OrganizationMapper {
 
 	@Named("mapNamesResponse")
 	default CurrentOrganizationResponse.Names mapNamesResponse(Organization organization) {
-		return new CurrentOrganizationResponse.Names(organization.getDisplayName(), organization.getLegalName(), organization.getOrganizationDescription());
+		return new CurrentOrganizationResponse.Names(organization.getDisplayName(), organization.getLegalName(),
+				organization.getOrganizationDescription());
 	}
 
 	@Named("mapAddressResponse")
@@ -140,7 +141,9 @@ public interface OrganizationMapper {
 
 	@Named("mapFinancialYearResponse")
 	default CurrentOrganizationResponse.FinancialYearEmb mapFinancialYearResponse(Organization organization) {
-		return new CurrentOrganizationResponse.FinancialYearEmb(String.valueOf(organization.getFinancialYear().getYearEndDay()), String.valueOf(organization.getFinancialYear().getYearEndMonth()));
+		return new CurrentOrganizationResponse.FinancialYearEmb(
+				String.valueOf(organization.getFinancialYear().getYearEndDay()),
+				String.valueOf(organization.getFinancialYear().getYearEndMonth()));
 	}
 
 	/**
@@ -215,6 +218,6 @@ public interface OrganizationMapper {
 			@Mapping(target = "organizationId", source = "organizationId"),
 			@Mapping(target = "userDetails", expression = "java(new NewOrganizationResponse.UserDetails(userId, userInfoPresent, userfullName))")
 	})
-	NewOrganizationResponse toNewOrganizationResponse(UUID organizationId, UUID userId, boolean userInfoPresent,
+	NewOrganizationResponse newOrganizationResponse(UUID organizationId, UUID userId, boolean userInfoPresent,
 			String userfullName);
 }

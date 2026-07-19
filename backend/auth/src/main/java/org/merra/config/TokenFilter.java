@@ -33,7 +33,8 @@ public class TokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public TokenFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService, RedisTemplate<String, Object> redisTemplate) {
+    public TokenFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService,
+            RedisTemplate<String, Object> redisTemplate) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
         this.redisTemplate = redisTemplate;
@@ -42,18 +43,19 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        
+
         final String authHeader = request.getHeader("Authorization");
 
         // Handle logout request
-        if ("/api/v1/auth/logout".equals(request.getRequestURI())) {
+        if ("/api/auth/logout".equals(request.getRequestURI())) {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String jwt = authHeader.substring(7);
                 try {
                     Date expiration = jwtUtils.extractClaim(jwt, Claims::getExpiration);
                     long remainingTimeMs = expiration.getTime() - System.currentTimeMillis();
                     if (remainingTimeMs > 0) {
-                        redisTemplate.opsForValue().set("blacklist:" + jwt, "blacklisted", remainingTimeMs, TimeUnit.MILLISECONDS);
+                        redisTemplate.opsForValue().set("blacklist:" + jwt, "blacklisted", remainingTimeMs,
+                                TimeUnit.MILLISECONDS);
                         logger.info("Blacklisted token on logout: remaining time {} ms", remainingTimeMs);
                     }
                 } catch (Exception e) {
@@ -79,11 +81,11 @@ public class TokenFilter extends OncePerRequestFilter {
 
         final String email = jwtUtils.extractUsername(jwt);
         logger.info("Extracted Email: {}", email);
-        
+
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             logger.info("Authorities: {}", userDetails.getAuthorities());
-            
+
             if (jwtUtils.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,

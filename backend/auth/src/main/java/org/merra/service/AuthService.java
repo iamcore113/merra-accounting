@@ -361,15 +361,15 @@ public class AuthService {
     final String emailReq = request.email();
     final String genderReq = request.gender();
     final String passwordReq = request.password();
-    Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
+    Optional<UserAccount> userEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
 
-    if (findUserEmail.isPresent()) {
-      if (findUserEmail.get().isEnabled()) {
+    if (userEmail.isPresent()) {
+      if (userEmail.get().isEnabled()) {
         throw new EmailAlreadyEnabledException("Email already exists.");
       } else {
-        var user = findUserEmail.get();
+        var user = userEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE),
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("tenant", null),
             verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
@@ -384,7 +384,7 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", ROLE_IDLE),
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("tenant", null),
         verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
