@@ -4,6 +4,7 @@ import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
+import org.merra.dto.OrganizationNameCheckResponse;
 import org.merra.services.OrganizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * x-organization-id header is required for
@@ -96,4 +98,24 @@ public class OrganizationController {
 
 		return ResponseEntity.ok(response);
 	}
+
+	/**
+	 * Checks if an organization with the given display name exists.
+	 * The request body is validated before processing via the @Valid annotation.
+	 *
+	 * @param name The display name to check for existence.
+	 * @return A ResponseEntity containing an ApiResponse with the organization name
+	 *         and the result of the name check.
+	 */
+	@GetMapping("nameCheck")
+	public ResponseEntity<ApiResponse<OrganizationNameCheckResponse>> nameCheck(@RequestParam String name) {
+		boolean exists = organizationService.nameCheck(name);
+		ApiResponse<OrganizationNameCheckResponse> response = new ApiResponse<>(
+				"Name check performed successfully.",
+				true,
+				HttpStatus.OK,
+				new OrganizationNameCheckResponse(name, exists));
+		return ResponseEntity.ok(response);
+	}
+
 }

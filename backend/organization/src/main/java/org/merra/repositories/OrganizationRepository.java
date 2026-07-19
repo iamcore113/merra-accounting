@@ -30,7 +30,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	@Query("SELECT EXISTS(SELECT 1 FROM Organization org WHERE LOWER(org.displayName) = LOWER(:name) OR LOWER(org.legalName) = LOWER(:name))")
 	boolean existsByDisplayNameOrLegalNameIgnoreCase(@Param("name") String name);
 
-	@Query("SELECT EXISTS(SELECT 1 FROM Organization org WHERE LOWER(org.displayName) = LOWER(:name))")
-	boolean existsByDisplayNameIgnoreCase(@Param("name") String displayName);
+	boolean existsByDisplayNameIgnoreCase(String displayName);
 
 }

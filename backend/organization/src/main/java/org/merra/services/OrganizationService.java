@@ -56,6 +56,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotBlank;
 
 @Service
 @Validated
@@ -105,6 +106,17 @@ public class OrganizationService {
 		this.countryRepository = countryRepository;
 		this.addressTypeRepository = addressTypeRepository;
 		this.userAccountRepository = userAccountRepository;
+	}
+
+	/**
+	 * Checks if an organization with the given display name exists.
+	 * 
+	 * @param name The display name to check for existence.
+	 * @return true if an organization with the given display name exists, false
+	 *         otherwise.
+	 */
+	public boolean nameCheck(@NotBlank(message = "Organization name cannot be blank.") String name) {
+		return organizationRepository.existsByDisplayNameIgnoreCase(name);
 	}
 
 	/**
