@@ -60,7 +60,7 @@ public class Organization {
 	// The official legal name or trading name of the business
 	@Column(name = "legal_name", nullable = false)
 	@NotBlank(message = "legalName attribute cannot be blank.")
-	@Size(min = 8, max = 200, message = "legalName attribute must be between 8 and 200 characters.")
+	@Size(min = 3, max = 200, message = "legalName attribute must be between 3 and 200 characters.")
 	private String legalName;
 
 	@Column(name = "organization_description")

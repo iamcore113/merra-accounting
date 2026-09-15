@@ -232,109 +232,119 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Creates a new organization for the authenticated user and initializes its
-	 * default membership and accounts.
+	 * Creates a new organization for the authenticated user, initializes default chart of accounts,
+	 * assigns creator membership, and sets the active workspace context for the user.
 	 *
-	 * @param req The request payload containing the organization details to
-	 *            persist.
-	 * @return A {@linkplain NewOrganizationResponse} containing the created
-	 *         organization identifier and creator details.
-	 * @throws IllegalStateException    If the user identifier is missing from the
-	 *                                  tenant context.
-	 * @throws IllegalArgumentException If the organization type identifier in the
-	 *                                  request is null.
-	 * @throws EntityNotFoundException  If the requested organization type cannot be
-	 *                                  found.
+	 * @param req The request payload containing the organization details to persist.
+	 * @return A {@linkplain NewOrganizationResponse} containing the created organization identifier and creator details.
+	 * @throws ResourceAlreadyExistsException If an organization with the same display name or legal name already exists.
+	 * @throws EntityNotFoundException If the requested organization type or address type cannot be found.
 	 */
 	@Transactional
 	public NewOrganizationResponse newOrganization(CreateOrganizationRequest req) {
 
-		Organization org = getOrganizationObject(null); // New organization object
-
-		UserAccount user = authService.getCurrentAuthenticatedUser();
-
+		// 1. Check if an organization with the given display name or legal name already exists
 		boolean checkNameExist = organizationRepository.existsByDisplayNameOrLegalNameIgnoreCase(req.displayName());
-
 		if (checkNameExist) {
 			throw new ResourceAlreadyExistsException("Organization name already exists: " + req.displayName());
 		}
 
-		String organizationSchema = "org_" + req.displayName().replace(" ", "_");
+		// 2. Retrieve the currently authenticated user creating this organization
+		UserAccount user = authService.getCurrentAuthenticatedUser();
 
-		// Set organization user as MEMBER role
-		userAccountService.setUserRole(user, UserAccountStatusEn.MEMBER);
-
-		// Profile image will default to null; set via organization settings if needed
-		org.setLogo(null);
-
+		// 3. Resolve the organization type entity
 		OrganizationType organizationType = getOrganizationType(req.type());
+
+		// 4. Construct the financial year embedded configuration
 		FinancialYearEmb financialYearEmb = new FinancialYearEmb(
 				req.financialYear().yearEndDay(),
 				req.financialYear().yearEndMonth());
 
-		// Set organization basic information
-		org.setBasicInformation(req.displayName(), organizationType, req.email(), req.country(), financialYearEmb,
+		// 5. Initialize the new Organization entity and populate its basic details
+		Organization org = new Organization();
+		org.setBasicInformation(
+				req.displayName(),
+				organizationType,
+				req.email(),
+				req.country(),
+				financialYearEmb,
 				req.currency());
 
-		// Set required fields: timeZone and paymentTerms
+		// 6. Set organization default configurations
 		org.setTimeZone("UTC");
 		org.setPaymentTerms(new PaymentTermsEmb());
-		// Set the organization address
-		setAddresses(org, req.addresses());
+		org.setLogo(null);
 
+		// 7. Map and attach organization addresses if provided
+		if (req.addresses() != null && !req.addresses().isEmpty()) {
+			setAddresses(org, req.addresses());
+		}
+
+		// 8. Persist the organization to generate its unique identifier
 		Organization newOrganization = organizationRepository.save(org);
 
-		try {
-			// Set the user to creator member ~ constructor for initializing the creator
-			// member
-			OrganizationMembers member = new OrganizationMembers(newOrganization, user);
-			organizationMembersRepository.save(member);
+		// 9. Register the user as the organization's creator/owner member
+		// The OrganizationMembers constructor sets role = CREATOR, isCreator = true, isInvited = false
+		OrganizationMembers member = new OrganizationMembers(newOrganization, user);
+		organizationMembersRepository.save(member);
 
-			// Update the user instance
-			user.setOwner(true);
-			user.setPartOfOrganization(true);
-			userAccountRepository.save(user);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to register creator member: " + e.getMessage(), e);
-		}
+		// 10. Update user account ownership flags and persist changes in a single write
+		user.setOwner(true);
+		user.setPartOfOrganization(true);
+		userAccountRepository.save(user);
 
-		// create organization's default ledger accounts
+		// 11. Provision the default chart of accounts for the new organization
 		accountService.createDefaultAccounts(newOrganization);
 
-		// Set the newly created organization as the user's active workspace
-		UserWorkspaceState setWorkspace = new UserWorkspaceState(user, newOrganization, OffsetDateTime.now());
-		userWorkspaceStateRepository.save(setWorkspace);
+		// 12. Set or update the active workspace state for the user
+		// Uses upsert semantics to prevent unique constraint violations on user_id when creating multiple organizations
+		UserWorkspaceState workspace = userWorkspaceStateRepository.findByUser(user)
+				.orElseGet(() -> new UserWorkspaceState(user, newOrganization));
+		workspace.setCurrentOrganization(newOrganization);
+		workspace.setLastActiveAt(OffsetDateTime.now());
+		userWorkspaceStateRepository.save(workspace);
 
-		Optional<String> checkUserFullName = user.getFullName();
-		boolean userInfoPresent = true;
-		String userfullName = null;
-		if (checkUserFullName.isEmpty()) {
-			userInfoPresent = false;
-		} else {
-			userfullName = checkUserFullName.get();
-		}
+		// 13. Check if user full name is present and map the response DTO
+		String userFullName = user.getFullName().orElse(null);
+		boolean userInfoPresent = userFullName != null;
 
-		return organizationMapper.newOrganizationResponse(newOrganization.getId(), user.getUserId(), userInfoPresent,
-				userfullName);
+		return organizationMapper.newOrganizationResponse(
+				newOrganization.getId(),
+				user.getUserId(),
+				userInfoPresent,
+				userFullName);
 	}
 
+	/**
+	 * Maps address request DTOs to {@link OrganizationAddresses} entities and associates them with the organization.
+	 *
+	 * @param org The {@link Organization} entity to attach the addresses to.
+	 * @param addresses The list of address DTOs from the request payload.
+	 * @throws EntityNotFoundException If an address type identifier does not exist.
+	 */
 	private void setAddresses(Organization org, List<CreateOrganizationRequest.Addresses> addresses) {
+		if (addresses == null || addresses.isEmpty()) {
+			return;
+		}
+
 		List<OrganizationAddresses> organizationAddresses = new ArrayList<>();
 		for (CreateOrganizationRequest.Addresses add : addresses) {
 			AddressType type = addressTypeRepository.findById(add.type())
-					.orElseThrow(() -> new EntityNotFoundException("Address type not found"));
-			Map<String, String> addressess = new HashMap<>();
-			if (add.addresses().size() > 1) {
-				addressess = Map.of(
-						"address1", add.addresses().get(0),
-						"address2", add.addresses().get(1));
-			} else {
-				addressess = Map.of(
-						"address1", add.addresses().get(0));
+					.orElseThrow(() -> new EntityNotFoundException("Address type not found: " + add.type()));
+
+			// Map address lines dynamically into key-value pairs (e.g. address1, address2, ...)
+			Map<String, String> addressMap = new HashMap<>();
+			if (add.addresses() != null) {
+				for (int i = 0; i < add.addresses().size(); i++) {
+					String line = add.addresses().get(i);
+					if (line != null && !line.isBlank()) {
+						addressMap.put("address" + (i + 1), line);
+					}
+				}
 			}
 
 			OrganizationAddresses orgAddress = new OrganizationAddresses();
-			orgAddress.setAddresses(addressess);
+			orgAddress.setAddresses(addressMap);
 			orgAddress.setCity(add.city());
 			orgAddress.setPostalCode(add.postalCode());
 			orgAddress.setCountry(add.country());
