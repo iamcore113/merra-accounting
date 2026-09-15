@@ -6,12 +6,11 @@
     <parent>
           <groupId>org.merra</groupId>
           <artifactId>backend</artifactId>
-          <version>0.0.1-SNAPSHOT</version>
+          <version>1.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.merra</groupId>
     <artifactId>auth</artifactId>
-    <version>1.0-SNAPSHOT</version>
 
     <dependencies>
 		<dependency>
@@ -59,6 +58,11 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-data</artifactId>
 		</dependency>
+		<!-- Source: https://mvnrepository.com/artifact/com.redis.om/redis-om-spring -->
+		<dependency>
+			<groupId>com.redis.om</groupId>
+			<artifactId>redis-om-spring</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
@@ -96,13 +100,11 @@
 		</dependency>
       <dependency>
       	  <groupId>org.merra</groupId>
-  		  <artifactId>user</artifactId>
-          <version>1.0-SNAPSHOT</version>
+   		  <artifactId>user</artifactId>
       </dependency>
       <dependency>
       	<groupId>org.merra</groupId>
       	<artifactId>commons</artifactId>
-      	<version>1.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
 

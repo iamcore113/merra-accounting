@@ -1,0 +1,77 @@
+<section class="contact-page">
+  <div class="contact-table-container">
+    <table mat-table [dataSource]="dataSource" class="contacts-table">
+      <ng-container matColumnDef="tableTitle">
+        <th
+          mat-header-cell
+          *matHeaderCellDef
+          class="contact-table-title-cell"
+          [attr.colspan]="displayedColumns.length">
+          <div class="contact-table-title">
+            <h2 class="contact-title">All Contacts</h2>
+          </div>
+        </th>
+      </ng-container>
+
+      <ng-container matColumnDef="select">
+        <th mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="$event ? masterToggle() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()">
+          </mat-checkbox>
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <mat-checkbox (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="accountNumber">
+        <th mat-header-cell *matHeaderCellDef>Account No.</th>
+        <td mat-cell *matCellDef="let row">{{ row.accountNumber }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="isSupplier">
+        <th mat-header-cell *matHeaderCellDef>Supplier</th>
+        <td mat-cell *matCellDef="let row" class="contact-flag-cell">
+          <mat-icon
+            class="contact-flag-icon"
+            [class.contact-flag-icon--true]="row.isSupplier"
+            [class.contact-flag-icon--false]="!row.isSupplier"
+            fontSet="material-icons-outlined"
+            [attr.aria-label]="row.isSupplier ? 'Is supplier' : 'Not a supplier'">
+            {{ row.isSupplier ? 'check' : 'close' }}
+          </mat-icon>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="isCustomer">
+        <th mat-header-cell *matHeaderCellDef>Customer</th>
+        <td mat-cell *matCellDef="let row" class="contact-flag-cell">
+          <mat-icon
+            class="contact-flag-icon"
+            [class.contact-flag-icon--true]="row.isCustomer"
+            [class.contact-flag-icon--false]="!row.isCustomer"
+            fontSet="material-icons-outlined"
+            [attr.aria-label]="row.isCustomer ? 'Is customer' : 'Not a customer'">
+            {{ row.isCustomer ? 'check' : 'close' }}
+          </mat-icon>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="titleHeaderColumns" class="contact-table-title-row"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="contact-columns-header-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"
+        (click)="selection.toggle(row)"
+        [class.selected-row]="selection.isSelected(row)">
+      </tr>
+    </table>
+  </div>
+</section>

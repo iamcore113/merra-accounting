@@ -1,0 +1,409 @@
+.offline-root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #e8eef6;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+// ── Animated Mesh Background Blobs ────────────────────────────────────────────
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.blob-1 {
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, rgba(2, 70, 132, 0.15) 0%, rgba(94, 161, 222, 0.05) 100%);
+  animation: float-blob-1 25s infinite alternate ease-in-out;
+}
+
+.blob-2 {
+  bottom: -15%;
+  right: -5%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, rgba(255, 82, 82, 0.08) 0%, rgba(255, 138, 101, 0.02) 100%);
+  animation: float-blob-2 20s infinite alternate ease-in-out;
+}
+
+.blob-3 {
+  top: 40%;
+  left: 60%;
+  width: 30vw;
+  height: 30vw;
+  background: radial-gradient(circle, rgba(2, 70, 132, 0.08) 0%, rgba(148, 180, 193, 0.02) 100%);
+  animation: float-blob-3 15s infinite alternate ease-in-out;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.offline-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+
+  .offline-brand {
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  .offline-subbrand {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+  }
+}
+
+// ── Main Layout & Card ────────────────────────────────────────────────────────
+.offline-container {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.offline-card {
+  width: 100%;
+  max-width: 480px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 28px;
+  padding: 2.5rem 2.25rem;
+  box-shadow: 
+    0 4px 24px rgba(2, 70, 132, 0.03),
+    0 16px 40px rgba(2, 70, 132, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 
+      0 6px 30px rgba(2, 70, 132, 0.04),
+      0 20px 48px rgba(2, 70, 132, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+}
+
+// ── SVG Illustration Styling ─────────────────────────────────────────────────
+.illustration-container {
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+  height: 160px;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.offline-svg {
+  width: 100%;
+  height: auto;
+}
+
+// SVG Animations
+.glow-pulse {
+  animation: glow-fade 3s infinite ease-in-out;
+  transform-origin: center;
+}
+
+.signal-line {
+  animation: dash-scroll 2s infinite linear;
+  stroke-dashoffset: 20;
+}
+
+.warning-badge {
+  animation: float-vertical 4s infinite ease-in-out;
+  transform-origin: center;
+}
+
+.led-blink-fast {
+  animation: led-blink 0.6s infinite alternate ease-in-out;
+}
+
+.led-blink-slow {
+  animation: led-blink 1.4s infinite alternate ease-in-out;
+}
+
+.client-node, .server-node {
+  transition: transform 0.3s ease;
+}
+
+.offline-card:hover {
+  .client-node {
+    transform: translate(-2px, -1px);
+  }
+  .server-node {
+    transform: translate(2px, 1px);
+  }
+}
+
+// ── Content Typography ───────────────────────────────────────────────────────
+.offline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.offline-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.offline-desc {
+  font-size: 0.95rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 auto;
+  max-width: 380px;
+}
+
+// ── Status Info Box ──────────────────────────────────────────────────────────
+.status-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  width: 100%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &--checking {
+    background: rgba(2, 70, 132, 0.06);
+    border-color: rgba(2, 70, 132, 0.15);
+  }
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  flex-shrink: 0;
+}
+
+.alert-pulse {
+  animation: dot-pulse 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.status-spinner {
+  margin: 2px;
+  --mdc-circular-progress-active-indicator-color: var(--brand-color);
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.status-subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+
+  strong {
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ── Action Buttons ───────────────────────────────────────────────────────────
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 0.5rem;
+
+  button {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .btn-primary {
+    background-color: var(--brand-color);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(2, 70, 132, 0.15);
+
+    &:hover:not(:disabled) {
+      background-color: #013666;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(2, 70, 132, 0.22);
+    }
+
+    &:disabled {
+      background-color: rgba(2, 70, 132, 0.5);
+      color: rgba(255, 255, 255, 0.7);
+    }
+  }
+
+  .btn-secondary {
+    border-color: #cbd5e1;
+    color: #475569;
+    background-color: transparent;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.5);
+      border-color: #94a3b8;
+      color: #1e293b;
+    }
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.offline-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 1rem 0;
+
+  p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+  }
+}
+
+// ── Animations Keyframes ──────────────────────────────────────────────────────
+@keyframes float-blob-1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(8%, 12%) scale(1.1); }
+}
+
+@keyframes float-blob-2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-10%, -8%) scale(1.05); }
+}
+
+@keyframes float-blob-3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-5%, 8%) scale(0.95); }
+}
+
+@keyframes glow-fade {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes dash-scroll {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes float-vertical {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes led-blink {
+  0% { opacity: 0.2; }
+  100% { opacity: 1; }
+}
+
+@keyframes dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Mobile Responsive Overrides ───────────────────────────────────────────────
+@media (max-width: 480px) {
+  .offline-card {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+
+  .offline-title {
+    font-size: 1.5rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+
+    button {
+      width: 100%;
+      height: 44px;
+    }
+  }
+}

@@ -11,6 +11,7 @@ import org.hibernate.annotations.TimeZoneStorageType;
 import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ContactAddressEmb;
+import org.merra.entities.templates.TenantAuditableEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -30,16 +31,16 @@ import jakarta.validation.constraints.NotNull;
  * field @name is the only non optional attribute in this entity.
  */
 @Entity(name = "Contact")
-@Table(name = "contacts", schema = "merra_schema")
-public class Contact {
+@Table(name = "contacts")
+public class Contact extends TenantAuditableEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "contact_id", nullable = false, unique = true)
 	private UUID id;
 
-	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
+	@ManyToOne
+	@JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
 	private Organization organization;
 
 	// Full name of contact / organization
@@ -58,7 +59,7 @@ public class Contact {
 	private String emailAddress;
 
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone_no", nullable = false, columnDefinition = "jsonb[]")
+	@Column(name = "phone_no", columnDefinition = "jsonb[]")
 	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "account_number")

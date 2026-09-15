@@ -1,59 +1,112 @@
-# Web
+# Merra Accounting - Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+Angular 20 frontend for the Merra Accounting platform.
 
-## Development server
+## Overview
 
-To start a local development server, run:
+This app provides the user interface for Merra Accounting and communicates with the Spring Boot backend API.
+
+Current focus:
+
+- Building core accounting workflows and screens
+- Integrating frontend features with backend APIs
+- Improving form validation, UX, and state management
+
+## Tech Stack
+
+- Angular 20 (standalone components)
+- Angular Material (Material 3)
+- SCSS styling
+- Angular Router
+- Signals for reactive state in selected areas
+
+## Prerequisites
+
+- Node.js 20+
+- npm 10+
+- Angular CLI 20+
+
+## Project Structure
+
+```text
+web/
+├── src/
+│   ├── app/
+│   │   ├── core/             # Core app concerns (state, shared app-level logic)
+│   │   ├── features/         # Feature modules/screens
+│   │   ├── shared/           # Shared components, services, models, utilities
+│   │   ├── views/            # Routed view/page components
+│   │   ├── app.ts            # Root standalone component
+│   │   ├── app.routes.ts     # Route definitions
+│   │   └── app.config.ts     # App bootstrap/configuration
+│   ├── styles.scss           # Global styles and Material theme setup
+│   ├── index.html            # HTML entry point
+│   └── main.ts               # App bootstrap entry
+└── angular.json
+```
+
+## Install Dependencies
+
+From the project root:
 
 ```bash
+cd web
+npm install
+```
+
+## Run in Development
+
+```bash
+cd web
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+App URL:
 
-## Code scaffolding
+- http://localhost:4200
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+The app auto-reloads when source files change.
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Build
 
 ```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
+cd web
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build artifacts are generated under `dist/`.
 
-## Running unit tests
+## Test
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Run unit tests:
 
 ```bash
+cd web
 ng test
 ```
 
-## Running end-to-end tests
+## Frontend Conventions
 
-For end-to-end (e2e) testing, run:
+- Use SCSS for all component styles (`.scss` files).
+- Prefer Angular Material components over custom raw HTML controls.
+- Use outlined Material icons with `fontSet="material-icons-outlined"`.
+- Keep components standalone and import only required Angular Material modules.
+- Keep routing centralized in `src/app/app.routes.ts`.
 
-```bash
-ng e2e
-```
+### Buttons
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- For `<button>` elements, use `matButton="filled"`.
+- For `<a>` elements styled as buttons, use `matButton`.
 
-## Additional Resources
+## Backend Integration Notes
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Backend runs separately in the `backend` folder.
+- Ensure backend API is running when testing integrated flows.
+- API and proxy/environment settings should be aligned with your local backend URL.
+
+## Related Documentation
+
+- Root project guide: [../README.md](../README.md)
+- Backend guide: [../backend/README.md](../backend/README.md)
+
+Use this README for frontend-only development. For full-stack setup, read the root and backend READMEs as well.

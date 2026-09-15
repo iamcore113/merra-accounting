@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    logicalFilePath="db/changesets/organization/org-20260719-44.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+    <changeSet id="2026-create-organization-metadata-table" author="brian">
+        <createTable schemaName="app" tableName="organization_metadata">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="schema" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_by" type="uuid">
+                <constraints
+                    nullable="true"
+                    foreignKeyName="fk_organization_metadata__user_account__created_by"
+                    referencedTableName="user_account"
+                    referencedColumnNames="user_id"
+                />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

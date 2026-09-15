@@ -1,18 +1,14 @@
 package org.merra.repositories;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.merra.entities.Organization;
 import org.merra.entities.UserAccount;
-import org.merra.repositories.projections.OrganizationUsersLookup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface OrganizationRepository extends JpaRepository<Organization, UUID> {
 
 	@Query("select org from Organization org where org.id = :id")
@@ -23,15 +19,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	Optional<UserAccount> findOrganizationSubscriber(UUID organizationId);
 
 	/**
-	 * This will retrieve lineAmountType value using organization's value
-	 * 
-	 * @param id - accepts {@linkplain java.util.UUID} object type
-	 * @return - returns a {@linkplain java.util.Optional} object type.
-	 */
-	@Query("SELECT org.organizationType FROM Organization org WHERE org.id = :id")
-	Optional<String> findLineAmountType(@Param("id") UUID id);
-
-	/**
 	 * This will retrieve the organization's country using organization ID
 	 * 
 	 * @param id - {@linkplain java.util.UUID} id
@@ -40,9 +27,9 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
 	@Query("SELECT org.country FROM Organization org WHERE org.id = :id")
 	Optional<String> findCountryUsingOrganizationId(@Param("id") UUID id);
 
-	@Query("SELECT COUNT(org) > 0 FROM Organization org JOIN org.organizationUsers ou WHERE ou.userId = :userId")
-	boolean existsOrganizationsByUserId(@Param("userId") UUID userId);
+	@Query("SELECT EXISTS(SELECT 1 FROM Organization org WHERE LOWER(org.displayName) = LOWER(:name) OR LOWER(org.legalName) = LOWER(:name))")
+	boolean existsByDisplayNameOrLegalNameIgnoreCase(@Param("name") String name);
 
-	@Query("SELECT org FROM Organization org JOIN org.organizationUsers ou WHERE ou.userId = :userId")
-	Set<OrganizationUsersLookup> findOrganizationsByUserId(@Param("userId") UUID userId);
+	boolean existsByDisplayNameIgnoreCase(String displayName);
+
 }

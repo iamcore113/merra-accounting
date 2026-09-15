@@ -1,16 +1,22 @@
 package org.merra.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
 public record UserPersonalInformationRequest(
-    @NotBlank(message = "email component cannot be blank.")
-    String email,
-    @NotBlank(message = "firstName component cannot be blank.")
-    String firstName,
-    @NotBlank(message = "lastName component cannot be blank.")
-    String lastName,
-    @NotBlank(message = "country component cannot be blank.")
-    String country
-) {
-
+        String email,
+        String firstName,
+        String lastName,
+        String country) {
+    public UserPersonalInformationRequest {
+        if (email == null) {
+            throw new IllegalArgumentException("email component cannot be null.");
+        }
+        if (firstName == null) {
+            throw new IllegalArgumentException("firstName component cannot be null.");
+        }
+        if (lastName == null) {
+            throw new IllegalArgumentException("lastName component cannot be null.");
+        }
+        if (country == null) {
+            throw new IllegalArgumentException("country component cannot be null.");
+        }
+    }
 }

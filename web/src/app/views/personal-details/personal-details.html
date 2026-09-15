@@ -1,0 +1,85 @@
+
+<div class="personal-details-wrapper">
+  <div class="personal-details-header">
+    <span>Complete Your Profile</span>
+    <p class="sub-text">Help us personalize your experience. Your details are used to verify your identity and ensure your account is set up correctly for your region.</p>
+  </div>
+
+  <div class="personal-details-content">
+    <form [formGroup]="personalDetailsForm" (ngSubmit)="onNext()">
+      @if (isEmailDisabled) {
+        <div class="email-display-row">
+          <mat-icon fontSet="material-icons-outlined" class="email-icon email-verified">mark_email_read</mat-icon>
+          <span class="email-display-text">{{ personalDetailsForm.getRawValue().email }}</span>
+          <button type="button" class="change-email-btn" (click)="enableEmailEditing()">
+            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+            Change
+          </button>
+        </div>
+      } @else {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="Enter your email" />
+          <mat-icon matPrefix fontSet="material-icons-outlined">mail</mat-icon>
+          @if (personalDetailsForm.get('email')?.hasError('required') && personalDetailsForm.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (personalDetailsForm.get('email')?.hasError('email') && personalDetailsForm.get('email')?.touched) {
+            <mat-error>Please enter a valid email</mat-error>
+          }
+        </mat-form-field>
+      }
+
+      <div class="two-col-row">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>First Name</mat-label>
+          <input matInput type="text" formControlName="firstName" placeholder="Enter your first name" />
+          <mat-icon matPrefix fontSet="material-icons-outlined">person</mat-icon>
+          @if (
+            personalDetailsForm.get('firstName')?.hasError('required') &&
+            personalDetailsForm.get('firstName')?.touched
+          ) {
+            <mat-error>First name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Last Name</mat-label>
+          <input matInput type="text" formControlName="lastName" placeholder="Enter your last name" />
+          <mat-icon matPrefix fontSet="material-icons-outlined">person</mat-icon>
+          @if (
+            personalDetailsForm.get('lastName')?.hasError('required') &&
+            personalDetailsForm.get('lastName')?.touched
+          ) {
+            <mat-error>Last name is required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Country</mat-label>
+        <input type="text" 
+               matInput 
+               formControlName="country" 
+               placeholder="Start typing to search your country"
+               [matAutocomplete]="auto">
+        <mat-icon matPrefix fontSet="material-icons-outlined">public</mat-icon>
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (country of filteredCountries | async; track country.cca2) {
+            <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+          }
+        </mat-autocomplete>
+        @if (
+          personalDetailsForm.get('country')?.hasError('required') &&
+          personalDetailsForm.get('country')?.touched
+        ) {
+          <mat-error>Country is required</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="button-container">
+        <button matButton="filled" type="submit" [disabled]="personalDetailsForm.invalid">Next</button>
+      </div>
+    </form>
+  </div>
+</div>

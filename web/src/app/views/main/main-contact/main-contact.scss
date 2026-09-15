@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  background-color: var(--mat-sys-background);
+}
+
+.contact-page {
+  max-width: 960px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+.contact-page .contact-table-title-cell {
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  background-color: #ffffff;
+}
+
+.contact-page .contact-table-title {
+  .contact-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+}
+
+.contact-page .contact-table-title-row {
+  height: auto;
+}
+
+.contact-page .contact-table-container {
+  overflow-x: auto;
+  background-color: #ffffff;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 4px;
+}
+
+.contact-page .contacts-table {
+  width: 100%;
+  min-width: 560px;
+  background-color: #ffffff;
+}
+
+.contact-page .contacts-table th.mat-mdc-header-cell {
+  font-weight: 600;
+  background-color: #ffffff;
+}
+
+.contact-page .contacts-table td.mat-mdc-cell,
+.contact-page .contacts-table th.mat-mdc-header-cell {
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+}
+
+.contact-page .contacts-table tr.contact-columns-header-row {
+  --mat-table-header-container-height: 36px;
+  height: 36px;
+  min-height: 36px;
+}
+
+.contact-page .contacts-table tr.contact-columns-header-row th.mat-mdc-header-cell {
+  padding: 0.25rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+}
+
+.contact-page .contacts-table tr.mat-mdc-header-row,
+.contact-page .contacts-table tr.mat-mdc-row {
+  background-color: #ffffff;
+}
+
+.contact-page .contacts-table tr.mat-mdc-row:hover td.mat-mdc-cell {
+  background-color: #f5f5f5;
+}
+
+.contact-page .contacts-table tr.mat-mdc-row.selected-row td.mat-mdc-cell {
+  background-color: var(--mat-sys-secondary-container);
+}
+
+.contact-page .contacts-table .contact-flag-cell {
+  text-align: center;
+  width: 7rem;
+}
+
+.contact-page .contacts-table .contact-flag-icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  vertical-align: middle;
+}
+
+.contact-page .contacts-table .contact-flag-icon--true {
+  color: #2e7d32;
+}
+
+.contact-page .contacts-table .contact-flag-icon--false {
+  color: #c62828;
+}
+
+@media (max-width: 599px) {
+  .contact-page {
+    padding: 0 0.75rem;
+  }
+
+  .contact-page .contacts-table td.mat-mdc-cell {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .contact-page .contacts-table tr.contact-columns-header-row th.mat-mdc-header-cell {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}

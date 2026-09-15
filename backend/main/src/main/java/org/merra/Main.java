@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@EnableJpaRepositories(basePackages="org.merra")
-@EntityScan(basePackages="org.merra")
-@SpringBootApplication(scanBasePackages="org.merra")
+import com.redis.om.spring.annotations.EnableRedisEnhancedRepositories;
+
+@EnableJpaRepositories(basePackages = "org.merra")
+@EntityScan(basePackages = "org.merra")
+@SpringBootApplication(scanBasePackages = "org.merra")
+@EnableRedisEnhancedRepositories(basePackages = "org.merra")
 @RestController
 @RequestMapping
 public class Main {
@@ -20,7 +23,7 @@ public class Main {
     }
 
     @GetMapping
-    public ResponseEntity<String> main() {
-        return ResponseEntity.ok("Backend is running...");
+    public ResponseEntity<String> defaultLandingPage() {
+        return ResponseEntity.ok("backend is now running..");
     }
 }

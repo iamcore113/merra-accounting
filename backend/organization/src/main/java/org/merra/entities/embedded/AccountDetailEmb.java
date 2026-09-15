@@ -3,11 +3,9 @@ package org.merra.entities.embedded;
 import java.io.Serializable;
 import java.util.UUID;
 
-import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-@Embeddable
 public class AccountDetailEmb implements Serializable {
 	/**
 	 * 

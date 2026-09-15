@@ -1,0 +1,358 @@
+<section class="organization-panels shared-expansion-panels">
+	<div class="organization-header">
+		<h2 class="organization-title">Organization Information</h2>
+		<button class="organization-image-button" mat-icon-button type="button" aria-label="Organization profile" (click)="openOrganizationImageDialog()">
+			<mat-icon class="organization-image-icon" fontSet="material-icons-outlined">domain</mat-icon>
+		</button>
+	</div>
+	<mat-accordion>
+		<mat-expansion-panel #organizationPanel (closed)="isEditingNames = false; isEditingOrganizationType = false; isEditingDescription = false">
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Organization:</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ organizationForm.get('names.displayName')?.value || '—' }}</span>
+						}
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">business</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<div class="organization-info-editor" [formGroup]="organizationForm">
+				@if (isLoadingOrganization) {
+				<div class="organization-date-created-skeleton">
+					<div class="skeleton-label"></div>
+					<div class="skeleton-value"></div>
+				</div>
+			} @else {
+				<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ organizationForm.get('createdDate')?.value | date:'longDate' }}</p>
+			}
+				<div class="organization-type-block">
+					<p class="organization-type-display-title">Organization Type</p>
+					@if (isLoadingOrganizationTypes) {
+						<div class="organization-type-skeleton">
+							<div class="skeleton-input"></div>
+						</div>
+					} @else if (!isEditingOrganizationType) {
+						<button class="organization-type-display-button" type="button" (click)="isEditingOrganizationType = true">
+							<span class="organization-type-display-value">{{ getOrganizationTypeName() }}</span>
+							<mat-icon class="organization-type-edit-icon">edit</mat-icon>
+						</button>
+					} @else {
+						<mat-form-field class="organization-type-field" formGroupName="organizationType">
+							<mat-label>Organization Type</mat-label>
+							<mat-select formControlName="typeId">
+								@for (type of organizationTypesMetadata; track type.id) {
+									<mat-option [value]="type.id">{{ type.name }}</mat-option>
+								}
+							</mat-select>
+						</mat-form-field>
+						<div class="organization-type-actions">
+							<button class="organization-type-update-button" matButton="filled" type="button" [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()" (click)="updateOrganizationType(); organizationPanel.close()">
+								@if (isUpdatingOrganizationType()) {
+									<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+								} @else {
+									Update
+								}
+							</button>
+							<button class="organization-type-cancel-button" matButton="outlined" type="button" (click)="isEditingOrganizationType = false">
+								Cancel
+							</button>
+						</div>
+					}
+				</div>
+				<div class="organization-names-block">
+					<p class="organization-names-display-title">Organization Name</p>
+					@if (isLoadingOrganization) {
+						<div class="organization-info-fields-skeleton">
+							<div class="skeleton-field"><div class="skeleton-input"></div></div>
+							<div class="skeleton-field"><div class="skeleton-input"></div></div>
+						</div>
+					} @else if (!isEditingNames) {
+						<button class="organization-names-display-button" type="button" (click)="isEditingNames = true">
+							<span class="organization-names-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
+							<mat-icon class="organization-names-edit-icon">edit</mat-icon>
+						</button>
+					} @else {
+						<div class="organization-info-fields-row" formGroupName="names">
+							<mat-form-field>
+								<mat-label>Display Name</mat-label>
+								<input matInput type="text" formControlName="displayName" placeholder="Enter display name">
+							</mat-form-field>
+
+							<button
+								class="organization-names-copy-button"
+								type="button"
+								mat-icon-button
+								[matTooltip]="'Copy display name to legal name'"
+								matTooltipPosition="above"
+								(click)="copyDisplayNameToLegalName()">
+								<mat-icon>arrow_forward</mat-icon>
+							</button>
+
+							<mat-form-field>
+								<mat-label>Legal Name</mat-label>
+								<input matInput type="text" formControlName="legalName" placeholder="Enter legal name">
+							</mat-form-field>
+						</div>
+						<div class="organization-names-actions">
+							<button class="organization-names-update-button" matButton="filled" type="button" [disabled]="isUpdatingNames() || !hasNamesChanged()" (click)="updateOrganizationNames(); isEditingNames = false; organizationPanel.close()">
+								@if (isUpdatingNames()) {
+									<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+								} @else {
+									Update
+								}
+							</button>
+							<button class="organization-names-cancel-button" matButton="outlined" type="button" (click)="isEditingNames = false">
+								Cancel
+							</button>
+						</div>
+					}
+				</div>
+
+				@if (isLoadingOrganization) {
+					<div class="organization-description-skeleton">
+						<div class="skeleton-title"></div>
+						<div class="skeleton-text"></div>
+					</div>
+				} @else {
+					<div class="organization-description-block">
+							<p class="organization-description-display-title">About this organization:</p>
+						@if (!isEditingDescription) {
+							<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationForm.get('names.description')?.value || 'No description available' }}</button>
+						} @else {
+							<div formGroupName="names">
+								<mat-form-field class="organization-description-field">
+									<mat-label>Description</mat-label>
+									<textarea matInput rows="5" placeholder="Enter organization description" formControlName="description"></textarea>
+								</mat-form-field>
+							</div>
+							<div class="organization-description-actions">
+								<button class="organization-description-update-button" matButton="filled" type="button" [disabled]="isUpdatingDescription() || !hasDescriptionChanged()" (click)="updateDescription()">
+									@if (isUpdatingDescription()) {
+										<mat-progress-spinner diameter="16" mode="indeterminate"></mat-progress-spinner>
+									} @else {
+										Update
+									}
+								</button>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Website:</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('website')?.value || '—' }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">link</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+			<div class="organization-editor" [formGroup]="organizationForm">
+				@if (isLoadingOrganization) {
+					<div class="organization-website-skeleton">
+						<div class="skeleton-label"></div>
+						<div class="skeleton-input"></div>
+					</div>
+				} @else {
+					<div class="organization-editor-fields organization-website-fields">
+						<mat-form-field>
+							<mat-label>Website</mat-label>
+							<input matInput type="text" formControlName="website" placeholder="Enter website">
+						</mat-form-field>
+					</div>
+				}
+
+				<div class="organization-editor-actions">
+					<button class="organization-update-button" matButton="filled" type="button">Update</button>
+				</div>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Country:</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('address.country')?.value || '—' }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="organization-editor" [formGroup]="organizationForm">
+        <div class="organization-editor-fields">
+					<div class="organization-country-field-group">
+						@if (isLoadingCountries) {
+							<div class="organization-country-skeleton">
+								<div class="skeleton-label"></div>
+								<div class="skeleton-select"></div>
+							</div>
+						} @else {
+							<div formGroupName="address">
+								<mat-form-field>
+									<mat-label>Country</mat-label>
+									<mat-select formControlName="country">
+										@for (country of countries; track country.cca2) {
+											<mat-option [value]="country.cca2">{{ country.name }}</mat-option>
+										}
+									</mat-select>
+								</mat-form-field>
+							</div>
+						}
+						@if (isLoadingOrganization) {
+							<div class="organization-currency-skeleton">
+								<div class="skeleton-label"></div>
+								<div class="skeleton-value"></div>
+							</div>
+						} @else {
+							<p class="organization-currency-text">Currency: <span class="organization-currency-value">{{ organizationForm.get('address.currency')?.value || '—' }}</span></p>
+						}
+					</div>
+
+					@if (isLoadingOrganization) {
+						<div class="organization-timezone-skeleton">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+					} @else {
+						<div formGroupName="address">
+							<mat-form-field>
+								<mat-label>Timezone</mat-label>
+								<input matInput type="text" formControlName="timeZone" placeholder="Enter timezone">
+							</mat-form-field>
+						</div>
+					}
+        </div>
+
+        <div class="organization-editor-actions">
+          <button class="organization-update-button" matButton="filled" type="button"
+            (click)="organizationPanel.close()">Update</button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Contact:</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ organizationForm.get('address.email')?.value || '—' }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <p>Organization contact information will appear here.</p>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Addresses:</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ currentOrganization?.address?.addresses?.length || 0 }} addresses configured</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">place</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="organization-addresses-container">
+        @for (addr of currentOrganization?.address?.addresses; track addr.type) {
+          <div class="organization-address-card">
+            <div class="address-header">
+              <mat-icon class="address-icon">{{ addr.type === 'BILLING' ? 'receipt' : (addr.type === 'SHIPPING' ? 'local_shipping' : 'place') }}</mat-icon>
+              <span class="address-type-label">{{ addr.type | titlecase }} Address</span>
+            </div>
+            <div class="address-content">
+              @for (line of addr.addresses; track line) {
+                <p class="address-line">{{ line }}</p>
+              }
+              <p class="address-line">{{ addr.city }}, {{ addr.postalCode }}</p>
+              <p class="address-line">{{ addr.country }}</p>
+            </div>
+          </div>
+        } @empty {
+          <p>No addresses configured.</p>
+        }
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Financial Settings</span>
+            @if (isLoadingOrganization) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ getFinancialYearEndDisplay() }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">payments</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+			<div class="organization-editor" [formGroup]="organizationForm">
+				<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the "boundary" for your financial reports.</p>
+				<div class="organization-editor-fields organization-financial-settings-fields" formGroupName="financialYear">
+					<mat-form-field>
+						<mat-label>Financial Year End Month</mat-label>
+						<input matInput type="number" formControlName="yearEndMonth" placeholder="Enter end month (1-12)">
+					</mat-form-field>
+					<mat-form-field>
+						<mat-label>Financial Year End Day</mat-label>
+						<input matInput type="number" formControlName="yearEndDay" placeholder="Enter end day (1-31)">
+					</mat-form-field>
+				</div>
+
+				<div class="organization-editor-actions">
+					<button class="organization-update-button" matButton="filled" type="button">Update</button>
+				</div>
+			</div>
+    </mat-expansion-panel>
+
+		<mat-expansion-panel>
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Status:</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value membership-active-value">{{ organizationForm.get('status')?.value === 'ACTIVE_ACCOUNT' ? 'ACTIVE' : organizationForm.get('status')?.value || '—' }}</span>
+						}
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">badge</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			@if (isLoadingOrganization) {
+				<div class="organization-status-skeleton">
+					<div class="skeleton-toggle"></div>
+					<div class="skeleton-text"></div>
+				</div>
+			} @else {
+				<div class="organization-status-row">
+					<mat-slide-toggle class="organization-status-toggle" [checked]="isOrganizationActive" (change)="confirmDisableOrganization($event)" aria-label="Organization status toggle"></mat-slide-toggle>
+					<span class="organization-status-text">The organization is currently active with active members.</span>
+				</div>
+			}
+		</mat-expansion-panel>
+	</mat-accordion>
+</section>

@@ -1,0 +1,290 @@
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 0.25rem 0;
+}
+
+.form-subtitle {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.organization-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.organization-card {
+  background-color: var(--mat-sys-background);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.organization-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem 1.5rem !important;
+}
+
+/* Form Styles */
+.financial-year-section {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+
+  h3 {
+    margin: 0 0 1.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.year-end-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .month-field {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .day-field {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+.country-currency-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .country-field {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .currency-field {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+.address-row-two-col {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .city-field {
+    flex: 2;
+    min-width: 150px;
+  }
+
+  .postal-field {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+.address-section-header {
+  margin-bottom: 1.25rem;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+.address-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &.not-first-address {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--mat-sys-outline-variant);
+  }
+}
+
+.address-lines-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.address-line-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  button {
+    margin-bottom: 22px;
+  }
+}
+
+.add-line-button-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: -0.5rem;
+}
+
+.address-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.add-address-action-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+/* Step Action Buttons */
+.step-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+
+  button {
+    min-width: 120px;
+  }
+}
+
+/* Material Stepper Styling */
+.organization-stepper {
+  background: transparent !important;
+  
+  ::ng-deep .mat-horizontal-content-container {
+    padding: 1.5rem 0 0 0 !important;
+    overflow: visible !important;
+  }
+  
+  ::ng-deep .mat-horizontal-stepper-wrapper {
+    overflow: visible !important;
+  }
+}
+
+/* Success and error snackbar styles */
+::ng-deep .success-snackbar {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .year-end-row {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .month-field,
+    .day-field {
+      flex: 1;
+      min-width: 100%;
+    }
+  }
+
+  .country-currency-row {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .country-field,
+    .currency-field {
+      flex: 1;
+      min-width: 100%;
+    }
+  }
+
+  .address-row-two-col {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    mat-form-field,
+    .city-field,
+    .postal-field {
+      flex: 1;
+      min-width: 100% !important;
+    }
+  }
+
+  .step-actions {
+    flex-direction: column-reverse;
+ 
+    button {
+      width: 100%;
+    }
+  }
+}

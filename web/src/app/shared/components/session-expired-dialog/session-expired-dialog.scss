@@ -1,0 +1,43 @@
+.session-expired-dialog {
+	padding: 0.5rem 0;
+}
+
+.session-expired-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 1rem 1.5rem 0;
+}
+
+.session-expired-icon {
+	font-size: 2rem;
+	width: 2rem;
+	height: 2rem;
+	color: var(--mat-sys-error);
+}
+
+.session-expired-title {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+}
+
+.session-expired-content {
+	padding: 0.75rem 1.5rem 0.5rem;
+}
+
+.session-expired-message {
+	margin: 0 0 0.75rem;
+	color: var(--mat-sys-on-surface);
+}
+
+.session-expired-subtext {
+	margin: 0;
+	font-size: 0.9rem;
+	color: var(--mat-sys-on-surface-variant);
+}
+
+.session-expired-countdown {
+	font-size: 1rem;
+	color: var(--mat-sys-error);
+}

@@ -1,0 +1,67 @@
+services:
+  db:
+    container_name: merra-accounting-db
+    image: postgres:17-alpine
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: 128mb
+    environment:
+      - 'POSTGRES_DB=merra_accounting'
+      - 'POSTGRES_PASSWORD=password'
+      - 'POSTGRES_USER=brian'
+    ports:
+      - '5071:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: merra-accounting-local-chainguard-minio
+    ports:
+      - "9000:9000" # S3 API Port
+      - "9001:9001" # Web Console Port
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
+  redis:
+    container_name: merra-accounting-redis
+    image: redis/redis-stack:latest
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+      - '8001:8001'
+    volumes:
+      - redis_data:/data
+      - ./certs:/certs:ro
+    environment:
+      - REDIS_ARGS=--requirepass merra_account_rds --appendonly yes --port 0 --tls-port 6379 --tls-cert-file /certs/redis.crt --tls-key-file /certs/redis.key --tls-ca-cert-file /certs/ca.crt --tls-auth-clients no
+
+  app:
+    container_name: merra-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./main/.env
+    environment:
+      # Override DB_URL to use Docker service name for container networking
+      - DB_URL=jdbc:postgresql://db:5071/merra_accounting
+      - DB_USER=brian
+      - DB_PASSWORD=password
+      - REDIS_HOST=redis
+
+    ports:
+      - '8080:8080'
+    depends_on:
+      - db
+      - redis
+      - minio
+
+volumes:
+  db_data:
+  redis_data:
+  minio_data:

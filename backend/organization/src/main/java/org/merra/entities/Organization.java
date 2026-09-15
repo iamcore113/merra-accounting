@@ -2,24 +2,24 @@ package org.merra.entities;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetailsEmb;
 import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
-import org.merra.entities.embedded.OrganizationAddressEmb;
-import org.merra.entities.embedded.OrganizationUserInvitesEmb;
-import org.merra.entities.embedded.OrganizationUsersEmb;
+import org.merra.entities.embedded.EOrganizationAddresses;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
 
+import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,13 +29,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "organization", schema = "merra_schema")
+@Table(name = "organization")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization {
 
 	@Id
@@ -43,25 +47,20 @@ public class Organization {
 	private UUID id;
 
 	@Column(name = "profile_image")
-	private String profileImage;
+	private String logo;
 
-	@ElementCollection
-	@CollectionTable(schema = "merra_schema", name = "organization_users", joinColumns = {
-			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUsersEmb> organizationUsers;
-
-	@ElementCollection
-	@CollectionTable(schema = "merra_schema", name = "org_invites", joinColumns = {
-			@JoinColumn(name = "organization_id", referencedColumnName = "id", nullable = false) })
-	private Set<OrganizationUserInvitesEmb> organizationUserInvites;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+	private Set<Contact> contacts;
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
+	@Size(min = 3, max = 100, message = "displayName attribute must be between 3 and 100 characters.")
 	private String displayName;
 
 	// The official legal name or trading name of the business
-	@Column(name = "legal_name", nullable = false, unique = true)
-	@NotBlank(message = "legalName cannot be blank.")
+	@Column(name = "legal_name", nullable = false)
+	@NotBlank(message = "legalName attribute cannot be blank.")
+	@Size(min = 3, max = 200, message = "legalName attribute must be between 3 and 200 characters.")
 	private String legalName;
 
 	@Column(name = "organization_description")
@@ -76,7 +75,7 @@ public class Organization {
 	@NotNull(message = "defaultCurrency attribute cannot be null.")
 	private String defaultCurrency;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "organization_type", nullable = false)
 	@NotNull(message = "organizationType attribute cannot be null.")
 	private OrganizationType organizationType;
@@ -101,8 +100,8 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	@Column(name = "address", columnDefinition = "jsonb", nullable = true)
-	private Set<OrganizationAddressEmb> address;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
+	private List<OrganizationAddresses> addresses;
 
 	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
 	private Set<ExternalLinksEmb> externalLinks;
@@ -135,13 +134,20 @@ public class Organization {
 		this.activeSubscription = isActiveSubscription == null || isActiveSubscription;
 	}
 
+	public Set<Contact> getContacts() {
+		return contacts;
+	}
+
+	public void setContacts(Set<Contact> contacts) {
+		this.contacts = contacts;
+	}
+
 	public void setBasicInformation(String displayName,
-		OrganizationType type,
-		String email,
-		String country,
-		FinancialYearEmb financialYear,
-		String currency
-	) {
+			OrganizationType type,
+			String email,
+			String country,
+			FinancialYearEmb financialYear,
+			String currency) {
 		this.setDisplayName(displayName);
 		this.setLegalName(displayName);
 		this.setOrganizationType(type);
@@ -154,14 +160,13 @@ public class Organization {
 	public void setContactDetails(
 			String countryCode,
 			String defaultCurrency,
-			Set<OrganizationAddressEmb> address,
+			Set<EOrganizationAddresses> address,
 			LinkedHashSet<PhoneDetailsEmb> phones,
 			String email,
 			String website,
 			Set<ExternalLinksEmb> externalLinks) {
 		this.setCountry(countryCode);
 		this.setDefaultCurrency(defaultCurrency);
-		this.setAddress(address);
 		this.setPhoneNo(phones);
 		this.setEmail(email);
 		this.setWebsite(website);
@@ -171,32 +176,24 @@ public class Organization {
 	public Organization() {
 	}
 
+	public List<OrganizationAddresses> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(List<OrganizationAddresses> addresses) {
+		this.addresses = addresses;
+	}
+
 	public UUID getId() {
 		return id;
 	}
 
-	public String getProfileImage() {
-		return profileImage;
+	public String getLogo() {
+		return logo;
 	}
 
-	public void setProfileImage(String profileImage) {
-		this.profileImage = profileImage;
-	}
-
-	public Set<OrganizationUsersEmb> getOrganizationUsers() {
-		return organizationUsers;
-	}
-
-	public void setOrganizationUsers(Set<OrganizationUsersEmb> organizationUsers) {
-		this.organizationUsers = organizationUsers;
-	}
-
-	public Set<OrganizationUserInvitesEmb> getOrganizationUserInvites() {
-		return organizationUserInvites;
-	}
-
-	public void setOrganizationUserInvites(Set<OrganizationUserInvitesEmb> organizationUserInvites) {
-		this.organizationUserInvites = organizationUserInvites;
+	public void setLogo(String logo) {
+		this.logo = logo;
 	}
 
 	public String getDisplayName() {
@@ -285,14 +282,6 @@ public class Organization {
 
 	public void setFinancialYear(FinancialYearEmb financialYear) {
 		this.financialYear = financialYear;
-	}
-
-	public Set<OrganizationAddressEmb> getAddress() {
-		return address;
-	}
-
-	public void setAddress(Set<OrganizationAddressEmb> address) {
-		this.address = address;
 	}
 
 	public Set<ExternalLinksEmb> getExternalLinks() {

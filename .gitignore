@@ -45,6 +45,7 @@ Thumbs.db
 
 #=====BACKEND=====
 /backend/main/.env
+/backend/application/
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -59,6 +60,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+*.log
 
 ### IntelliJ IDEA ###
 .idea

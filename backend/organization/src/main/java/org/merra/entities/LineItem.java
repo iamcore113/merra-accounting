@@ -28,7 +28,7 @@ import jakarta.validation.constraints.NotNull;
  * to build up the total amount.
  */
 @Entity
-@Table(name = "line_item", schema = "merra_schema")
+@Table(name = "line_item")
 public class LineItem {
 
 	@Id

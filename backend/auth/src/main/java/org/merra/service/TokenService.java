@@ -28,21 +28,20 @@ public class TokenService {
     private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
     private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
-    @Value("${jwt.access.token.duration}")
+    @Value("${token.access-token-duration}")
     private int forAccessToken;
-    @Value("${jwt.refresh.token-expiration}")
+    @Value("${token.refresh-token-duration}")
     private int refreshTokenExpiration;
-    @Value("${jwt.email.verification-duration}")
+    @Value("${token.email-verification-duration}")
     private int verificationTokenDuration;
-    @Value("${jwt.access.limited}")
-    private int limitedAccessTokenDuration;
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
     private final UserAccountService userAccountService;
     private final UserAccountRepository userRepository;
 
-    public TokenService(UserAccountRepository userRepository, UserAccountService userAccountService, JwtUtils jwtUtils, UserDetailsService userDetailsService) {
+    public TokenService(UserAccountRepository userRepository, UserAccountService userAccountService, JwtUtils jwtUtils,
+            UserDetailsService userDetailsService) {
         this.userRepository = userRepository;
         this.userAccountService = userAccountService;
         this.jwtUtils = jwtUtils;
@@ -51,27 +50,29 @@ public class TokenService {
 
     public JwtTokens requestTokens(UUID userId) {
         if (!userRepository.existsById(userId)) {
-        throw new EntityNotFoundException("User entity not found.");
+            throw new EntityNotFoundException("User entity not found.");
         }
         UserAccount user = userAccountService.retrieveById(userId);
         final String userEmail = user.getEmail();
         UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-        final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), forAccessToken, false);
-        final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE), refreshTokenExpiration, true);
+        final String accessToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE),
+                forAccessToken, false);
+        final String refreshToken = jwtUtils.generateToken(userDetails.getUsername(), Map.of("role", ROLE_IDLE),
+                refreshTokenExpiration, true);
         return new JwtTokens(accessToken, refreshToken);
     }
 
     public ValidateTokenResponse validateToken(String token) {
-        logger.info("Validating token: {}", token);
-        final String email = jwtUtils.extractUsername(token);
-        logger.info("Extracted email from token: {}", email);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        boolean isTokenValid = true;
-        if (!jwtUtils.isTokenValid(token, userDetails)) {
-            isTokenValid = false;
+        try {
+            final String email = jwtUtils.extractUsername(token);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            boolean isTokenValid = jwtUtils.isTokenValid(token, userDetails);
+            return new ValidateTokenResponse(isTokenValid);
+        } catch (Exception e) {
+            logger.warn("Token validation failed: {}", e.getMessage());
+            return new ValidateTokenResponse(false);
         }
-        return new ValidateTokenResponse(isTokenValid);
     }
 
     public JwtTokens obtainNewAccessToken(String refreshToken) {

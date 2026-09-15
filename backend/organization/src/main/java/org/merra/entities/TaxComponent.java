@@ -17,7 +17,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "tax_component", schema = "merra_schema")
+@Table(name = "tax_component")
 public class TaxComponent {
 
 	@Id @GeneratedValue(strategy = GenerationType.UUID)

@@ -25,18 +25,12 @@ export interface UserDetail {
   email: string;
 }
 
-// Corresponds to: backend/auth/src/main/java/org/merra/dto/AuthResponse.java
-export interface AuthResponse {
-  token: JwtTokens;
-  user: UserDetail;
-  roles: string[];
-}
-
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/VerifiedAccountResponse.java
 export interface VerifiedAccountResponse {
   isVerified: boolean;
+  userId: string;
   email: string;
-  temporaryAccessToken: string;
+  accessToken: string;
 }
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/VerificationResponse.VerificationToken
@@ -77,4 +71,25 @@ export interface ValidateTokenRequest {
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/ValidateTokenResponse.java
 export interface ValidateTokenResponse {
   isValid: boolean;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/SigninResponse.java
+export interface SigninResponse {
+  tokens: JwtTokens;
+  accountStatus: AccountStatus;
+  userdetails: Userdetails;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/SigninResponse.AccountStatus
+interface AccountStatus {
+  isComplete: boolean;
+  partOfOrganization: boolean;
+  isEnabled: boolean;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/SigninResponse.Userdetails
+interface Userdetails {
+  userId: string;
+  email: string;
+  roles: string[];
 }

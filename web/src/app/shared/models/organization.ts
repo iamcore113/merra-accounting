@@ -47,6 +47,17 @@ export interface FinancialYear {
   yearEndMonth: number;
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/entities/OrganizationAddresses.java
+export interface OrganizationAddress {
+  id?: string;
+  type: string;
+  addresses: string[];
+  city: string;
+  postalCode: string;
+  country: string;
+  attentionTo?: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CreateOrganizationRequest.java
 export interface CreateOrganizationRequest {
   displayName: string;
@@ -55,6 +66,7 @@ export interface CreateOrganizationRequest {
   country: string;
   financialYear: FinancialYear;
   currency: string;
+  addresses?: OrganizationAddress[];
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/NewOrganizationResponse.UserDetails
@@ -82,11 +94,18 @@ export interface PaymentTermsMetaData {
   types: PaymentTermTypes[];
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationMetaDataResponse.OrganizationAddressType
+export interface OrganizationAddressType {
+  id: string;
+  name: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationMetaDataResponse.java
 export interface OrganizationMetaDataResponse {
   organizationTypes: OrganizationTypesMetaData[];
   addresses: AddressEn[];
   paymentTerms: PaymentTermsMetaData;
+  organizationAddressTypes: OrganizationAddressType[];
 }
 
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/AccountByOrganizationResponse.java
@@ -214,4 +233,78 @@ export interface UpdateInvoiceResponse {
   invoiceID: string;
   formerStatus: string;
   currentStatus: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Type
+export interface CurrentOrganizationResponseType {
+  typeId: string;
+  name: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Names
+export interface CurrentOrganizationResponseNames {
+  displayName: string;
+  legalName: string;
+  description: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Contact.Address
+export interface CurrentOrganizationResponseContactAddress {
+  type: string;
+  addresses: string[];
+  city: string;
+  country: string;
+  postalCode: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.Contact
+export interface CurrentOrganizationResponseContact {
+  email: string;
+  country: string;
+  currency: string;
+  timeZone: string;
+  addresses: CurrentOrganizationResponseContactAddress[];
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.FinancialYearEmb
+export interface CurrentOrganizationResponseFinancialYear {
+  yearEndDay: string;
+  yearEndMonth: string;
+}
+
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.java
+export interface CurrentOrganizationResponse {
+  organizationId: string;
+  organizationType: CurrentOrganizationResponseType;
+  names: CurrentOrganizationResponseNames;
+  address: CurrentOrganizationResponseContact;
+  website: string;
+  createdDate: string;
+  status: string;
+  financialYear: CurrentOrganizationResponseFinancialYear;
+}
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations
+export interface OrganizationAffiliation {
+  organizationId: string;
+  organizationName: string;
+  role: string;
+}
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.java
+export interface UserOrganizationAffiliation {
+  count: number;
+  organizations: OrganizationAffiliation[];
+}
+
+// Corresponds to: backend/user/src/main/java/org/merra/dto/PrincipalDetailsResponse.java
+export interface PrincipalDetailsResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  gender: string;
+  country: string;
+  email: string;
+  organizationAffiliation: UserOrganizationAffiliation;
 }

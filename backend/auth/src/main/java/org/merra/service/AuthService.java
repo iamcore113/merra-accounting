@@ -8,8 +8,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.merra.config.JwtUtils;
-import org.merra.dto.AuthResponse;
+import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
@@ -17,6 +19,7 @@ import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
+import org.merra.dto.VisitorAccessToken;
 import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
@@ -24,6 +27,7 @@ import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -34,9 +38,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.util.InvalidUrlException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -44,28 +50,32 @@ import org.springframework.web.util.UriComponentsBuilder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 
 @Service
+@Validated
 public class AuthService {
-  @Value("${jwt.access.token.duration}")
+  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
+  @Value("${token.access-token-duration}")
   private int forAccessToken;
-  @Value("${jwt.refresh.token-expiration}")
+  @Value("${token.refresh-token-duration}")
   private int refreshTokenExpiration;
-  @Value("${jwt.email.verification-duration}")
+  @Value("${token.email-verification-duration}")
   private int verificationTokenDuration;
-  @Value("${jwt.access.limited}")
-  private int limitedAccessTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
   private String webUrl;
 
-    private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
-    private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
-    private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
-    private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
-    private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
+  private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
+  private final static String ROLE_VISITOR = UserAccountStatusEn.VISITOR.toString();
+  private final static String ROLE_STANDARD = UserAccountStatusEn.STANDARD.toString();
+  private final static String ROLE_READ_ONLY = UserAccountStatusEn.READ_ONLY.toString();
+  private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
+  private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
+  private final RedisTemplate<String, Object> redisTemplate;
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
   private final JwtUtils jwtUtils;
@@ -75,6 +85,7 @@ public class AuthService {
   private final UserAccountService userAccountService;
 
   public AuthService(
+      RedisTemplate<String, Object> redisTemplate,
       JavaMailSender mailSender,
       UserDetailsService userDetailsService,
       JwtUtils jwtUtils,
@@ -82,6 +93,7 @@ public class AuthService {
       PasswordEncoder passwordEncoder,
       UserAccountRepository userAccountRepository,
       UserAccountService userAccountService) {
+    this.redisTemplate = redisTemplate;
     this.mailSender = mailSender;
     this.userDetailsService = userDetailsService;
     this.jwtUtils = jwtUtils;
@@ -91,39 +103,89 @@ public class AuthService {
     this.userAccountService = userAccountService;
   }
 
-  public VerifiedAccountResponse verifyEmail(String tokenParam) {
+  public VisitorAccessToken generateVisitorAccessToken() {
+    // TODO: Implement visitor access token generation
+    return new VisitorAccessToken("visitor-token");
+  }
+
+  /**
+   * Verifies the provided account verification token, enables the user account,
+   * assigns the default role, and issues a limited access JWT token.
+   *
+   * @param tokenParam The verification token received from the verification link
+   * @return VerifiedAccountResponse containing verification status, user ID,
+   *         email, and a limited-access token
+   * @throws BadCredentialsException if the token is invalid or does not match the
+   *                                 stored token
+   * @throws EntityNotFoundException if the user account does not exist
+   */
+  public VerifiedAccountResponse verifyAccountToken(@NotNull String tokenParam) {
+    // Extract email from the JWT token
     final String email = jwtUtils.extractUsername(tokenParam);
     if (email == null) {
       throw new BadCredentialsException("Token email not found.");
     }
+    // Retrieve the user account by email
     UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
         .orElseThrow(() -> new EntityNotFoundException("User account not found."));
     final String accountVerificationToken = findAccount.getVerificationToken();
+
+    if (accountVerificationToken == null) {
+      throw new BadCredentialsException("No verification token found for this account.");
+    }
+
+    // Validate the provided token against the stored verification token
     if (!Objects.equals(accountVerificationToken, tokenParam)) {
       throw new BadCredentialsException("Invalid token.");
     }
 
-    String limitedAccessToken = null;
+    // Enable the account, clear the verification token, and assign the default role
+    findAccount.setVerificationToken(null);
+    findAccount.setIsEnabled(true);
+    findAccount.setRoles(ROLE_IDLE);
+    userRepository.save(findAccount);
 
-    if (Objects.equals(findAccount.getVerificationToken(), tokenParam)) {
-      findAccount.setVerificationToken(null);
-      findAccount.setIsEnabled(true);
-      findAccount.setRoles(ROLE_IDLE);
-      userRepository.save(findAccount);
-      limitedAccessToken = jwtUtils.generateToken(findAccount.getEmail(), Map.of("role", ROLE_IDLE), limitedAccessTokenDuration, false);
-    }
+    final String getAccountEmail = findAccount.getEmail();
+    final UUID getUserId = findAccount.getUserId();
 
-    return new VerifiedAccountResponse(true, findAccount.getEmail(), limitedAccessToken);
+    // Generate a access JWT token.
+    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
+        forAccessToken,
+        false);
+
+    UserDetails userDetails = userDetailsService.loadUserByUsername(getAccountEmail);
+    Authentication auth = new UsernamePasswordAuthenticationToken(
+        userDetails,
+        null, // No password needed here!
+        userDetails.getAuthorities());
+
+    // Set the authenticated user in the security context
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    return new VerifiedAccountResponse(true, getUserId, getAccountEmail, generateAccessToken);
   }
 
+  /**
+   * Sends a verification email to the specified user with a verification token
+   * link.
+   *
+   * @param email    The recipient's email address
+   * @param verToken The verification token to include in the email link
+   */
   public void sendVerificationEmail(String email, String verToken) {
     final String subject = "Email Verification";
-    final String path = "auth/signup/req/verify";
+    final String path = "account/verify";
     final String msg = "Click the button below to verify your email address";
     sendEmail(email, verToken, subject, path, msg);
 
   }
 
+  /**
+   * Sends a password reset email to the specified user with a reset token link.
+   *
+   * @param email      The recipient's email address
+   * @param resetToken The password reset token to include in the email link
+   */
   public void sendForgotPasswordEmail(String email, String resetToken) {
     final String subject = "Password Reset Request";
     final String path = "auth/req/reset-password/";
@@ -131,6 +193,21 @@ public class AuthService {
     sendEmail(email, resetToken, subject, path, msg);
   }
 
+  /**
+   * Sends an HTML email to the specified recipient with a verification or reset
+   * link.
+   *
+   * @param email   The recipient's email address
+   * @param token   The token to be included in the link
+   * @param subject The subject of the email
+   * @param path    The path to append to the frontend URL for the action link
+   * @param msg     The message to display in the email body
+   *
+   *                This method builds a styled HTML email containing an action
+   *                link (e.g., for verification or password reset)
+   *                and sends it using the configured mail sender. If sending
+   *                fails, the error is logged to standard error.
+   */
   private void sendEmail(String email, String token, String subject, String path, String msg) {
     try {
       UriComponents uriBuilder = UriComponentsBuilder.fromUriString(webUrl)
@@ -194,55 +271,106 @@ public class AuthService {
     }
   }
 
-  public AuthResponse login(LoginRequest request) {
+  /**
+   * Authenticates a user using the provided login request and returns a JWT-based
+   * authentication response.
+   *
+   * @param request The login request containing the user's email and password
+   * @return A {@link SigninResponse} containing JWT tokens and user details upon
+   *         successful authentication
+   * @throws BadCredentialsException if authentication fails due to invalid
+   *                                 credentials
+   */
+  public SigninResponse login(LoginRequest request) {
     return createAuthenticationResponse(request.email(), request.password());
   }
 
-  /* Create JWT tokens after successful authentication */
-  private AuthResponse createAuthenticationResponse(String email, String password) {
-    if (email == null || email.isBlank() || password == null || password.isBlank()) {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          AuthConstantResponses.INVALID_CREDENTIALS);
-    }
+  /**
+   * Authenticates a user with the provided login credentials and returns a
+   * JWT-based authentication response.
+   *
+   * @param request The login request containing the user's email and password.
+   * @return A {@link SigninResponse} containing JWT tokens and user details upon
+   *         successful authentication.
+   * @throws BadCredentialsException if authentication fails due to invalid
+   *                                 credentials.
+   */
+  public SigninResponse loginWithCredentials(LoginRequest request) {
+    final String email = request.email();
+    final String password = request.password();
+    return createAuthenticationResponse(email, password);
+  }
 
-    Authentication authentication;
-
+  /**
+   * Attempts to authenticate a user with the provided email and password.
+   * Throws a BadCredentialsException if authentication fails.
+   *
+   * @param email    The user's email address
+   * @param password The user's password
+   * @return Authentication object if successful
+   * @throws BadCredentialsException if authentication fails
+   */
+  private Authentication authenticateUser(String email, String password) {
     try {
-      authentication = authenticationManager
-          .authenticate(new UsernamePasswordAuthenticationToken(email, password));
+      return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
     } catch (AuthenticationException e) {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          AuthConstantResponses.INVALID_CREDENTIALS, e);
+      // Wrap and rethrow authentication failures as BadCredentialsException with a
+      // custom message
+      throw new BadCredentialsException(AuthConstantResponses.INVALID_CREDENTIALS, e);
     }
+  }
 
+  /* Create JWT tokens after successful authentication */
+  private SigninResponse createAuthenticationResponse(String email, String password) {
+
+    Authentication authentication = authenticateUser(email, password);
+
+    // Set the authenticated user in the security context
     SecurityContextHolder.getContext().setAuthentication(authentication);
+
     UserAccount getUser = userRepository
         .findUserByEmailIgnoreCase(email).get();
+
+    SigninResponse response = new SigninResponse();
+
+    // Check if the user's profile is complete:
+    // - Both first name and last name must be set (not null)
+    // - User must be part of an organization
+    boolean isProfileComplete = true;
+    if (getUser.getFirstName() == null || getUser.getLastName() == null) {
+      isProfileComplete = false;
+    }
+
+    boolean isPartOfOrganization = getUser.isPartOfOrganization() ? getUser.isPartOfOrganization() : false;
+
+    response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled(), isPartOfOrganization));
 
     final Map<String, Object> claims = Map.of("role", getUser.getRoles());
     final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);
     final String refreshToken = jwtUtils.generateToken(getUser.getEmail(), claims, refreshTokenExpiration, true);
     List<String> roles = getUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
-    return new AuthResponse(
-        new JwtTokens(accessToken, refreshToken),
-        new AuthResponse.UserDetail(getUser.getUserId(), getUser.getEmail()),
-        roles);
+    response.setTokens(new JwtTokens(accessToken, refreshToken));
+    response.setUserdetails(response.new Userdetails(getUser.getUserId(), getUser.getEmail(), roles));
+
+    return response;
+
   }
 
   public VerificationResponse signup(CreateAccountRequest request) {
     final String emailReq = request.email();
     final String genderReq = request.gender();
     final String passwordReq = request.password();
-    Optional<UserAccount> findUserEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
+    Optional<UserAccount> userEmail = userRepository.findUserByEmailIgnoreCase(emailReq);
 
-    if (findUserEmail.isPresent()) {
-      if (findUserEmail.get().isEnabled()) {
+    if (userEmail.isPresent()) {
+      if (userEmail.get().isEnabled()) {
         throw new EmailAlreadyEnabledException("Email already exists.");
       } else {
-        var user = findUserEmail.get();
+        var user = userEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("tenant", null),
+            verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
         userRepository.save(user);
@@ -256,7 +384,8 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("tenant", null),
+        verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
     sendVerificationEmail(request.email(), verificationEmailToken);
@@ -284,7 +413,8 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE), verificationTokenDuration, false);
+    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE),
+        verificationTokenDuration, false);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
     sendVerificationEmail(user.getEmail(), newVerificationToken);
@@ -305,5 +435,27 @@ public class AuthService {
     user.setProfileUrl(req.profile());
     userRepository.save(user);
 
+  }
+
+  /**
+   * Retrieves the currently authenticated UserAccount from the security context.
+   *
+   * @return the authenticated UserAccount
+   * @throws EntityNotFoundException if no user is authenticated or the principal
+   *                                 is not a UserAccount
+   */
+  public UserAccount getCurrentAuthenticatedUser() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || !auth.isAuthenticated()) {
+      throw new EntityNotFoundException("No authenticated user found.");
+    }
+
+    if (auth.getPrincipal() instanceof UserAccount principal) {
+      logger.info("Authenticated user: {}", principal);
+      return principal;
+    } else {
+      throw new EntityNotFoundException("Authenticated principal is not a UserAccount.");
+    }
   }
 }

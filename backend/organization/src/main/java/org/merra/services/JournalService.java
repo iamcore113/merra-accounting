@@ -13,7 +13,7 @@ import org.merra.entities.JournalLine;
 import org.merra.entities.LineItem;
 import org.merra.entities.Organization;
 import org.merra.entities.embedded.AccountDetailEmb;
-import org.merra.entities.embedded.JournalTotalAmountEntry;
+import org.merra.entities.embedded.JournalTotalAmountEntryEmb;
 import org.merra.entities.embedded.LineItemByAccountCodeEmb;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
@@ -21,6 +21,7 @@ import org.merra.repositories.JournalRepository;
 import org.merra.utilities.AccountConstants;
 import org.merra.utilities.InvoiceConstants;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -29,6 +30,7 @@ import jakarta.validation.constraints.NotNull;
 
 // TODO - work on the taxes part
 @Service
+@Validated
 public class JournalService {
 	private final AccountRepository accountRepository;
 	private final JournalRepository journalRepository;
@@ -59,7 +61,7 @@ public class JournalService {
 		Optional<JournalLine> accountReceivableJournalEntryOpt = Optional.empty();
 		// If invoice is a customer invoice
 		// Create an entry for account receivable
-		if (findInvoiceById.getType().equalsIgnoreCase(CUSTOMER_INVOICE)) {
+		if (findInvoiceById.getType().getType().equalsIgnoreCase(CUSTOMER_INVOICE)) {
 			Account getAccReceivable = accountRepository
 					.findByAccountCodeAndOrganizationId(AccountConstants.ACC_CODE_ACC_RECEIVABLE, org.getId())
 					.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
@@ -126,7 +128,7 @@ public class JournalService {
 				.map(tc -> tc.getCredit())
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		JournalTotalAmountEntry total = new JournalTotalAmountEntry(totalDebit, totalCredit);
+		JournalTotalAmountEntryEmb total = new JournalTotalAmountEntryEmb(totalDebit, totalCredit);
 		createJournal.setTotal(total);
 
 		journalRepository.save(createJournal);

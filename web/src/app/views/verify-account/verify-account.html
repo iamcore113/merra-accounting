@@ -1,0 +1,12 @@
+
+<div class="verify-account-center">
+  @if (isLoading) {
+    <div class="spinner-stack">
+      <mat-progress-spinner mode="indeterminate" [diameter]="64" [strokeWidth]="6"></mat-progress-spinner>
+      <div class="verify-text">Verifying the account</div>
+    </div>
+  } @else {
+    <div class="verify-text">Verification complete.</div>
+  }
+</div>
+

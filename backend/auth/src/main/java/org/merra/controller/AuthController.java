@@ -1,7 +1,7 @@
 package org.merra.controller;
 
 import org.merra.api.ApiResponse;
-import org.merra.dto.AuthResponse;
+import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
@@ -21,12 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping(value = "api/v1/auth/")
+@RequestMapping(value = "api/auth/")
 public class AuthController {
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @GetMapping(value = "visitor")
+    public void enterAsVisitor() {
+
     }
 
     /**
@@ -38,9 +43,9 @@ public class AuthController {
      *         account details
      */
     @GetMapping(value = "req/signup/verify")
-    public ResponseEntity<ApiResponse> verifyEmail(@RequestParam("token") String tokenParam) {
-        final VerifiedAccountResponse res = authService.verifyEmail(tokenParam);
-        final ApiResponse apiRes = new ApiResponse(
+    public ResponseEntity<ApiResponse<VerifiedAccountResponse>> verifyEmail(@RequestParam("token") String tokenParam) {
+        final VerifiedAccountResponse res = authService.verifyAccountToken(tokenParam);
+        final ApiResponse<VerifiedAccountResponse> apiRes = new ApiResponse<>(
                 "Email successfully verified",
                 true,
                 HttpStatus.CREATED,
@@ -59,9 +64,14 @@ public class AuthController {
      * @return ResponseEntity containing authentication tokens and user information
      */
     @PostMapping(value = "signin")
-    public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest loginRequest) {
-        final AuthResponse res = authService.login(loginRequest);
-        return ResponseEntity.ok(res);
+    public ResponseEntity<ApiResponse<SigninResponse>> signin(@Valid @RequestBody LoginRequest loginRequest) {
+        final SigninResponse res = authService.login(loginRequest);
+        final ApiResponse<SigninResponse> apiRes = new ApiResponse<>(
+                "Login successful",
+                true,
+                HttpStatus.OK,
+                res);
+        return ResponseEntity.ok(apiRes);
     }
 
     /**
@@ -73,18 +83,18 @@ public class AuthController {
      * @return ResponseEntity with verification instructions and status
      */
     @PostMapping("signup")
-    public ResponseEntity<ApiResponse> signup(@Valid @RequestBody CreateAccountRequest req) {
+    public ResponseEntity<ApiResponse<VerificationResponse>> signup(@Valid @RequestBody CreateAccountRequest req) {
         final VerificationResponse res = authService.signup(req);
 
-        ApiResponse response = new ApiResponse();
+        ApiResponse<VerificationResponse> response = new ApiResponse<>();
         if (res.resent()) {
             response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION_RESEND);
-            response.setResult(true);
+            response.setSuccess(true);
             response.setResponse(HttpStatus.OK);
             response.setData(res);
         } else {
             response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION);
-            response.setResult(true);
+            response.setSuccess(true);
             response.setResponse(HttpStatus.CREATED);
             response.setData(res);
         }
@@ -102,15 +112,25 @@ public class AuthController {
      *         resent
      */
     @PostMapping("resend/verification/email")
-    public ResponseEntity<ApiResponse> resendEmailVerification(@Valid @RequestBody ResendEmailVerification req) {
+    public ResponseEntity<ApiResponse<VerificationResponse>> resendEmailVerification(
+            @Valid @RequestBody ResendEmailVerification req) {
         final var resentToken = authService.resendEmailVerification(req);
 
-        ApiResponse response = new ApiResponse();
+        ApiResponse<VerificationResponse> response = new ApiResponse<>();
         response.setMessage(AuthConstantResponses.EMAIL_VERIFICATION_RESEND);
-        response.setResult(true);
+        response.setSuccess(true);
         response.setResponse(HttpStatus.OK);
         response.setData(resentToken);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("logout")
+    public ResponseEntity<ApiResponse<?>> logout() {
+        return ResponseEntity.ok(new ApiResponse<>(
+                "Logout successful",
+                true,
+                HttpStatus.OK,
+                null));
     }
 
 }

@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity(name = "ContactPaymentTerms")
-@Table(name = "payment_terms", schema = "merra_schema")
+@Table(name = "payment_terms")
 public class PaymentTerms {
 	
 	@Id @GeneratedValue(strategy = GenerationType.UUID)

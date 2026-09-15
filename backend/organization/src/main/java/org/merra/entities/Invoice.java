@@ -9,13 +9,12 @@ import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.entities.embedded.InvoiceActionsEmb;
-import org.merra.utilities.InvoiceConstants;
+import org.merra.entities.templates.TenantAuditableEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,29 +28,35 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
 @Entity
-@Table(name = "invoice", schema = "merra_schema")
-public class Invoice {
+@Table(name = "invoice")
+public class Invoice extends TenantAuditableEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "invoice_id", nullable = false, unique = true)
 	private UUID invoiceId;
 
+	@Column(name = "invoice_number", nullable = false, unique = true)
+	@NotBlank(message = "Invoice number cannot be blank")
+	private String invoiceNumber;
+
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "organization", nullable = false)
 	@NotNull(message = "organization attribute cannot be null.")
 	private Organization organization;
 
-	@Column(name = "invoice_type", nullable = false)
-	@NotNull(message = "Invoice type cannot be null")
-	private String type;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "invoice_type", nullable = false)
+	@NotNull(message = "invoice type cannot be null.")
+	private InvoiceType type;
 
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "contact", referencedColumnName = "contact_id", nullable = false)
 	@NotNull(message = "contact attribute cannot be null.")
 	private Contact contact;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "invoice")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
+	@NotNull(message = "Line items cannot be empty.")
 	private Set<LineItem> lineItems;
 
 	@Column(name = "line_amount_type")
@@ -102,20 +107,15 @@ public class Invoice {
 		}
 	}
 
-	public void setType(String type) {
-		if (!Set.of(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE, InvoiceConstants.INVOICE_TYPE_SUPPLIER_INVOICE)
-				.contains(type.toLowerCase())) {
-			throw new NoSuchElementException("Invalid invoice type value.");
-		} else {
-			this.type = type.toUpperCase();
-		}
+	public void setType(InvoiceType type) {
+		this.type = type;
 	}
 
 	public Invoice() {
 	}
 
 	public Invoice(@NotNull(message = "organization attribute cannot be null.") Organization organization,
-			@NotNull(message = "Invoice type cannot be null") String type,
+			@NotNull(message = "Invoice type cannot be null") InvoiceType type,
 			@NotNull(message = "contact attribute cannot be null.") Contact contact, Set<LineItem> lineItems,
 			String lineAmountTypes, @PastOrPresent(message = "Invalid value for date field.") LocalDate date,
 			@FutureOrPresent(message = "Due date must be today or in the future") @NotNull(message = "Due date cannot be null") LocalDate dueDate,
@@ -141,7 +141,7 @@ public class Invoice {
 
 	public Invoice(UUID invoiceId,
 			@NotNull(message = "organization attribute cannot be null.") Organization organization,
-			@NotNull(message = "Invoice type cannot be null") String type,
+			@NotNull(message = "Invoice type cannot be null") InvoiceType type,
 			@NotNull(message = "contact attribute cannot be null.") Contact contact, Set<LineItem> lineItems,
 			String lineAmountTypes, @PastOrPresent(message = "Invalid value for date field.") LocalDate date,
 			@FutureOrPresent(message = "Due date must be today or in the future") @NotNull(message = "Due date cannot be null") LocalDate dueDate,
@@ -156,6 +156,14 @@ public class Invoice {
 		this.invoiceId = invoiceId;
 	}
 
+	public String getInvoiceNumber() {
+		return invoiceNumber;
+	}
+
+	public void setInvoiceNumber(String invoiceNumber) {
+		this.invoiceNumber = invoiceNumber;
+	}
+
 	public UUID getInvoiceId() {
 		return invoiceId;
 	}
@@ -168,7 +176,7 @@ public class Invoice {
 		this.organization = organization;
 	}
 
-	public String getType() {
+	public InvoiceType getType() {
 		return type;
 	}
 

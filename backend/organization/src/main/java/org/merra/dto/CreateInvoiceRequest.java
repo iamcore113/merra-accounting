@@ -11,45 +11,59 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @ValidateInvoice
 public record CreateInvoiceRequest(
-		@NotNull(message = "invoiceType component cannot be null.")
-		String invoiceType,
-		@NotNull(message = "contact component cannot be null")
+		UUID invoiceType,
 		UUID contact,
-		@NotNull(message = "lineAmounType component cannot be null")
-		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.")
-		String lineAmountType,
-		@NotNull(message = "lineItems component cannot be null.")
+		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.") String lineAmountType,
 		Set<LineItems> lineItems,
-		@NotNull(message = "date component cannot be null.")
 		LocalDate date,
-		@Future(message = "Invalid value for dueDate component.")
-		@DateTimeFormat(iso = ISO.DATE)
-		LocalDate dueDate,
+		@Future(message = "Invalid value for dueDate component.") @DateTimeFormat(iso = ISO.DATE) LocalDate dueDate,
 		String status,
-		@NotNull(message = "taxEligible component cannot be null.")
 		Boolean taxEligible,
-		String reference
-) {
+		String reference) {
+	public CreateInvoiceRequest {
+		if (lineItems != null && lineItems.isEmpty()) {
+			throw new IllegalArgumentException("lineItems component cannot be empty.");
+		}
+		if (invoiceType == null) {
+			throw new IllegalArgumentException("invoiceType component cannot be null or blank.");
+		}
+		if (contact == null || contact.toString().isBlank()) {
+			throw new IllegalArgumentException("contact component cannot be blank.");
+		}
+		if (lineAmountType == null || lineAmountType.isBlank()) {
+			throw new IllegalArgumentException("lineAmountType component cannot be null or blank.");
+		}
+		if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
+			throw new IllegalArgumentException("dueDate component must be a future date.");
+		}
+		if (taxEligible == null) {
+			throw new IllegalArgumentException("taxEligible component cannot be null.");
+		}
+	}
+
 	public record LineItems(
-			@NotNull(message = "description component cannot be null.")
 			String description,
-			@NotNull(message = "quantity component cannot be null.")
-			@DecimalMin("1.0")
-			@Digits(fraction = 1, integer = 3)
-			Double quantity,
-			@NotNull(message = "unitAmount component cannot be null.")
-			@Digits(fraction = 2, integer = 6)
-			Double unitAmount,
-			@NotBlank(message = "accountCode component cannot be blank.")
+			@NotNull(message = "quantity component cannot be null.") @DecimalMin("1.0") @Digits(fraction = 1, integer = 3) Double quantity,
+			@NotNull(message = "unitAmount component cannot be null.") @Digits(fraction = 2, integer = 6) Double unitAmount,
 			String accountCode,
 			String overrideTaxType,
-			Integer discountRate
-	) {
+			Integer discountRate) {
+
+		public LineItems {
+			if (discountRate == null) {
+				throw new IllegalArgumentException("discountRate component cannot be null.");
+			}
+			if (accountCode == null || accountCode.isBlank()) {
+				throw new IllegalArgumentException("accountCode component cannot be null or blank.");
+			}
+			if (description == null || description.isBlank()) {
+				throw new IllegalArgumentException("description component cannot be null or blank.");
+			}
+		}
 	}
 }

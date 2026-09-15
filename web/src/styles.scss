@@ -18,20 +18,44 @@ html {
   ));
 }
 
-html, body {
+// CSS Reset and Box Sizing
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html,
+body {
   height: 100%;
 }
 
 body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  // Define custom CSS variables
+  --brand-font-family: "Michroma", sans-serif;
+  --brand-color: #024684;
+  --default-text-color: #333333;
+
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
   // user's system settings.
   color-scheme: light;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
+  // Set a custom global background color
+  background-color: #e8eef6 !important;
+  // Override Material system variables to match custom background
+  --mat-sys-background: #e8eef6;
+  --mat-sys-surface: #e8eef6;
+
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
   font-family: 'Inter', Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -40,8 +64,151 @@ body {
   margin: 0;
 }
 
-/* Global styles */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+// Prevent CSS reset from breaking Material spinner SVG animation
+mat-progress-spinner svg,
+.mat-mdc-progress-spinner svg {
+  display: inherit;
+  max-width: none;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
 h1, h2, h3, h4, h5, h6, p {
-  color: #333333;
+  color: var(--default-text-color);
   margin: 0;
 }
+
+// Brand logo font REGULAR
+.brand-logo {
+  font-family: var(--brand-font-family);
+  color: var(--brand-color);
+  font-weight: 400;
+  font-style: normal;
+}
+.sub-brand-logo {
+  font-family: var(--brand-font-family);
+  color: var(--brand-color);
+  font-style: light;
+  font-size: 0.875rem;
+}
+
+// Shared expansion panel layout for profile/organization style sections.
+// Add `shared-expansion-panels` to the container that wraps a `mat-accordion`.
+.shared-expansion-panels mat-expansion-panel {
+  --mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
+  --mat-expansion-header-collapsed-state-height: 64px;
+  --mat-expansion-header-expanded-state-height: 72px;
+  --mat-expansion-container-background-color: #ffffff;
+}
+
+.shared-expansion-panels .detail-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  overflow: visible;
+}
+
+.shared-expansion-panels .mat-expansion-panel-header .mat-content {
+  overflow: visible;
+}
+
+.shared-expansion-panels .detail-text {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.shared-expansion-panels .detail-label {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.shared-expansion-panels .detail-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 600px) {
+  .shared-expansion-panels .detail-text {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    column-gap: 2.5rem;
+  }
+}
+
+.shared-expansion-panels .detail-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  margin-right: -0.50rem;
+  color: #94B4C1;
+}
+
+.shared-expansion-panels .mat-expansion-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shared-expansion-panels .mat-expansion-indicator svg {
+  width: 32px;
+  height: 32px;
+  margin: 0 -4px;
+}
+
+.shared-expansion-panels .mat-expansion-indicator::after {
+  border-width: 0 3px 3px 0;
+  padding: 4px;
+}
+
+// Customizing mat-select dropdown arrow size to match date field arrows globally
+.mat-mdc-select-arrow-wrapper {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-mdc-select-arrow {
+  width: 20px !important;
+  height: 20px !important;
+  color: #64748b !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: currentColor !important;
+  }
+}
+

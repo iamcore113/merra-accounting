@@ -1,33 +1,38 @@
-@use '@angular/material' as mat;
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+}
 
-.auth-card {
+.verify-email-wrapper {
   max-width: 500px;
   width: 100%;
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  mat-card-header {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.5rem;
+.verify-email-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
+  color: var(--mat-sys-primary);
+  margin-bottom: 1.5rem;
 
-    mat-card-title {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1.75rem;
-      color: var(--mat-sys-primary);
-
-      mat-icon {
-        font-size: 2rem;
-        width: 2rem;
-        height: 2rem;
-      }
-    }
+  mat-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
   }
+}
 
-  mat-card-content {
-    padding: 0 1rem;
-  }
+.email-highlight {
+  font-weight: 300;
+  color: var(--mat-sys-primary);
 }
 
 .message-container {
@@ -68,12 +73,12 @@
     }
   }
 
-  .orange-button {
-    background-color: rgba(255, 165, 0, 0.7) !important;
+  .verification-button {
+    background-color: rgba(211, 47, 47, 0.85) !important;
     color: white !important;
 
     &:hover {
-      background-color: rgba(255, 140, 0, 0.8) !important;
+      background-color: rgba(183, 28, 28, 0.9) !important;
     }
   }
 }

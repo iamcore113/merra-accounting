@@ -1,0 +1,215 @@
+<section class="profile-accordion shared-expansion-panels">
+	<form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+	<div class="profile-header">
+		<h2 class="profile-title">Personal Information</h2>
+		<button class="profile-image-button" mat-icon-button type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
+			<mat-icon class="profile-image-icon">account_circle</mat-icon>
+		</button>
+	</div>
+	<mat-accordion>
+		<mat-expansion-panel #namePanel (closed)="isEditingName = false">
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Name:</span>
+						@if (isLoading) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ personalDetails?.fullName ?? 'Not set' }}</span>
+						}
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">account_circle</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<div class="name-editor">
+				@if (isLoading) {
+					<div class="profile-info-fields-skeleton">
+						<div class="skeleton-field">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+						<div class="skeleton-field">
+							<div class="skeleton-label"></div>
+							<div class="skeleton-input"></div>
+						</div>
+					</div>
+				} @else if (!isEditingName) {
+					<button class="name-display-button" type="button" (click)="isEditingName = true">
+						<span class="name-display-value">{{ personalDetails?.fullName || 'Not set' }}</span>
+						<mat-icon class="name-edit-icon">edit</mat-icon>
+					</button>
+				} @else {
+					<div class="name-editor-row">
+						<mat-form-field>
+							<mat-label>First name</mat-label>
+							<input matInput type="text" formControlName="firstName" placeholder="Enter your first name">
+						</mat-form-field>
+						<mat-form-field>
+							<mat-label>Last name</mat-label>
+							<input matInput type="text" formControlName="lastName" placeholder="Enter your last name">
+						</mat-form-field>
+						<button class="name-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); namePanel.close()">Update</button>
+					</div>
+				}
+			</div>
+		</mat-expansion-panel>
+    <mat-expansion-panel #genderPanel (closed)="isEditingGender = false">
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Gender:</span>
+            @if (isLoading) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ getGenderLetter() }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">group</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="gender-editor">
+        @if (isLoading) {
+          <div class="profile-select-skeleton">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-select"></div>
+          </div>
+        } @else if (!isEditingGender) {
+          <button class="gender-display-button" type="button" (click)="isEditingGender = true">
+            <span class="gender-display-value">{{ personalDetails?.gender ?? 'Not set' }}</span>
+            <mat-icon class="gender-edit-icon">edit</mat-icon>
+          </button>
+        } @else {
+          <div class="gender-editor-row">
+            <mat-form-field>
+              <mat-label>Gender</mat-label>
+              <mat-select formControlName="gender">
+                <mat-option value="male">Male</mat-option>
+                <mat-option value="female">Female</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button class="gender-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); genderPanel.close()">Update</button>
+          </div>
+        }
+      </div>
+    </mat-expansion-panel>
+		<mat-expansion-panel #countryPanel (closed)="isEditingCountry = false">
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+          <span class="detail-text">
+            <span class="detail-label">Country:</span>
+            @if (isLoading) {
+              <span class="detail-skeleton"></span>
+            } @else {
+              <span class="detail-value">{{ personalDetails?.country ?? 'Not set' }}</span>
+            }
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">public</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="country-editor">
+        @if (isLoading) {
+          <div class="profile-select-skeleton">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-select"></div>
+          </div>
+        } @else if (!isEditingCountry) {
+          <button class="country-display-button" type="button" (click)="isEditingCountry = true">
+            <span class="country-display-value">{{ profileForm.get('country')?.value || personalDetails?.country || 'Not set' }}</span>
+            <mat-icon class="country-edit-icon">edit</mat-icon>
+          </button>
+        } @else {
+          <div class="country-editor-row">
+            <mat-form-field>
+              <mat-label>Country</mat-label>
+              <input type="text"
+                     matInput
+                     [formControl]="countryControl"
+                     placeholder="Start typing to search your country"
+                     [matAutocomplete]="countryAuto">
+              <mat-autocomplete #countryAuto="matAutocomplete">
+                @for (country of filteredCountries | async; track country.cca2) {
+                  <mat-option [value]="country.name">{{ country.name }}</mat-option>
+                }
+              </mat-autocomplete>
+            </mat-form-field>
+            <button class="country-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="updateProfile(); countryPanel.close()">Update</button>
+          </div>
+        }
+      </div>
+    </mat-expansion-panel>
+
+		<mat-expansion-panel #emailPanel (closed)="isEditingEmail = false">
+			<mat-expansion-panel-header>
+				<mat-panel-title class="detail-title">
+					<span class="detail-text">
+						<span class="detail-label">Email:</span>
+						@if (isLoading) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ personalDetails?.email ?? 'Not set' }}</span>
+						}
+					</span>
+					<mat-icon class="detail-icon" aria-hidden="true">mail</mat-icon>
+				</mat-panel-title>
+			</mat-expansion-panel-header>
+			<div class="email-editor">
+				@if (isLoading) {
+					<div class="profile-input-skeleton">
+						<div class="skeleton-label"></div>
+						<div class="skeleton-input"></div>
+					</div>
+				} @else if (!isEditingEmail) {
+					<button class="email-display-button" type="button" (click)="isEditingEmail = true">
+						<span class="email-display-value">{{ profileForm.get('email')?.value || personalDetails?.email || 'Not set' }}</span>
+						<mat-icon class="email-edit-icon">edit</mat-icon>
+					</button>
+				} @else {
+					<div class="email-editor-row">
+						<mat-form-field>
+							<mat-label>Email address</mat-label>
+							<input
+								matInput
+								type="email"
+								formControlName="email"
+								placeholder="Enter your email address">
+						</mat-form-field>
+						<button class="email-update-button" matButton="filled" type="button" [disabled]="isUpdating" (click)="openEmailChangeDialog(emailPanel.close.bind(emailPanel))">Update</button>
+					</div>
+					<p class="email-hint">You can only change your email address once every 2 months.</p>
+				}
+			</div>
+		</mat-expansion-panel>
+		<mat-expansion-panel class="affiliated-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title class="detail-title">
+					<span class="detail-text affiliated-text">
+						<span class="detail-label affiliated-label" [matBadge]="affiliatedOrganizationsCount" matBadgeSize="medium" matBadgeColor="warn" matBadgePosition="above after">Affiliated Organizations</span>
+          </span>
+          <mat-icon class="detail-icon" aria-hidden="true">corporate_fare</mat-icon>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      @if (affiliatedOrganizationsCount > 0) {
+      <mat-list>
+        @for (org of personalDetails?.organizationAffiliation?.organizations; track org.organizationId) {
+        <mat-list-item>
+          <mat-icon matListItemIcon aria-hidden="true">apartment</mat-icon>
+          <div matListItemTitle>{{ org.organizationName }}</div>
+          <div matListItemMeta>
+            <mat-chip-set>
+              <mat-chip>{{ org.role }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-list-item>
+        }
+      </mat-list>
+      } @else {
+      <p class="affiliated-empty-state">The user account does not have any organization affiliation.</p>
+      }
+    </mat-expansion-panel>
+	</mat-accordion>
+	</form>
+	<div class="profile-page-actions">
+		<button class="change-password-button" matButton="filled" type="button" (click)="openChangePasswordSheet()">Change Password</button>
+	</div>
+</section>
+

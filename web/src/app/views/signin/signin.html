@@ -1,45 +1,76 @@
-<mat-card class="auth-card">
-  <mat-card-header>
-    <mat-card-title>
-      <mat-icon fontSet="material-icons-outlined">login</mat-icon>
-      Sign In
-    </mat-card-title>
-  </mat-card-header>
+<div class="auth-container">
+  <nav class="top-navbar">
+    <a matButton routerLink="/account/signup">Don't have an account?</a>
+  </nav>
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h1 class="brand-logo">MERRA</h1>
+        <p class="sub-brand-logo">SIGN IN</p>
+      </mat-card-title>
+    </mat-card-header>
 
-  <mat-card-content>
-    <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" formControlName="email" placeholder="Enter your email" />
-        <mat-icon matPrefix fontSet="material-icons-outlined">mail</mat-icon>
-        @if (signinForm.get('email')?.hasError('required') && signinForm.get('email')?.touched) {
-          <mat-error>Email is required</mat-error>
-        }
-        @if (signinForm.get('email')?.hasError('email') && signinForm.get('email')?.touched) {
-          <mat-error>Please enter a valid email</mat-error>
-        }
-      </mat-form-field>
+    <mat-card-content>
+      @if (errorMessage) {
+        <div class="error-alert">
+          <mat-icon fontSet="material-icons-outlined">error_outline</mat-icon>
+          <span class="error-message">{{ errorMessage }}</span>
+        </div>
+      }
+      <form [formGroup]="signinForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input matInput type="email" formControlName="email" />
+          <mat-icon matSuffix fontSet="material-icons-outlined">mail</mat-icon>
+          @if (signinForm.get('email')?.hasError('required') && signinForm.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (signinForm.get('email')?.hasError('email') && signinForm.get('email')?.touched) {
+            <mat-error>Please enter a valid email address</mat-error>
+          }
+        </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Password</mat-label>
-        <input
-          matInput
-          type="password"
-          formControlName="password"
-          placeholder="Enter your password"
-        />
-        <mat-icon matPrefix fontSet="material-icons-outlined">lock</mat-icon>
-        @if (
-          signinForm.get('password')?.hasError('required') && signinForm.get('password')?.touched
-        ) {
-          <mat-error>Password is required</mat-error>
-        }
-      </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+          />
+          <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
+            <mat-icon fontSet="material-icons-outlined">
+              {{ hidePassword ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+          </button>
+          @if (
+            signinForm.get('password')?.hasError('required') && signinForm.get('password')?.touched
+          ) {
+            <mat-error>Password is required</mat-error>
+          }
+        </mat-form-field>
 
-      <div class="button-container">
-        <button matButton="filled" type="submit" [disabled]="!signinForm.valid">Sign In</button>
-        <a matButton href="#">Don't have an account?</a>
-      </div>
-    </form>
-  </mat-card-content>
-</mat-card>
+        <div class="button-container">
+          <button
+            matButton="filled"
+            type="submit"
+            class="submit-button"
+            [disabled]="signinForm.invalid || isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="submit-content">
+                <mat-progress-spinner
+                  class="submit-spinner"
+                  mode="indeterminate"
+                  [diameter]="18"
+                  [strokeWidth]="3"
+                ></mat-progress-spinner>
+                <span>SIGNING IN...</span>
+              </span>
+            } @else {
+              SIGN IN
+            }
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

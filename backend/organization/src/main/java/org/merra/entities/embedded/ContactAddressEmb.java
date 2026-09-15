@@ -2,9 +2,6 @@ package org.merra.entities.embedded;
 
 import java.io.Serializable;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
 public class ContactAddressEmb implements Serializable {
     private String label;
     private String address;

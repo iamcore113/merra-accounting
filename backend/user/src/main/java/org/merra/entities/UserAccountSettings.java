@@ -1,5 +1,6 @@
 package org.merra.entities;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -15,7 +16,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "user_account_settings", schema = "merra_schema")
+@Table(name = "user_account_settings")
 public class UserAccountSettings {
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "user_setting_id", nullable = false, unique = true)
@@ -33,6 +34,17 @@ public class UserAccountSettings {
 	 */
 	@Column(name = "auto_accept_invitation", nullable = false)
 	private Boolean autoAcceptInvitation = true;
+
+	@Column(name = "email_change")
+	private LocalDate emailChange;
+
+	public LocalDate getEmailChange() {
+		return emailChange;
+	}
+
+	public void setEmailChange(LocalDate emailChange) {
+		this.emailChange = emailChange;
+	}
 
 	public UserAccountSettings() {
 	}

@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "account_category", schema = "merra_schema")
+@Table(name = "account_category")
 public class AccountCategory {
 	@Id @GeneratedValue(strategy = GenerationType.UUID)
 	private UUID id;

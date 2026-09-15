@@ -2,15 +2,19 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotNull;
-
 public record UserDetailResponse(
-    @NotNull(message = "userId component cannot be null.")
-    UUID userId,
-    @NotNull(message = "userEmail component cannot be null.")
-    String userEmail,
-    @NotNull(message = "userFullName component cannot be null.")
-    String userFullName
-) {
-
+        UUID userId,
+        String userEmail,
+        String userFullName) {
+    public UserDetailResponse {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId component cannot be null.");
+        }
+        if (userEmail == null) {
+            throw new IllegalArgumentException("userEmail component cannot be null.");
+        }
+        if (userFullName == null) {
+            throw new IllegalArgumentException("userFullName component cannot be null.");
+        }
+    }
 }

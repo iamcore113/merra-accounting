@@ -1,9 +1,11 @@
 package org.merra.services;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.merra.dto.PrincipalDetailsResponse;
 import org.merra.dto.UserPersonalInformationRequest;
 import org.merra.dto.UserPersonalInformationResponse;
 import org.merra.entities.UserAccount;
@@ -17,10 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.constraints.NotNull;
 
 @Service
+@Validated
 public class UserAccountService {
 	private static final Logger logger = LoggerFactory.getLogger(UserAccountService.class);
 	private final UserMapper userMapper;
@@ -58,7 +63,7 @@ public class UserAccountService {
 	 * @param id - accepts {@linkplain java.util.UUID} type
 	 * @return - {@linkplain UserAccount} object type.
 	 */
-	public UserAccount retrieveById(UUID id) {
+	public UserAccount retrieveById(@NotNull UUID id) {
 		Optional<UserAccount> findById = userRepository.findById(id);
 
 		if (findById.isEmpty()) {
@@ -80,7 +85,7 @@ public class UserAccountService {
 	 */
 	public UserAccount getAuthenticatedUser() {
 		UserAccount findAuthUser = userRepository.findAuthenticatedUser()
-			.orElseThrow(() -> new NoSuchElementException("Authenticated user not found in the database."));
+				.orElseThrow(() -> new NoSuchElementException("Authenticated user not found in the database."));
 
 		return findAuthUser;
 	}
@@ -119,12 +124,68 @@ public class UserAccountService {
 		return userMapper.toUserPersonalInformationResponse(user);
 	}
 
-	public void setUserRole(UUID userId, UserAccountStatusEn role) {
-		String roleName = role.name();
-		UserAccount getUserAccount = userRepository.findById(userId)
-				.orElseThrow(() -> new EntityNotFoundException("User entity " + userId + " not found."));
+	/**
+	 * Updates the persisted profile fields of the currently authenticated user
+	 * with the values provided in the given profile.
+	 *
+	 * <p>
+	 * Each field is only written when its value differs from what is already
+	 * stored, avoiding unnecessary dirty-marking. Email changes are persisted but
+	 * are still pending further handling (see inline TODO).
+	 * </p>
+	 *
+	 * @param profile - the {@linkplain PrincipalDetailsResponse} carrying the
+	 *                desired field values.
+	 * @throws IllegalArgumentException         if the {@code profile.id()} does not
+	 *                                          match
+	 *                                          the ID of the currently
+	 *                                          authenticated user.
+	 * @throws java.util.NoSuchElementException if no authenticated user is found
+	 *                                          in the database.
+	 */
+	public void updateUserAccountProfile(PrincipalDetailsResponse profile) {
+		final UUID userId = profile.id();
+		UserAccount user = getAuthenticatedUser();
 
-		getUserAccount.setRoles(roleName);
-		userRepository.save(getUserAccount);
+		if (!user.getUserId().equals(userId)) {
+			throw new IllegalArgumentException("User ID does not match authenticated user");
+		}
+
+		if (!Objects.equals(user.getFirstName(), profile.firstName())) {
+			user.setFirstName(profile.firstName());
+		}
+		if (!Objects.equals(user.getLastName(), profile.lastName())) {
+			user.setLastName(profile.lastName());
+		}
+		if (!Objects.equals(user.getCountry(), profile.country())) {
+			user.setCountry(profile.country());
+		}
+		if (!Objects.equals(user.getGender(), profile.gender())) {
+			user.setGender(profile.gender());
+		}
+		// TODO: Still need to work more on this
+		if (!Objects.equals(user.getEmail(), profile.email())) {
+			user.setEmail(profile.email());
+		}
+		userRepository.save(user);
+	}
+
+	public void setUserRole(@NotNull UserAccount user, @NotNull UserAccountStatusEn role) {
+		String roleName = role.name();
+
+		user.setRoles(roleName);
+		userRepository.save(user);
+	}
+
+	/**
+	 * Retrieves the currently authenticated user from the security context.
+	 *
+	 * @return the {@link UserAccount} entity of the authenticated user
+	 * @throws EntityNotFoundException if no authenticated user is found in the
+	 *                                 database
+	 */
+	public UserAccount getCurrentAuthenticatedUser() {
+		return userRepository.findAuthenticatedUser()
+				.orElseThrow(() -> new EntityNotFoundException("User entity not found."));
 	}
 }

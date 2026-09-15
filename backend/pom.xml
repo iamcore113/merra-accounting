@@ -1,15 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.5</version>
     <relativePath/>
     <!-- lookup parent from repository -->
   </parent>
   <groupId>org.merra</groupId>
   <artifactId>backend</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <java.version>25</java.version>
@@ -17,14 +19,45 @@
     <maven.compiler.target>25</maven.compiler.target>
     <testcontainers.version>1.21.3</testcontainers.version>
     <postgresql.version>42.7.7</postgresql.version>
-    <springboot.dependencies.version>4.0.0</springboot.dependencies.version>
+    <ehcache.version>3.12.0</ehcache.version>
+    <redis-om-spring>2.0.6</redis-om-spring>
+    <jedis.version>7.3.0</jedis.version>
+    <springboot.dependencies.version>4.0.5</springboot.dependencies.version>
+    <spring-cloud-aws.version>4.0.2</spring-cloud-aws.version>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.merra</groupId>
+        <artifactId>commons</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.merra</groupId>
+        <artifactId>user</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.merra</groupId>
+        <artifactId>auth</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.merra</groupId>
+        <artifactId>organization</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>me.paulschwarz</groupId>
         <artifactId>spring-dotenv-bom</artifactId>
         <version>5.1.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.awspring.cloud</groupId>
+        <artifactId>spring-cloud-aws-dependencies</artifactId>
+        <version>${spring-cloud-aws.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -54,9 +87,9 @@
         <scope>runtime</scope>
       </dependency>
       <dependency>
-      	<groupId>org.springdoc</groupId>
-      	<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      	<version>2.8.10</version>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>3.0.3</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
       <dependency>
@@ -81,16 +114,51 @@
         <version>5.5.5</version>
         <scope>test</scope>
       </dependency>
+      <!-- Source: https://mvnrepository.com/artifact/org.hibernate.orm/hibernate-jcache -->
+      <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-jcache</artifactId>
+        <version>${hibernate.version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <!-- Source: https://mvnrepository.com/artifact/org.ehcache/ehcache -->
+      <dependency>
+        <groupId>org.ehcache</groupId>
+        <artifactId>ehcache</artifactId>
+        <version>${ehcache.version}</version>
+        <scope>compile</scope>
+        <classifier>jakarta</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- Source: https://mvnrepository.com/artifact/com.redis.om/redis-om-spring -->
+      <dependency>
+        <groupId>com.redis.om</groupId>
+        <artifactId>redis-om-spring</artifactId>
+        <version>${redis-om-spring}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
-	  <dependency>
-	  	<groupId>org.springdoc</groupId>
-	    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-	  </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
+    </dependency>
+    <!-- NOTE: This will not break in production! If your production environment is a standard
+    Linux container (like Docker on AWS, GCP, etc.), Netty is smart enough to completely ignore this
+    macOS dependency. It will only load it when it detects it's running locally on your M2 Mac -->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-resolver-dns-native-macos</artifactId>
+      <classifier>osx-aarch_64</classifier>
     </dependency>
   </dependencies>
   <build>
@@ -108,15 +176,12 @@
           </annotationProcessorPaths>
           <showWarnings>true</showWarnings>
           <compilerArgs>
-            <arg>
-		                -Amapstruct.suppressGeneratorTimestamp=true
-		            </arg>
-            <arg>
-		                -Amapstruct.suppressGeneratorVersionInfoComment=true
-		            </arg>
-            <arg>
-		                -Amapstruct.verbose=true
-		            </arg>
+            <arg> -Amapstruct.suppressGeneratorTimestamp=true
+            </arg>
+            <arg> -Amapstruct.suppressGeneratorVersionInfoComment=true
+            </arg>
+            <arg> -Amapstruct.verbose=true
+            </arg>
           </compilerArgs>
         </configuration>
       </plugin>
