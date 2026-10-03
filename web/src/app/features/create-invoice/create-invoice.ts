@@ -1,15 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { TableModule } from 'primeng/table';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { DatePickerModule } from 'primeng/datepicker';
+import { ButtonModule } from 'primeng/button';
 
 export interface LineItem {
   description: string;
@@ -23,19 +19,16 @@ export interface LineItem {
 
 @Component({
   selector: 'app-create-invoice',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatTableModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatButtonModule,
-    MatIconModule
+    TableModule,
+    CardModule,
+    InputTextModule,
+    DatePickerModule,
+    ButtonModule
   ],
   templateUrl: './create-invoice.html',
   styleUrl: './create-invoice.css',
@@ -43,21 +36,9 @@ export interface LineItem {
 export class CreateInvoice {
   invoiceForm: FormGroup;
   
-  displayedColumns: string[] = [
-    'description', 
-    'quantity', 
-    'unitAmount', 
-    'accountCode', 
-    'taxAmount', 
-    'taxType', 
-    'discountRate'
-  ];
-  
   lineItems: LineItem[] = [
     { description: '', quantity: null, unitAmount: null, accountCode: '', taxAmount: null, taxType: '', discountRate: null }
   ];
-  
-  dataSource = new MatTableDataSource<LineItem>(this.lineItems);
 
   constructor(private fb: FormBuilder) {
     this.invoiceForm = this.fb.group({
@@ -70,15 +51,17 @@ export class CreateInvoice {
   }
 
   addItem() {
-    this.lineItems.push({
-      description: '', 
-      quantity: null, 
-      unitAmount: null, 
-      accountCode: '', 
-      taxAmount: null, 
-      taxType: '', 
-      discountRate: null
-    });
-    this.dataSource.data = this.lineItems;
+    this.lineItems = [
+      ...this.lineItems,
+      {
+        description: '', 
+        quantity: null, 
+        unitAmount: null, 
+        accountCode: '', 
+        taxAmount: null, 
+        taxType: '', 
+        discountRate: null
+      }
+    ];
   }
 }

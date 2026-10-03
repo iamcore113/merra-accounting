@@ -1,58 +1,55 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import {LoginRequest, SigninResponse} from '../../shared/models/auth';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { MessageService } from 'primeng/api';
+import { LoginRequest, SigninResponse } from '../../shared/models/auth';
 import { AuthService } from '../../shared/services/auth-service';
 import { Config, ErrorResponse } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
+
 @Component({
   selector: 'app-signin',
+  standalone: true,
   imports: [
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatCardModule,
-    MatIconModule,
-    MatSnackBarModule,
     CommonModule,
-    RouterLink
+    ReactiveFormsModule,
+    RouterLink,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   templateUrl: './signin.html',
   styleUrl: './signin.scss',
 })
 export class Signin implements OnInit, OnDestroy {
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly authService = inject(AuthService);
+  private readonly localStorage = inject(LocalStorageService);
+  private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
+
   signinForm: FormGroup;
   errorMessage: string | null = null;
-  hidePassword = true;
   isSubmitting = signal(false);
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private authService: AuthService,
-    private localStorage: LocalStorageService,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     this.signinForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      password: ['', [Validators.required]],
     });
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const message = params['message'];
       if (message) {
@@ -61,22 +58,17 @@ export class Signin implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     if (this.errorTimeout) clearTimeout(this.errorTimeout);
   }
 
-  private showError(message: string) {
+  private showError(message: string): void {
     if (this.errorTimeout) clearTimeout(this.errorTimeout);
     this.errorMessage = message;
     this.errorTimeout = setTimeout(() => this.errorMessage = null, 5000);
   }
 
-  togglePasswordVisibility() {
-    this.hidePassword = !this.hidePassword;
-  }
-
-  // TODO: Handle accounts that aren't part of organizations
-  onSubmit() {
+  onSubmit(): void {
     if (this.signinForm.valid) {
       this.isSubmitting.set(true);
       let verifiedData: SigninResponse;
@@ -89,9 +81,12 @@ export class Signin implements OnInit, OnDestroy {
         error: (error) => {
           this.isSubmitting.set(false);
           const errorDict: ErrorResponse = error.error;
-          this.snackBar.open(errorDict.message, 'Close', {
-            duration: 5000,
-            panelClass: 'error-snackbar'
+          const msg = errorDict?.message || 'Failed to sign in. Please try again.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: msg,
+            life: 5000,
           });
         },
         complete: () => {
@@ -100,7 +95,7 @@ export class Signin implements OnInit, OnDestroy {
           this.localStorage.setItem('access_token', accessToken);
           this.localStorage.setItem('refresh_token', refreshToken);
           this.router.navigate(['/main']);
-        }
+        },
       });
     }
   }

@@ -13,29 +13,29 @@
     <div class="action-cards">
       <div class="action-card">
         <div class="action-card-icon">
-          <mat-icon fontSet="material-icons-outlined">person_add</mat-icon>
+          <i class="pi pi-user-plus text-2xl"></i>
         </div>
         <h2 class="action-card-title">New here?</h2>
         <p class="action-card-desc">Create a free account and get started in minutes.</p>
-        <button matButton="filled" routerLink="/account/signup" class="action-btn">Sign Up</button>
+        <button pButton type="button" routerLink="/account/signup" class="action-btn" label="Sign Up" [size]="'small'"></button>
       </div>
 
       <div class="action-card action-card--primary">
         <div class="action-card-icon">
-          <mat-icon fontSet="material-icons-outlined">login</mat-icon>
+          <i class="pi pi-sign-in text-2xl"></i>
         </div>
         <h2 class="action-card-title">Welcome back</h2>
         <p class="action-card-desc">Sign in to access your dashboard and manage your account.</p>
-        <button matButton="filled" routerLink="/account/signin" class="action-btn">Sign In</button>
+        <button pButton type="button" routerLink="/account/signin" class="action-btn action-btn-light" label="Sign In" [size]="'small'"></button>
       </div>
 
       <div class="action-card">
         <div class="action-card-icon">
-          <mat-icon fontSet="material-icons-outlined">visibility</mat-icon>
+          <i class="pi pi-eye text-2xl"></i>
         </div>
         <h2 class="action-card-title">Just browsing?</h2>
         <p class="action-card-desc">Explore the app as a visitor without an account.</p>
-        <button matButton="outlined" class="action-btn">Enter as Visitor</button>
+        <button pButton [outlined]="true" type="button" class="action-btn" label="Enter as Visitor" [size]="'small'"></button>
       </div>
     </div>
   </main>

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { SelectionModel } from '@angular/cdk/collections';
+import { CommonModule } from '@angular/common';
+import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { FormsModule } from '@angular/forms';
 
 export interface ContactTableRow {
   name: string;
@@ -13,16 +13,15 @@ export interface ContactTableRow {
 
 @Component({
   selector: 'app-main-contact',
-  imports: [MatTableModule, MatIconModule, MatCheckboxModule],
+  standalone: true,
+  imports: [CommonModule, TableModule, CheckboxModule, FormsModule],
   templateUrl: './main-contact.html',
   styleUrl: './main-contact.scss',
 })
 export class MainContact {
-  readonly titleHeaderColumns: string[] = ['tableTitle'];
-  readonly displayedColumns: string[] = ['select', 'name', 'accountNumber', 'isSupplier', 'isCustomer'];
-  readonly selection = new SelectionModel<ContactTableRow>(true, []);
+  selectedContacts: ContactTableRow[] = [];
 
-  readonly dataSource = new MatTableDataSource<ContactTableRow>([
+  readonly contacts: ContactTableRow[] = [
     {
       name: 'Acme Corporation',
       accountNumber: 'ACC-1001',
@@ -53,17 +52,5 @@ export class MainContact {
       isSupplier: false,
       isCustomer: false,
     },
-  ]);
-
-  isAllSelected(): boolean {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
-  }
-
-  masterToggle(): void {
-    this.isAllSelected()
-      ? this.selection.clear()
-      : this.dataSource.data.forEach((row) => this.selection.select(row));
-  }
+  ];
 }

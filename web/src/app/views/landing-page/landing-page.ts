@@ -1,12 +1,12 @@
 import { Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { ButtonModule } from 'primeng/button';
 import { Router, RouterLink } from '@angular/router';
 import { BaseService } from '../../shared/services/base-service';
 
 @Component({
   selector: 'app-landing-page',
-  imports: [MatButtonModule, MatIconModule, RouterLink],
+  standalone: true,
+  imports: [ButtonModule, RouterLink],
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })

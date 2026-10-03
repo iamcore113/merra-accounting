@@ -1,4 +1,3 @@
-
 <div class="personal-details-wrapper">
   <div class="personal-details-header">
     <span>Complete Your Profile</span>
@@ -9,76 +8,79 @@
     <form [formGroup]="personalDetailsForm" (ngSubmit)="onNext()">
       @if (isEmailDisabled) {
         <div class="email-display-row">
-          <mat-icon fontSet="material-icons-outlined" class="email-icon email-verified">mark_email_read</mat-icon>
+          <i class="pi pi-check-circle email-icon email-verified"></i>
           <span class="email-display-text">{{ personalDetailsForm.getRawValue().email }}</span>
           <button type="button" class="change-email-btn" (click)="enableEmailEditing()">
-            <mat-icon fontSet="material-icons-outlined">edit</mat-icon>
+            <i class="pi pi-pencil"></i>
             Change
           </button>
         </div>
       } @else {
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="Enter your email" />
-          <mat-icon matPrefix fontSet="material-icons-outlined">mail</mat-icon>
+        <div class="field-group">
+          <label for="detailsEmail" class="field-label">Email</label>
+          <p-iconfield iconPosition="left" class="full-width">
+            <p-inputicon styleClass="pi pi-envelope"></p-inputicon>
+            <input id="detailsEmail" pInputText [pSize]="'small'" type="email" formControlName="email" class="full-width" placeholder="Enter your email" />
+          </p-iconfield>
           @if (personalDetailsForm.get('email')?.hasError('required') && personalDetailsForm.get('email')?.touched) {
-            <mat-error>Email is required</mat-error>
+            <small class="field-error">Email is required</small>
           }
           @if (personalDetailsForm.get('email')?.hasError('email') && personalDetailsForm.get('email')?.touched) {
-            <mat-error>Please enter a valid email</mat-error>
+            <small class="field-error">Please enter a valid email</small>
           }
-        </mat-form-field>
+        </div>
       }
 
       <div class="two-col-row">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>First Name</mat-label>
-          <input matInput type="text" formControlName="firstName" placeholder="Enter your first name" />
-          <mat-icon matPrefix fontSet="material-icons-outlined">person</mat-icon>
-          @if (
-            personalDetailsForm.get('firstName')?.hasError('required') &&
-            personalDetailsForm.get('firstName')?.touched
-          ) {
-            <mat-error>First name is required</mat-error>
+        <div class="field-group flex-1">
+          <label for="firstName" class="field-label">First Name</label>
+          <p-iconfield iconPosition="left" class="full-width">
+            <p-inputicon styleClass="pi pi-user"></p-inputicon>
+            <input id="firstName" pInputText [pSize]="'small'" type="text" formControlName="firstName" class="full-width" placeholder="Enter your first name" />
+          </p-iconfield>
+          @if (personalDetailsForm.get('firstName')?.hasError('required') && personalDetailsForm.get('firstName')?.touched) {
+            <small class="field-error">First name is required</small>
           }
-        </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Last Name</mat-label>
-          <input matInput type="text" formControlName="lastName" placeholder="Enter your last name" />
-          <mat-icon matPrefix fontSet="material-icons-outlined">person</mat-icon>
-          @if (
-            personalDetailsForm.get('lastName')?.hasError('required') &&
-            personalDetailsForm.get('lastName')?.touched
-          ) {
-            <mat-error>Last name is required</mat-error>
+        <div class="field-group flex-1">
+          <label for="lastName" class="field-label">Last Name</label>
+          <p-iconfield iconPosition="left" class="full-width">
+            <p-inputicon styleClass="pi pi-user"></p-inputicon>
+            <input id="lastName" pInputText [pSize]="'small'" type="text" formControlName="lastName" class="full-width" placeholder="Enter your last name" />
+          </p-iconfield>
+          @if (personalDetailsForm.get('lastName')?.hasError('required') && personalDetailsForm.get('lastName')?.touched) {
+            <small class="field-error">Last name is required</small>
           }
-        </mat-form-field>
+        </div>
       </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Country</mat-label>
-        <input type="text" 
-               matInput 
-               formControlName="country" 
-               placeholder="Start typing to search your country"
-               [matAutocomplete]="auto">
-        <mat-icon matPrefix fontSet="material-icons-outlined">public</mat-icon>
-        <mat-autocomplete #auto="matAutocomplete">
-          @for (country of filteredCountries | async; track country.cca2) {
-            <mat-option [value]="country.cca2">{{ country.name }}</mat-option>
-          }
-        </mat-autocomplete>
-        @if (
-          personalDetailsForm.get('country')?.hasError('required') &&
-          personalDetailsForm.get('country')?.touched
-        ) {
-          <mat-error>Country is required</mat-error>
+      <div class="field-group">
+        <label for="country" class="field-label">Country</label>
+        <p-autocomplete
+          id="country"
+          formControlName="country"
+          [suggestions]="filteredCountries"
+          (completeMethod)="filterCountries($event)"
+          optionLabel="name"
+          optionValue="cca2"
+          [size]="'small'"
+          styleClass="full-width"
+          inputStyleClass="full-width"
+          placeholder="Start typing to search your country">
+          <ng-template let-country #item>
+            <div class="country-option">
+              <span>{{ country.name }}</span>
+            </div>
+          </ng-template>
+        </p-autocomplete>
+        @if (personalDetailsForm.get('country')?.hasError('required') && personalDetailsForm.get('country')?.touched) {
+          <small class="field-error">Country is required</small>
         }
-      </mat-form-field>
+      </div>
 
       <div class="button-container">
-        <button matButton="filled" type="submit" [disabled]="personalDetailsForm.invalid">Next</button>
+        <button pButton type="submit" [disabled]="personalDetailsForm.invalid" label="Next" class="next-btn"></button>
       </div>
     </form>
   </div>

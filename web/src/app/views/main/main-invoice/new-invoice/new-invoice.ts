@@ -2,16 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { SplitButtonModule } from 'primeng/splitbutton';
+import { MenuItem, MessageService } from 'primeng/api';
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
 
@@ -32,16 +29,12 @@ export interface InvoiceLineItem {
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatSelectModule,
-    MatTableModule,
-    MatMenuModule,
-    MatSnackBarModule
+    ButtonModule,
+    DatePickerModule,
+    InputTextModule,
+    SelectModule,
+    TableModule,
+    SplitButtonModule
   ],
   templateUrl: './new-invoice.html',
   styleUrl: './new-invoice.scss',
@@ -89,30 +82,39 @@ export class NewInvoice implements OnInit {
   ];
 
   // Table variables
-  displayedColumns: string[] = ['itemCode', 'description', 'quantity', 'price', 'account', 'taxRate', 'amount', 'actions'];
   lineItems: InvoiceLineItem[] = [];
-  dataSource = new MatTableDataSource<InvoiceLineItem>(this.lineItems);
 
   // Totals calculations
   subTotal = 0;
   totalTax = 0;
   grandTotal = 0;
 
+  // Split button items
+  approveItems: MenuItem[] = [
+    { label: 'Approve Only', command: () => this.saveInvoice('APPROVED') },
+    { label: 'Approve & Email', command: () => this.saveInvoice('APPROVED') },
+    { label: 'Approve & Print', command: () => this.saveInvoice('APPROVED') }
+  ];
+
+  saveItems: MenuItem[] = [
+    { label: 'Save as Draft', command: () => this.saveInvoice('DRAFT') },
+    { label: 'Save & Submit', command: () => this.saveInvoice('SUBMITTED') }
+  ];
+
   constructor(
     private readonly fb: FormBuilder,
-    private readonly snackBar: MatSnackBar,
+    private readonly messageService: MessageService,
     private readonly invoiceService: InvoiceService,
     private readonly contactService: ContactService,
     private readonly router: Router
   ) {}
 
   goToCreateContact(event: Event): void {
-    event.stopPropagation(); // Prevents select dropdown from opening
+    event.stopPropagation();
     this.router.navigate(['/main/invoice']);
   }
 
   ngOnInit(): void {
-    // Build reactive form mapping standard Invoice entity fields
     this.invoiceForm = this.fb.group({
       invoiceNumber: ['INV-0001', Validators.required],
       organization: ['oscorp', Validators.required],
@@ -120,20 +122,17 @@ export class NewInvoice implements OnInit {
       contact: ['', Validators.required],
       lineAmountTypes: ['EXCLUSIVE', Validators.required],
       date: [new Date(), Validators.required],
-      dueDate: [new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), Validators.required], // 30 days from now
+      dueDate: [new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), Validators.required],
       status: ['', Validators.required],
       reference: ['']
     });
 
-    // Populate table with one default empty row
     this.addLineItem();
 
-    // Recalculate if form settings like lineAmountTypes change
     this.invoiceForm.get('lineAmountTypes')?.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
 
-    // Fetch dynamic options from backend endpoints
     this.loadInvoiceMetadata();
     this.loadContacts();
   }
@@ -144,28 +143,23 @@ export class NewInvoice implements OnInit {
         if (res.success && res.data) {
           const metadata = res.data;
           
-          // Populate Invoice Types (from metadata.invoiceTypes)
           if (metadata.invoiceTypes && metadata.invoiceTypes.length > 0) {
             this.types = metadata.invoiceTypes.map(t => ({
               code: t.id,
               name: t.name
             }));
-            // Auto-select first type
             this.invoiceForm.patchValue({ type: this.types[0].code });
           }
 
-          // Populate Statuses (from metadata.invoiceStatusCodes)
           if (metadata.invoiceStatusCodes && metadata.invoiceStatusCodes.length > 0) {
             this.statuses = metadata.invoiceStatusCodes.map(s => ({
               value: s.code,
               label: s.code.charAt(0).toUpperCase() + s.code.slice(1).toLowerCase()
             }));
-            // Auto-select DRAFT status if present, otherwise first status
             const draftStatus = this.statuses.find(s => s.value === 'DRAFT');
             this.invoiceForm.patchValue({ status: draftStatus ? draftStatus.value : this.statuses[0].value });
           }
 
-          // Populate Line Amount Types
           if (metadata.lineAmountTypes && metadata.lineAmountTypes.length > 0) {
             this.lineAmountTypesOptions = metadata.lineAmountTypes.map(lat => ({
               value: lat.name.replace(' ', '_').toUpperCase(),
@@ -176,7 +170,7 @@ export class NewInvoice implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load invoice metadata:', err);
-        this.snackBar.open('Error loading invoice metadata.', 'Close', { duration: 3000 });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error loading invoice metadata.', life: 3000 });
       }
     });
   }
@@ -196,34 +190,37 @@ export class NewInvoice implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load contacts:', err);
-        this.snackBar.open('Error loading contacts.', 'Close', { duration: 3000 });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error loading contacts.', life: 3000 });
       }
     });
   }
 
   addLineItem(): void {
-    this.lineItems.push({
-      itemCode: '',
-      description: '',
-      quantity: 1,
-      price: 0,
-      account: '200',
-      taxRate: 15,
-      amount: 0
-    });
-    this.dataSource.data = [...this.lineItems];
+    this.lineItems = [
+      ...this.lineItems,
+      {
+        itemCode: '',
+        description: '',
+        quantity: 1,
+        price: 0,
+        account: '200',
+        taxRate: 15,
+        amount: 0
+      }
+    ];
     this.calculateTotals();
   }
 
   deleteLineItem(index: number): void {
     if (this.lineItems.length > 1) {
-      this.lineItems.splice(index, 1);
-      this.dataSource.data = [...this.lineItems];
+      this.lineItems = this.lineItems.filter((_, i) => i !== index);
       this.calculateTotals();
     } else {
-      this.snackBar.open('Invoice must have at least one line item.', 'Close', {
-        duration: 3000,
-        panelClass: ['warning-snackbar']
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Invoice must have at least one line item.',
+        life: 3000
       });
     }
   }
@@ -240,40 +237,30 @@ export class NewInvoice implements OnInit {
 
     this.lineItems.forEach(item => {
       const lineTotal = (item.quantity || 0) * (item.price || 0);
-      item.amount = lineTotal; // Base line amount
+      item.amount = lineTotal;
 
       if (amountType === 'EXCLUSIVE') {
         runningSubTotal += lineTotal;
         runningTaxTotal += lineTotal * ((item.taxRate || 0) / 100);
       } else if (amountType === 'INCLUSIVE') {
-        // Tax is included inside the total price
         const taxFactor = (item.taxRate || 0) / (100 + (item.taxRate || 0));
         const lineTax = lineTotal * taxFactor;
         runningSubTotal += (lineTotal - lineTax);
         runningTaxTotal += lineTax;
       } else {
-        // NO_TAX
         runningSubTotal += lineTotal;
-        // Tax remains 0
       }
     });
 
     this.subTotal = runningSubTotal;
     this.totalTax = runningTaxTotal;
-    
-    if (amountType === 'EXCLUSIVE') {
-      this.grandTotal = runningSubTotal + runningTaxTotal;
-    } else if (amountType === 'INCLUSIVE') {
-      this.grandTotal = runningSubTotal + runningTaxTotal;
-    } else {
-      this.grandTotal = runningSubTotal;
-    }
+    this.grandTotal = runningSubTotal + (amountType === 'NO_TAX' ? 0 : runningTaxTotal);
   }
 
   saveInvoice(status: string): void {
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
-      this.snackBar.open('Please fill in all required fields.', 'Close', { duration: 3000 });
+      this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fill in all required fields.', life: 3000 });
       return;
     }
 
@@ -287,9 +274,11 @@ export class NewInvoice implements OnInit {
     };
 
     console.log('Saving Invoice Payload:', payload);
-    this.snackBar.open(`Invoice successfully saved as ${status}! (UI Mode)`, 'Success', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Invoice successfully saved as ${status}! (UI Mode)`,
+      life: 3000
     });
   }
 }

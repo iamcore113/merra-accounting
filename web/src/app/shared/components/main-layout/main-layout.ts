@@ -1,6 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
 import { RouterOutlet } from '@angular/router';
 import { MainHeader } from '../main-header/main-header';
 import { MainSidenav } from '../main-sidenav/main-sidenav';
@@ -34,6 +32,8 @@ export class MainLayout implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.bpSub.unsubscribe();
+    if (this.bpSub) {
+      this.bpSub.unsubscribe();
+    }
   }
 }

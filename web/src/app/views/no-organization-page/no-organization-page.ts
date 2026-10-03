@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-no-organization-page',
-  imports: [MatIconModule],
+  standalone: true,
+  imports: [CommonModule, RouterLink],
   templateUrl: './no-organization-page.html',
   styleUrl: './no-organization-page.scss',
 })
-export class NoOrganizationPage {
-
-}
+export class NoOrganizationPage {}

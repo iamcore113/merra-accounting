@@ -1,7 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { DialogService } from 'primeng/dynamicdialog';
 import { LocalStorageService } from '../services/local-storage-service';
 import { IS_AUTHENTICATED } from '../context/auth.token';
 import { SessionExpiredDialog } from '../components/session-expired-dialog/session-expired-dialog';
@@ -9,31 +9,38 @@ import { API_VERSION } from '../api/base';
 
 let sessionDialogOpen = false;
 
-function openSessionExpiredDialog(dialog: MatDialog, message: string): void {
+function openSessionExpiredDialog(dialogService: DialogService, message: string): void {
   if (sessionDialogOpen) {
     return;
   }
   sessionDialogOpen = true;
-  dialog.open(SessionExpiredDialog, {
+  const ref = dialogService.open(SessionExpiredDialog, {
+    header: 'Session Expired',
     width: '420px',
-    disableClose: true,
+    closable: false,
+    closeOnEscape: false,
+    modal: true,
     data: { message },
-  }).afterClosed().subscribe(() => {
-    sessionDialogOpen = false;
   });
+
+  if (ref) {
+    ref.onClose.subscribe(() => {
+      sessionDialogOpen = false;
+    });
+  }
 }
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const requiresAuth = req.context.get(IS_AUTHENTICATED);
   const localStorageService = inject(LocalStorageService);
-  const dialog = inject(MatDialog);
+  const dialogService = inject(DialogService);
 
   let headers = req.headers.set('API-Version', API_VERSION);
 
   const accessToken = localStorageService.getItem('access_token');
   if (!accessToken && requiresAuth) {
     localStorageService.removeItem('access_token');
-    openSessionExpiredDialog(dialog, 'Your session is invalid or has expired. Please sign in again to continue.');
+    openSessionExpiredDialog(dialogService, 'Your session is invalid or has expired. Please sign in again to continue.');
     return throwError(() => new Error('No authentication token found'));
   }
 
@@ -45,7 +52,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       catchError(error => {
         if (error.status === 401) {
           localStorageService.removeItem('access_token');
-          openSessionExpiredDialog(dialog, 'Your session token has expired or is no longer valid. Please sign in again to continue.');
+          openSessionExpiredDialog(dialogService, 'Your session token has expired or is no longer valid. Please sign in again to continue.');
         }
         return throwError(() => error);
       })
@@ -57,7 +64,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError(error => {
       if (error.status === 401) {
         localStorageService.removeItem('access_token');
-        openSessionExpiredDialog(dialog, 'Authentication failed. Your session may have expired. Please sign in again.');
+        openSessionExpiredDialog(dialogService, 'Authentication failed. Your session may have expired. Please sign in again.');
       }
       return throwError(() => error);
     })

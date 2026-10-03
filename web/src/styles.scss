@@ -1,22 +1,5 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
-@use '@angular/material' as mat;
-
+@import "primeicons/primeicons.css";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
-html {
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: 'Inter',
-    density: 0,
-  ));
-}
 
 // CSS Reset and Box Sizing
 *,
@@ -34,33 +17,34 @@ body {
   height: 100%;
 }
 
-body {
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-}
+:root {
+  --primary-color: #689D4B;
+  --primary-hover: #58883e;
+  --primary-active: #497332;
+  --primary-light: #f4f8f1;
+  --primary-border: #689D4B;
 
-body {
-  // Define custom CSS variables
   --brand-font-family: "Michroma", sans-serif;
   --brand-color: #024684;
   --default-text-color: #333333;
+  --bg-color: #e8eef6;
 
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
+  // PrimeNG semantic overrides
+  --p-primary-color: #689D4B;
+  --p-primary-hover-color: #58883e;
+  --p-primary-active-color: #497332;
+  --p-form-field-focus-border-color: #689D4B;
+  --p-form-field-focus-ring-color: #689D4B;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
   color-scheme: light;
-
-  // Set a custom global background color
-  background-color: #e8eef6 !important;
-  // Override Material system variables to match custom background
-  --mat-sys-background: #e8eef6;
-  --mat-sys-surface: #e8eef6;
-
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-  font-family: 'Inter', Roboto, "Helvetica Neue", Arial, sans-serif;
-
-  // Reset the user agent margin.
+  background-color: var(--bg-color) !important;
+  color: var(--default-text-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 0.9375rem;
   margin: 0;
 }
 
@@ -71,13 +55,6 @@ canvas,
 svg {
   display: block;
   max-width: 100%;
-}
-
-// Prevent CSS reset from breaking Material spinner SVG animation
-mat-progress-spinner svg,
-.mat-mdc-progress-spinner svg {
-  display: inherit;
-  max-width: none;
 }
 
 input,
@@ -95,120 +72,224 @@ h4,
 h5,
 h6 {
   overflow-wrap: break-word;
-}
-h1, h2, h3, h4, h5, h6, p {
   color: var(--default-text-color);
   margin: 0;
 }
 
-// Brand logo font REGULAR
+// Brand logo fonts
 .brand-logo {
   font-family: var(--brand-font-family);
   color: var(--brand-color);
   font-weight: 400;
   font-style: normal;
 }
+
 .sub-brand-logo {
   font-family: var(--brand-font-family);
   color: var(--brand-color);
   font-style: light;
+  font-weight: 300;
   font-size: 0.875rem;
 }
 
-// Shared expansion panel layout for profile/organization style sections.
-// Add `shared-expansion-panels` to the container that wraps a `mat-accordion`.
-.shared-expansion-panels mat-expansion-panel {
-  --mat-expansion-container-body-padding: 0 1.5rem 1.5rem;
-  --mat-expansion-header-collapsed-state-height: 64px;
-  --mat-expansion-header-expanded-state-height: 72px;
-  --mat-expansion-container-background-color: #ffffff;
+// =========================================================
+// PrimeNG Component Overrides & Custom Theme Rules (#689D4B)
+// =========================================================
+
+// Small Input Field Size Global Preservation
+.p-inputtext,
+.p-select,
+.p-datepicker input,
+.p-autocomplete input,
+.p-textarea {
+  font-size: 0.875rem !important;
+  padding: 0.4375rem 0.625rem !important;
+  border-radius: 6px !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:enabled:focus,
+  &:enabled:focus-visible {
+    border-color: #689D4B !important;
+    box-shadow: 0 0 0 1px #689D4B !important;
+    outline: none !important;
+  }
 }
 
-.shared-expansion-panels .detail-title {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-  overflow: visible;
+.p-inputtext-sm,
+.p-size-small,
+.p-input-sm {
+  font-size: 0.8125rem !important;
+  padding: 0.35rem 0.5rem !important;
 }
 
-.shared-expansion-panels .mat-expansion-panel-header .mat-content {
-  overflow: visible;
+// Primary Buttons (Filled)
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):not(.p-button-danger):not(.p-button-warn):not(.p-button-success):not(.p-button-info):not(.p-button-help) {
+  background-color: #689D4B !important;
+  border-color: #689D4B !important;
+  color: #ffffff !important;
+
+  &:hover:not(:disabled) {
+    background-color: #58883e !important;
+    border-color: #58883e !important;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #497332 !important;
+    border-color: #497332 !important;
+  }
 }
 
-.shared-expansion-panels .detail-text {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
+// Secondary Buttons (Outlined by default with #689D4B)
+.p-button-outlined,
+.p-button-secondary,
+.p-button.btn-secondary,
+.p-button[severity="secondary"] {
+  background-color: transparent !important;
+  border: 1px solid #689D4B !important;
+  color: #689D4B !important;
+
+  &:hover:not(:disabled) {
+    background-color: #f4f8f1 !important;
+    border-color: #689D4B !important;
+    color: #58883e !important;
+  }
+
+  &:active:not(:disabled) {
+    background-color: #e5f0dd !important;
+    border-color: #497332 !important;
+    color: #497332 !important;
+  }
 }
 
-.shared-expansion-panels .detail-label {
-  white-space: nowrap;
-  font-weight: 500;
+// Checkbox styling (#689D4B)
+.p-checkbox-checked .p-checkbox-box,
+.p-checkbox.p-checkbox-checked .p-checkbox-box {
+  background-color: #689D4B !important;
+  border-color: #689D4B !important;
+  color: #ffffff !important;
 }
 
-.shared-expansion-panels .detail-value {
-  white-space: nowrap;
+.p-checkbox:not(.p-disabled):has(.p-checkbox-input:focus-visible) .p-checkbox-box {
+  border-color: #689D4B !important;
+  box-shadow: 0 0 0 1px #689D4B !important;
+}
+
+// Radio button styling (#689D4B)
+.p-radiobutton-checked .p-radiobutton-box,
+.p-radiobutton.p-radiobutton-checked .p-radiobutton-box {
+  border-color: #689D4B !important;
+  background-color: #ffffff !important;
+
+  .p-radiobutton-icon {
+    background-color: #689D4B !important;
+  }
+}
+
+.p-radiobutton:not(.p-disabled):has(.p-radiobutton-input:focus-visible) .p-radiobutton-box {
+  border-color: #689D4B !important;
+  box-shadow: 0 0 0 1px #689D4B !important;
+}
+
+// Toggle switch styling (#689D4B)
+.p-toggleswitch-checked .p-toggleswitch-slider,
+.p-inputswitch-checked .p-inputswitch-slider {
+  background-color: #689D4B !important;
+}
+
+.p-toggleswitch:not(.p-disabled):has(.p-toggleswitch-input:focus-visible) .p-toggleswitch-slider {
+  box-shadow: 0 0 0 1px #689D4B !important;
+}
+
+// Progress Spinner
+.p-progress-spinner-circle {
+  stroke: #689D4B !important;
+}
+
+// Global Dialog Styling
+.p-dialog {
+  border-radius: 12px !important;
   overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-@media (min-width: 600px) {
-  .shared-expansion-panels .detail-text {
-    grid-template-columns: 9rem minmax(0, 1fr);
-    column-gap: 2.5rem;
+  .p-dialog-header {
+    padding: 1.25rem 1.5rem 0.75rem !important;
+    font-weight: 600;
+  }
+
+  .p-dialog-content {
+    padding: 0.5rem 1.5rem 1.25rem !important;
+  }
+
+  .p-dialog-footer {
+    padding: 0.75rem 1.5rem 1.25rem !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
   }
 }
 
-.shared-expansion-panels .detail-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  margin-left: auto;
-  margin-right: -0.50rem;
-  color: #94B4C1;
-}
+// Shared expansion panels for profile/organization pages
+.shared-expansion-panels {
+  .p-accordion-panel,
+  .p-accordiontab {
+    margin-bottom: 0.75rem;
+    border-radius: 8px !important;
+    border: 1px solid #dcdfe4 !important;
+    background-color: #ffffff !important;
+    overflow: hidden;
+  }
 
-.shared-expansion-panels .mat-expansion-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+  .p-accordion-header,
+  .p-accordion-header-link {
+    background-color: #ffffff !important;
+    padding: 1rem 1.25rem !important;
+    font-weight: 500;
+  }
 
-.shared-expansion-panels .mat-expansion-indicator svg {
-  width: 32px;
-  height: 32px;
-  margin: 0 -4px;
-}
+  .p-accordion-content {
+    padding: 0 1.5rem 1.5rem !important;
+    background-color: #ffffff !important;
+  }
 
-.shared-expansion-panels .mat-expansion-indicator::after {
-  border-width: 0 3px 3px 0;
-  padding: 4px;
-}
+  .detail-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
 
-// Customizing mat-select dropdown arrow size to match date field arrows globally
-.mat-mdc-select-arrow-wrapper {
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .detail-text {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
 
-.mat-mdc-select-arrow {
-  width: 20px !important;
-  height: 20px !important;
-  color: #64748b !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  .detail-label {
+    white-space: nowrap;
+    font-weight: 500;
+    color: #475569;
+  }
 
-  svg {
-    width: 20px !important;
-    height: 20px !important;
-    fill: currentColor !important;
+  .detail-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #1e293b;
+    font-weight: 500;
+  }
+
+  @media (min-width: 600px) {
+    .detail-text {
+      grid-template-columns: 9rem minmax(0, 1fr);
+      column-gap: 2.5rem;
+    }
+  }
+
+  .detail-icon {
+    font-size: 1.25rem;
+    margin-left: auto;
+    color: #94b4c1;
   }
 }
-

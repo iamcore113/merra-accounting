@@ -1,21 +1,17 @@
 import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
-import { AsyncPipe } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
-import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AccordionModule } from 'primeng/accordion';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SelectModule } from 'primeng/select';
+import { BadgeModule } from 'primeng/badge';
+import { ChipModule } from 'primeng/chip';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { MessageService } from 'primeng/api';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatBadgeModule } from '@angular/material/badge';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatListModule } from '@angular/material/list';
-import { MatSelectModule } from '@angular/material/select';
 import { UserService } from '../../../shared/services/user-service';
 import { PrincipalDetailsResponse } from '../../../shared/models/organization';
 import { RestCountriesSelection, Config } from '../../../shared/models/api_response';
@@ -25,24 +21,21 @@ import { UtilityService } from '../../../shared/services/utility-service';
 @Component({
   selector: 'app-profile-image-dialog',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [ButtonModule],
   template: `
     <section class="profile-image-dialog">
-      <h3 mat-dialog-title>Profile Picture</h3>
-      <mat-dialog-content>
-        <div class="profile-image-placeholder">
-          <mat-icon class="profile-image-icon">account_circle</mat-icon>
-        </div>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button matButton type="button" (click)="close()">Close</button>
-        <button matButton="filled" type="button">Upload Photo</button>
-      </mat-dialog-actions>
+      <div class="profile-image-placeholder">
+        <i class="pi pi-user profile-image-icon"></i>
+      </div>
+      <div class="dialog-actions flex justify-end gap-2 mt-4">
+        <p-button label="Close" [size]="'small'" [outlined]="true" (click)="close()"></p-button>
+        <p-button label="Upload Photo" [size]="'small'"></p-button>
+      </div>
     </section>
   `,
 })
 export class ProfileImageDialog {
-  private readonly dialogRef = inject(MatDialogRef<ProfileImageDialog>);
+  private readonly dialogRef = inject(DynamicDialogRef);
 
   close(): void {
     this.dialogRef.close();
@@ -50,86 +43,74 @@ export class ProfileImageDialog {
 }
 
 @Component({
-  selector: 'app-change-password-sheet',
+  selector: 'app-change-password-dialog',
   standalone: true,
-  imports: [MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [ButtonModule, PasswordModule, FormsModule, ReactiveFormsModule],
   template: `
-    <section class="change-password-sheet">
-      <h3 class="sheet-title">Change Password</h3>
+    <section class="change-password-dialog">
       <p class="sheet-description">Set a new password for your account.</p>
 
-      <mat-form-field class="sheet-form-field">
-        <mat-label>Current password</mat-label>
-        <input matInput type="password" placeholder="Enter current password">
-      </mat-form-field>
+      <div class="field-wrapper mb-3">
+        <label class="field-label block mb-1">Current password</label>
+        <p-password [(ngModel)]="currentPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Enter current password"></p-password>
+      </div>
 
-      <mat-form-field class="sheet-form-field">
-        <mat-label>New password</mat-label>
-        <input matInput [type]="showNewPassword ? 'text' : 'password'" placeholder="Enter new password">
-        <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          [attr.aria-label]="showNewPassword ? 'Hide new password' : 'Show new password'"
-          (click)="toggleNewPasswordVisibility()">
-          <mat-icon>{{ showNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-      </mat-form-field>
+      <div class="field-wrapper mb-3">
+        <label class="field-label block mb-1">New password</label>
+        <p-password [(ngModel)]="newPassword" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Enter new password"></p-password>
+      </div>
 
-      <mat-form-field class="sheet-form-field">
-        <mat-label>Confirm new password</mat-label>
-        <input matInput [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Re-enter new password">
-        <button
-          mat-icon-button
-          matSuffix
-          type="button"
-          [attr.aria-label]="showConfirmPassword ? 'Hide confirm new password' : 'Show confirm new password'"
-          (click)="toggleConfirmPasswordVisibility()">
-          <mat-icon>{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-        </button>
-      </mat-form-field>
+      <div class="field-wrapper mb-4">
+        <label class="field-label block mb-1">Confirm new password</label>
+        <p-password [(ngModel)]="confirmPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Re-enter new password"></p-password>
+      </div>
 
-      <p class="sheet-note">
+      <p class="sheet-note mb-4">
         Once you change your password, you will be automatically logged out.<br>
-        You will also receive an email with instructions on how to sign in again <br> using your new password.
+        You will also receive an email with instructions on how to sign in again using your new password.
       </p>
 
-      <div class="sheet-actions">
-        <button matButton="filled" type="button" (click)="close()">Update Password</button>
+      <div class="dialog-actions flex justify-end gap-2">
+        <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="close()"></p-button>
+        <p-button label="Update Password" severity="danger" [size]="'small'" (click)="close()"></p-button>
       </div>
     </section>
   `,
 })
-export class ChangePasswordSheet {
-  private readonly bottomSheetRef = inject(MatBottomSheetRef<ChangePasswordSheet>);
-  showNewPassword = false;
-  showConfirmPassword = false;
-
-  toggleNewPasswordVisibility(): void {
-    this.showNewPassword = !this.showNewPassword;
-  }
-
-  toggleConfirmPasswordVisibility(): void {
-    this.showConfirmPassword = !this.showConfirmPassword;
-  }
+export class ChangePasswordDialog {
+  private readonly dialogRef = inject(DynamicDialogRef);
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
 
   close(): void {
-    this.bottomSheetRef.dismiss();
+    this.dialogRef.close();
   }
 }
 
 @Component({
   selector: 'app-main-profile',
   standalone: true,
-  imports: [MatExpansionModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSelectModule, MatBadgeModule, MatListModule, MatChipsModule, MatBottomSheetModule, MatDialogModule, MatAutocompleteModule, AsyncPipe, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AccordionModule,
+    AutoCompleteModule,
+    SelectModule,
+    BadgeModule,
+    ChipModule,
+    ButtonModule,
+    InputTextModule
+  ],
   templateUrl: './main-profile.html',
   styleUrl: './main-profile.scss',
   encapsulation: ViewEncapsulation.None,
 })
 export class MainProfile implements OnInit {
   private userService = inject(UserService);
-  private readonly bottomSheet = inject(MatBottomSheet);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogService = inject(DialogService);
+  private readonly messageService = inject(MessageService);
   private readonly cdRef = inject(ChangeDetectorRef);
   private readonly organizationService = inject(OrganizationService);
   private readonly utilityService = inject(UtilityService);
@@ -143,6 +124,12 @@ export class MainProfile implements OnInit {
   isEditingName = false;
   isEditingGender = false;
   countries: RestCountriesSelection = [];
+  filteredCountries: any[] = [];
+
+  genderOptions = [
+    { label: 'Male', value: 'male' },
+    { label: 'Female', value: 'female' }
+  ];
 
   profileForm: FormGroup = this.fb.group({
     firstName: ['', Validators.required],
@@ -155,11 +142,6 @@ export class MainProfile implements OnInit {
   get countryControl(): FormControl {
     return this.profileForm.get('country') as FormControl;
   }
-
-  filteredCountries: Observable<RestCountriesSelection> = this.profileForm.get('country')!.valueChanges.pipe(
-    startWith(''),
-    map(value => this._filterCountries(value ?? ''))
-  );
 
   ngOnInit(): void {
     this.isLoading = true;
@@ -211,19 +193,23 @@ export class MainProfile implements OnInit {
         this.personalDetails = response.data as PrincipalDetailsResponse;
         this.patchForm(this.personalDetails);
         this.isUpdating = false;
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Profile updated successfully', life: 3000 });
         this.cdRef.detectChanges();
       },
       error: (error) => {
         console.error('Failed to update profile:', error);
         this.isUpdating = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update profile', life: 5000 });
         this.cdRef.detectChanges();
       },
     });
   }
 
-  private _filterCountries(value: string): RestCountriesSelection {
-    const filterValue = value.toLowerCase();
-    return this.countries.filter(c => c.name.toLowerCase().includes(filterValue));
+  searchCountry(event: any): void {
+    const query = event.query?.toLowerCase() || '';
+    this.filteredCountries = this.countries
+      .filter(c => c.name.toLowerCase().includes(query))
+      .map(c => c.name);
   }
 
   private loadCountries(): void {
@@ -247,10 +233,13 @@ export class MainProfile implements OnInit {
   }
 
   openProfileImageDialog(): void {
-    this.dialog.open(ProfileImageDialog);
+    this.dialogService.open(ProfileImageDialog, {
+      header: 'Profile Picture',
+      width: '380px'
+    });
   }
 
-  openEmailChangeDialog(closePanel: () => void): void {
+  openEmailChangeDialog(): void {
     const data: DialogData = {
       title: 'Change Email Address',
       messages: [
@@ -260,18 +249,20 @@ export class MainProfile implements OnInit {
       ],
       confirmLabel: 'Proceed',
     };
-    const dialogRef = this.dialog.open(Dialog, { data });
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+    const dialogRef = this.dialogService.open(Dialog, { data, header: 'Change Email Address', width: '420px' });
+    dialogRef?.onClose.subscribe((confirmed: boolean) => {
       if (confirmed) {
         this.updateProfile();
         this.isEditingEmail = false;
-        closePanel();
       }
     });
   }
 
   openChangePasswordSheet(): void {
-    this.bottomSheet.open(ChangePasswordSheet);
+    this.dialogService.open(ChangePasswordDialog, {
+      header: 'Change Password',
+      width: '420px'
+    });
   }
 
   getGenderLetter(): string {

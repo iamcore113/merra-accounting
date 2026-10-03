@@ -15,37 +15,12 @@
     </div>
     <div class="header-right">
       <!-- Approve & Email split button -->
-      <div class="split-button-container primary-split">
-        <button mat-flat-button color="primary" class="split-main-btn" (click)="saveInvoice('APPROVED')">
-          Approve
-        </button>
-        <button mat-flat-button color="primary" class="split-arrow-btn" [matMenuTriggerFor]="approveMenu">
-          <mat-icon>arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #approveMenu="matMenu">
-          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve Only</button>
-          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve & Email</button>
-          <button mat-menu-item (click)="saveInvoice('APPROVED')">Approve & Print</button>
-        </mat-menu>
-      </div>
+      <p-splitbutton label="Approve" (onClick)="saveInvoice('APPROVED')" [model]="approveItems" [size]="'small'" styleClass="primary-split-btn"></p-splitbutton>
 
       <!-- Save & Close split button -->
-      <div class="split-button-container">
-        <button mat-flat-button class="split-main-btn" (click)="saveInvoice('DRAFT')">
-          Save & close
-        </button>
-        <button mat-flat-button class="split-arrow-btn" [matMenuTriggerFor]="saveMenu">
-          <mat-icon>arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #saveMenu="matMenu">
-          <button mat-menu-item (click)="saveInvoice('DRAFT')">Save as Draft</button>
-          <button mat-menu-item (click)="saveInvoice('SUBMITTED')">Save & Submit</button>
-        </mat-menu>
-      </div>
-      <button mat-button class="preview-btn">
-        <mat-icon>visibility</mat-icon>
-        <span>Preview</span>
-      </button>
+      <p-splitbutton label="Save & close" (onClick)="saveInvoice('DRAFT')" [model]="saveItems" [outlined]="true" [size]="'small'"></p-splitbutton>
+
+      <p-button label="Preview" icon="pi pi-eye" [outlined]="true" [size]="'small'"></p-button>
     </div>
   </div>
 
@@ -55,202 +30,101 @@
       <!-- To, Invoice Type, Invoice number, Reference -->
       <div class="form-field-wrapper">
         <label class="field-label">Contact</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">person</mat-icon>
-          <mat-select formControlName="contact" placeholder="Select contact">
-            @if (contacts && contacts.length > 0) {
-            @for (contact of contacts; track contact.id) {
-            <mat-option [value]="contact.id">{{ contact.name }}</mat-option>
-            }
-            } @else {
-            <mat-option disabled>No contacts found</mat-option>
-            }
-          </mat-select>
-          <mat-icon matSuffix class="add-contact-icon" (click)="goToCreateContact($event)"
-            title="Add new contact">add</mat-icon>
-        </mat-form-field>
+        <div class="contact-select-row">
+          <p-select formControlName="contact" [options]="contacts" optionLabel="name" optionValue="id" placeholder="Select contact" [size]="'small'" styleClass="w-full flex-1"></p-select>
+          <p-button icon="pi pi-plus" [outlined]="true" [size]="'small'" (click)="goToCreateContact($event)" title="Add new contact"></p-button>
+        </div>
       </div>
+
       <div class="form-field-wrapper">
         <label class="field-label">Invoice Type</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select formControlName="type">
-            @for (t of types; track t.code) {
-            <mat-option [value]="t.code">{{ t.name }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <p-select formControlName="type" [options]="types" optionLabel="name" optionValue="code" [size]="'small'" styleClass="w-full"></p-select>
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Invoice number</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">tag</mat-icon>
-          <input matInput formControlName="invoiceNumber">
-        </mat-form-field>
+        <input pInputText [pSize]="'small'" formControlName="invoiceNumber" class="w-full" />
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Reference</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">bookmark</mat-icon>
-          <input matInput formControlName="reference">
-        </mat-form-field>
+        <input pInputText [pSize]="'small'" formControlName="reference" class="w-full" />
       </div>
 
       <!-- Row 2: Issue date, Due date, Amounts are, Status -->
       <div class="form-field-wrapper">
         <label class="field-label">Issue date</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">calendar_today</mat-icon>
-          <input matInput [matDatepicker]="issueDatePicker" formControlName="date">
-          <mat-datepicker-toggle matIconSuffix [for]="issueDatePicker">
-            <mat-icon matDatepickerToggleIcon>arrow_drop_down</mat-icon>
-          </mat-datepicker-toggle>
-          <mat-datepicker #issueDatePicker></mat-datepicker>
-        </mat-form-field>
+        <p-datepicker formControlName="date" [showIcon]="true" [size]="'small'" [iconDisplay]="'button'" styleClass="w-full" appendTo="body"></p-datepicker>
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Due date</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-icon matPrefix class="field-icon">calendar_today</mat-icon>
-          <input matInput [matDatepicker]="dueDatePicker" formControlName="dueDate">
-          <mat-datepicker-toggle matIconSuffix [for]="dueDatePicker">
-            <mat-icon matDatepickerToggleIcon>arrow_drop_down</mat-icon>
-          </mat-datepicker-toggle>
-          <mat-datepicker #dueDatePicker></mat-datepicker>
-        </mat-form-field>
+        <p-datepicker formControlName="dueDate" [showIcon]="true" [size]="'small'" [iconDisplay]="'button'" styleClass="w-full" appendTo="body"></p-datepicker>
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Amounts are</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select formControlName="lineAmountTypes">
-            @for (opt of lineAmountTypesOptions; track opt.value) {
-            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <p-select formControlName="lineAmountTypes" [options]="lineAmountTypesOptions" optionLabel="label" optionValue="value" [size]="'small'" styleClass="w-full"></p-select>
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Status</label>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-select formControlName="status">
-            @for (st of statuses; track st.value) {
-            <mat-option [value]="st.value">{{ st.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <p-select formControlName="status" [options]="statuses" optionLabel="label" optionValue="value" [size]="'small'" styleClass="w-full"></p-select>
       </div>
     </form>
 
     <!-- Table of line items -->
     <div class="table-container">
-      <table mat-table [dataSource]="dataSource" class="line-items-table">
-
-        <!-- Item Column -->
-        <ng-container matColumnDef="itemCode">
-          <th mat-header-cell *matHeaderCellDef> Item </th>
-          <td mat-cell *matCellDef="let element; let i = index">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
-              <input matInput [(ngModel)]="element.itemCode" placeholder="Search item...">
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Description Column -->
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef> Description </th>
-          <td mat-cell *matCellDef="let element; let i = index">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
-              <input matInput [(ngModel)]="element.description" placeholder="Description...">
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Qty Column -->
-        <ng-container matColumnDef="quantity">
-          <th mat-header-cell *matHeaderCellDef class="number-header"> Qty. </th>
-          <td mat-cell *matCellDef="let element; let i = index" class="number-cell">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field number-input">
-              <input matInput type="number" [(ngModel)]="element.quantity" (ngModelChange)="onItemChange(element)"
-                min="0">
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Price Column -->
-        <ng-container matColumnDef="price">
-          <th mat-header-cell *matHeaderCellDef class="number-header"> Price </th>
-          <td mat-cell *matCellDef="let element; let i = index" class="number-cell">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field number-input">
-              <input matInput type="number" [(ngModel)]="element.price" (ngModelChange)="onItemChange(element)" min="0"
-                step="0.01">
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Account Column -->
-        <ng-container matColumnDef="account">
-          <th mat-header-cell *matHeaderCellDef> Account </th>
-          <td mat-cell *matCellDef="let element; let i = index">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
-              <mat-select [(ngModel)]="element.account">
-                @for (acc of accounts; track acc.code) {
-                <mat-option [value]="acc.code">{{ acc.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Tax Rate Column -->
-        <ng-container matColumnDef="taxRate">
-          <th mat-header-cell *matHeaderCellDef> Tax rate </th>
-          <td mat-cell *matCellDef="let element; let i = index">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-input-field">
-              <mat-select [(ngModel)]="element.taxRate" (ngModelChange)="onItemChange(element)">
-                @for (tr of taxRates; track tr.value) {
-                <mat-option [value]="tr.value">{{ tr.label }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </td>
-        </ng-container>
-
-        <!-- Amount Column -->
-        <ng-container matColumnDef="amount">
-          <th mat-header-cell *matHeaderCellDef class="number-header"> Amount </th>
-          <td mat-cell *matCellDef="let element" class="amount-cell number-cell">
-            {{ element.amount | number:'1.2-2' }}
-          </td>
-        </ng-container>
-
-        <!-- Actions Column -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="actions-header"></th>
-          <td mat-cell *matCellDef="let element; let i = index" class="actions-cell">
-            <button mat-icon-button color="warn" class="delete-btn" (click)="deleteLineItem(i)" title="Delete row">
-              <mat-icon>delete_outline</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+      <p-table [value]="lineItems" [size]="'small'" styleClass="p-datatable-sm line-items-table">
+        <ng-template #header>
+          <tr>
+            <th style="width: 18%">Item</th>
+            <th style="width: 28%">Description</th>
+            <th style="width: 10%" class="text-right">Qty.</th>
+            <th style="width: 12%" class="text-right">Price</th>
+            <th style="width: 16%">Account</th>
+            <th style="width: 12%">Tax rate</th>
+            <th style="width: 12%" class="text-right">Amount</th>
+            <th style="width: 4%"></th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-element let-i="rowIndex">
+          <tr>
+            <td>
+              <input pInputText [pSize]="'small'" [(ngModel)]="element.itemCode" placeholder="Search item..." class="w-full" />
+            </td>
+            <td>
+              <input pInputText [pSize]="'small'" [(ngModel)]="element.description" placeholder="Description..." class="w-full" />
+            </td>
+            <td>
+              <input pInputText [pSize]="'small'" type="number" [(ngModel)]="element.quantity" (ngModelChange)="onItemChange(element)" min="0" class="w-full text-right" />
+            </td>
+            <td>
+              <input pInputText [pSize]="'small'" type="number" [(ngModel)]="element.price" (ngModelChange)="onItemChange(element)" min="0" step="0.01" class="w-full text-right" />
+            </td>
+            <td>
+              <p-select [options]="accounts" [(ngModel)]="element.account" optionLabel="name" optionValue="code" [size]="'small'" styleClass="w-full" appendTo="body"></p-select>
+            </td>
+            <td>
+              <p-select [options]="taxRates" [(ngModel)]="element.taxRate" (ngModelChange)="onItemChange(element)" optionLabel="label" optionValue="value" [size]="'small'" styleClass="w-full" appendTo="body"></p-select>
+            </td>
+            <td class="amount-cell text-right">
+              {{ element.amount | number:'1.2-2' }}
+            </td>
+            <td class="text-center">
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" [size]="'small'" (click)="deleteLineItem(i)" title="Delete row"></p-button>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
 
     <!-- Add Line Button directly below the table -->
     <div class="add-line-container">
-      <button mat-button class="add-row-btn" (click)="addLineItem()">
-        <mat-icon>add</mat-icon>
-        <span>Add line</span>
-      </button>
+      <p-button label="Add line" icon="pi pi-plus" [size]="'small'" (click)="addLineItem()"></p-button>
     </div>
 
-    <!-- Totals card display on the left side -->
+    <!-- Totals card display on the right/left side -->
     <div class="invoice-bottom-actions">
       <div class="bottom-left-totals">
         <div class="totals-row">
@@ -268,3 +142,4 @@
       </div>
     </div>
   </div>
+</div>

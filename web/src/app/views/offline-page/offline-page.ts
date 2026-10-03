@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { BaseService } from '../../shared/services/base-service';
 import { Router } from '@angular/router';
 import { TokenCheckService } from '../../shared/services/token-check-service';
@@ -9,7 +9,8 @@ import { LocalStorageService } from '../../shared/services/local-storage-service
 
 @Component({
   selector: 'app-offline-page',
-  imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  standalone: true,
+  imports: [CommonModule, ButtonModule, ProgressSpinnerModule],
   templateUrl: './offline-page.html',
   styleUrl: './offline-page.scss',
 })
@@ -67,7 +68,7 @@ export class OfflinePage implements OnDestroy {
               error: () => {
                 this.isChecking = false;
                 this.router.navigate(['/']);
-              }
+              },
             });
           } else {
             this.isChecking = false;
@@ -81,7 +82,7 @@ export class OfflinePage implements OnDestroy {
       error: () => {
         this.isChecking = false;
         this.startCountdown();
-      }
+      },
     });
   }
 

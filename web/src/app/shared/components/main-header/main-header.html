@@ -1,8 +1,8 @@
 <header class="main-header">
   <div class="header-content">
-    <button class="hamburger-button" matIconButton type="button" aria-label="Open navigation"
+    <button class="hamburger-button" pButton [text]="true" [rounded]="true" type="button" aria-label="Open navigation"
       (click)="onHamburgerClick()">
-      <mat-icon fontSet="material-icons-outlined">menu</mat-icon>
+      <i class="pi pi-bars"></i>
     </button>
     <div class="logo">
       <h1 class="brand-logo">MERRA ACCOUNTING</h1>
@@ -21,7 +21,7 @@
           <div class="menu-item-with-submenu">
             <button class="menu-item submenu-trigger" (click)="toggleInvoiceSubmenu($event)">
               <span>Invoice</span>
-              <mat-icon class="chevron" [class.rotated]="isInvoiceSubmenuOpen">chevron_right</mat-icon>
+              <i class="chevron pi pi-chevron-right" [class.rotated]="isInvoiceSubmenuOpen"></i>
             </button>
             <div class="submenu" [class.open]="isInvoiceSubmenuOpen">
               <a class="submenu-item" routerLink="invoice" (click)="closeMenu()">All Invoices</a>

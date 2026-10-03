@@ -101,7 +101,7 @@
               <span class="status-subtext">Retrying connection in <strong>{{ countdown }}s</strong></span>
             </div>
           } @else {
-            <mat-spinner diameter="20" color="primary" class="status-spinner"></mat-spinner>
+            <p-progress-spinner strokeWidth="4" [style]="{width: '20px', height: '20px'}"></p-progress-spinner>
             <div class="status-info">
               <span class="status-label">Checking connection...</span>
               <span class="status-subtext">Verifying API endpoint availability</span>
@@ -112,20 +112,15 @@
         <!-- Action Buttons -->
         <div class="action-buttons">
           <button 
-            mat-flat-button 
-            color="primary" 
+            pButton
             class="btn-primary" 
             (click)="checkConnection()" 
-            [disabled]="isChecking">
-            @if (!isChecking) {
-              <mat-icon>refresh</mat-icon>
-            }
-            {{ isChecking ? 'Connecting...' : 'Retry Now' }}
+            [loading]="isChecking"
+            [icon]="!isChecking ? 'pi pi-refresh' : ''"
+            [label]="isChecking ? 'Connecting...' : 'Retry Now'">
           </button>
           
-          <button mat-stroked-button class="btn-secondary">
-            <mat-icon>info_outline</mat-icon>
-            System Status
+          <button pButton [outlined]="true" class="btn-secondary" icon="pi pi-info-circle" label="System Status">
           </button>
         </div>
       </div>
