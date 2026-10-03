@@ -1,19 +1,17 @@
-import { Component, Inject, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
+import { Component, OnInit, ViewEncapsulation, inject, signal } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe, TitleCasePipe } from '@angular/common';
+import { AccordionModule } from 'primeng/accordion';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { MessageService } from 'primeng/api';
+import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { CurrentOrganizationResponse, OrganizationMetaDataResponse, OrganizationTypesMetaData, CurrentOrganizationResponseNames, CurrentOrganizationResponseType, CurrentOrganizationResponseContact, CurrentOrganizationResponseFinancialYear } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
@@ -22,23 +20,20 @@ import { UtilityService } from '../../../shared/services/utility-service';
 @Component({
   selector: 'app-organization-image-dialog',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatDialogModule],
+  imports: [ButtonModule],
   template: `
     <section class="organization-image-dialog">
-      <h3 mat-dialog-title>Organization Profile</h3>
-      <mat-dialog-content>
-        <div class="organization-image-placeholder">
-          <mat-icon class="organization-image-icon" fontSet="material-icons-outlined">domain</mat-icon>
-        </div>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button matButton type="button" (click)="close()">Close</button>
-      </mat-dialog-actions>
+      <div class="organization-image-placeholder">
+        <i class="pi pi-building organization-image-icon"></i>
+      </div>
+      <div class="dialog-actions">
+        <p-button label="Close" [size]="'small'" [outlined]="true" (click)="close()"></p-button>
+      </div>
     </section>
   `,
 })
 export class OrganizationImageDialog {
-  private readonly dialogRef = inject(MatDialogRef<OrganizationImageDialog>);
+  private readonly dialogRef = inject(DynamicDialogRef);
 
   close(): void {
     this.dialogRef.close();
@@ -47,7 +42,21 @@ export class OrganizationImageDialog {
 
 @Component({
   selector: 'app-main-organization',
-  imports: [MatExpansionModule, MatIconModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatSlideToggleModule, MatSnackBarModule, MatTooltipModule, MatBottomSheetModule, ReactiveFormsModule, DatePipe, TitleCasePipe, MatProgressSpinnerModule],
+  standalone: true,
+  imports: [
+    AccordionModule,
+    ToggleSwitchModule,
+    SelectModule,
+    InputTextModule,
+    TextareaModule,
+    ButtonModule,
+    ProgressSpinnerModule,
+    TooltipModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+    TitleCasePipe
+  ],
   templateUrl: './main-organization.html',
   styleUrl: './main-organization.scss',
   encapsulation: ViewEncapsulation.None,
@@ -55,9 +64,8 @@ export class OrganizationImageDialog {
 export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
   private readonly utilityService = inject(UtilityService);
-  private readonly bottomSheet = inject(MatBottomSheet);
-  private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly dialogService = inject(DialogService);
+  private readonly messageService = inject(MessageService);
   private readonly fb = inject(FormBuilder);
 
   private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -143,7 +151,6 @@ export class MainOrganization implements OnInit {
     return type?.name || 'Unknown';
   }
 
-  // TODO: finish this one
   ngOnInit(): void {
     this.isLoadingOrganization = true;
     this.loadCountries();
@@ -189,7 +196,7 @@ export class MainOrganization implements OnInit {
       error: () => {
         this.isLoadingOrganization = false;
       }
-    })
+    });
   }
 
   private loadCountries(): void {
@@ -225,8 +232,11 @@ export class MainOrganization implements OnInit {
       error: (error) => {
         console.error('Failed to load organization metadata:', error);
         this.isLoadingOrganizationTypes = false;
-        this.snackBar.open('Failed to load organization metadata', 'Close', {
-          duration: 3000
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load organization metadata',
+          life: 3000
         });
       },
       complete: () => {
@@ -237,7 +247,10 @@ export class MainOrganization implements OnInit {
   }
 
   openOrganizationImageDialog(): void {
-    this.dialog.open(OrganizationImageDialog);
+    this.dialogService.open(OrganizationImageDialog, {
+      header: 'Organization Profile',
+      width: '380px'
+    });
   }
 
   startDescriptionEditing(): void {
@@ -254,14 +267,13 @@ export class MainOrganization implements OnInit {
       confirmLabel: 'Got it',
       hideCancel: true,
     };
-    this.dialog.open(Dialog, { data });
+    this.dialogService.open(Dialog, { data, header: 'Display Name vs Legal Name', width: '440px' });
   }
 
   isOrganizationActive = true;
 
-  confirmDisableOrganization(event: MatSlideToggleChange): void {
-    if (!event.checked) {
-      event.source.checked = true;
+  confirmDisableOrganization(checked: boolean): void {
+    if (!checked) {
       const data: DialogData = {
         title: 'Disable Organization?',
         messages: [
@@ -273,9 +285,12 @@ export class MainOrganization implements OnInit {
         confirmLabel: 'Disable',
         confirmColor: 'warn',
       };
-      this.dialog.open(Dialog, { data, width: '440px' }).afterClosed().subscribe((confirmed: boolean) => {
+      const ref = this.dialogService.open(Dialog, { data, width: '440px', header: 'Disable Organization?' });
+      ref?.onClose.subscribe((confirmed: boolean) => {
         if (confirmed) {
           this.isOrganizationActive = false;
+        } else {
+          this.isOrganizationActive = true;
         }
       });
     } else {
@@ -311,14 +326,14 @@ export class MainOrganization implements OnInit {
             displayName: this.currentOrganization.names.displayName,
             legalName: this.currentOrganization.names.legalName
           };
-          this.snackBar.open('Organization updated successfully', 'Close', { duration: 3000 });
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Organization updated successfully', life: 3000 });
         } else {
-          this.snackBar.open(response.message || 'Failed to update organization', 'Close', { duration: 5000 });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: response.message || 'Failed to update organization', life: 5000 });
         }
         this.isUpdatingNames.set(false);
       },
       error: (error) => {
-        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: error.error?.message || 'An error occurred while updating', life: 5000 });
         this.isUpdatingNames.set(false);
       }
     });
@@ -356,14 +371,14 @@ export class MainOrganization implements OnInit {
         if (response.success && 'data' in response) {
           this.currentOrganization = response.data as CurrentOrganizationResponse;
           this.originalOrganizationTypeId = this.currentOrganization.organizationType.typeId;
-          this.snackBar.open('Organization type updated successfully', 'Close', { duration: 3000 });
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Organization type updated successfully', life: 3000 });
         } else {
-          this.snackBar.open(response.message || 'Failed to update organization type', 'Close', { duration: 5000 });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: response.message || 'Failed to update organization type', life: 5000 });
         }
         this.isUpdatingOrganizationType.set(false);
       },
       error: (error) => {
-        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: error.error?.message || 'An error occurred while updating', life: 5000 });
         this.isUpdatingOrganizationType.set(false);
       }
     });
@@ -398,15 +413,15 @@ export class MainOrganization implements OnInit {
         if (response.success && 'data' in response) {
           this.currentOrganization = response.data as CurrentOrganizationResponse;
           this.originalDescription = this.currentOrganization.names.description;
-          this.snackBar.open('Description updated successfully', 'Close', { duration: 3000 });
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Description updated successfully', life: 3000 });
         } else {
-          this.snackBar.open(response.message || 'Failed to update description', 'Close', { duration: 5000 });
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: response.message || 'Failed to update description', life: 5000 });
         }
         this.isUpdatingDescription.set(false);
         this.isEditingDescription = false;
       },
       error: (error) => {
-        this.snackBar.open(error.error?.message || 'An error occurred while updating', 'Close', { duration: 5000 });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: error.error?.message || 'An error occurred while updating', life: 5000 });
         this.isUpdatingDescription.set(false);
       }
     });

@@ -368,14 +368,8 @@ public class OrganizationService {
 	 *                                  supplied identifier.
 	 */
 	private OrganizationType getOrganizationType(UUID type) {
-		if (type == null) {
-			throw new IllegalArgumentException("Organization type is required");
-		}
-
-		OrganizationType getOrganizationType = organizationTypeRepository.findById(type)
-				.orElseThrow(() -> new EntityNotFoundException("Organization type not found"));
-
-		return getOrganizationType;
+    return organizationTypeRepository.findById(type)
+            .orElseThrow(() -> new EntityNotFoundException("Organization type not found: " + type));
 	}
 
 	/**

@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, inject, Inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 export interface SessionExpiredDialogData {
   message: string;
@@ -11,19 +11,19 @@ export interface SessionExpiredDialogData {
 @Component({
   selector: 'app-session-expired-dialog',
   standalone: true,
-  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, ButtonModule],
   templateUrl: './session-expired-dialog.html',
   styleUrl: './session-expired-dialog.scss',
 })
 export class SessionExpiredDialog implements OnInit, OnDestroy {
   private readonly router = inject(Router);
-  private readonly dialogRef = inject(MatDialogRef<SessionExpiredDialog>);
+  private readonly dialogRef = inject(DynamicDialogRef);
+  private readonly config = inject(DynamicDialogConfig);
   private readonly cdr = inject(ChangeDetectorRef);
 
+  public readonly data: SessionExpiredDialogData = this.config.data ?? { message: 'Your session has expired.' };
   protected countdown = 10;
   private intervalId: ReturnType<typeof setInterval> | null = null;
-
-  constructor(@Inject(MAT_DIALOG_DATA) public readonly data: SessionExpiredDialogData) {}
 
   ngOnInit(): void {
     this.intervalId = setInterval(() => {

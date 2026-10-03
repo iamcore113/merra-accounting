@@ -1,6 +1,6 @@
 <div class="verify-email-wrapper">
   <div class="verify-email-header">
-    <mat-icon fontSet="material-icons-outlined">mark_email_read</mat-icon>
+    <i class="pi pi-envelope-open text-2xl"></i>
     <span>Verify Your Email</span>
   </div>
 
@@ -15,9 +15,6 @@
   </div>
 
   <div class="button-container">
-    <button matButton="filled" type="button" (click)="onResend()" class="verification-button">
-      <mat-icon fontSet="material-icons-outlined">refresh</mat-icon>
-      Resend Verification Email
-    </button>
+    <button pButton type="button" (click)="onResend()" class="verification-button" icon="pi pi-refresh" label="Resend Verification Email" [size]="'small'"></button>
   </div>
 </div>

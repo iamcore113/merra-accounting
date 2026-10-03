@@ -1,30 +1,24 @@
-import { Component, OnInit } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import {ActivatedRoute} from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-verify-email',
-  imports: [
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule
-  ],
+  standalone: true,
+  imports: [CommonModule, ButtonModule],
   templateUrl: './verify-email.html',
   styleUrl: './verify-email.scss',
 })
 export class VerifyEmail implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   public email: string | null = null;
-  constructor(private route: ActivatedRoute) {}
 
-  ngOnInit() {
-    // Get the email from the url query parameters
+  ngOnInit(): void {
     this.email = this.route.snapshot.paramMap.get('email');
   }
 
-  onResend() {
-    // Resend functionality will be implemented later
+  onResend(): void {
     console.log('Resend verification email');
   }
 }

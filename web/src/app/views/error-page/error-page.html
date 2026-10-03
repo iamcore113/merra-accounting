@@ -1,43 +1,40 @@
 <div class="error-container">
-  <mat-card class="error-card">
-    <mat-card-header>
-      <mat-card-title class="error-title">
-        <mat-icon fontSet="material-icons-outlined" class="error-icon">error_outline</mat-icon>
+  <div class="error-card">
+    <div class="error-card-header">
+      <div class="error-title">
+        <i class="error-icon pi pi-exclamation-triangle"></i>
         <span class="error-code">{{ errorCode }}</span>
-      </mat-card-title>
-    </mat-card-header>
+      </div>
+    </div>
 
-    <mat-card-content class="error-content">
+    <div class="error-content">
       <h2 class="error-message">{{ errorMessage }}</h2>
       <p class="error-description">{{ errorDescription }}</p>
-      
-      @if (errorCode === '404') {
-      <div class="error-details">
-        <mat-icon fontSet="material-icons-outlined">search_off</mat-icon>
-        <p>The page you're looking for doesn't exist or has been moved.</p>
-      </div>
-    }
-    
-    @if (errorCode === '403') {
-      <div class="error-details">
-        <mat-icon fontSet="material-icons-outlined">lock</mat-icon>
-        <p>You don't have permission to access this resource.</p>
-      </div>
-    }
-    
-    @if (errorCode === '500') {
-      <div class="error-details">
-        <mat-icon fontSet="material-icons-outlined">bug_report</mat-icon>
-        <p>Our servers encountered an unexpected error. We're working on it!</p>
-      </div>
-    }
-    </mat-card-content>
 
-    <mat-card-actions class="error-actions">
-      <button mat-raised-button color="primary" (click)="goHome()">
-        <mat-icon fontSet="material-icons-outlined">home</mat-icon>
-        Go Home
-      </button>
-    </mat-card-actions>
-  </mat-card>
+      @if (errorCode === '404') {
+        <div class="error-details">
+          <i class="pi pi-search"></i>
+          <p>The page you're looking for doesn't exist or has been moved.</p>
+        </div>
+      }
+
+      @if (errorCode === '403') {
+        <div class="error-details">
+          <i class="pi pi-lock"></i>
+          <p>You don't have permission to access this resource.</p>
+        </div>
+      }
+
+      @if (errorCode === '500') {
+        <div class="error-details">
+          <i class="pi pi-wrench"></i>
+          <p>Our servers encountered an unexpected error. We're working on it!</p>
+        </div>
+      }
+    </div>
+
+    <div class="error-actions">
+      <button pButton type="button" (click)="goHome()" icon="pi pi-home" label="Go Home"></button>
+    </div>
+  </div>
 </div>

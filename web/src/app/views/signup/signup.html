@@ -1,105 +1,112 @@
 <div class="auth-container">
   <nav class="top-navbar">
-    <a matButton routerLink="/account/signin">Already have an account?</a>
+    <a pButton [outlined]="true" routerLink="/account/signin" label="Already have an account?" [size]="'small'"></a>
   </nav>
-  <mat-card class="auth-card">
-    <mat-card-header>
-      <mat-card-title>
-        <h1 class="brand-logo">MERRA</h1>
-        <p class="sub-brand-logo">CREATE ACCOUNT</p>
-      </mat-card-title>
-    </mat-card-header>
 
-    <mat-card-content>
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <h1 class="brand-logo">MERRA</h1>
+      <p class="sub-brand-logo">CREATE ACCOUNT</p>
+    </div>
+
+    <div class="auth-card-content">
       <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
         <div class="gender-field">
           <label class="gender-label">Gender</label>
-          <mat-radio-group formControlName="gender" class="gender-radio-group">
-            <mat-radio-button value="male">Male</mat-radio-button>
-            <mat-radio-button value="female">Female</mat-radio-button>
-          </mat-radio-group>
+          <div class="gender-radio-group">
+            <div class="radio-option">
+              <p-radiobutton name="gender" value="male" formControlName="gender" inputId="genderMale"></p-radiobutton>
+              <label for="genderMale" class="radio-label">Male</label>
+            </div>
+            <div class="radio-option">
+              <p-radiobutton name="gender" value="female" formControlName="gender" inputId="genderFemale"></p-radiobutton>
+              <label for="genderFemale" class="radio-label">Female</label>
+            </div>
+          </div>
           @if (signupForm.get('gender')?.hasError('required') && signupForm.get('gender')?.touched) {
-          <mat-error class="gender-error">Gender is required</mat-error>
+            <small class="field-error">Gender is required</small>
           }
         </div>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email Address</mat-label>
-          <input matInput type="email" formControlName="email" />
-          <mat-icon matSuffix fontSet="material-icons-outlined">mail</mat-icon>
+
+        <div class="field-group">
+          <label for="signupEmail" class="field-label">Email Address</label>
+          <p-iconfield iconPosition="right" class="full-width">
+            <input id="signupEmail" pInputText [pSize]="'small'" type="email" formControlName="email" class="full-width" placeholder="Enter your email" />
+            <p-inputicon styleClass="pi pi-envelope"></p-inputicon>
+          </p-iconfield>
           @if (signupForm.get('email')?.hasError('required') && signupForm.get('email')?.touched) {
-          <mat-error>Email is required</mat-error>
+            <small class="field-error">Email is required</small>
           }
           @if (signupForm.get('email')?.hasError('email') && signupForm.get('email')?.touched) {
-          <mat-error>Please enter a valid email address</mat-error>
+            <small class="field-error">Please enter a valid email address</small>
           }
-        </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Create Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-          <button mat-icon-button matSuffix (click)="togglePasswordVisibility()" type="button">
-            <mat-icon fontSet="material-icons-outlined">
-              {{ hidePassword ? 'visibility_off' : 'visibility' }}
-            </mat-icon>
-          </button>
-          @if (
-          signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched
-          ) {
-          <mat-error>Password is required</mat-error>
+        <div class="field-group">
+          <label for="signupPassword" class="field-label">Create Password</label>
+          <p-password
+            id="signupPassword"
+            formControlName="password"
+            [feedback]="false"
+            [toggleMask]="true"
+            size="small"
+            styleClass="full-width"
+            inputStyleClass="full-width"
+            placeholder="Min 10 characters, 1 uppercase, 1 number">
+          </p-password>
+          @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
+            <small class="field-error">Password is required</small>
           }
-          @if (
-          signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched
-          ) {
-          <mat-error>Password must be at least 10 characters long</mat-error>
+          @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
+            <small class="field-error">Password must be at least 10 characters long</small>
           }
-          @if (
-          signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched
-          ) {
-          <mat-error>Password must contain at least 1 uppercase letter and 1 number</mat-error>
+          @if (signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched) {
+            <small class="field-error">Password must contain at least 1 uppercase letter and 1 number</small>
           }
-        </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Confirm Password</mat-label>
-          <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" />
-          <button mat-icon-button matSuffix (click)="toggleConfirmPasswordVisibility()" type="button">
-            <mat-icon fontSet="material-icons-outlined">
-              {{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}
-            </mat-icon>
-          </button>
-          @if (
-          signupForm.get('confirmPassword')?.hasError('required') &&
-          signupForm.get('confirmPassword')?.touched
-          ) {
-          <mat-error>Please confirm your password</mat-error>
+        <div class="field-group">
+          <label for="confirmPassword" class="field-label">Confirm Password</label>
+          <p-password
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            [feedback]="false"
+            [toggleMask]="true"
+            size="small"
+            styleClass="full-width"
+            inputStyleClass="full-width"
+            placeholder="Confirm password">
+          </p-password>
+          @if (signupForm.get('confirmPassword')?.hasError('required') && signupForm.get('confirmPassword')?.touched) {
+            <small class="field-error">Please confirm your password</small>
           }
           @if (signupForm.get('confirmPassword')?.hasError('passwordMismatch')) {
-          <mat-error>Passwords do not match</mat-error>
+            <small class="field-error">Passwords do not match</small>
           }
-        </mat-form-field>
+        </div>
 
         <div class="terms-container">
-          <mat-checkbox formControlName="agreeToTerms" class="terms-checkbox">
-            I agree to the Terms of Service and Privacy Policy.
-          </mat-checkbox>
+          <div class="checkbox-wrapper">
+            <p-checkbox formControlName="agreeToTerms" [binary]="true" inputId="agreeTerms"></p-checkbox>
+            <label for="agreeTerms" class="terms-label">I agree to the Terms of Service and Privacy Policy.</label>
+          </div>
           @if (signupForm.get('agreeToTerms')?.hasError('required') && signupForm.get('agreeToTerms')?.touched) {
-          <mat-error class="terms-error">You must agree to the Terms of Service and Privacy Policy</mat-error>
+            <small class="field-error">You must agree to the Terms of Service and Privacy Policy</small>
           }
         </div>
 
         <div class="button-container">
-          <button matButton="filled" type="submit" class="submit-button" [disabled]="isSubmitting()">
-            @if (isSubmitting()) {
-            <span class="submit-content">
-              <mat-progress-spinner class="submit-spinner" mode="indeterminate" [diameter]="18" [strokeWidth]="3"></mat-progress-spinner>
-              <span>SIGNING UP...</span>
-            </span>
-            } @else {
-            SIGNUP FOR FREE
-            }
+          <button
+            pButton
+            type="submit"
+            class="submit-button"
+            [loading]="isSubmitting()"
+            [disabled]="isSubmitting()"
+            label="SIGNUP FOR FREE"
+            [size]="'small'">
           </button>
         </div>
       </form>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </div>

@@ -6,7 +6,7 @@
     background: #e0e0e0;
   }
 .main-header {
-  background-color: var(--mat-sys-surface);
+  background-color: var(--p-surface-card, #ffffff);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -114,7 +114,7 @@
           transition: background-color 0.2s ease;
 
           &:hover {
-            background-color: var(--mat-sys-surface-variant);
+            background-color: var(--p-surface-hover, #f8fafc);
           }
 
           .plus-icon {
@@ -130,8 +130,8 @@
           top: 100%;
           right: 0;
           margin-top: 0.5rem;
-          background-color: var(--mat-sys-surface);
-          border: 1px solid var(--mat-sys-outline-variant);
+          background-color: var(--p-surface-card, #ffffff);
+          border: 1px solid var(--p-surface-border, #e2e8f0);
           border-radius: 4px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           min-width: 180px;
@@ -144,21 +144,21 @@
             color: inherit;
             text-decoration: none;
             transition: background-color 0.2s ease;
-            border-bottom: 1px solid var(--mat-sys-surface-variant);
+            border-bottom: 1px solid var(--p-surface-border, #f1f5f9);
 
             &:last-child {
               border-bottom: none;
             }
 
             &:hover {
-              background-color: var(--mat-sys-surface-variant);
+              background-color: var(--p-surface-hover, #f8fafc);
             }
           }
 
           .menu-item-with-submenu {
             display: flex;
             flex-direction: column;
-            border-bottom: 1px solid var(--mat-sys-surface-variant);
+            border-bottom: 1px solid var(--p-surface-border, #f1f5f9);
 
             .submenu-trigger {
               display: flex;
@@ -177,7 +177,7 @@
               border-bottom: none;
 
               &:hover {
-                background-color: var(--mat-sys-surface-variant);
+                background-color: var(--p-surface-hover, #f8fafc);
               }
 
               .chevron {
@@ -199,7 +199,7 @@
               max-height: 0;
               overflow: hidden;
               transition: max-height 0.2s ease-out;
-              background-color: var(--mat-sys-surface-variant);
+              background-color: var(--p-surface-ground, #f8fafc);
 
               &.open {
                 max-height: 150px;
@@ -219,7 +219,7 @@
                 }
 
                 &:hover {
-                  background-color: var(--mat-sys-surface);
+                  background-color: var(--p-surface-card, #ffffff);
                   filter: brightness(0.97);
                 }
               }

@@ -1,77 +1,47 @@
 <section class="contact-page">
   <div class="contact-table-container">
-    <table mat-table [dataSource]="dataSource" class="contacts-table">
-      <ng-container matColumnDef="tableTitle">
-        <th
-          mat-header-cell
-          *matHeaderCellDef
-          class="contact-table-title-cell"
-          [attr.colspan]="displayedColumns.length">
-          <div class="contact-table-title">
-            <h2 class="contact-title">All Contacts</h2>
-          </div>
-        </th>
-      </ng-container>
+    <div class="contact-table-header">
+      <h2 class="contact-title">All Contacts</h2>
+    </div>
 
-      <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef>
-          <mat-checkbox (change)="$event ? masterToggle() : null"
-            [checked]="selection.hasValue() && isAllSelected()"
-            [indeterminate]="selection.hasValue() && !isAllSelected()">
-          </mat-checkbox>
-        </th>
-        <td mat-cell *matCellDef="let row">
-          <mat-checkbox (click)="$event.stopPropagation()"
-            (change)="$event ? selection.toggle(row) : null"
-            [checked]="selection.isSelected(row)">
-          </mat-checkbox>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let row">{{ row.name }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="accountNumber">
-        <th mat-header-cell *matHeaderCellDef>Account No.</th>
-        <td mat-cell *matCellDef="let row">{{ row.accountNumber }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="isSupplier">
-        <th mat-header-cell *matHeaderCellDef>Supplier</th>
-        <td mat-cell *matCellDef="let row" class="contact-flag-cell">
-          <mat-icon
-            class="contact-flag-icon"
-            [class.contact-flag-icon--true]="row.isSupplier"
-            [class.contact-flag-icon--false]="!row.isSupplier"
-            fontSet="material-icons-outlined"
-            [attr.aria-label]="row.isSupplier ? 'Is supplier' : 'Not a supplier'">
-            {{ row.isSupplier ? 'check' : 'close' }}
-          </mat-icon>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="isCustomer">
-        <th mat-header-cell *matHeaderCellDef>Customer</th>
-        <td mat-cell *matCellDef="let row" class="contact-flag-cell">
-          <mat-icon
-            class="contact-flag-icon"
-            [class.contact-flag-icon--true]="row.isCustomer"
-            [class.contact-flag-icon--false]="!row.isCustomer"
-            fontSet="material-icons-outlined"
-            [attr.aria-label]="row.isCustomer ? 'Is customer' : 'Not a customer'">
-            {{ row.isCustomer ? 'check' : 'close' }}
-          </mat-icon>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="titleHeaderColumns" class="contact-table-title-row"></tr>
-      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="contact-columns-header-row"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"
-        (click)="selection.toggle(row)"
-        [class.selected-row]="selection.isSelected(row)">
-      </tr>
-    </table>
+    <p-table
+      [value]="contacts"
+      [(selection)]="selectedContacts"
+      dataKey="accountNumber"
+      [size]="'small'"
+      styleClass="p-datatable-sm contacts-table"
+      responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th style="width: 3.5rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th>Name</th>
+          <th>Account No.</th>
+          <th class="text-center" style="width: 7rem">Supplier</th>
+          <th class="text-center" style="width: 7rem">Customer</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr [pSelectableRow]="row">
+          <td>
+            <p-tableCheckbox [value]="row"></p-tableCheckbox>
+          </td>
+          <td class="font-medium">{{ row.name }}</td>
+          <td>{{ row.accountNumber }}</td>
+          <td class="text-center">
+            <i class="contact-flag-icon pi" [ngClass]="row.isSupplier ? 'pi-check flag-true' : 'pi-times flag-false'"></i>
+          </td>
+          <td class="text-center">
+            <i class="contact-flag-icon pi" [ngClass]="row.isCustomer ? 'pi-check flag-true' : 'pi-times flag-false'"></i>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5" class="text-center">No contacts found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
   </div>
 </section>

@@ -1,11 +1,11 @@
 import { Component, ElementRef, EventEmitter, HostListener, Output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { ButtonModule } from 'primeng/button';
 import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-main-header',
-  imports: [RouterModule, MatButtonModule, MatIconModule],
+  standalone: true,
+  imports: [RouterModule, ButtonModule],
   templateUrl: './main-header.html',
   styleUrl: './main-header.scss',
 })
@@ -20,26 +20,26 @@ export class MainHeader {
 
   constructor(private readonly elementRef: ElementRef<HTMLElement>) {}
 
-  toggleMenu() {
+  toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
     if (!this.isMenuOpen) {
       this.isInvoiceSubmenuOpen = false;
     }
   }
 
-  toggleInvoiceSubmenu(event: MouseEvent) {
+  toggleInvoiceSubmenu(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
     this.isInvoiceSubmenuOpen = !this.isInvoiceSubmenuOpen;
   }
 
-  closeMenu() {
+  closeMenu(): void {
     this.isMenuOpen = false;
     this.isInvoiceSubmenuOpen = false;
   }
 
   @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
+  onDocumentClick(event: MouseEvent): void {
     const target = event.target as Node | null;
     if (!target) {
       return;

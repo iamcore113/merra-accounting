@@ -1,12 +1,14 @@
 <aside class="side-nav" [class.side-nav-closed]="!isOpen" [class.side-nav-mobile]="isMobile" aria-label="Main navigation">
 	<button
-		matIconButton
+		pButton
+		[text]="true"
+		[rounded]="true"
 		class="sidenav-toggle"
 		type="button"
 		[attr.aria-expanded]="isOpen"
 		[attr.aria-label]="isOpen ? 'Close navigation' : 'Open navigation'"
 		(click)="toggleSidenav()">
-		<mat-icon fontSet="material-icons-outlined">{{ isOpen ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+		<i class="pi" [ngClass]="isOpen ? 'pi-chevron-left' : 'pi-chevron-right'"></i>
 	</button>
 
 	@if (isOpen) {
@@ -14,18 +16,18 @@
 	}
 
 	<nav>
-		<mat-nav-list>
+		<div class="nav-list">
 			@for (item of navItems; track item.label; let i = $index) {
-				<a mat-list-item [routerLink]="item.route" [class.active-item]="i === 0" [matTooltip]="!isOpen ? item.label : ''" matTooltipPosition="right">
-					<mat-icon matListItemIcon fontSet="material-icons-outlined" [style.background-color]="item.iconBg" [style.color]="item.iconColor">{{ item.icon }}</mat-icon>
+				<a [routerLink]="item.route" class="nav-item" [class.active-item]="i === 0" [pTooltip]="!isOpen ? item.label : ''" tooltipPosition="right">
+					<span class="nav-icon-wrapper" [style.background-color]="item.iconBg" [style.color]="item.iconColor">
+						<i [ngClass]="item.icon"></i>
+					</span>
 					@if (isOpen) {
-						<span matListItemTitle>
-							<span class="nav-item-label">{{ item.label }}</span>
-						</span>
+						<span class="nav-item-label">{{ item.label }}</span>
 					}
 				</a>
 			}
-		</mat-nav-list>
+		</div>
 	</nav>
 
 	@if (isOpen) {

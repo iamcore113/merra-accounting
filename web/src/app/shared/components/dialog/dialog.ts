@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 export interface DialogData {
   title: string;
@@ -16,13 +16,15 @@ export interface DialogData {
 
 @Component({
   selector: 'app-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule],
+  standalone: true,
+  imports: [CommonModule, ButtonModule],
   templateUrl: './dialog.html',
   styleUrl: './dialog.scss',
 })
 export class Dialog {
-  private readonly dialogRef = inject(MatDialogRef<Dialog>);
-  readonly data: DialogData = inject(MAT_DIALOG_DATA);
+  private readonly dialogRef = inject(DynamicDialogRef);
+  private readonly config = inject(DynamicDialogConfig);
+  readonly data: DialogData = this.config.data ?? {};
 
   cancel(): void {
     this.dialogRef.close(false);

@@ -1,35 +1,30 @@
-import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
+import { ButtonModule } from 'primeng/button';
+import { StepperModule } from 'primeng/stepper';
+import { MessageService } from 'primeng/api';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
-import { Router, ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatIconModule } from '@angular/material/icon';
-import { MatStepperModule, MatStepper } from '@angular/material/stepper';
-import { CommonModule } from '@angular/common';
 import { Config, RestCountriesSelection } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
 import { UtilityService } from '../../shared/services/utility-service';
 
 @Component({
   selector: 'app-create-organization',
+  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatAutocompleteModule,
-    MatIconModule,
-    MatStepperModule
+    InputTextModule,
+    SelectModule,
+    AutoCompleteModule,
+    ButtonModule,
+    StepperModule,
   ],
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.scss',
@@ -39,21 +34,16 @@ export class CreateOrganization implements OnInit {
   private utilityService = inject(UtilityService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private messageService = inject(MessageService);
   private activatedRoute = inject(ActivatedRoute);
-  private new_organization: NewOrganizationResponse | null = null;
-  private localStorage = inject(LocalStorageService);
-
   private cdr = inject(ChangeDetectorRef);
 
-  @ViewChild('stepper') stepper!: MatStepper;
-
+  activeStep = 1;
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
   public filteredCountries: RestCountriesSelection = [];
   organizationForm!: FormGroup;
   isSubmitting = false;
-  daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 
   get addresses(): FormArray {
     return this.organizationForm.get('addressStep.addresses') as FormArray;
@@ -83,20 +73,21 @@ export class CreateOrganization implements OnInit {
     this.organizationService.getOrganizationMetadata().subscribe({
       next: (response: Config) => {
         if (response.success && 'data' in response) {
-          verifiedData = (response as any).data as OrganizationMetaDataResponse;
+          verifiedData = response.data as OrganizationMetaDataResponse;
         }
       },
       error: (error) => {
         console.error('Failed to load organization metadata:', error);
-        this.snackBar.open('Failed to load organization metadata', 'Close', {
-          duration: 3000
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load organization metadata',
         });
       },
       complete: () => {
         this.organizationMetadata = verifiedData;
         this.cdr.detectChanges();
-        console.log('Organization metadata loaded:', this.organizationMetadata);
-      }
+      },
     });
   }
 
@@ -111,7 +102,7 @@ export class CreateOrganization implements OnInit {
       ),
       city: ['', Validators.required],
       postalCode: ['', Validators.required],
-      country: [defaultCountry, Validators.required]
+      country: [defaultCountry, Validators.required],
     });
   }
 
@@ -131,15 +122,15 @@ export class CreateOrganization implements OnInit {
         type: ['', Validators.required],
         email: [email || '', [Validators.required, Validators.email]],
         country: ['', Validators.required],
-        currency: ['', Validators.required]
+        currency: ['', Validators.required],
       }),
       addressStep: this.fb.group({
-        addresses: this.fb.array([])
+        addresses: this.fb.array([]),
       }),
       financialStep: this.fb.group({
         yearEndMonth: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
-        yearEndDay: [null, [Validators.required, Validators.min(1), Validators.max(31)]]
-      })
+        yearEndDay: [null, [Validators.required, Validators.min(1), Validators.max(31)]],
+      }),
     });
 
     this.addresses.push(this.createAddressGroup());
@@ -153,38 +144,38 @@ export class CreateOrganization implements OnInit {
           this.countries = countryList.map(c => ({
             name: c.countryName,
             cca2: c.isoAlpha2Code,
-            currency: c.symbol || 'N/A'
+            currency: c.symbol || 'N/A',
           }));
-          setTimeout(() => {
-            this.filteredCountries = [...this.countries];
-            this.cdr.detectChanges();
-          });
+          this.filteredCountries = [...this.countries];
+          this.cdr.detectChanges();
         }
       },
       error: (error) => {
         console.error('Failed to load countries:', error);
-        this.snackBar.open('Failed to load countries', 'Close', {
-          duration: 3000
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load countries',
         });
-      }
+      },
     });
   }
 
-  onCountryInput(searchTerm: string): void {
-    setTimeout(() => {
-      if (!searchTerm) {
-        this.filteredCountries = [...this.countries];
-      } else {
-        this.filteredCountries = this.countries.filter(country =>
-          country.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      this.cdr.detectChanges();
-    });
+  filterCountries(event: AutoCompleteCompleteEvent): void {
+    const query = (event.query || '').toLowerCase();
+    this.filteredCountries = this.countries.filter(c =>
+      c.name.toLowerCase().includes(query)
+    );
   }
 
-  onCountrySelected(countryCode: string): void {
-    this.onCountryChange(countryCode);
+  onCountrySelect(selected: any): void {
+    const countryCode = typeof selected === 'object' && selected !== null ? selected.cca2 : selected;
+    if (countryCode) {
+      const countryObj = this.countries.find(c => c.cca2 === countryCode);
+      if (countryObj && countryObj.currency !== 'N/A') {
+        this.organizationForm.get('nameStep')?.patchValue({ currency: countryObj.currency });
+      }
+    }
     const addressControls = this.addresses.controls;
     addressControls.forEach(control => {
       const addrCountry = control.get('country');
@@ -192,17 +183,6 @@ export class CreateOrganization implements OnInit {
         addrCountry.setValue(countryCode);
       }
     });
-  }
-
-  onCountryChange(countryCode: string): void {
-    if (countryCode) {
-      const selectedCountry = this.countries.find(country => country.cca2 === countryCode);
-      if (selectedCountry && selectedCountry.currency !== 'N/A') {
-        this.organizationForm.get('nameStep')?.patchValue({ currency: selectedCountry.currency });
-      }
-    } else {
-      this.organizationForm.get('nameStep')?.patchValue({ currency: '' });
-    }
   }
 
   onSubmit(): void {
@@ -217,34 +197,34 @@ export class CreateOrganization implements OnInit {
     const addrVal = this.organizationForm.get('addressStep')?.value;
     const finVal = this.organizationForm.get('financialStep')?.value;
 
+    const countryVal = typeof nameVal.country === 'object' && nameVal.country !== null ? nameVal.country.cca2 : nameVal.country;
+
+    const formattedAddresses = (addrVal.addresses || []).map((addr: any) => ({
+      ...addr,
+      country: typeof addr.country === 'object' && addr.country !== null ? addr.country.cca2 : addr.country,
+    }));
+
     const organizationRequest: CreateOrganizationRequest = {
       displayName: nameVal.displayName,
       type: nameVal.type,
       email: nameVal.email,
-      country: nameVal.country,
+      country: countryVal,
       financialYear: {
         yearEndMonth: finVal.yearEndMonth,
-        yearEndDay: finVal.yearEndDay
+        yearEndDay: finVal.yearEndDay,
       } as FinancialYear,
       currency: nameVal.currency,
-      addresses: addrVal.addresses
+      addresses: formattedAddresses,
     };
 
-    console.log("=========");
-    console.log(organizationRequest);
-
-    let neworganization: NewOrganizationResponse | null = null;
     this.organizationService.createOrganization(organizationRequest).subscribe({
-      next: (response: Config) => {
-        if (response.success && 'data' in response) {
-          neworganization = (response as any).data as NewOrganizationResponse;
-        }
-      },
+      next: () => {},
       error: (error) => {
         console.error('Error creating organization:', error);
-        this.snackBar.open('Failed to create organization. Please try again.', 'Error', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to create organization. Please try again.',
         });
         this.isSubmitting = false;
         this.cdr.detectChanges();
@@ -252,12 +232,13 @@ export class CreateOrganization implements OnInit {
       complete: () => {
         this.isSubmitting = false;
         this.cdr.detectChanges();
-        this.snackBar.open('Organization created successfully!', 'Success', {
-          duration: 3000,
-          panelClass: ['success-snackbar']
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Organization created successfully!',
         });
         this.router.navigate(['/main']);
-      }
+      },
     });
   }
 
@@ -293,35 +274,12 @@ export class CreateOrganization implements OnInit {
     }
   }
 
-  goToStep(index: number): void {
-    if (!this.stepper) return;
-
-    if (index < this.stepper.selectedIndex) {
-      this.stepper.selectedIndex = index;
-    } else if (index > this.stepper.selectedIndex) {
-      const steps = this.stepper.steps.toArray();
-      let allValid = true;
-      for (let i = 0; i < index; i++) {
-        if (steps[i]?.stepControl && !steps[i].stepControl.valid) {
-          steps[i].stepControl.markAllAsTouched();
-          allValid = false;
-          break;
-        }
-      }
-      if (allValid) {
-        this.stepper.selectedIndex = index;
-      }
-    }
+  nextStep(): void {
+    this.activeStep++;
   }
 
-  isStepActive(index: number): boolean {
-    return this.stepper ? this.stepper.selectedIndex === index : index === 0;
-  }
-
-  isStepCompleted(index: number): boolean {
-    if (!this.stepper) return false;
-    const steps = this.stepper.steps.toArray();
-    return index < this.stepper.selectedIndex && (steps[index]?.stepControl?.valid ?? false);
+  prevStep(): void {
+    this.activeStep--;
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {

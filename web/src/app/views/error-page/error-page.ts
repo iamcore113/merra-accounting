@@ -1,28 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-error-page',
-  imports: [
-    MatButtonModule,
-    MatCardModule,
-    MatIconModule
-  ],
+  standalone: true,
+  imports: [CommonModule, ButtonModule],
   templateUrl: './error-page.html',
   styleUrl: './error-page.scss',
 })
 export class ErrorPage implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   errorCode: string = '500';
   errorMessage: string = 'Something went wrong';
   errorDescription: string = 'An unexpected error occurred. Please try again later.';
-  
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router
-  ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {

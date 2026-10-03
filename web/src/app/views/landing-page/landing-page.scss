@@ -83,15 +83,20 @@
     background: var(--brand-color);
     border-color: var(--brand-color);
 
-    .action-card-icon mat-icon,
+    .action-card-icon i,
     .action-card-title,
     .action-card-desc {
       color: #ffffff;
     }
 
-    .action-btn {
-      --mdc-filled-button-container-color: #ffffff;
-      --mdc-filled-button-label-text-color: var(--brand-color);
+    .action-btn-light {
+      background-color: #ffffff !important;
+      color: var(--brand-color) !important;
+      border-color: #ffffff !important;
+
+      &:hover {
+        background-color: #f1f5f9 !important;
+      }
     }
   }
 }
@@ -106,10 +111,8 @@
   background: rgba(2, 70, 132, 0.08);
   margin-bottom: 0.25rem;
 
-  mat-icon {
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
+  i {
+    font-size: 24px;
     color: var(--brand-color);
   }
 }
