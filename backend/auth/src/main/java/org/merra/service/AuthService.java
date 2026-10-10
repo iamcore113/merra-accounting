@@ -25,6 +25,7 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
+import org.merra.utilities.SecurityUtils;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -445,17 +446,9 @@ public class AuthService {
    *                                 is not a UserAccount
    */
   public UserAccount getCurrentAuthenticatedUser() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-    if (auth == null || !auth.isAuthenticated()) {
-      throw new EntityNotFoundException("No authenticated user found.");
-    }
-
-    if (auth.getPrincipal() instanceof UserAccount principal) {
-      logger.info("Authenticated user: {}", principal);
-      return principal;
-    } else {
-      throw new EntityNotFoundException("Authenticated principal is not a UserAccount.");
-    }
+    UserAccount principal = SecurityUtils.getPrincipal(UserAccount.class)
+        .orElseThrow(() -> new EntityNotFoundException("No authenticated UserAccount found."));
+    logger.info("Authenticated user: {}", principal);
+    return principal;
   }
 }

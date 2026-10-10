@@ -46,10 +46,9 @@ import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.UserOrganizationAffiliations;
-import org.merra.service.AuthService;
-import org.merra.services.phone.PhoneService;
 import org.merra.utilities.InvoiceConstants;
 import org.merra.utilities.RedisKeys;
+import org.merra.utilities.SecurityUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,7 +67,6 @@ public class OrganizationService {
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
-	private final AuthService authService;
 	private final CountryRepository countryRepository;
 	private final UserAccountService userAccountService;
 	private final UserAccountRepository userAccountRepository;
@@ -85,10 +83,8 @@ public class OrganizationService {
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			InvoiceRepository invoiceRepository,
 			AccountService accountService,
-			AuthService authService,
 			CountryRepository countryRepository,
 			UserAccountRepository userAccountRepository,
-			PhoneService phoneService,
 			OrganizationMapper organizationMapper,
 			OrganizationAffiliationMapper organizationAffiliationMapper,
 			RedisTemplate<String, Object> redisTemplate) {
@@ -102,7 +98,6 @@ public class OrganizationService {
 		this.organizationAffiliationMapper = organizationAffiliationMapper;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
-		this.authService = authService;
 		this.countryRepository = countryRepository;
 		this.addressTypeRepository = addressTypeRepository;
 		this.userAccountRepository = userAccountRepository;
@@ -250,7 +245,8 @@ public class OrganizationService {
 		}
 
 		// 2. Retrieve the currently authenticated user creating this organization
-		UserAccount user = authService.getCurrentAuthenticatedUser();
+		UserAccount user = SecurityUtils.getPrincipal(UserAccount.class)
+				.orElseThrow(() -> new EntityNotFoundException("No authenticated user found."));
 
 		// 3. Resolve the organization type entity
 		OrganizationType organizationType = getOrganizationType(req.type());
