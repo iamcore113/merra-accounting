@@ -52,6 +52,9 @@ public class Organization {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
 	private Set<Contact> contacts;
 
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+	private Set<Account> accounts;
+
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
 	@Size(min = 3, max = 100, message = "displayName attribute must be between 3 and 100 characters.")
@@ -140,6 +143,14 @@ public class Organization {
 
 	public void setContacts(Set<Contact> contacts) {
 		this.contacts = contacts;
+	}
+
+	public Set<Account> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(Set<Account> accounts) {
+		this.accounts = accounts;
 	}
 
 	public void setBasicInformation(String displayName,
