@@ -63,7 +63,7 @@ public class JournalService {
 		// Create an entry for account receivable
 		if (findInvoiceById.getType().getType().equalsIgnoreCase(CUSTOMER_INVOICE)) {
 			Account getAccReceivable = accountRepository
-					.findByAccountCodeAndOrganizationId(AccountConstants.ACC_CODE_ACC_RECEIVABLE, org.getId())
+					.findByAccountCodeAndOrganizationId(AccountConstants.ACCOUNT_CODE_ACC_RECEIVABLE, org.getId())
 					.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
 
 			accountReceivableJournalEntryOpt = Optional.of(buildJournalLine(
@@ -81,7 +81,7 @@ public class JournalService {
 		// TODO - must improve or change
 		if (!findInvoiceById.getLineAmountTypes().equals(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_NOTAX)) {
 			Account getTaxPayableAcc = accountRepository
-					.findByAccountCodeAndOrganizationId(AccountConstants.ACC_CODE_TAX_PAYABLE, org.getId())
+					.findByAccountCodeAndOrganizationId(AccountConstants.ACCOUNT_CODE_TAX_PAYABLE, org.getId())
 					.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
 
 			JournalLine taxJournalLine = buildJournalLine(
@@ -161,9 +161,9 @@ public class JournalService {
 		 * Check account code category type (debit or credit)
 		 * Then set the amount according to the entry type.
 		 */
-		if (Account.checkEntryType(category).equals(AccountConstants.ACC_ENTRY_DEBIT)) {
+		if (Account.checkEntryType(category).equals(AccountConstants.ACCOUNT_ENTRY_DEBIT)) {
 			jl.setDebit(totalLineAmount);
-		} else if (Account.checkEntryType(category).equals(AccountConstants.ACC_ENTRY_CREDIT)) {
+		} else if (Account.checkEntryType(category).equals(AccountConstants.ACCOUNT_ENTRY_CREDIT)) {
 			jl.setCredit(totalLineAmount);
 		}
 

@@ -66,25 +66,25 @@ class AccountServiceTest {
 		organization = new Organization();
 		organization.setDisplayName("Acme Corp");
 
-		assetCategory = new AccountCategory(AccountConstants.ACC_CATEGORY_ASSET);
-		liabilityCategory = new AccountCategory(AccountConstants.ACC_CATEGORY_LIABILITY);
-		revenueCategory = new AccountCategory(AccountConstants.ACC_CATEGORY_REVENUE);
-		equityCategory = new AccountCategory(AccountConstants.ACC_CATEGORY_EQUITY);
-		expenseCategory = new AccountCategory(AccountConstants.ACC_CATEGORY_EXPENSE);
+		assetCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_ASSET);
+		liabilityCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_LIABILITY);
+		revenueCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_REVENUE);
+		equityCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_EQUITY);
+		expenseCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_EXPENSE);
 	}
 
 	@Test
 	@DisplayName("createDefaultAccounts creates and persists all 18 standard accounts with active status and descriptions")
 	void createDefaultAccounts_success() {
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_ASSET))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_ASSET))
 				.thenReturn(Optional.of(assetCategory));
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_LIABILITY))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_LIABILITY))
 				.thenReturn(Optional.of(liabilityCategory));
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_REVENUE))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_REVENUE))
 				.thenReturn(Optional.of(revenueCategory));
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_EQUITY))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_EQUITY))
 				.thenReturn(Optional.of(equityCategory));
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_EXPENSE))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_EXPENSE))
 				.thenReturn(Optional.of(expenseCategory));
 
 		when(accountTypeRepository.findByNameIgnoreCase(anyString()))
@@ -112,30 +112,30 @@ class AccountServiceTest {
 
 		List<String> codes = createdAccounts.stream().map(Account::getCode).toList();
 		assertThat(codes).containsExactlyInAnyOrder(
-				AccountConstants.ACC_CODE_ACC_RECEIVABLE,
-				AccountConstants.ACC_CODE_PREP_EXPENSES,
-				AccountConstants.ACC_CODE_INVENTORY,
-				AccountConstants.ACC_CODE_FIXED_ASSET,
-				AccountConstants.ACC_CODE_ACC_PAYABLE,
-				AccountConstants.ACC_CODE_LOANS_PAYABLE,
-				AccountConstants.ACC_CODE_TAX_PAYABLE,
-				AccountConstants.ACC_CODE_RETAINED_EARNING,
-				AccountConstants.ACC_CODE_OWNER_DRAWING,
-				AccountConstants.ACC_CODE_OWNER_CAPITAL,
-				AccountConstants.ACC_CODE_SALES_REVENUE,
-				AccountConstants.ACC_CODE_SERVICE_INCOME,
-				AccountConstants.ACC_CODE_OFFICE_EXPENSES,
-				AccountConstants.ACC_CODE_MARKETING_EXPENSES,
-				AccountConstants.ACC_CODE_CONSULTING_ACCOUNTING,
-				AccountConstants.ACC_CODE_COST_GOODS_SOLD,
-				AccountConstants.ACC_CODE_UTILITIES,
-				AccountConstants.ACC_CODE_TRAVEL_AND_ENTERTAINMENT);
+				AccountConstants.ACCOUNT_CODE_ACC_RECEIVABLE,
+				AccountConstants.ACCOUNT_CODE_PREP_EXPENSES,
+				AccountConstants.ACCOUNT_CODE_INVENTORY,
+				AccountConstants.ACCOUNT_CODE_FIXED_ASSET,
+				AccountConstants.ACCOUNT_CODE_ACC_PAYABLE,
+				AccountConstants.ACCOUNT_CODE_LOANS_PAYABLE,
+				AccountConstants.ACCOUNT_CODE_TAX_PAYABLE,
+				AccountConstants.ACCOUNT_CODE_RETAINED_EARNING,
+				AccountConstants.ACCOUNT_CODE_OWNER_DRAWING,
+				AccountConstants.ACCOUNT_CODE_OWNER_CAPITAL,
+				AccountConstants.ACCOUNT_CODE_SALES_REVENUE,
+				AccountConstants.ACCOUNT_CODE_SERVICE_INCOME,
+				AccountConstants.ACCOUNT_CODE_OFFICE_EXPENSES,
+				AccountConstants.ACCOUNT_CODE_MARKETING_EXPENSES,
+				AccountConstants.ACCOUNT_CODE_CONSULTING_ACCOUNTING,
+				AccountConstants.ACCOUNT_CODE_COST_GOODS_SOLD,
+				AccountConstants.ACCOUNT_CODE_UTILITIES,
+				AccountConstants.ACCOUNT_CODE_TRAVEL_AND_ENTERTAINMENT);
 	}
 
 	@Test
 	@DisplayName("createDefaultAccounts throws IllegalStateException when required category is missing")
 	void createDefaultAccounts_missingCategory_throwsException() {
-		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACC_CATEGORY_ASSET))
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_ASSET))
 				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> accountService.createDefaultAccounts(organization))

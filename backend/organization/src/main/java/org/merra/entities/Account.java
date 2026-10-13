@@ -97,17 +97,17 @@ public class Account {
 	// Check the type of entry: debit or credit
 	public static String checkEntryType(String accountCategory) {
 		Set<String> debits = Set.of(
-				AccountConstants.ACC__CLASS_TYPE_ASSET,
-				AccountConstants.ACC__CLASS_TYPE_EXPENSE);
+				AccountConstants.ACCOUNT_CLASS_TYPE_ASSET,
+				AccountConstants.ACCOUNT_CLASS_TYPE_EXPENSE);
 
 		Set<String> credit = Set.of(
-				AccountConstants.ACC__CLASS_TYPE_LIABILITY,
-				AccountConstants.ACC__CLASS_TYPE_EQUITY,
-				AccountConstants.ACC__CLASS_TYPE_REVENUE);
+				AccountConstants.ACCOUNT_CLASS_TYPE_LIABILITY,
+				AccountConstants.ACCOUNT_CLASS_TYPE_EQUITY,
+				AccountConstants.ACCOUNT_CLASS_TYPE_REVENUE);
 		if (debits.contains(accountCategory)) {
-			return AccountConstants.ACC_ENTRY_DEBIT;
+			return AccountConstants.ACCOUNT_ENTRY_DEBIT;
 		} else if (credit.contains(accountCategory)) {
-			return AccountConstants.ACC_ENTRY_CREDIT;
+			return AccountConstants.ACCOUNT_ENTRY_CREDIT;
 		}
 		return null;
 	}

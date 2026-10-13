@@ -113,11 +113,11 @@ public class InitConfig implements CommandLineRunner {
         logger.debug("Seeding account categories");
         if (accountCategoryRepository.findAll().isEmpty()) {
             List<AccountCategory> categories = accountCategoryRepository.saveAll(Set.of(
-                    new AccountCategory(AccountConstants.ACC_CATEGORY_ASSET),
-                    new AccountCategory(AccountConstants.ACC_CATEGORY_EQUITY),
-                    new AccountCategory(AccountConstants.ACC_CATEGORY_EXPENSE),
-                    new AccountCategory(AccountConstants.ACC_CATEGORY_LIABILITY),
-                    new AccountCategory(AccountConstants.ACC_CATEGORY_REVENUE)));
+                    new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_ASSET),
+                    new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_EQUITY),
+                    new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_EXPENSE),
+                    new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_LIABILITY),
+                    new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_REVENUE)));
 
             redisTemplate.opsForValue().set(RedisKeys.ACCOUNT_CATEGORIES, categories, RedisKeys.CONSTANT_DURATION);
         }
