@@ -16,6 +16,7 @@ import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.EOrganizationAddresses;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
+import org.merra.multitenancy.TenantResolver;
 
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
@@ -30,6 +31,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -124,6 +126,34 @@ public class Organization {
 	@Column(name = "status", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private StatusEn status = StatusEn.ACTIVE_ACCOUNT;
+
+	@Column(name = "schema_name", unique = true, nullable = false, length = 63)
+	private String schemaName;
+
+	@PrePersist
+	protected void onPrePersist() {
+		if (this.id == null) {
+			this.id = UUID.randomUUID();
+		}
+		if (this.schemaName == null) {
+			this.schemaName = TenantResolver.toSchemaName(this.id);
+		}
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+		if (id != null && this.schemaName == null) {
+			this.schemaName = TenantResolver.toSchemaName(id);
+		}
+	}
+
+	public String getSchemaName() {
+		return schemaName;
+	}
+
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
+	}
 
 	public void setStatus(StatusEn status) {
 		if (status != null) {

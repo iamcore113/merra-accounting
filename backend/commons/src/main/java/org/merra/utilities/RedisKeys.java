@@ -18,4 +18,9 @@ public class RedisKeys {
     public static final String ORGANIZATION_METADATA = "organization_metadata";
     public static final String COUNTRY_METADATA = "country_metadata";
     public static final String INVOICE_METADATA = "invoice_metadata";
+    public static final String TENANT_INFO_PREFIX = "tenant_info:";
+
+    public static String getTenantInfoKey(Object orgId) {
+        return TENANT_INFO_PREFIX + orgId;
+    }
 }

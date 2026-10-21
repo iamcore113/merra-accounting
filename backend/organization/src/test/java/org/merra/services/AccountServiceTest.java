@@ -153,11 +153,11 @@ class AccountServiceTest {
 				.thenReturn(false);
 
 		AccountCodeExistsResponse existing = accountService.checkIfCodeExists("100", orgId);
-		assertThat(existing.code()).isEqualTo("100");
+		assertThat(existing.accountCode()).isEqualTo("100");
 		assertThat(existing.exists()).isTrue();
 
 		AccountCodeExistsResponse nonExisting = accountService.checkIfCodeExists("999", orgId);
-		assertThat(nonExisting.code()).isEqualTo("999");
+		assertThat(nonExisting.accountCode()).isEqualTo("999");
 		assertThat(nonExisting.exists()).isFalse();
 	}
 }

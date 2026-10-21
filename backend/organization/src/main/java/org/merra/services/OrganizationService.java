@@ -46,6 +46,10 @@ import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.UserOrganizationAffiliations;
+import org.merra.multitenancy.TenantContext;
+import org.merra.multitenancy.TenantInfo;
+import org.merra.multitenancy.TenantProvisioner;
+import org.merra.multitenancy.TenantResolver;
 import org.merra.utilities.InvoiceConstants;
 import org.merra.utilities.RedisKeys;
 import org.merra.utilities.SecurityUtils;
@@ -73,6 +77,7 @@ public class OrganizationService {
 	private final OrganizationMapper organizationMapper;
 	private final OrganizationAffiliationMapper organizationAffiliationMapper;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final org.merra.multitenancy.TenantProvisioner tenantProvisioner;
 
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
@@ -88,6 +93,28 @@ public class OrganizationService {
 			OrganizationMapper organizationMapper,
 			OrganizationAffiliationMapper organizationAffiliationMapper,
 			RedisTemplate<String, Object> redisTemplate) {
+		this(organizationRepository, userAccountService, organizationTypeRepository, addressTypeRepository,
+				organizationMembersRepository, userWorkspaceStateRepository, invoiceRepository, accountService,
+				countryRepository, userAccountRepository, organizationMapper, organizationAffiliationMapper,
+				redisTemplate, null);
+	}
+
+	@org.springframework.beans.factory.annotation.Autowired
+	public OrganizationService(
+			OrganizationRepository organizationRepository,
+			UserAccountService userAccountService,
+			OrganizationTypeRepository organizationTypeRepository,
+			AddressTypeRepository addressTypeRepository,
+			OrganizationMembersRepository organizationMembersRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository,
+			InvoiceRepository invoiceRepository,
+			AccountService accountService,
+			CountryRepository countryRepository,
+			UserAccountRepository userAccountRepository,
+			OrganizationMapper organizationMapper,
+			OrganizationAffiliationMapper organizationAffiliationMapper,
+			RedisTemplate<String, Object> redisTemplate,
+			@org.springframework.beans.factory.annotation.Autowired(required = false) org.merra.multitenancy.TenantProvisioner tenantProvisioner) {
 		this.redisTemplate = redisTemplate;
 		this.organizationRepository = organizationRepository;
 		this.organizationMembersRepository = organizationMembersRepository;
@@ -101,6 +128,7 @@ public class OrganizationService {
 		this.countryRepository = countryRepository;
 		this.addressTypeRepository = addressTypeRepository;
 		this.userAccountRepository = userAccountRepository;
+		this.tenantProvisioner = tenantProvisioner;
 	}
 
 	/**
@@ -276,7 +304,7 @@ public class OrganizationService {
 			setAddresses(org, req.addresses());
 		}
 
-		// 8. Persist the organization to generate its unique identifier
+		// 8. Persist the organization (id and schema_name are automatically generated in @PrePersist)
 		Organization newOrganization = organizationRepository.save(org);
 
 		// 9. Register the user as the organization's creator/owner member
@@ -289,10 +317,27 @@ public class OrganizationService {
 		user.setPartOfOrganization(true);
 		userAccountRepository.save(user);
 
-		// 11. Provision the default chart of accounts for the new organization
-		accountService.createDefaultAccounts(newOrganization);
+		// 11. Cache tenant metadata in Redis
+		String tenantSchema = newOrganization.getSchemaName();
+		redisTemplate.opsForValue().set(
+				RedisKeys.getTenantInfoKey(newOrganization.getId()),
+				new TenantInfo(tenantSchema, newOrganization.getStatus().name()),
+				RedisKeys.CONSTANT_DURATION);
 
-		// 12. Set or update the active workspace state for the user
+		// 12. Provision the dedicated database schema for the new organization
+		if (tenantProvisioner != null) {
+			tenantProvisioner.provisionTenant(newOrganization.getId());
+		}
+
+		// 13. Switch to tenant schema to provision default chart of accounts
+		try {
+			TenantContext.setCurrentTenant(tenantSchema);
+			accountService.createDefaultAccounts(newOrganization);
+		} finally {
+			TenantContext.clear();
+		}
+
+		// 14. Set or update the active workspace state for the user
 		// Uses upsert semantics to prevent unique constraint violations on user_id when creating multiple organizations
 		UserWorkspaceState workspace = userWorkspaceStateRepository.findByUser(user)
 				.orElseGet(() -> new UserWorkspaceState(user, newOrganization));
