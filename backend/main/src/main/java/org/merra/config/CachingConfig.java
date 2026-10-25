@@ -34,52 +34,58 @@ public class CachingConfig {
         private int redisPort;
         @Value("${spring.data.redis.password:}")
         private String redisPassword;
+        @Value("${spring.data.redis.ssl.enabled:false}")
+        private boolean redisSslEnabled;
 
         @Bean
         @Profile("dev")
         public JedisConnectionFactory redisConnectionFactory() {
-                TrustManager[] trustAllCerts = new TrustManager[] {
-                                new X509TrustManager() {
-                                        public X509Certificate[] getAcceptedIssuers() {
-                                                return new X509Certificate[0];
-                                        }
-
-                                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                                        }
-
-                                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                                        }
-                                }
-                };
-
-                SSLContext sslContext;
-                try {
-                        sslContext = SSLContext.getInstance("TLS");
-                        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                        throw new RuntimeException("Failed to initialize SSLContext for Jedis", e);
-                }
-
                 ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
                 poolConfig.setMaxTotal(50); // Max active connections
                 poolConfig.setMaxIdle(20); // Max idle connections to keep
                 poolConfig.setMinIdle(5); // Min idle connections
                 poolConfig.setMaxWait(Duration.ofSeconds(2)); // Wait up to 2 seconds for a connection before failing
 
-                JedisClientConfiguration clientConfig = JedisClientConfiguration.builder()
+                JedisClientConfiguration.JedisClientConfigurationBuilder clientConfigBuilder = JedisClientConfiguration.builder()
                                 .usePooling()
                                 .poolConfig(poolConfig)
                                 .and()
-                                .useSsl()
-                                .sslSocketFactory(sslContext.getSocketFactory())
-                                .hostnameVerifier((hostname, session) -> true)
-                                .and()
                                 .readTimeout(Duration.ofSeconds(2))
-                                .connectTimeout(Duration.ofSeconds(2))
-                                .build();
+                                .connectTimeout(Duration.ofSeconds(2));
+
+                if (redisSslEnabled) {
+                        TrustManager[] trustAllCerts = new TrustManager[] {
+                                        new X509TrustManager() {
+                                                public X509Certificate[] getAcceptedIssuers() {
+                                                        return new X509Certificate[0];
+                                                }
+
+                                                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                                                }
+
+                                                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                                                }
+                                        }
+                        };
+
+                        SSLContext sslContext;
+                        try {
+                                sslContext = SSLContext.getInstance("TLS");
+                                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                                throw new RuntimeException("Failed to initialize SSLContext for Jedis", e);
+                        }
+
+                        clientConfigBuilder
+                                        .useSsl()
+                                        .sslSocketFactory(sslContext.getSocketFactory())
+                                        .hostnameVerifier((hostname, session) -> true);
+                }
+
+                JedisClientConfiguration clientConfig = clientConfigBuilder.build();
 
                 RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
-                if (redisPassword != null && !redisPassword.isEmpty()) {
+                if (redisPassword != null && !redisPassword.isBlank()) {
                         serverConfig.setPassword(redisPassword);
                 }
 
