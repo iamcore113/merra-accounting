@@ -153,6 +153,7 @@ public class SecurityConfig {
                                 ROLE_MEMBER)
                         .requestMatchers(
                                 "/",
+                                "/error",
                                 "/api/main/utilities/**",
                                 "/actuator/**",
                                 "/api/auth/**",

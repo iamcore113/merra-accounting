@@ -59,11 +59,11 @@ public class AuthService {
   private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
   @Value("${token.access-token-duration}")
-  private int forAccessToken;
+  private long forAccessToken;
   @Value("${token.refresh-token-duration}")
-  private int refreshTokenExpiration;
+  private long refreshTokenExpiration;
   @Value("${token.email-verification-duration}")
-  private int verificationTokenDuration;
+  private long verificationTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
@@ -370,7 +370,7 @@ public class AuthService {
       } else {
         var user = userEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("tenant", null),
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of(),
             verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
@@ -385,7 +385,7 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("tenant", null),
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of(),
         verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);

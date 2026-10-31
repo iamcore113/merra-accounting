@@ -79,22 +79,26 @@ public class TokenFilter extends OncePerRequestFilter {
             return;
         }
 
-        final String email = jwtUtils.extractUsername(jwt);
-        logger.info("Extracted Email: {}", email);
+        try {
+            final String email = jwtUtils.extractUsername(jwt);
+            logger.info("Extracted Email: {}", email);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            logger.info("Authorities: {}", userDetails.getAuthorities());
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                logger.info("Authorities: {}", userDetails.getAuthorities());
 
-            if (jwtUtils.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities());
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (jwtUtils.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities());
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            logger.warn("Cannot set user authentication from token: {}", e.getMessage());
         }
         filterChain.doFilter(request, response);
     }
