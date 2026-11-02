@@ -3,7 +3,8 @@ import { CreateAccountRequest, LoginRequest, ResendEmailVerification } from '../
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Config } from '../models/api_response';
-import { REQUEST_SIGNUP_VERIFICATION_EMAIL_URL, RESEND_VERIFICATION_EMAIL_URL, SIGNIN_URL, SIGNUP_URL } from '../api/auth';
+import { REQUEST_SIGNUP_VERIFICATION_EMAIL_URL, RESEND_VERIFICATION_EMAIL_URL, SIGNIN_URL, SIGNUP_URL, VERIFICATION_STATUS_URL } from '../api/auth';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
@@ -26,5 +27,10 @@ export class AuthService {
 
   resendVerificationEmail(request: ResendEmailVerification): Observable<Config> {
     return this.http.post<Config>(RESEND_VERIFICATION_EMAIL_URL, request);
+  }
+
+  checkVerificationStatus(email: string): Observable<Config> {
+    const params = new HttpParams().set('email', email);
+    return this.http.get<Config>(VERIFICATION_STATUS_URL, { params });
   }
 }

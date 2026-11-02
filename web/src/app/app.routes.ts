@@ -15,13 +15,14 @@ import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
 import { MainContact } from './views/main/main-contact/main-contact';
 import { OfflinePage } from './views/offline-page/offline-page';
 import { offlineGuard } from './shared/guards/offline-guard';
+import { verifyEmailGuard } from './shared/guards/verify-email-guard';
 
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
   { path: 'offline', component: OfflinePage, canActivate: [offlineGuard], title: 'MERRA - Offline' },
   { path: 'account/signup', component: Signup, title: 'Signup for free | MERRA' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
-  { path: 'account/verify-email/:email', component: VerifyEmail, title: 'MERRA - Verify Email' },
+  { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'MERRA - Verify Email' },
   { path: 'account/verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
   { path: 'account/personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
   {

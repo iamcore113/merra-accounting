@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.merra.config.JwtUtils;
 import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
+import org.merra.dto.EmailVerificationStatusResponse;
 import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
@@ -457,5 +458,25 @@ public class AuthService {
         .orElseThrow(() -> new EntityNotFoundException("No authenticated UserAccount found."));
     logger.info("Authenticated user: {}", principal);
     return principal;
+  }
+
+  /**
+   * Checks the verification status of an account by its email.
+   * Used to prevent access to the verification page if the account is already verified.
+   *
+   * @param email The user email address
+   * @return EmailVerificationStatusResponse indicating existence and verification status
+   */
+  public EmailVerificationStatusResponse checkVerificationStatus(String email) {
+    if (email == null || email.isBlank()) {
+      return new EmailVerificationStatusResponse(false, false, false);
+    }
+    Optional<UserAccount> userOpt = userRepository.findUserByEmailIgnoreCase(email.trim());
+    if (userOpt.isEmpty()) {
+      return new EmailVerificationStatusResponse(false, false, false);
+    }
+    UserAccount user = userOpt.get();
+    boolean isVerified = user.isEnabled();
+    return new EmailVerificationStatusResponse(true, isVerified, !isVerified);
   }
 }

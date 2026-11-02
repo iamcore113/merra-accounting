@@ -94,3 +94,10 @@ interface Userdetails {
   email: string;
   roles: string[];
 }
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/EmailVerificationStatusResponse.java
+export interface EmailVerificationStatusResponse {
+  exists: boolean;
+  isVerified: boolean;
+  isPendingVerification: boolean;
+}

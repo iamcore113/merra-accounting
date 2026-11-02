@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../shared/services/auth-service';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
-import { ResendEmailVerification } from '../../shared/models/auth';
+import { EmailVerificationStatusResponse, ResendEmailVerification } from '../../shared/models/auth';
+import { Config } from '../../shared/models/api_response';
 import { finalize } from 'rxjs';
 
 @Component({
@@ -17,6 +18,7 @@ import { finalize } from 'rxjs';
 })
 export class VerifyEmail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
   private readonly localStorage = inject(LocalStorageService);
@@ -28,10 +30,36 @@ export class VerifyEmail implements OnInit, OnDestroy {
   private cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
   ngOnInit(): void {
+    // 1. One-time access check: If user already has an active access token, redirect to landing
+    if (this.localStorage.getItem('access_token')) {
+      void this.router.navigate(['/']);
+      return;
+    }
+
     this.email = this.route.snapshot.paramMap.get('email');
+    if (!this.email) {
+      void this.router.navigate(['/']);
+      return;
+    }
+
     this.userId =
       this.route.snapshot.queryParamMap.get('uid') ||
       this.localStorage.getItem('pendingVerificationUserId');
+
+    // 2. Query backend to verify this account is genuinely pending verification and not already activated
+    this.authService.checkVerificationStatus(this.email).subscribe({
+      next: (res: Config) => {
+        if (res.success && 'data' in res) {
+          const status = res.data as EmailVerificationStatusResponse;
+          if (!status.exists || status.isVerified || !status.isPendingVerification) {
+            void this.router.navigate(['/']);
+          }
+        }
+      },
+      error: () => {
+        void this.router.navigate(['/']);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -86,6 +114,23 @@ export class VerifyEmail implements OnInit, OnDestroy {
             error?.error?.error ||
             error?.message ||
             'Failed to resend verification email. Please try again.';
+
+          if (
+            errorMessage.toLowerCase().includes('already verified') ||
+            errorMessage.toLowerCase().includes('already enabled')
+          ) {
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Account Already Active',
+              detail: 'Your email is already verified. Redirecting...',
+              life: 3000,
+            });
+            setTimeout(() => {
+              void this.router.navigate(['/']);
+            }, 1000);
+            return;
+          }
+
           this.messageService.add({
             severity: 'error',
             summary: 'Resend Failed',

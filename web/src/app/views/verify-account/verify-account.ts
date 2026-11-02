@@ -74,8 +74,10 @@ export class VerifyAccount implements OnInit {
               if (this.access_token) {
                 this.localStorage.setItem('access_token', this.access_token);
               }
+              this.localStorage.removeItem('pendingVerificationUserId');
               this.router.navigate(['account/personal-details', this.email]);
             } else {
+              this.localStorage.removeItem('pendingVerificationUserId');
               this.router.navigate(['account/personal-details']);
             }
           },
