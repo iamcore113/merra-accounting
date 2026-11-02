@@ -27,7 +27,7 @@ body {
   --brand-font-family: "Michroma", sans-serif;
   --brand-color: #024684;
   --default-text-color: #333333;
-  --bg-color: #e8eef6;
+  --bg-color: #ffffff;
 
   // PrimeNG semantic overrides
   --p-primary-color: #689D4B;
@@ -96,15 +96,23 @@ h6 {
 // PrimeNG Component Overrides & Custom Theme Rules (#689D4B)
 // =========================================================
 
-// Small Input Field Size Global Preservation
+// Small Input Field Size Global Preservation & Zero Border Radius
+input,
+select,
+textarea,
 .p-inputtext,
 .p-select,
+.p-select-label,
+.p-multiselect,
 .p-datepicker input,
 .p-autocomplete input,
-.p-textarea {
+.p-textarea,
+.p-inputnumber input,
+.p-iconfield,
+.p-inputgroup {
   font-size: 0.875rem !important;
   padding: 0.4375rem 0.625rem !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
   &:enabled:focus,
@@ -120,6 +128,30 @@ h6 {
 .p-input-sm {
   font-size: 0.8125rem !important;
   padding: 0.35rem 0.5rem !important;
+  border-radius: 0 !important;
+}
+
+// Global button border-radius reset (no curves / bends)
+button,
+.p-button {
+  border-radius: 0 !important;
+}
+
+// Global card border-radius reset (no curves / bends)
+.p-card,
+.p-card .p-card-body,
+.p-card .p-card-content,
+.auth-card,
+.action-card,
+.organization-card,
+.invoice-card,
+.organization-address-card,
+.contact-table-container,
+.error-card,
+.offline-card,
+.personal-details-card,
+.verify-email-card {
+  border-radius: 0 !important;
 }
 
 // Primary Buttons (Filled)

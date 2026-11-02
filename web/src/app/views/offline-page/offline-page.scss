@@ -86,7 +86,7 @@
   backdrop-filter: blur(24px) saturate(190%);
   -webkit-backdrop-filter: blur(24px) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 28px;
+  border-radius: 0;
   padding: 2.5rem 2.25rem;
   box-shadow: 
     0 4px 24px rgba(2, 70, 132, 0.03),
@@ -254,7 +254,7 @@
   button {
     flex: 1;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 0;
     font-weight: 600;
     font-size: 0.9rem;
     transition: all 0.2s ease;
@@ -390,7 +390,7 @@
 @media (max-width: 480px) {
   .offline-card {
     padding: 2rem 1.5rem;
-    border-radius: 20px;
+    border-radius: 0;
   }
 
   .offline-title {
