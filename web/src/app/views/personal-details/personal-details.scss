@@ -7,7 +7,7 @@
 }
 
 .personal-details-wrapper {
-  max-width: 520px;
+  max-width: 580px;
   width: 100%;
   padding: 2.5rem 2rem;
   background: #ffffff;
@@ -50,12 +50,14 @@ form {
 
   .flex-1 {
     flex: 1;
+    min-width: 0;
   }
 
   .field-group {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    width: 100%;
 
     .field-label {
       font-size: 0.875rem;
@@ -74,6 +76,7 @@ form {
     display: flex;
     gap: 1rem;
     align-items: flex-start;
+    width: 100%;
 
     @media (max-width: 600px) {
       flex-direction: column;
@@ -134,15 +137,55 @@ form {
   }
 
   .button-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    margin-top: 0.5rem;
+    width: 100%;
+    margin-top: 0.75rem;
 
     .next-btn {
+      width: 100%;
       padding: 0.625rem 2rem;
       font-size: 0.9375rem;
       font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+}
+
+:host ::ng-deep {
+  p-iconfield,
+  .p-iconfield {
+    width: 100%;
+    display: block;
+    position: relative;
+
+    .p-inputicon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0.75rem;
+      z-index: 2;
+      color: #94a3b8;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    input,
+    .p-inputtext,
+    .p-autocomplete-input {
+      width: 100%;
+      padding-left: 2.35rem !important;
+    }
+  }
+
+  p-autocomplete,
+  .p-autocomplete {
+    width: 100%;
+    display: flex;
+
+    .p-autocomplete-input {
+      width: 100%;
+      flex: 1 1 auto;
     }
   }
 }
