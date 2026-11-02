@@ -1,1 +1,114 @@
-<p>list-invoice works!</p>
+<section class="invoice-list-page">
+  <div class="page-header">
+    <div class="header-text">
+      <h1 class="page-title">Invoices</h1>
+      <p class="page-subtitle">Track, approve, and manage customer billing</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/main/invoice/new">
+        <p-button label="New Invoice" icon="pi pi-plus" [size]="'small'"></p-button>
+      </a>
+    </div>
+  </div>
+
+  <div class="invoice-card">
+    <!-- Filter Tabs & Search Bar -->
+    <div class="table-controls">
+      <div class="status-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'ALL'"
+          (click)="setStatus('ALL')">
+          All
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'DRAFT'"
+          (click)="setStatus('DRAFT')">
+          Draft
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'APPROVED'"
+          (click)="setStatus('APPROVED')">
+          Approved
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'PAID'"
+          (click)="setStatus('PAID')">
+          Paid
+        </button>
+      </div>
+
+      <p-iconfield iconPosition="left" class="search-box">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          [pSize]="'small'"
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by invoice # or contact..."
+          class="search-input" />
+      </p-iconfield>
+    </div>
+
+    <!-- Table -->
+    <p-table
+      [value]="filteredInvoices"
+      [(selection)]="selectedInvoices"
+      dataKey="id"
+      [size]="'small'"
+      styleClass="p-datatable-sm invoices-table"
+      responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th style="width: 3.5rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+          </th>
+          <th>Invoice #</th>
+          <th>Contact</th>
+          <th>Issue Date</th>
+          <th>Due Date</th>
+          <th class="text-center" style="width: 7rem">Status</th>
+          <th class="text-right" style="width: 9rem">Total Amount</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-inv>
+        <tr [pSelectableRow]="inv">
+          <td>
+            <p-tableCheckbox [value]="inv"></p-tableCheckbox>
+          </td>
+          <td class="inv-number-cell">
+            <a routerLink="/main/invoice/new" class="inv-link">{{ inv.invoiceNumber }}</a>
+          </td>
+          <td class="font-medium">{{ inv.contactName }}</td>
+          <td class="text-secondary">{{ inv.issueDate }}</td>
+          <td class="text-secondary">{{ inv.dueDate }}</td>
+          <td class="text-center">
+            <p-tag [value]="inv.status" [severity]="getStatusSeverity(inv.status)" [rounded]="false"></p-tag>
+          </td>
+          <td class="text-right font-medium">${{ inv.totalAmount | number:'1.2-2' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="empty-state-cell">
+            <div class="empty-state">
+              <i class="pi pi-receipt empty-icon"></i>
+              <p class="empty-title">No invoices found</p>
+              <p class="empty-desc">There are no invoices matching your current filter criteria.</p>
+              <a routerLink="/main/invoice/new">
+                <p-button label="Create Invoice" icon="pi pi-plus" [size]="'small'"></p-button>
+              </a>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</section>

@@ -1,246 +1,260 @@
 <section class="profile-accordion shared-expansion-panels">
-	<form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-		<div class="profile-header">
-			<h2 class="profile-title">Personal Information</h2>
-			<button class="profile-image-button" type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
-				<i class="pi pi-user profile-image-icon"></i>
-			</button>
-		</div>
+  <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+    <div class="profile-header">
+      <div class="profile-title-group">
+        <h2 class="profile-title">Personal Information</h2>
+        <p class="profile-subtitle">Manage your personal credentials and linked organizations</p>
+      </div>
+      <button class="profile-image-button" type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
+        <i class="pi pi-user profile-image-icon"></i>
+      </button>
+    </div>
 
-		<p-accordion [value]="['0']" [multiple]="true">
-			<!-- Panel 1: Name -->
-			<p-accordion-panel value="0">
-				<p-accordion-header>
-					<div class="detail-title">
-						<span class="detail-text">
-							<span class="detail-label">Name:</span>
-							@if (isLoading) {
-								<span class="detail-skeleton"></span>
-							} @else {
-								<span class="detail-value">{{ personalDetails?.fullName ?? 'Not set' }}</span>
-							}
-						</span>
-						<i class="pi pi-user detail-icon" aria-hidden="true"></i>
-					</div>
-				</p-accordion-header>
-				<p-accordion-content>
-					<div class="name-editor">
-						@if (isLoading) {
-							<div class="profile-info-fields-skeleton">
-								<div class="skeleton-field">
-									<div class="skeleton-label"></div>
-									<div class="skeleton-input"></div>
-								</div>
-								<div class="skeleton-field">
-									<div class="skeleton-label"></div>
-									<div class="skeleton-input"></div>
-								</div>
-							</div>
-						} @else if (!isEditingName) {
-							<button class="name-display-button" type="button" (click)="isEditingName = true">
-								<span class="name-display-value">{{ personalDetails?.fullName || 'Not set' }}</span>
-								<i class="pi pi-pencil name-edit-icon"></i>
-							</button>
-						} @else {
-							<div class="name-editor-row flex gap-3 items-end">
-								<div class="flex-1">
-									<label class="field-label block mb-1">First name</label>
-									<input pInputText [pSize]="'small'" type="text" formControlName="firstName" placeholder="Enter your first name" class="w-full" />
-								</div>
-								<div class="flex-1">
-									<label class="field-label block mb-1">Last name</label>
-									<input pInputText [pSize]="'small'" type="text" formControlName="lastName" placeholder="Enter your last name" class="w-full" />
-								</div>
-								<div class="flex gap-2">
-									<p-button label="Update" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingName = false"></p-button>
-									<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingName = false"></p-button>
-								</div>
-							</div>
-						}
-					</div>
-				</p-accordion-content>
-			</p-accordion-panel>
+    <p-accordion [value]="['0', '4']" [multiple]="true">
+      <!-- Panel 1: Name -->
+      <p-accordion-panel value="0">
+        <p-accordion-header>
+          <div class="detail-title">
+            <span class="row-lead-icon">
+              <i class="pi pi-user"></i>
+            </span>
+            <div class="detail-text">
+              <span class="detail-label">Name:</span>
+              @if (isLoading) {
+                <span class="detail-skeleton"></span>
+              } @else {
+                <span class="detail-value">{{ personalDetails?.fullName ?? 'Not set' }}</span>
+              }
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="editor-container">
+            @if (isLoading) {
+              <div class="skeleton-field-row">
+                <div class="skeleton-input"></div>
+              </div>
+            } @else if (!isEditingName) {
+              <button class="display-toggle-btn" type="button" (click)="isEditingName = true">
+                <span class="display-value">{{ personalDetails?.fullName || 'Not set' }}</span>
+                <span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+              </button>
+            } @else {
+              <div class="editor-row">
+                <div class="field-col">
+                  <label class="field-label">First name</label>
+                  <input pInputText [pSize]="'small'" type="text" formControlName="firstName" placeholder="Enter your first name" class="full-width" />
+                </div>
+                <div class="field-col">
+                  <label class="field-label">Last name</label>
+                  <input pInputText [pSize]="'small'" type="text" formControlName="lastName" placeholder="Enter your last name" class="full-width" />
+                </div>
+                <div class="action-col">
+                  <p-button label="Save" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingName = false"></p-button>
+                  <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingName = false"></p-button>
+                </div>
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
 
-			<!-- Panel 2: Gender -->
-			<p-accordion-panel value="1">
-				<p-accordion-header>
-					<div class="detail-title">
-						<span class="detail-text">
-							<span class="detail-label">Gender:</span>
-							@if (isLoading) {
-								<span class="detail-skeleton"></span>
-							} @else {
-								<span class="detail-value">{{ getGenderLetter() }}</span>
-							}
-						</span>
-						<i class="pi pi-users detail-icon" aria-hidden="true"></i>
-					</div>
-				</p-accordion-header>
-				<p-accordion-content>
-					<div class="gender-editor">
-						@if (isLoading) {
-							<div class="profile-select-skeleton">
-								<div class="skeleton-label"></div>
-								<div class="skeleton-select"></div>
-							</div>
-						} @else if (!isEditingGender) {
-							<button class="gender-display-button" type="button" (click)="isEditingGender = true">
-								<span class="gender-display-value">{{ personalDetails?.gender ?? 'Not set' }}</span>
-								<i class="pi pi-pencil gender-edit-icon"></i>
-							</button>
-						} @else {
-							<div class="gender-editor-row flex gap-3 items-end">
-								<div class="w-64">
-									<label class="field-label block mb-1">Gender</label>
-									<p-select formControlName="gender" [options]="genderOptions" optionLabel="label" optionValue="value" [size]="'small'" styleClass="w-full"></p-select>
-								</div>
-								<div class="flex gap-2">
-									<p-button label="Update" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingGender = false"></p-button>
-									<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingGender = false"></p-button>
-								</div>
-							</div>
-						}
-					</div>
-				</p-accordion-content>
-			</p-accordion-panel>
+      <!-- Panel 2: Gender -->
+      <p-accordion-panel value="1">
+        <p-accordion-header>
+          <div class="detail-title">
+            <span class="row-lead-icon">
+              <i class="pi pi-users"></i>
+            </span>
+            <div class="detail-text">
+              <span class="detail-label">Gender:</span>
+              @if (isLoading) {
+                <span class="detail-skeleton"></span>
+              } @else {
+                <span class="detail-value">{{ getGenderDisplay() }}</span>
+              }
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="editor-container">
+            @if (isLoading) {
+              <div class="skeleton-field-row">
+                <div class="skeleton-input"></div>
+              </div>
+            } @else if (!isEditingGender) {
+              <button class="display-toggle-btn" type="button" (click)="isEditingGender = true">
+                <span class="display-value">{{ getGenderDisplay() }}</span>
+                <span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+              </button>
+            } @else {
+              <div class="editor-row">
+                <div class="field-col max-w-sm">
+                  <label class="field-label">Gender</label>
+                  <p-select formControlName="gender" [options]="genderOptions" optionLabel="label" optionValue="value" [size]="'small'" styleClass="full-width"></p-select>
+                </div>
+                <div class="action-col">
+                  <p-button label="Save" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingGender = false"></p-button>
+                  <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingGender = false"></p-button>
+                </div>
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
 
-			<!-- Panel 3: Country -->
-			<p-accordion-panel value="2">
-				<p-accordion-header>
-					<div class="detail-title">
-						<span class="detail-text">
-							<span class="detail-label">Country:</span>
-							@if (isLoading) {
-								<span class="detail-skeleton"></span>
-							} @else {
-								<span class="detail-value">{{ personalDetails?.country ?? 'Not set' }}</span>
-							}
-						</span>
-						<i class="pi pi-globe detail-icon" aria-hidden="true"></i>
-					</div>
-				</p-accordion-header>
-				<p-accordion-content>
-					<div class="country-editor">
-						@if (isLoading) {
-							<div class="profile-select-skeleton">
-								<div class="skeleton-label"></div>
-								<div class="skeleton-select"></div>
-							</div>
-						} @else if (!isEditingCountry) {
-							<button class="country-display-button" type="button" (click)="isEditingCountry = true">
-								<span class="country-display-value">{{ profileForm.get('country')?.value || personalDetails?.country || 'Not set' }}</span>
-								<i class="pi pi-pencil country-edit-icon"></i>
-							</button>
-						} @else {
-							<div class="country-editor-row flex gap-3 items-end">
-								<div class="flex-1">
-									<label class="field-label block mb-1">Country</label>
-									<p-autocomplete
-										[formControl]="countryControl"
-										[suggestions]="filteredCountries"
-										(completeMethod)="searchCountry($event)"
-										[size]="'small'"
-										[dropdown]="true"
-										placeholder="Start typing to search your country"
-										styleClass="w-full"
-										[inputStyleClass]="'w-full'">
-									</p-autocomplete>
-								</div>
-								<div class="flex gap-2">
-									<p-button label="Update" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingCountry = false"></p-button>
-									<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingCountry = false"></p-button>
-								</div>
-							</div>
-						}
-					</div>
-				</p-accordion-content>
-			</p-accordion-panel>
+      <!-- Panel 3: Country -->
+      <p-accordion-panel value="2">
+        <p-accordion-header>
+          <div class="detail-title">
+            <span class="row-lead-icon">
+              <i class="pi pi-globe"></i>
+            </span>
+            <div class="detail-text">
+              <span class="detail-label">Country:</span>
+              @if (isLoading) {
+                <span class="detail-skeleton"></span>
+              } @else {
+                <span class="detail-value">{{ getCountryDisplay() }}</span>
+              }
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="editor-container">
+            @if (isLoading) {
+              <div class="skeleton-field-row">
+                <div class="skeleton-input"></div>
+              </div>
+            } @else if (!isEditingCountry) {
+              <button class="display-toggle-btn" type="button" (click)="isEditingCountry = true">
+                <span class="display-value">{{ getCountryDisplay() }}</span>
+                <span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+              </button>
+            } @else {
+              <div class="editor-row">
+                <div class="field-col">
+                  <label class="field-label">Country</label>
+                  <p-autocomplete
+                    [formControl]="countryControl"
+                    [suggestions]="filteredCountries"
+                    (completeMethod)="searchCountry($event)"
+                    [size]="'small'"
+                    [dropdown]="true"
+                    [fluid]="true"
+                    placeholder="Start typing to search your country"
+                    styleClass="full-width"
+                    inputStyleClass="full-width">
+                  </p-autocomplete>
+                </div>
+                <div class="action-col">
+                  <p-button label="Save" [size]="'small'" [disabled]="isUpdating" [loading]="isUpdating" (click)="updateProfile(); isEditingCountry = false"></p-button>
+                  <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingCountry = false"></p-button>
+                </div>
+              </div>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
 
-			<!-- Panel 4: Email -->
-			<p-accordion-panel value="3">
-				<p-accordion-header>
-					<div class="detail-title">
-						<span class="detail-text">
-							<span class="detail-label">Email:</span>
-							@if (isLoading) {
-								<span class="detail-skeleton"></span>
-							} @else {
-								<span class="detail-value">{{ personalDetails?.email ?? 'Not set' }}</span>
-							}
-						</span>
-						<i class="pi pi-envelope detail-icon" aria-hidden="true"></i>
-					</div>
-				</p-accordion-header>
-				<p-accordion-content>
-					<div class="email-editor">
-						@if (isLoading) {
-							<div class="profile-input-skeleton">
-								<div class="skeleton-label"></div>
-								<div class="skeleton-input"></div>
-							</div>
-						} @else if (!isEditingEmail) {
-							<button class="email-display-button" type="button" (click)="isEditingEmail = true">
-								<span class="email-display-value">{{ profileForm.get('email')?.value || personalDetails?.email || 'Not set' }}</span>
-								<i class="pi pi-pencil email-edit-icon"></i>
-							</button>
-						} @else {
-							<div class="email-editor-row flex gap-3 items-end mb-2">
-								<div class="flex-1">
-									<label class="field-label block mb-1">Email address</label>
-									<input
-										pInputText
-										[pSize]="'small'"
-										type="email"
-										formControlName="email"
-										placeholder="Enter your email address"
-										class="w-full" />
-								</div>
-								<div class="flex gap-2">
-									<p-button label="Update" [size]="'small'" [disabled]="isUpdating" (click)="openEmailChangeDialog()"></p-button>
-									<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingEmail = false"></p-button>
-								</div>
-							</div>
-							<p class="email-hint text-xs text-slate-500">You can only change your email address once every 2 months.</p>
-						}
-					</div>
-				</p-accordion-content>
-			</p-accordion-panel>
+      <!-- Panel 4: Email -->
+      <p-accordion-panel value="3">
+        <p-accordion-header>
+          <div class="detail-title">
+            <span class="row-lead-icon">
+              <i class="pi pi-envelope"></i>
+            </span>
+            <div class="detail-text">
+              <span class="detail-label">Email:</span>
+              @if (isLoading) {
+                <span class="detail-skeleton"></span>
+              } @else {
+                <span class="detail-value">{{ personalDetails?.email ?? 'Not set' }}</span>
+              }
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="editor-container">
+            @if (isLoading) {
+              <div class="skeleton-field-row">
+                <div class="skeleton-input"></div>
+              </div>
+            } @else if (!isEditingEmail) {
+              <button class="display-toggle-btn" type="button" (click)="isEditingEmail = true">
+                <span class="display-value">{{ profileForm.get('email')?.value || personalDetails?.email || 'Not set' }}</span>
+                <span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+              </button>
+            } @else {
+              <div class="editor-row">
+                <div class="field-col">
+                  <label class="field-label">Email address</label>
+                  <input
+                    pInputText
+                    [pSize]="'small'"
+                    type="email"
+                    formControlName="email"
+                    placeholder="Enter your email address"
+                    class="full-width" />
+                </div>
+                <div class="action-col">
+                  <p-button label="Update" [size]="'small'" [disabled]="isUpdating" (click)="openEmailChangeDialog()"></p-button>
+                  <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingEmail = false"></p-button>
+                </div>
+              </div>
+              <p class="field-hint">You can only change your email address once every 2 months.</p>
+            }
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
 
-			<!-- Panel 5: Affiliated Organizations -->
-			<p-accordion-panel value="4" class="affiliated-panel">
-				<p-accordion-header>
-					<div class="detail-title">
-						<span class="detail-text affiliated-text flex items-center gap-2">
-							<span class="detail-label affiliated-label">Affiliated Organizations</span>
-							@if (affiliatedOrganizationsCount > 0) {
-								<p-badge [value]="affiliatedOrganizationsCount" severity="warn"></p-badge>
-							}
-						</span>
-						<i class="pi pi-building detail-icon" aria-hidden="true"></i>
-					</div>
-				</p-accordion-header>
-				<p-accordion-content>
-					@if (affiliatedOrganizationsCount > 0) {
-						<div class="affiliated-list flex flex-col gap-2">
-							@for (org of personalDetails?.organizationAffiliation?.organizations; track org.organizationId) {
-								<div class="affiliated-item flex justify-between items-center p-2 rounded bg-slate-50 border border-slate-200">
-									<div class="flex items-center gap-2">
-										<i class="pi pi-building text-slate-500"></i>
-										<span class="font-medium text-slate-800">{{ org.organizationName }}</span>
-									</div>
-									<p-chip [label]="org.role"></p-chip>
-								</div>
-							}
-						</div>
-					} @else {
-						<p class="affiliated-empty-state">The user account does not have any organization affiliation.</p>
-					}
-				</p-accordion-content>
-			</p-accordion-panel>
-		</p-accordion>
-	</form>
+      <!-- Panel 5: Affiliated Organizations -->
+      <p-accordion-panel value="4" class="affiliated-panel">
+        <p-accordion-header>
+          <div class="detail-title">
+            <span class="row-lead-icon">
+              <i class="pi pi-building"></i>
+            </span>
+            <div class="detail-text">
+              <span class="detail-label">Affiliated Organizations:</span>
+              <span class="detail-value">
+                @if (affiliatedOrganizationsCount > 0) {
+                  <span class="org-count-pill">
+                    {{ affiliatedOrganizationsCount }} {{ affiliatedOrganizationsCount === 1 ? 'organization' : 'organizations' }}
+                  </span>
+                } @else {
+                  <span class="empty-badge">None</span>
+                }
+              </span>
+            </div>
+          </div>
+        </p-accordion-header>
+        <p-accordion-content>
+          @if (affiliatedOrganizationsCount > 0) {
+            <div class="affiliated-list">
+              @for (org of personalDetails?.organizationAffiliation?.organizations; track org.organizationId) {
+                <div class="affiliated-item">
+                  <div class="affiliated-info">
+                    <div class="affiliated-org-avatar">
+                      <i class="pi pi-building"></i>
+                    </div>
+                    <div class="affiliated-meta">
+                      <span class="affiliated-name">{{ org.organizationName }}</span>
+                    </div>
+                  </div>
+                  <span class="role-chip" [class.creator-role]="org.role === 'CREATOR'">{{ org.role }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="affiliated-empty-state">The user account does not have any organization affiliation.</p>
+          }
+        </p-accordion-content>
+      </p-accordion-panel>
+    </p-accordion>
+  </form>
 
-	<div class="profile-page-actions">
-		<p-button label="Change Password" icon="pi pi-key" [size]="'small'" (click)="openChangePasswordSheet()"></p-button>
-	</div>
+  <div class="profile-page-actions">
+    <p-button label="Change Password" icon="pi pi-key" [size]="'small'" (click)="openChangePasswordSheet()"></p-button>
+  </div>
 </section>

@@ -1,6 +1,9 @@
 <section class="organization-panels shared-expansion-panels">
 	<div class="organization-header">
-		<h2 class="organization-title">Organization Information</h2>
+		<div class="organization-title-group">
+			<h2 class="organization-title">Organization Information</h2>
+			<p class="organization-subtitle">Configure organization profile, financial settings, and contact information</p>
+		</div>
 		<button class="organization-image-button" type="button" aria-label="Organization profile" (click)="openOrganizationImageDialog()">
 			<i class="pi pi-building organization-image-icon"></i>
 		</button>
@@ -11,15 +14,17 @@
 		<p-accordion-panel value="0">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-building"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Organization:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
 							<span class="detail-value">{{ organizationForm.get('names.displayName')?.value || '—' }}</span>
 						}
-					</span>
-					<i class="pi pi-building detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
@@ -40,16 +45,16 @@
 								<div class="skeleton-input"></div>
 							</div>
 						} @else if (!isEditingOrganizationType) {
-							<button class="organization-type-display-button" type="button" (click)="isEditingOrganizationType = true">
-								<span class="organization-type-display-value">{{ getOrganizationTypeName() }}</span>
-								<i class="pi pi-pencil organization-type-edit-icon"></i>
+							<button class="organization-display-button" type="button" (click)="isEditingOrganizationType = true">
+								<span class="organization-display-value">{{ getOrganizationTypeName() }}</span>
+								<span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
 							</button>
 						} @else {
-							<div class="organization-type-field mb-2" formGroupName="organizationType">
-								<label class="field-label block mb-1">Organization Type</label>
-								<p-select formControlName="typeId" [options]="organizationTypesMetadata" optionLabel="name" optionValue="id" [size]="'small'" styleClass="w-full"></p-select>
+							<div class="form-field" formGroupName="organizationType">
+								<label class="field-label">Organization Type</label>
+								<p-select formControlName="typeId" [options]="organizationTypesMetadata" optionLabel="name" optionValue="id" [size]="'small'" styleClass="full-width"></p-select>
 							</div>
-							<div class="organization-type-actions flex gap-2">
+							<div class="editor-actions">
 								<p-button label="Update" [size]="'small'" [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()" [loading]="isUpdatingOrganizationType()" (click)="updateOrganizationType(); isEditingOrganizationType = false"></p-button>
 								<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingOrganizationType = false"></p-button>
 							</div>
@@ -64,32 +69,34 @@
 								<div class="skeleton-field"><div class="skeleton-input"></div></div>
 							</div>
 						} @else if (!isEditingNames) {
-							<button class="organization-names-display-button" type="button" (click)="isEditingNames = true">
-								<span class="organization-names-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
-								<i class="pi pi-pencil organization-names-edit-icon"></i>
+							<button class="organization-display-button" type="button" (click)="isEditingNames = true">
+								<span class="organization-display-value">{{ organizationForm.get('names.displayName')?.value || 'Not set' }}</span>
+								<span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
 							</button>
 						} @else {
-							<div class="organization-info-fields-row" formGroupName="names">
-								<div class="field-wrapper flex-1">
-									<label class="field-label block mb-1">Display Name</label>
-									<input pInputText [pSize]="'small'" type="text" formControlName="displayName" placeholder="Enter display name" class="w-full" />
+							<div class="organization-names-row" formGroupName="names">
+								<div class="form-field flex-1">
+									<label class="field-label">Display Name</label>
+									<input pInputText [pSize]="'small'" type="text" formControlName="displayName" placeholder="Enter display name" class="full-width" />
 								</div>
 
-								<p-button
-									icon="pi pi-arrow-right"
-									[outlined]="true"
-									[size]="'small'"
-									pTooltip="Copy display name to legal name"
-									tooltipPosition="top"
-									(click)="copyDisplayNameToLegalName()">
-								</p-button>
+								<div class="copy-btn-wrapper">
+									<p-button
+										icon="pi pi-arrow-right"
+										[outlined]="true"
+										[size]="'small'"
+										pTooltip="Copy display name to legal name"
+										tooltipPosition="top"
+										(click)="copyDisplayNameToLegalName()">
+									</p-button>
+								</div>
 
-								<div class="field-wrapper flex-1">
-									<label class="field-label block mb-1">Legal Name</label>
-									<input pInputText [pSize]="'small'" type="text" formControlName="legalName" placeholder="Enter legal name" class="w-full" />
+								<div class="form-field flex-1">
+									<label class="field-label">Legal Name</label>
+									<input pInputText [pSize]="'small'" type="text" formControlName="legalName" placeholder="Enter legal name" class="full-width" />
 								</div>
 							</div>
-							<div class="organization-names-actions flex gap-2 mt-3">
+							<div class="editor-actions">
 								<p-button label="Update" [size]="'small'" [disabled]="isUpdatingNames() || !hasNamesChanged()" [loading]="isUpdatingNames()" (click)="updateOrganizationNames(); isEditingNames = false"></p-button>
 								<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingNames = false"></p-button>
 							</div>
@@ -105,13 +112,16 @@
 						<div class="organization-description-block">
 							<p class="organization-description-display-title">About this organization:</p>
 							@if (!isEditingDescription) {
-								<button class="organization-description-display-text" type="button" (click)="startDescriptionEditing()">{{ organizationForm.get('names.description')?.value || 'No description available' }}</button>
+								<button class="organization-display-button desc-button" type="button" (click)="startDescriptionEditing()">
+									<span class="organization-display-value">{{ organizationForm.get('names.description')?.value || 'No description available' }}</span>
+									<span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+								</button>
 							} @else {
-								<div formGroupName="names" class="mb-2">
-									<label class="field-label block mb-1">Description</label>
-									<textarea pTextarea rows="4" placeholder="Enter organization description" formControlName="description" class="w-full"></textarea>
+								<div formGroupName="names" class="form-field">
+									<label class="field-label">Description</label>
+									<textarea pTextarea rows="4" placeholder="Enter organization description" formControlName="description" class="full-width"></textarea>
 								</div>
-								<div class="organization-description-actions flex gap-2">
+								<div class="editor-actions">
 									<p-button label="Update" [size]="'small'" [disabled]="isUpdatingDescription() || !hasDescriptionChanged()" [loading]="isUpdatingDescription()" (click)="updateDescription()"></p-button>
 									<p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="isEditingDescription = false"></p-button>
 								</div>
@@ -126,15 +136,17 @@
 		<p-accordion-panel value="1">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-globe"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Website:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
 							<span class="detail-value">{{ organizationForm.get('website')?.value || '—' }}</span>
 						}
-					</span>
-					<i class="pi pi-link detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
@@ -145,12 +157,12 @@
 							<div class="skeleton-input"></div>
 						</div>
 					} @else {
-						<div class="organization-editor-fields organization-website-fields mb-3">
-							<label class="field-label block mb-1">Website</label>
-							<input pInputText [pSize]="'small'" type="text" formControlName="website" placeholder="Enter website" class="w-full" />
+						<div class="form-field">
+							<label class="field-label">Website</label>
+							<input pInputText [pSize]="'small'" type="text" formControlName="website" placeholder="Enter website" class="full-width" />
 						</div>
 					}
-					<div class="organization-editor-actions">
+					<div class="editor-actions">
 						<p-button label="Update" [size]="'small'"></p-button>
 					</div>
 				</div>
@@ -161,30 +173,32 @@
 		<p-accordion-panel value="2">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-map"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Country:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
-							<span class="detail-value">{{ organizationForm.get('address.country')?.value || '—' }}</span>
+							<span class="detail-value">{{ getCountryDisplay() }}</span>
 						}
-					</span>
-					<i class="pi pi-globe detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
 				<div class="organization-editor" [formGroup]="organizationForm">
 					<div class="organization-editor-fields">
-						<div class="organization-country-field-group mb-3">
+						<div class="organization-country-field-group">
 							@if (isLoadingCountries) {
 								<div class="organization-country-skeleton">
 									<div class="skeleton-label"></div>
 									<div class="skeleton-select"></div>
 								</div>
 							} @else {
-								<div formGroupName="address" class="mb-2">
-									<label class="field-label block mb-1">Country</label>
-									<p-select formControlName="country" [options]="countries" optionLabel="name" optionValue="cca2" [size]="'small'" styleClass="w-full"></p-select>
+								<div formGroupName="address" class="form-field">
+									<label class="field-label">Country</label>
+									<p-select formControlName="country" [options]="countries" optionLabel="name" optionValue="cca2" [filter]="true" filterBy="name" [size]="'small'" styleClass="full-width"></p-select>
 								</div>
 							}
 							@if (isLoadingOrganization) {
@@ -203,14 +217,14 @@
 								<div class="skeleton-input"></div>
 							</div>
 						} @else {
-							<div formGroupName="address" class="mb-3">
-								<label class="field-label block mb-1">Timezone</label>
-								<input pInputText [pSize]="'small'" type="text" formControlName="timeZone" placeholder="Enter timezone" class="w-full" />
+							<div formGroupName="address" class="form-field">
+								<label class="field-label">Timezone</label>
+								<input pInputText [pSize]="'small'" type="text" formControlName="timeZone" placeholder="Enter timezone" class="full-width" />
 							</div>
 						}
 					</div>
 
-					<div class="organization-editor-actions">
+					<div class="editor-actions">
 						<p-button label="Update" [size]="'small'"></p-button>
 					</div>
 				</div>
@@ -221,19 +235,21 @@
 		<p-accordion-panel value="3">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-envelope"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Contact:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
 							<span class="detail-value">{{ organizationForm.get('address.email')?.value || '—' }}</span>
 						}
-					</span>
-					<i class="pi pi-envelope detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
-				<p>Organization contact information will appear here.</p>
+				<p class="organization-info-helper">Organization contact email: <strong>{{ organizationForm.get('address.email')?.value || 'Not configured' }}</strong></p>
 			</p-accordion-content>
 		</p-accordion-panel>
 
@@ -241,15 +257,17 @@
 		<p-accordion-panel value="4">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-map-marker"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Addresses:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
-							<span class="detail-value">{{ currentOrganization?.address?.addresses?.length || 0 }} addresses configured</span>
+							<span class="detail-value">{{ currentOrganization?.address?.addresses?.length || 0 }} address{{ currentOrganization?.address?.addresses?.length === 1 ? '' : 'es' }} configured</span>
 						}
-					</span>
-					<i class="pi pi-map-marker detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
@@ -269,7 +287,7 @@
 							</div>
 						</div>
 					} @empty {
-						<p>No addresses configured.</p>
+						<p class="organization-info-helper">No physical addresses configured for this organization.</p>
 					}
 				</div>
 			</p-accordion-content>
@@ -279,32 +297,34 @@
 		<p-accordion-panel value="5">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
-						<span class="detail-label">Financial Settings</span>
+					<span class="row-lead-icon">
+						<i class="pi pi-calendar"></i>
+					</span>
+					<div class="detail-text">
+						<span class="detail-label">Financial Settings:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
 							<span class="detail-value">{{ getFinancialYearEndDisplay() }}</span>
 						}
-					</span>
-					<i class="pi pi-dollar detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
 				<div class="organization-editor" [formGroup]="organizationForm">
-					<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the "boundary" for your financial reports.</p>
-					<div class="organization-editor-fields organization-financial-settings-fields flex gap-3 mb-3" formGroupName="financialYear">
-						<div class="flex-1">
-							<label class="field-label block mb-1">Financial Year End Month</label>
-							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndMonth" placeholder="Enter end month (1-12)" class="w-full" />
+					<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the boundary for your financial reports.</p>
+					<div class="financial-fields-row" formGroupName="financialYear">
+						<div class="form-field flex-1">
+							<label class="field-label">Financial Year End Month</label>
+							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndMonth" placeholder="Enter end month (1-12)" class="full-width" />
 						</div>
-						<div class="flex-1">
-							<label class="field-label block mb-1">Financial Year End Day</label>
-							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndDay" placeholder="Enter end day (1-31)" class="w-full" />
+						<div class="form-field flex-1">
+							<label class="field-label">Financial Year End Day</label>
+							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndDay" placeholder="Enter end day (1-31)" class="full-width" />
 						</div>
 					</div>
 
-					<div class="organization-editor-actions">
+					<div class="editor-actions">
 						<p-button label="Update" [size]="'small'"></p-button>
 					</div>
 				</div>
@@ -315,15 +335,17 @@
 		<p-accordion-panel value="6">
 			<p-accordion-header>
 				<div class="detail-title">
-					<span class="detail-text">
+					<span class="row-lead-icon">
+						<i class="pi pi-verified"></i>
+					</span>
+					<div class="detail-text">
 						<span class="detail-label">Status:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
 							<span class="detail-value membership-active-value">{{ organizationForm.get('status')?.value === 'ACTIVE_ACCOUNT' ? 'ACTIVE' : organizationForm.get('status')?.value || '—' }}</span>
 						}
-					</span>
-					<i class="pi pi-id-card detail-icon" aria-hidden="true"></i>
+					</div>
 				</div>
 			</p-accordion-header>
 			<p-accordion-content>
@@ -333,7 +355,7 @@
 						<div class="skeleton-text"></div>
 					</div>
 				} @else {
-					<div class="organization-status-row flex items-center gap-3">
+					<div class="organization-status-row">
 						<p-toggleswitch [(ngModel)]="isOrganizationActive" (ngModelChange)="confirmDisableOrganization($event)" ariaLabel="Organization status toggle"></p-toggleswitch>
 						<span class="organization-status-text">The organization is currently active with active members.</span>
 					</div>

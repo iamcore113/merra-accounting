@@ -13,42 +13,173 @@
 	.organization-header {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.75rem;
+		justify-content: space-between;
+		margin-bottom: 1.25rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid #e2e8f0;
 
-		.organization-title {
-			margin: 0;
-			font-size: 1.25rem;
-			font-weight: 600;
+		.organization-title-group {
+			.organization-title {
+				margin: 0;
+				font-size: 1.25rem;
+				font-weight: 700;
+				color: #1e293b;
+			}
+
+			.organization-subtitle {
+				margin: 0.25rem 0 0;
+				font-size: 0.8125rem;
+				color: #64748b;
+			}
 		}
 
 		.organization-image-button {
-			width: 36px;
-			height: 36px;
+			width: 40px;
+			height: 40px;
 			padding: 0;
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			background: none;
-			border: none;
+			background: #f8fafc;
+			border: 1px solid #e2e8f0;
+			border-radius: 4px;
 			cursor: pointer;
+			transition: all 0.2s ease;
+
+			&:hover {
+				background-color: #f1f5f9;
+				border-color: #cbd5e1;
+			}
 
 			.organization-image-icon {
-				font-size: 24px;
-				color: #94B4C1;
+				font-size: 20px;
+				color: #689D4B;
 			}
 		}
 	}
 
-	.field-label {
-		font-size: 0.8125rem;
-		font-weight: 600;
+	.form-field {
+		margin-bottom: 0.85rem;
+
+		&.flex-1 {
+			flex: 1;
+			min-width: 0;
+		}
+
+		.field-label {
+			display: block;
+			font-size: 0.8125rem;
+			font-weight: 600;
+			color: #475569;
+			margin-bottom: 0.35rem;
+		}
+
+		.full-width {
+			width: 100%;
+		}
+	}
+
+	.full-width {
+		width: 100%;
+	}
+
+	.editor-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.75rem;
+	}
+
+	.organization-display-button {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		padding: 0.65rem 0.85rem;
+		background-color: #f8fafc;
+		border: 1px solid #e2e8f0;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		text-align: left;
+
+		&:hover {
+			background-color: #f1f5f9;
+			border-color: #cbd5e1;
+
+			.edit-hint {
+				color: #689D4B;
+			}
+		}
+
+		&.desc-button {
+			align-items: flex-start;
+		}
+
+		.organization-display-value {
+			font-size: 0.875rem;
+			color: #1e293b;
+			font-weight: 500;
+			line-height: 1.4;
+		}
+
+		.edit-hint {
+			font-size: 0.75rem;
+			font-weight: 600;
+			color: #64748b;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+			margin-left: 0.75rem;
+			flex-shrink: 0;
+
+			i {
+				font-size: 0.75rem;
+			}
+		}
+	}
+
+	.organization-names-row {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+
+		.copy-btn-wrapper {
+			padding-bottom: 0.85rem;
+			display: flex;
+			align-items: center;
+		}
+	}
+
+	.financial-fields-row {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.organization-info-helper {
+		margin: 0.5rem 0;
+		font-size: 0.875rem;
 		color: #475569;
 	}
 
+	.organization-status-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
+
+		.organization-status-text {
+			font-size: 0.875rem;
+			color: #475569;
+		}
+	}
+
 	.membership-active-value {
-		color: var(--p-primary-color, #689D4B);
-		font-weight: 600;
+		color: #689D4B;
+		font-weight: 700;
+		letter-spacing: 0.02em;
 	}
 
 	.detail-skeleton {
@@ -66,10 +197,10 @@
 	}
 
 	.organization-financial-settings-helper {
-		margin: -0.35rem 0 0.75rem;
-		font-size: 0.8rem;
+		margin: -0.15rem 0 0.85rem;
+		font-size: 0.8125rem;
 		line-height: 1.4;
-		color: #5f6b73;
+		color: #64748b;
 	}
 
 	.organization-info-editor {
@@ -78,11 +209,12 @@
 
 	.organization-info-date-created {
 		margin: 0 0 1rem;
-		font-size: 0.8rem;
-		color: #5f6b73;
+		font-size: 0.8125rem;
+		color: #64748b;
 
 		.organization-info-date-label {
 			font-weight: 600;
+			color: #475569;
 		}
 	}
 
@@ -117,39 +249,9 @@
 
 	.organization-type-display-title {
 		margin: 0 0 0.5rem 0.25rem;
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
-		color: #5f6b73;
-	}
-
-	.organization-type-display-button {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		padding: 0.75rem 1rem;
-		background-color: #f8f9fa;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		cursor: pointer;
-		transition: all 0.25s ease;
-		text-align: left;
-
-		&:hover {
-			background-color: #f1f3f4;
-			border-color: #c0c0c0;
-		}
-	}
-
-	.organization-type-display-value {
-		font-size: 0.95rem;
-		color: #202124;
-		font-weight: 500;
-	}
-
-	.organization-type-edit-icon {
-		font-size: 1rem;
-		color: #5f6b73;
+		color: #475569;
 	}
 
 	.organization-names-block {
@@ -158,46 +260,9 @@
 
 	.organization-names-display-title {
 		margin: 0 0 0.5rem 0.25rem;
-		font-size: 0.8rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
-		color: #5f6b73;
-	}
-
-	.organization-names-display-button {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		width: 100%;
-		padding: 0.75rem 1rem;
-		background-color: #f8f9fa;
-		border: 1px solid #e0e0e0;
-		border-radius: 8px;
-		cursor: pointer;
-		transition: all 0.25s ease;
-		text-align: left;
-
-		&:hover {
-			background-color: #f1f3f4;
-			border-color: #c0c0c0;
-		}
-	}
-
-	.organization-names-display-value {
-		font-size: 0.95rem;
-		color: #202124;
-		font-weight: 500;
-	}
-
-	.organization-names-edit-icon {
-		font-size: 1rem;
-		color: #5f6b73;
-	}
-
-	.organization-info-fields-row {
-		display: flex;
-		gap: 0.75rem;
-		align-items: flex-end;
-		margin-bottom: 0.5rem;
+		color: #475569;
 	}
 
 	.organization-description-block {
@@ -205,27 +270,9 @@
 
 		.organization-description-display-title {
 			margin: 0 0 0.5rem 0.25rem;
-			font-size: 0.8rem;
+			font-size: 0.8125rem;
 			font-weight: 600;
-			color: #5f6b73;
-		}
-
-		.organization-description-display-text {
-			display: block;
-			width: 100%;
-			padding: 0.75rem 1rem;
-			background-color: #f8f9fa;
-			border: 1px solid #e0e0e0;
-			border-radius: 8px;
-			cursor: pointer;
-			text-align: left;
-			font-size: 0.875rem;
-			color: #334155;
-			line-height: 1.5;
-
-			&:hover {
-				background-color: #f1f3f4;
-			}
+			color: #475569;
 		}
 	}
 
@@ -236,7 +283,7 @@
 
 		.organization-address-card {
 			border: 1px solid #e2e8f0;
-			border-radius: 0;
+			border-radius: 4px;
 			padding: 1rem;
 			background: #f8fafc;
 
@@ -249,7 +296,7 @@
 				color: #334155;
 
 				i {
-					color: var(--p-primary-color, #689D4B);
+					color: #689D4B;
 				}
 			}
 
@@ -260,6 +307,17 @@
 					color: #64748b;
 				}
 			}
+		}
+	}
+
+	.organization-currency-text {
+		font-size: 0.875rem;
+		color: #475569;
+		margin: 0.5rem 0 0.75rem;
+
+		.organization-currency-value {
+			font-weight: 600;
+			color: #1e293b;
 		}
 	}
 }

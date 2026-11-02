@@ -5,38 +5,85 @@
       <i class="pi pi-bars"></i>
     </button>
     <div class="logo">
-      <h1 class="brand-logo">MERRA ACCOUNTING</h1>
+      <a routerLink="/main" class="logo-link">
+        <img src="merra-logo.svg" alt="Merra" class="header-logo" />
+      </a>
     </div>
     <nav class="main-nav">
       <!-- Navigation items will go here -->
     </nav>
     <div class="org-actions">
       <div class="action-menu">
-        <button class="plus-button" title="Add new" (click)="toggleMenu()">
-          <span class="plus-icon">+</span>
+        <button
+          class="plus-button"
+          [class.active]="isMenuOpen"
+          type="button"
+          pTooltip="Quick create"
+          tooltipPosition="bottom"
+          aria-label="Quick create menu"
+          [attr.aria-expanded]="isMenuOpen"
+          (click)="toggleMenu()">
+          <i class="pi pi-plus plus-icon" [class.rotated]="isMenuOpen"></i>
         </button>
+
         @if (isMenuOpen) {
-        <div class="dropdown-menu">
-          <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Organization</a>
-          <div class="menu-item-with-submenu">
-            <button class="menu-item submenu-trigger" (click)="toggleInvoiceSubmenu($event)">
-              <span>Invoice</span>
-              <i class="chevron pi pi-chevron-right" [class.rotated]="isInvoiceSubmenuOpen"></i>
-            </button>
-            <div class="submenu" [class.open]="isInvoiceSubmenuOpen">
-              <a class="submenu-item" routerLink="invoice" (click)="closeMenu()">All Invoices</a>
-              <a class="submenu-item" routerLink="invoice/new" (click)="closeMenu()">Create Invoice</a>
-              <a class="submenu-item" [routerLink]="['invoice']" [queryParams]="{status: 'draft'}" (click)="closeMenu()">Draft Invoices</a>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <span class="header-title">Quick Actions</span>
+            </div>
+
+            <div class="menu-section">
+              <a routerLink="invoice/new" class="menu-item" (click)="closeMenu()">
+                <span class="item-icon-wrapper">
+                  <i class="pi pi-file-edit"></i>
+                </span>
+                <div class="item-text">
+                  <span class="item-title">New Invoice</span>
+                  <span class="item-desc">Create and send a bill</span>
+                </div>
+              </a>
+
+              <a routerLink="invoice" [queryParams]="{status: 'draft'}" class="menu-item" (click)="closeMenu()">
+                <span class="item-icon-wrapper">
+                  <i class="pi pi-receipt"></i>
+                </span>
+                <div class="item-text">
+                  <span class="item-title">Draft Invoices</span>
+                  <span class="item-desc">Review pending drafts</span>
+                </div>
+              </a>
+            </div>
+
+            <div class="menu-divider"></div>
+
+            <div class="menu-section">
+              <a routerLink="contacts" class="menu-item" (click)="closeMenu()">
+                <span class="item-icon-wrapper">
+                  <i class="pi pi-user-plus"></i>
+                </span>
+                <div class="item-text">
+                  <span class="item-title">New Contact</span>
+                  <span class="item-desc">Add customer or vendor</span>
+                </div>
+              </a>
+
+              <a routerLink="organization" class="menu-item" (click)="closeMenu()">
+                <span class="item-icon-wrapper">
+                  <i class="pi pi-building"></i>
+                </span>
+                <div class="item-text">
+                  <span class="item-title">Organization</span>
+                  <span class="item-desc">View company details</span>
+                </div>
+              </a>
             </div>
           </div>
-          <a class="menu-item" routerLink="contacts" (click)="closeMenu()">New Contact</a>
-          <a href="#" class="menu-item" (click)="closeMenu(); $event.preventDefault()">New Project</a>
-        </div>
         }
       </div>
+
       <a class="org-identity" title="Organization" routerLink="organization">
-        <span class="org-profile-img-skeleton"></span>
-        <span class="org-name">Oscorp Industries</span>
+        <span class="org-avatar">{{ orgInitial }}</span>
+        <span class="org-name">{{ currentOrgName }}</span>
       </a>
     </div>
   </div>

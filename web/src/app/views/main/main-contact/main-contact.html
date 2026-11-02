@@ -1,11 +1,33 @@
 <section class="contact-page">
+  <div class="page-header">
+    <div class="header-text">
+      <h1 class="page-title">All Contacts</h1>
+      <p class="page-subtitle">View and manage customer and supplier relationships</p>
+    </div>
+    <div class="header-actions">
+      <p-button label="New Contact" icon="pi pi-user-plus" [size]="'small'"></p-button>
+    </div>
+  </div>
+
   <div class="contact-table-container">
-    <div class="contact-table-header">
-      <h2 class="contact-title">All Contacts</h2>
+    <div class="table-controls">
+      <p-iconfield iconPosition="left" class="search-box">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          [pSize]="'small'"
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search contacts..."
+          class="search-input" />
+      </p-iconfield>
+      <div class="contact-count">
+        <span>{{ filteredContacts.length }} contact{{ filteredContacts.length === 1 ? '' : 's' }}</span>
+      </div>
     </div>
 
     <p-table
-      [value]="contacts"
+      [value]="filteredContacts"
       [(selection)]="selectedContacts"
       dataKey="accountNumber"
       [size]="'small'"
@@ -27,19 +49,36 @@
           <td>
             <p-tableCheckbox [value]="row"></p-tableCheckbox>
           </td>
-          <td class="font-medium">{{ row.name }}</td>
-          <td>{{ row.accountNumber }}</td>
+          <td class="font-medium">
+            <span class="contact-name-cell">
+              <span class="contact-avatar">
+                <i class="pi pi-user"></i>
+              </span>
+              <span>{{ row.name }}</span>
+            </span>
+          </td>
+          <td class="account-cell">{{ row.accountNumber }}</td>
           <td class="text-center">
-            <i class="contact-flag-icon pi" [ngClass]="row.isSupplier ? 'pi-check flag-true' : 'pi-times flag-false'"></i>
+            <span class="flag-badge" [class.is-active]="row.isSupplier">
+              <i class="pi" [ngClass]="row.isSupplier ? 'pi-check' : 'pi-minus'"></i>
+            </span>
           </td>
           <td class="text-center">
-            <i class="contact-flag-icon pi" [ngClass]="row.isCustomer ? 'pi-check flag-true' : 'pi-times flag-false'"></i>
+            <span class="flag-badge" [class.is-active]="row.isCustomer">
+              <i class="pi" [ngClass]="row.isCustomer ? 'pi-check' : 'pi-minus'"></i>
+            </span>
           </td>
         </tr>
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td colspan="5" class="text-center">No contacts found.</td>
+          <td colspan="5" class="empty-state-cell">
+            <div class="empty-state">
+              <i class="pi pi-users empty-icon"></i>
+              <p class="empty-title">No contacts found</p>
+              <p class="empty-desc">No contacts matched your search query.</p>
+            </div>
+          </td>
         </tr>
       </ng-template>
     </p-table>

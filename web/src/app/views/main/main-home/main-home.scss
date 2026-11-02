@@ -1,3 +1,341 @@
 :host {
   display: block;
 }
+
+.dashboard-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+// Banner
+.dashboard-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+
+  .greeting {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.25;
+  }
+
+  .subgreeting {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+
+    strong {
+      color: #1e293b;
+    }
+  }
+
+  .banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+// Metrics Grid
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .metric-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 1.15rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: all 0.15s ease;
+
+    &:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .metric-icon-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.125rem;
+      flex-shrink: 0;
+
+      &.org-icon {
+        background-color: #f4f8f1;
+        color: #689D4B;
+      }
+
+      &.invoice-icon {
+        background-color: #eff6ff;
+        color: #3b82f6;
+      }
+
+      &.contact-icon {
+        background-color: #fdf4ff;
+        color: #a855f7;
+      }
+
+      &.fiscal-icon {
+        background-color: #fefce8;
+        color: #ca8a04;
+      }
+    }
+
+    .metric-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+
+      .metric-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #94a3b8;
+        margin-bottom: 0.25rem;
+      }
+
+      .metric-value-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+
+        .metric-value {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #1e293b;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .status-pill {
+          font-size: 0.6875rem;
+          font-weight: 700;
+          padding: 0.15rem 0.45rem;
+          border-radius: 3px;
+
+          &.active {
+            background-color: #dcfce7;
+            color: #166534;
+          }
+        }
+      }
+
+      .metric-footnote {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+}
+
+// Content Grid
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 1.25rem;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.workspace-section {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1.25rem;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #f1f5f9;
+
+    .section-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .section-subtitle {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .header-link {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #689D4B;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Launchpad Items
+.launchpad-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .launch-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background-color: #ffffff;
+      border-color: #689D4B;
+      box-shadow: 0 2px 6px rgba(104, 157, 75, 0.1);
+
+      .launch-icon {
+        background-color: #689D4B;
+        color: #ffffff;
+      }
+
+      .launch-title {
+        color: #689D4B;
+      }
+
+      .launch-arrow {
+        color: #689D4B;
+        transform: translateX(3px);
+      }
+    }
+
+    .launch-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      background-color: #e2e8f0;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .launch-details {
+      flex: 1;
+      min-width: 0;
+
+      .launch-title {
+        margin: 0 0 0.15rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        transition: color 0.15s ease;
+      }
+
+      .launch-desc {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #64748b;
+        line-height: 1.35;
+      }
+    }
+
+    .launch-arrow {
+      color: #94a3b8;
+      font-size: 0.8125rem;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+  }
+}
+
+// Activity / Empty State Card
+.empty-activity-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.25rem 1rem;
+
+  .empty-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #f4f8f1;
+    color: #689D4B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .empty-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .empty-desc {
+    margin: 0 0 1.25rem;
+    font-size: 0.8125rem;
+    color: #64748b;
+    max-width: 300px;
+    line-height: 1.4;
+  }
+
+  .empty-cta {
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .banner-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
