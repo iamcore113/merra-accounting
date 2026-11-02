@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { Router, RouterLink } from '@angular/router';
 import { BaseService } from '../../shared/services/base-service';
@@ -6,7 +7,7 @@ import { BaseService } from '../../shared/services/base-service';
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [ButtonModule, RouterLink],
+  imports: [CommonModule, ButtonModule, RouterLink],
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })

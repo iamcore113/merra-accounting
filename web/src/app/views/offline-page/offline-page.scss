@@ -273,16 +273,16 @@
   .btn-primary {
     background-color: var(--brand-color);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(2, 70, 132, 0.15);
+    box-shadow: 0 4px 12px rgba(104, 157, 75, 0.15);
 
     &:hover:not(:disabled) {
-      background-color: #013666;
+      background-color: #58883e;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(2, 70, 132, 0.22);
+      box-shadow: 0 6px 16px rgba(104, 157, 75, 0.22);
     }
 
     &:disabled {
-      background-color: rgba(2, 70, 132, 0.5);
+      background-color: rgba(104, 157, 75, 0.5);
       color: rgba(255, 255, 255, 0.7);
     }
   }

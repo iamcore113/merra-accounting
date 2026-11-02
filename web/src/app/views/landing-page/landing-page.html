@@ -1,46 +1,166 @@
 <div class="landing-root">
+  <!-- Header -->
   <header class="landing-header">
-    <span class="brand-logo landing-brand">MERRA</span>
-    <span class="sub-brand-logo landing-subbrand">ACCOUNTING</span>
+    <div class="header-container">
+      <a routerLink="/" class="logo-link">
+        <img src="merra-logo.svg" alt="Merra" class="landing-logo" />
+      </a>
+      <div class="header-actions">
+        <a routerLink="/account/signin" class="header-link">Sign In</a>
+        <a routerLink="/account/signup">
+          <p-button label="Get Started" [size]="'small'"></p-button>
+        </a>
+      </div>
+    </div>
   </header>
 
+  <!-- Hero Section -->
   <main class="landing-hero">
-    <div class="hero-text">
-      <h1 class="hero-title">Manage your finances<br />with clarity.</h1>
-      <p class="hero-subtitle">Invoices, organizations, and accounts — all in one place.</p>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Modern Financial Management</span>
+      </div>
+
+      <h1 class="hero-title">
+        Manage your finances<br />
+        <span class="brand-highlight">with clarity.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Invoices, multi-organization ledgers, and financial periods — unified in a fast, elegant accounting workspace.
+      </p>
+
+      <!-- Action Cards -->
+      <div class="action-cards">
+        <!-- Card 1: New Here -->
+        <div class="action-card">
+          <div class="action-card-header">
+            <div class="action-card-icon">
+              <i class="pi pi-user-plus"></i>
+            </div>
+            <h2 class="action-card-title">New here?</h2>
+          </div>
+          <p class="action-card-desc">Create your account to configure organizations, set up fiscal dates, and issue invoices.</p>
+          <div class="card-action">
+            <a routerLink="/account/signup" class="btn-link">
+              <p-button label="Sign Up" [outlined]="true" [size]="'small'" styleClass="w-full"></p-button>
+            </a>
+          </div>
+          <div class="card-footer-note">Free setup • Quick activation</div>
+        </div>
+
+        <!-- Card 2: Returning / Primary -->
+        <div class="action-card action-card--featured">
+          <div class="featured-badge">Workspace Access</div>
+          <div class="action-card-header">
+            <div class="action-card-icon featured-icon">
+              <i class="pi pi-sign-in"></i>
+            </div>
+            <h2 class="action-card-title">Welcome back</h2>
+          </div>
+          <p class="action-card-desc">Sign in to your active workspace to manage transactions, invoices, and reports.</p>
+          <div class="card-action">
+            <a routerLink="/account/signin" class="btn-link">
+              <p-button label="Sign In" [size]="'small'" styleClass="w-full"></p-button>
+            </a>
+          </div>
+          <div class="card-footer-note">Direct access to your organizations</div>
+        </div>
+
+        <!-- Card 3: Visitor / Demo -->
+        <div class="action-card">
+          <div class="action-card-header">
+            <div class="action-card-icon">
+              <i class="pi pi-compass"></i>
+            </div>
+            <h2 class="action-card-title">Just browsing?</h2>
+          </div>
+          <p class="action-card-desc">Tour the dashboard interface and explore navigation as a guest visitor.</p>
+          <div class="card-action">
+            <a routerLink="/main" class="btn-link">
+              <p-button label="Enter as Visitor" [outlined]="true" [size]="'small'" styleClass="w-full"></p-button>
+            </a>
+          </div>
+          <div class="card-footer-note">Interactive preview • No login required</div>
+        </div>
+      </div>
     </div>
 
-    <div class="action-cards">
-      <div class="action-card">
-        <div class="action-card-icon">
-          <i class="pi pi-user-plus text-2xl"></i>
-        </div>
-        <h2 class="action-card-title">New here?</h2>
-        <p class="action-card-desc">Create a free account and get started in minutes.</p>
-        <button pButton type="button" routerLink="/account/signup" class="action-btn" label="Sign Up" [size]="'small'"></button>
+    <!-- Feature Pillars -->
+    <section class="features-section">
+      <div class="features-header">
+        <h3 class="features-section-title">Built for Precision & Scale</h3>
+        <p class="features-section-desc">Key capabilities crafted to keep your accounting accurate and reliable.</p>
       </div>
 
-      <div class="action-card action-card--primary">
-        <div class="action-card-icon">
-          <i class="pi pi-sign-in text-2xl"></i>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon-wrapper">
+            <i class="pi pi-building"></i>
+          </div>
+          <div class="feature-body">
+            <h4 class="feature-title">Multi-Organization Tenancy</h4>
+            <p class="feature-text">Isolate independent company records, currencies, and members under unified credentials.</p>
+          </div>
         </div>
-        <h2 class="action-card-title">Welcome back</h2>
-        <p class="action-card-desc">Sign in to access your dashboard and manage your account.</p>
-        <button pButton type="button" routerLink="/account/signin" class="action-btn action-btn-light" label="Sign In" [size]="'small'"></button>
-      </div>
 
-      <div class="action-card">
-        <div class="action-card-icon">
-          <i class="pi pi-eye text-2xl"></i>
+        <div class="feature-item">
+          <div class="feature-icon-wrapper">
+            <i class="pi pi-receipt"></i>
+          </div>
+          <div class="feature-body">
+            <h4 class="feature-title">Intuitive Invoicing</h4>
+            <p class="feature-text">Draft, approve, and track sales and bills with customizable line items and automated tax calculation.</p>
+          </div>
         </div>
-        <h2 class="action-card-title">Just browsing?</h2>
-        <p class="action-card-desc">Explore the app as a visitor without an account.</p>
-        <button pButton [outlined]="true" type="button" class="action-btn" label="Enter as Visitor" [size]="'small'"></button>
+
+        <div class="feature-item">
+          <div class="feature-icon-wrapper">
+            <i class="pi pi-calendar"></i>
+          </div>
+          <div class="feature-body">
+            <h4 class="feature-title">Fiscal Year Boundaries</h4>
+            <p class="feature-text">Customize annual reporting closing dates to align seamlessly with statutory financial years.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capabilities / Trust Badges -->
+    <div class="trust-ribbon">
+      <div class="trust-badge">
+        <i class="pi pi-shield"></i>
+        <span>Encrypted Sessions</span>
+      </div>
+      <div class="trust-badge">
+        <i class="pi pi-check-circle"></i>
+        <span>Liquibase Audited</span>
+      </div>
+      <div class="trust-badge">
+        <i class="pi pi-globe"></i>
+        <span>Multi-Currency Ready</span>
+      </div>
+      <div class="trust-badge">
+        <i class="pi pi-bolt"></i>
+        <span>High-Performance APIs</span>
       </div>
     </div>
   </main>
 
+  <!-- Footer -->
   <footer class="landing-footer">
-    <p>&copy; {{ currentYear }} MERRA. All rights reserved.</p>
+    <div class="footer-container">
+      <div class="footer-left">
+        <img src="merra-logo.svg" alt="Merra" class="footer-logo" />
+        <span class="footer-copyright">&copy; {{ currentYear }} Merra Accounting. All rights reserved.</span>
+      </div>
+      <div class="footer-right">
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span class="status-label">All systems operational</span>
+        </div>
+      </div>
+    </div>
   </footer>
 </div>
