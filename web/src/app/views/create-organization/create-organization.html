@@ -1,12 +1,13 @@
-<div class="container">
-  <div class="form-wrapper">
-    <div class="form-header">
-      <h2 class="form-title">Create New Organization</h2>
-      <p class="form-subtitle">Enter your organization details to get started</p>
+<div class="create-org-container">
+  <div class="create-org-card">
+    <div class="create-org-header">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="org-title">Create New Organization</h2>
+      <p class="org-subtitle">Enter your organization details to get started</p>
     </div>
 
-    <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="organization-form">
-      <p-stepper [value]="activeStep" class="organization-stepper">
+    <form [formGroup]="organizationForm" (ngSubmit)="onSubmit()" class="org-form">
+      <p-stepper [(value)]="activeStep" [linear]="true" class="organization-stepper">
         <p-step-list>
           <p-step [value]="1">Organization Details</p-step>
           <p-step [value]="2">Address Details</p-step>
@@ -14,235 +15,434 @@
         </p-step-list>
 
         <p-step-panels>
-          <!-- Step 1: Name Section -->
+          <!-- Step 1: Organization Details -->
           <p-step-panel [value]="1">
-            <div class="organization-card" formGroupName="nameStep">
-              <div class="field-group">
-                <label for="displayName" class="field-label">Display Name *</label>
-                <input id="displayName" pInputText [pSize]="'small'" placeholder="Enter organization display name" formControlName="displayName" class="full-width" />
-                @if (organizationForm.get('nameStep.displayName')?.hasError('required') && organizationForm.get('nameStep.displayName')?.touched) {
-                  <small class="field-error">Display name is required</small>
-                }
-                @if (organizationForm.get('nameStep.displayName')?.hasError('minlength') && organizationForm.get('nameStep.displayName')?.touched) {
-                  <small class="field-error">Display name must be at least 2 characters long</small>
-                }
-              </div>
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="step-content" formGroupName="nameStep">
+                <div class="field-group">
+                  <label for="displayName" class="field-label">Display Name *</label>
+                  <p-iconfield iconPosition="left" class="full-width">
+                    <p-inputicon styleClass="pi pi-building"></p-inputicon>
+                    <input
+                      id="displayName"
+                      pInputText
+                      [pSize]="'small'"
+                      placeholder="Enter organization display name"
+                      formControlName="displayName"
+                      class="full-width" />
+                  </p-iconfield>
+                  @if (nameStep.get('displayName')?.hasError('required') && nameStep.get('displayName')?.touched) {
+                    <small class="field-error">Display name is required</small>
+                  }
+                  @if (nameStep.get('displayName')?.hasError('minlength') && nameStep.get('displayName')?.touched) {
+                    <small class="field-error">Display name must be at least 2 characters long</small>
+                  }
+                </div>
 
-              <div class="field-group">
-                <label for="orgType" class="field-label">Organization Type *</label>
-                <p-select
-                  id="orgType"
-                  formControlName="type"
-                  [options]="organizationMetadata?.organizationTypes || []"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Select organization type"
-                  [size]="'small'"
-                  styleClass="full-width">
-                </p-select>
-                @if (organizationForm.get('nameStep.type')?.hasError('required') && organizationForm.get('nameStep.type')?.touched) {
-                  <small class="field-error">Organization type is required</small>
-                }
-              </div>
-
-              <div class="field-group">
-                <label for="orgEmail" class="field-label">Email Address *</label>
-                <input id="orgEmail" pInputText [pSize]="'small'" type="email" placeholder="Enter organization email" formControlName="email" class="full-width" />
-                @if (organizationForm.get('nameStep.email')?.hasError('required') && organizationForm.get('nameStep.email')?.touched) {
-                  <small class="field-error">Email is required</small>
-                }
-                @if (organizationForm.get('nameStep.email')?.hasError('email') && organizationForm.get('nameStep.email')?.touched) {
-                  <small class="field-error">Please enter a valid email address</small>
-                }
-              </div>
-
-              <div class="country-currency-row">
-                <div class="field-group country-field">
-                  <label for="orgCountry" class="field-label">Country *</label>
-                  <p-autocomplete
-                    id="orgCountry"
-                    formControlName="country"
-                    [suggestions]="filteredCountries"
-                    (completeMethod)="filterCountries($event)"
-                    (onSelect)="onCountrySelect($event.value)"
+                <div class="field-group">
+                  <label for="orgType" class="field-label">Organization Type *</label>
+                  <p-select
+                    id="orgType"
+                    formControlName="type"
+                    [options]="organizationMetadata?.organizationTypes || []"
                     optionLabel="name"
-                    optionValue="cca2"
+                    optionValue="id"
+                    placeholder="Select organization type"
                     [size]="'small'"
-                    styleClass="full-width"
-                    inputStyleClass="full-width"
-                    placeholder="Search country">
-                  </p-autocomplete>
-                  @if (organizationForm.get('nameStep.country')?.hasError('required') && organizationForm.get('nameStep.country')?.touched) {
-                    <small class="field-error">Country is required</small>
+                    styleClass="full-width">
+                  </p-select>
+                  @if (nameStep.get('type')?.hasError('required') && nameStep.get('type')?.touched) {
+                    <small class="field-error">Organization type is required</small>
                   }
                 </div>
 
-                <div class="field-group currency-field">
-                  <label for="orgCurrency" class="field-label">Currency *</label>
-                  <input id="orgCurrency" pInputText [pSize]="'small'" formControlName="currency" readonly class="full-width" placeholder="Currency" />
-                  @if (organizationForm.get('nameStep.currency')?.hasError('required') && organizationForm.get('nameStep.currency')?.touched) {
-                    <small class="field-error">Currency is required</small>
+                <div class="field-group">
+                  <label for="orgEmail" class="field-label">Email Address *</label>
+                  <p-iconfield iconPosition="left" class="full-width">
+                    <p-inputicon styleClass="pi pi-envelope"></p-inputicon>
+                    <input
+                      id="orgEmail"
+                      pInputText
+                      [pSize]="'small'"
+                      type="email"
+                      placeholder="Enter organization email"
+                      formControlName="email"
+                      class="full-width" />
+                  </p-iconfield>
+                  @if (nameStep.get('email')?.hasError('required') && nameStep.get('email')?.touched) {
+                    <small class="field-error">Email is required</small>
+                  }
+                  @if (nameStep.get('email')?.hasError('email') && nameStep.get('email')?.touched) {
+                    <small class="field-error">Please enter a valid email address</small>
                   }
                 </div>
-              </div>
-            </div>
 
-            <div class="step-actions">
-              <button pButton [outlined]="true" type="button" (click)="onCancel()" label="Cancel"></button>
-              <button pButton type="button" [disabled]="organizationForm.get('nameStep')?.invalid" (click)="nextStep()" label="Next"></button>
-            </div>
-          </p-step-panel>
-
-          <!-- Step 2: Address Section -->
-          <p-step-panel [value]="2">
-            <div class="organization-card" formGroupName="addressStep">
-              <div class="address-section-header">
-                <h3>Organization Addresses</h3>
-              </div>
-
-              <div formArrayName="addresses">
-                @for (address of addresses.controls; track $index; let addrIndex = $index) {
-                  <div [formGroupName]="addrIndex" class="address-block" [class.not-first-address]="!$first">
-                    <div class="address-header-row">
-                      <h4>Address #{{ addrIndex + 1 }}</h4>
-                      @if (addresses.length > 1) {
-                        <button pButton [rounded]="true" [text]="true" severity="danger" type="button" (click)="removeAddress(addrIndex)">
-                          <i class="pi pi-trash"></i>
-                        </button>
-                      }
-                    </div>
-
-                    <div class="address-row-two-col">
-                      <div class="field-group flex-1">
-                        <label class="field-label">Address Type *</label>
-                        <p-select
-                          formControlName="type"
-                          [options]="organizationMetadata?.organizationAddressTypes || []"
-                          optionLabel="name"
-                          optionValue="id"
-                          placeholder="Select address type"
-                          [size]="'small'"
-                          styleClass="full-width">
-                        </p-select>
-                        @if (address.get('type')?.hasError('required') && address.get('type')?.touched) {
-                          <small class="field-error">Address type is required</small>
-                        }
-                      </div>
-
-                      <div class="field-group flex-1">
-                        <label class="field-label">Attention To</label>
-                        <input pInputText [pSize]="'small'" placeholder="Enter attention to name" formControlName="attentionTo" class="full-width" />
-                      </div>
-                    </div>
-
-                    <div formArrayName="addresses" class="address-lines-container">
-                      @for (line of getAddressLines(address).controls; track $index; let lineIndex = $index) {
-                        <div class="address-line-row">
-                          <div class="field-group flex-1">
-                            <label class="field-label">Address Line {{ lineIndex + 1 }} *</label>
-                            <input pInputText [pSize]="'small'" placeholder="Enter address line {{ lineIndex + 1 }}" [formControlName]="lineIndex" class="full-width" />
-                            @if (line.hasError('required') && line.touched) {
-                              <small class="field-error">Address line is required</small>
-                            }
-                          </div>
-                          @if (getAddressLines(address).length > 1) {
-                            <button pButton [rounded]="true" [text]="true" severity="danger" type="button" (click)="removeAddressLine(address, lineIndex)">
-                              <i class="pi pi-minus-circle"></i>
-                            </button>
-                          }
-                        </div>
-                      }
-                      <div class="add-line-button-row">
-                        <button pButton [text]="true" type="button" (click)="addAddressLine(address)" [disabled]="getAddressLines(address).length >= 2" icon="pi pi-plus" label="Add Address Line"></button>
-                      </div>
-                    </div>
-
-                    <div class="field-group">
-                      <label class="field-label">Country *</label>
+                <div class="two-col-row">
+                  <div class="field-group flex-2">
+                    <label for="orgCountry" class="field-label">Country *</label>
+                    <p-iconfield iconPosition="left" class="full-width">
+                      <p-inputicon styleClass="pi pi-globe"></p-inputicon>
                       <p-autocomplete
+                        id="orgCountry"
                         formControlName="country"
                         [suggestions]="filteredCountries"
                         (completeMethod)="filterCountries($event)"
+                        (onSelect)="onCountrySelect($event.value)"
                         optionLabel="name"
                         optionValue="cca2"
                         [size]="'small'"
+                        [fluid]="true"
+                        [dropdown]="true"
+                        [completeOnFocus]="true"
+                        class="full-width"
                         styleClass="full-width"
                         inputStyleClass="full-width"
-                        placeholder="Country">
+                        placeholder="Search country">
+                        <ng-template let-country #item>
+                          <div class="country-option">
+                            <span>{{ country.name }}</span>
+                          </div>
+                        </ng-template>
                       </p-autocomplete>
-                      @if (address.get('country')?.hasError('required') && address.get('country')?.touched) {
-                        <small class="field-error">Country is required</small>
-                      }
-                    </div>
-
-                    <div class="address-row-two-col">
-                      <div class="field-group city-field">
-                        <label class="field-label">City *</label>
-                        <input pInputText [pSize]="'small'" placeholder="City" formControlName="city" class="full-width" />
-                        @if (address.get('city')?.hasError('required') && address.get('city')?.touched) {
-                          <small class="field-error">City is required</small>
-                        }
-                      </div>
-
-                      <div class="field-group postal-field">
-                        <label class="field-label">Postal Code *</label>
-                        <input pInputText [pSize]="'small'" placeholder="Postal Code" formControlName="postalCode" class="full-width" />
-                        @if (address.get('postalCode')?.hasError('required') && address.get('postalCode')?.touched) {
-                          <small class="field-error">Postal code is required</small>
-                        }
-                      </div>
-                    </div>
+                    </p-iconfield>
+                    @if (nameStep.get('country')?.hasError('required') && nameStep.get('country')?.touched) {
+                      <small class="field-error">Country is required</small>
+                    }
                   </div>
-                }
-              </div>
 
-              <div class="add-address-action-row">
-                <button pButton [outlined]="true" type="button" (click)="addAddress()" icon="pi pi-plus" label="Add Another Address"></button>
-              </div>
-            </div>
+                  <div class="field-group flex-1">
+                    <label for="orgCurrency" class="field-label">Currency *</label>
+                    <p-iconfield iconPosition="left" class="full-width">
+                      <p-inputicon styleClass="pi pi-wallet"></p-inputicon>
+                      <input
+                        id="orgCurrency"
+                        pInputText
+                        [pSize]="'small'"
+                        formControlName="currency"
+                        readonly
+                        class="full-width readonly-field"
+                        placeholder="Auto-filled" />
+                    </p-iconfield>
+                    @if (nameStep.get('currency')?.hasError('required') && nameStep.get('currency')?.touched) {
+                      <small class="field-error">Currency is required</small>
+                    }
+                  </div>
+                </div>
 
-            <div class="step-actions">
-              <button pButton [outlined]="true" type="button" (click)="prevStep()" label="Back"></button>
-              <button pButton type="button" [disabled]="organizationForm.get('addressStep')?.invalid" (click)="nextStep()" label="Next"></button>
-            </div>
+                <div class="step-actions">
+                  <button
+                    pButton
+                    [outlined]="true"
+                    type="button"
+                    (click)="onCancel()"
+                    label="Cancel"
+                    class="action-btn">
+                  </button>
+                  <button
+                    pButton
+                    type="button"
+                    (click)="nextStep()"
+                    [disabled]="nameStep.invalid"
+                    label="Next"
+                    class="action-btn">
+                  </button>
+                </div>
+              </div>
+            </ng-template>
           </p-step-panel>
 
-          <!-- Step 3: Financial Section -->
-          <p-step-panel [value]="3">
-            <div class="organization-card" formGroupName="financialStep">
-              <div class="financial-year-section">
-                <h3>Financial Year Settings</h3>
+          <!-- Step 2: Address Details -->
+          <p-step-panel [value]="2">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="step-content" formGroupName="addressStep">
+                <div class="section-title-row">
+                  <h3>Organization Addresses</h3>
+                  <p class="section-hint">Add physical or billing addresses for this organization.</p>
+                </div>
 
-                <div class="year-end-row">
-                  <div class="field-group month-field">
-                    <label class="field-label">Year End Month (1-12) *</label>
-                    <input pInputText [pSize]="'small'" type="number" placeholder="Month (1-12)" formControlName="yearEndMonth" min="1" max="12" class="full-width" />
-                    @if (organizationForm.get('financialStep.yearEndMonth')?.hasError('required') && organizationForm.get('financialStep.yearEndMonth')?.touched) {
+                <div formArrayName="addresses" class="address-list">
+                  @for (address of addresses.controls; track $index; let addrIndex = $index) {
+                    <div [formGroupName]="addrIndex" class="address-card" [class.extra-address]="!$first">
+                      <div class="address-card-header">
+                        <div class="address-title">
+                          <i class="pi pi-map-marker"></i>
+                          <span>Address #{{ addrIndex + 1 }}</span>
+                        </div>
+                        @if (addresses.length > 1) {
+                          <button
+                            pButton
+                            [text]="true"
+                            severity="danger"
+                            type="button"
+                            (click)="removeAddress(addrIndex)"
+                            class="delete-btn"
+                            pTooltip="Remove address">
+                            <i class="pi pi-trash"></i>
+                            <span>Remove</span>
+                          </button>
+                        }
+                      </div>
+
+                      <div class="two-col-row">
+                        <div class="field-group flex-1">
+                          <label class="field-label">Address Type *</label>
+                          <p-select
+                            formControlName="type"
+                            [options]="organizationMetadata?.organizationAddressTypes || []"
+                            optionLabel="name"
+                            optionValue="id"
+                            placeholder="Select address type"
+                            [size]="'small'"
+                            styleClass="full-width">
+                          </p-select>
+                          @if (address.get('type')?.hasError('required') && address.get('type')?.touched) {
+                            <small class="field-error">Address type is required</small>
+                          }
+                        </div>
+
+                        <div class="field-group flex-1">
+                          <label class="field-label">Attention To</label>
+                          <p-iconfield iconPosition="left" class="full-width">
+                            <p-inputicon styleClass="pi pi-user"></p-inputicon>
+                            <input
+                              pInputText
+                              [pSize]="'small'"
+                              placeholder="e.g. Accounts Department"
+                              formControlName="attentionTo"
+                              class="full-width" />
+                          </p-iconfield>
+                        </div>
+                      </div>
+
+                      <div formArrayName="addresses" class="address-lines-container">
+                        @for (line of getAddressLines(address).controls; track $index; let lineIndex = $index) {
+                          <div class="address-line-row">
+                            <div class="field-group flex-1">
+                              <label class="field-label">Address Line {{ lineIndex + 1 }} *</label>
+                              <p-iconfield iconPosition="left" class="full-width">
+                                <p-inputicon styleClass="pi pi-map"></p-inputicon>
+                                <input
+                                  pInputText
+                                  [pSize]="'small'"
+                                  placeholder="Street address, building, suite"
+                                  [formControlName]="lineIndex"
+                                  class="full-width" />
+                              </p-iconfield>
+                              @if (line.hasError('required') && line.touched) {
+                                <small class="field-error">Address line is required</small>
+                              }
+                            </div>
+                            @if (getAddressLines(address).length > 1) {
+                              <button
+                                pButton
+                                [text]="true"
+                                severity="danger"
+                                type="button"
+                                (click)="removeAddressLine(address, lineIndex)"
+                                class="remove-line-btn">
+                                <i class="pi pi-minus-circle"></i>
+                              </button>
+                            }
+                          </div>
+                        }
+                        @if (getAddressLines(address).length < 2) {
+                          <div class="add-line-row">
+                            <button
+                              pButton
+                              [text]="true"
+                              type="button"
+                              (click)="addAddressLine(address)"
+                              icon="pi pi-plus"
+                              label="Add Address Line 2"
+                              class="add-text-btn">
+                            </button>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="field-group">
+                        <label class="field-label">Country *</label>
+                        <p-iconfield iconPosition="left" class="full-width">
+                          <p-inputicon styleClass="pi pi-globe"></p-inputicon>
+                          <p-autocomplete
+                            formControlName="country"
+                            [suggestions]="filteredCountries"
+                            (completeMethod)="filterCountries($event)"
+                            optionLabel="name"
+                            optionValue="cca2"
+                            [size]="'small'"
+                            [fluid]="true"
+                            [dropdown]="true"
+                            [completeOnFocus]="true"
+                            class="full-width"
+                            styleClass="full-width"
+                            inputStyleClass="full-width"
+                            placeholder="Select country">
+                            <ng-template let-c #item>
+                              <div class="country-option">
+                                <span>{{ c.name }}</span>
+                              </div>
+                            </ng-template>
+                          </p-autocomplete>
+                        </p-iconfield>
+                        @if (address.get('country')?.hasError('required') && address.get('country')?.touched) {
+                          <small class="field-error">Country is required</small>
+                        }
+                      </div>
+
+                      <div class="two-col-row">
+                        <div class="field-group flex-2">
+                          <label class="field-label">City *</label>
+                          <p-iconfield iconPosition="left" class="full-width">
+                            <p-inputicon styleClass="pi pi-building"></p-inputicon>
+                            <input
+                              pInputText
+                              [pSize]="'small'"
+                              placeholder="City"
+                              formControlName="city"
+                              class="full-width" />
+                          </p-iconfield>
+                          @if (address.get('city')?.hasError('required') && address.get('city')?.touched) {
+                            <small class="field-error">City is required</small>
+                          }
+                        </div>
+
+                        <div class="field-group flex-1">
+                          <label class="field-label">Postal Code *</label>
+                          <p-iconfield iconPosition="left" class="full-width">
+                            <p-inputicon styleClass="pi pi-hashtag"></p-inputicon>
+                            <input
+                              pInputText
+                              [pSize]="'small'"
+                              placeholder="Postal code"
+                              formControlName="postalCode"
+                              class="full-width" />
+                          </p-iconfield>
+                          @if (address.get('postalCode')?.hasError('required') && address.get('postalCode')?.touched) {
+                            <small class="field-error">Postal code is required</small>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="add-address-action-row">
+                  <button
+                    pButton
+                    [outlined]="true"
+                    type="button"
+                    (click)="addAddress()"
+                    icon="pi pi-plus"
+                    label="Add Another Address"
+                    class="add-address-btn">
+                  </button>
+                </div>
+
+                <div class="step-actions">
+                  <button
+                    pButton
+                    [outlined]="true"
+                    type="button"
+                    (click)="prevStep()"
+                    label="Back"
+                    class="action-btn">
+                  </button>
+                  <button
+                    pButton
+                    type="button"
+                    (click)="nextStep()"
+                    [disabled]="addressStep.invalid"
+                    label="Next"
+                    class="action-btn">
+                  </button>
+                </div>
+              </div>
+            </ng-template>
+          </p-step-panel>
+
+          <!-- Step 3: Financial Settings -->
+          <p-step-panel [value]="3">
+            <ng-template #content let-activateCallback="activateCallback">
+              <div class="step-content" formGroupName="financialStep">
+                <div class="section-title-row">
+                  <h3>Financial Year Settings</h3>
+                  <p class="section-hint">Merra uses your financial year-end to generate annual reports, trial balance snapshots, and close books.</p>
+                </div>
+
+                <div class="two-col-row">
+                  <div class="field-group flex-1">
+                    <label class="field-label">Year End Month *</label>
+                    <p-select
+                      formControlName="yearEndMonth"
+                      [options]="months"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Select month"
+                      [size]="'small'"
+                      class="full-width"
+                      styleClass="full-width">
+                    </p-select>
+                    @if (financialStep.get('yearEndMonth')?.hasError('required') && financialStep.get('yearEndMonth')?.touched) {
                       <small class="field-error">Year end month is required</small>
-                    }
-                    @if (organizationForm.get('financialStep.yearEndMonth')?.hasError('min') || organizationForm.get('financialStep.yearEndMonth')?.hasError('max')) {
-                      <small class="field-error">Month must be between 1 and 12</small>
                     }
                   </div>
 
-                  <div class="field-group day-field">
-                    <label class="field-label">Year End Day (1-31) *</label>
-                    <input pInputText [pSize]="'small'" type="number" placeholder="Day (1-31)" formControlName="yearEndDay" min="1" max="31" class="full-width" />
-                    @if (organizationForm.get('financialStep.yearEndDay')?.hasError('required') && organizationForm.get('financialStep.yearEndDay')?.touched) {
+                  <div class="field-group flex-1">
+                    <label class="field-label">Year End Day *</label>
+                    <p-iconfield iconPosition="left" class="full-width">
+                      <p-inputicon styleClass="pi pi-calendar"></p-inputicon>
+                      <input
+                        pInputText
+                        [pSize]="'small'"
+                        type="number"
+                        placeholder="Day (1-31)"
+                        formControlName="yearEndDay"
+                        min="1"
+                        max="31"
+                        class="full-width" />
+                    </p-iconfield>
+                    @if (financialStep.get('yearEndDay')?.hasError('required') && financialStep.get('yearEndDay')?.touched) {
                       <small class="field-error">Year end day is required</small>
                     }
-                    @if (organizationForm.get('financialStep.yearEndDay')?.hasError('min') || organizationForm.get('financialStep.yearEndDay')?.hasError('max')) {
+                    @if (financialStep.get('yearEndDay')?.hasError('min') || financialStep.get('yearEndDay')?.hasError('max')) {
                       <small class="field-error">Day must be between 1 and 31</small>
                     }
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div class="step-actions">
-              <button pButton [outlined]="true" type="button" (click)="prevStep()" label="Back"></button>
-              <button pButton type="submit" [disabled]="organizationForm.invalid || isSubmitting" [loading]="isSubmitting" label="Create Organization"></button>
-            </div>
+                <div class="financial-info-box">
+                  <i class="pi pi-info-circle info-icon"></i>
+                  <div class="info-text">
+                    <strong>Annual Accounting Period:</strong>
+                    <span>Your fiscal year will end on 
+                      {{ months[financialStep.get('yearEndMonth')?.value - 1]?.label || 'December' }} 
+                      {{ financialStep.get('yearEndDay')?.value || 31 }}. You can adjust these settings later from organization settings.
+                    </span>
+                  </div>
+                </div>
+
+                <div class="step-actions">
+                  <button
+                    pButton
+                    [outlined]="true"
+                    type="button"
+                    (click)="prevStep()"
+                    label="Back"
+                    class="action-btn">
+                  </button>
+                  <button
+                    pButton
+                    type="submit"
+                    [disabled]="organizationForm.invalid || isSubmitting"
+                    [loading]="isSubmitting"
+                    icon="pi pi-check"
+                    label="Create Organization"
+                    class="action-btn submit-btn">
+                  </button>
+                </div>
+              </div>
+            </ng-template>
           </p-step-panel>
         </p-step-panels>
       </p-stepper>

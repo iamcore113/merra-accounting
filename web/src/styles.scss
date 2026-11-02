@@ -101,7 +101,6 @@ input,
 select,
 textarea,
 .p-inputtext,
-.p-select,
 .p-select-label,
 .p-multiselect,
 .p-datepicker input,
@@ -116,6 +115,19 @@ textarea,
 
   &:enabled:focus,
   &:enabled:focus-visible {
+    border-color: #689D4B !important;
+    box-shadow: 0 0 0 1px #689D4B !important;
+    outline: none !important;
+  }
+}
+
+.p-select {
+  padding: 0 !important;
+  border-radius: 0 !important;
+
+  &:enabled:focus,
+  &:enabled:focus-visible,
+  &.p-focus {
     border-color: #689D4B !important;
     box-shadow: 0 0 0 1px #689D4B !important;
     outline: none !important;

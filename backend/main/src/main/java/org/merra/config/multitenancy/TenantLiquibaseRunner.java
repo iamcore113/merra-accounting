@@ -34,6 +34,10 @@ public class TenantLiquibaseRunner implements TenantProvisioner {
     private static final Logger logger = LoggerFactory.getLogger(TenantLiquibaseRunner.class);
     private static final String TENANT_CHANGELOG = "db/changelog/db.changelog-tenant.xml";
 
+    static {
+        System.setProperty("liquibase.duplicateFileMode", "WARN");
+    }
+
     private final DataSource dataSource;
     private final OrganizationRepository organizationRepository;
 

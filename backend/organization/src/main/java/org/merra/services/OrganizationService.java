@@ -192,8 +192,15 @@ public class OrganizationService {
 	 */
 	public OrganizationMetaDataResponse metadata() {
 		// Get organization types from cache
-		OrganizationMetaDataResponse organizationMetaData = (OrganizationMetaDataResponse) redisTemplate
-				.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
+		OrganizationMetaDataResponse organizationMetaData = null;
+		try {
+			Object cached = redisTemplate.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
+			if (cached instanceof OrganizationMetaDataResponse omd) {
+				organizationMetaData = omd;
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to retrieve organization metadata from Redis: {}", e.getMessage());
+		}
 
 		if (organizationMetaData == null) {
 			Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
@@ -220,8 +227,12 @@ public class OrganizationService {
 					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types),
 					organizationAddressTypes);
 			// Cache the result for 3 hour
-			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
-					RedisKeys.CONSTANT_DURATION);
+			try {
+				redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
+						RedisKeys.CONSTANT_DURATION);
+			} catch (Exception e) {
+				logger.warn("Failed to cache organization metadata to Redis: {}", e.getMessage());
+			}
 		}
 		return organizationMetaData;
 	}

@@ -7,11 +7,12 @@ import { SelectModule } from 'primeng/select';
 import { AutoCompleteModule, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { StepperModule } from 'primeng/stepper';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { MessageService } from 'primeng/api';
 import { OrganizationService } from '../../shared/services/organization-service';
-import { CreateOrganizationRequest, FinancialYear, NewOrganizationResponse, OrganizationMetaDataResponse } from '../../shared/models/organization';
+import { CreateOrganizationRequest, FinancialYear, OrganizationAddress, OrganizationMetaDataResponse } from '../../shared/models/organization';
 import { Config, RestCountriesSelection } from '../../shared/models/api_response';
-import { LocalStorageService } from '../../shared/services/local-storage-service';
 import { UtilityService } from '../../shared/services/utility-service';
 
 @Component({
@@ -25,6 +26,8 @@ import { UtilityService } from '../../shared/services/utility-service';
     AutoCompleteModule,
     ButtonModule,
     StepperModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   templateUrl: './create-organization.html',
   styleUrl: './create-organization.scss',
@@ -44,6 +47,21 @@ export class CreateOrganization implements OnInit {
   public filteredCountries: RestCountriesSelection = [];
   organizationForm!: FormGroup;
   isSubmitting = false;
+
+  readonly months = [
+    { label: 'January (01)', value: 1 },
+    { label: 'February (02)', value: 2 },
+    { label: 'March (03)', value: 3 },
+    { label: 'April (04)', value: 4 },
+    { label: 'May (05)', value: 5 },
+    { label: 'June (06)', value: 6 },
+    { label: 'July (07)', value: 7 },
+    { label: 'August (08)', value: 8 },
+    { label: 'September (09)', value: 9 },
+    { label: 'October (10)', value: 10 },
+    { label: 'November (11)', value: 11 },
+    { label: 'December (12)', value: 12 },
+  ];
 
   get addresses(): FormArray {
     return this.organizationForm.get('addressStep.addresses') as FormArray;
@@ -69,11 +87,11 @@ export class CreateOrganization implements OnInit {
   }
 
   private loadOrganizationMetadata(): void {
-    let verifiedData: OrganizationMetaDataResponse | null = null;
     this.organizationService.getOrganizationMetadata().subscribe({
       next: (response: Config) => {
-        if (response.success && 'data' in response) {
-          verifiedData = response.data as OrganizationMetaDataResponse;
+        if (response.success && 'data' in response && response.data) {
+          this.organizationMetadata = response.data as OrganizationMetaDataResponse;
+          this.cdr.detectChanges();
         }
       },
       error: (error) => {
@@ -83,10 +101,6 @@ export class CreateOrganization implements OnInit {
           summary: 'Error',
           detail: 'Failed to load organization metadata',
         });
-      },
-      complete: () => {
-        this.organizationMetadata = verifiedData;
-        this.cdr.detectChanges();
       },
     });
   }
@@ -128,8 +142,8 @@ export class CreateOrganization implements OnInit {
         addresses: this.fb.array([]),
       }),
       financialStep: this.fb.group({
-        yearEndMonth: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
-        yearEndDay: [null, [Validators.required, Validators.min(1), Validators.max(31)]],
+        yearEndMonth: [12, [Validators.required, Validators.min(1), Validators.max(12)]],
+        yearEndDay: [31, [Validators.required, Validators.min(1), Validators.max(31)]],
       }),
     });
 
@@ -139,13 +153,16 @@ export class CreateOrganization implements OnInit {
   private loadCountries(): void {
     this.utilityService.getCountries().subscribe({
       next: (response: Config) => {
-        if (response.success && 'data' in response) {
+        if (response.success && 'data' in response && Array.isArray(response.data)) {
           const countryList = response.data as any[];
-          this.countries = countryList.map(c => ({
-            name: c.countryName,
-            cca2: c.isoAlpha2Code,
-            currency: c.symbol || 'N/A',
-          }));
+          this.countries = countryList
+            .map(c => ({
+              name: c.countryName || c.common || c.official || c.name || '',
+              cca2: c.isoAlpha2Code || c.alpha2 || c.cca2 || '',
+              currency: c.code || c.symbol || 'N/A',
+            }))
+            .filter(c => !!c.name && !!c.cca2)
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           this.filteredCountries = [...this.countries];
           this.cdr.detectChanges();
         }
@@ -162,27 +179,46 @@ export class CreateOrganization implements OnInit {
   }
 
   filterCountries(event: AutoCompleteCompleteEvent): void {
-    const query = (event.query || '').toLowerCase();
-    this.filteredCountries = this.countries.filter(c =>
-      c.name.toLowerCase().includes(query)
-    );
+    const query = (event.query || '').toLowerCase().trim();
+    if (!query) {
+      this.filteredCountries = [...this.countries];
+    } else {
+      this.filteredCountries = this.countries.filter(c =>
+        c.name && c.name.toLowerCase().includes(query)
+      );
+    }
+    this.cdr.detectChanges();
   }
 
   onCountrySelect(selected: any): void {
-    const countryCode = typeof selected === 'object' && selected !== null ? selected.cca2 : selected;
-    if (countryCode) {
-      const countryObj = this.countries.find(c => c.cca2 === countryCode);
-      if (countryObj && countryObj.currency !== 'N/A') {
-        this.organizationForm.get('nameStep')?.patchValue({ currency: countryObj.currency });
-      }
+    let countryCode = '';
+    let countryName = '';
+
+    if (typeof selected === 'string') {
+      countryCode = selected;
+    } else if (selected && typeof selected === 'object') {
+      countryCode = selected.cca2 || selected.code || '';
+      countryName = selected.name || '';
     }
-    const addressControls = this.addresses.controls;
-    addressControls.forEach(control => {
-      const addrCountry = control.get('country');
-      if (addrCountry && (!addrCountry.value || addrCountry.pristine)) {
-        addrCountry.setValue(countryCode);
+
+    const countryObj = this.countries.find(c =>
+      (countryCode && c.cca2 === countryCode) ||
+      (countryName && c.name?.toLowerCase() === countryName.toLowerCase()) ||
+      (typeof selected === 'string' && c.name?.toLowerCase() === selected.toLowerCase())
+    );
+
+    if (countryObj) {
+      if (countryObj.currency && countryObj.currency !== 'N/A') {
+        this.organizationForm.get('nameStep.currency')?.setValue(countryObj.currency);
       }
-    });
+      const addressControls = this.addresses.controls;
+      addressControls.forEach(control => {
+        const addrCountry = control.get('country');
+        if (addrCountry && (!addrCountry.value || addrCountry.pristine)) {
+          addrCountry.setValue(countryObj.cca2);
+        }
+      });
+    }
   }
 
   onSubmit(): void {
@@ -199,8 +235,12 @@ export class CreateOrganization implements OnInit {
 
     const countryVal = typeof nameVal.country === 'object' && nameVal.country !== null ? nameVal.country.cca2 : nameVal.country;
 
-    const formattedAddresses = (addrVal.addresses || []).map((addr: any) => ({
-      ...addr,
+    const formattedAddresses: OrganizationAddress[] = (addrVal.addresses || []).map((addr: any) => ({
+      type: addr.type,
+      attentionTo: addr.attentionTo || '',
+      addresses: (addr.addresses || []).filter((line: string) => !!line && line.trim() !== ''),
+      city: addr.city,
+      postalCode: addr.postalCode,
       country: typeof addr.country === 'object' && addr.country !== null ? addr.country.cca2 : addr.country,
     }));
 
@@ -210,8 +250,8 @@ export class CreateOrganization implements OnInit {
       email: nameVal.email,
       country: countryVal,
       financialYear: {
-        yearEndMonth: finVal.yearEndMonth,
-        yearEndDay: finVal.yearEndDay,
+        yearEndMonth: Number(finVal.yearEndMonth),
+        yearEndDay: Number(finVal.yearEndDay),
       } as FinancialYear,
       currency: nameVal.currency,
       addresses: formattedAddresses,
@@ -263,7 +303,7 @@ export class CreateOrganization implements OnInit {
   addAddressLine(addressGroup: any): void {
     const lines = this.getAddressLines(addressGroup);
     if (lines.length < 2) {
-      lines.push(this.fb.control(''));
+      lines.push(this.fb.control('', Validators.required));
     }
   }
 
@@ -275,11 +315,24 @@ export class CreateOrganization implements OnInit {
   }
 
   nextStep(): void {
-    this.activeStep++;
+    if (this.activeStep === 1) {
+      this.nameStep.markAllAsTouched();
+      if (this.nameStep.invalid) return;
+    } else if (this.activeStep === 2) {
+      this.addressStep.markAllAsTouched();
+      if (this.addressStep.invalid) return;
+    }
+    if (this.activeStep < 3) {
+      this.activeStep++;
+      this.cdr.detectChanges();
+    }
   }
 
   prevStep(): void {
-    this.activeStep--;
+    if (this.activeStep > 1) {
+      this.activeStep--;
+      this.cdr.detectChanges();
+    }
   }
 
   private markFormGroupTouched(formGroup: FormGroup): void {

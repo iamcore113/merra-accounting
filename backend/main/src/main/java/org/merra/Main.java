@@ -14,6 +14,7 @@ import com.redis.om.spring.annotations.EnableRedisEnhancedRepositories;
 @EnableRedisEnhancedRepositories(basePackages = "org.merra")
 public class Main {
     public static void main(String[] args) {
+        System.setProperty("liquibase.duplicateFileMode", "WARN");
         SpringApplication.run(Main.class, args);
     }
 }
