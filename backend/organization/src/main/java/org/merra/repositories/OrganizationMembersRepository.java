@@ -30,4 +30,16 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	 */
 	@Query("SELECT COUNT(om) FROM OrganizationMembers om WHERE om.user.userId = ?#{ principal?.userId }")
 	Long countByUserOrganizationAffiliation();
+
+	/**
+	 * Checks if a specific user is an active member of the specified organization.
+	 *
+	 * @param orgId the UUID of the organization
+	 * @param userId the UUID of the user
+	 * @return true if the membership exists, false otherwise
+	 */
+	@Query("SELECT COUNT(om) > 0 FROM OrganizationMembers om WHERE om.organization.id = :orgId AND om.user.userId = :userId")
+	boolean isUserMemberOfOrganization(
+			@org.springframework.data.repository.query.Param("orgId") UUID orgId,
+			@org.springframework.data.repository.query.Param("userId") UUID userId);
 }

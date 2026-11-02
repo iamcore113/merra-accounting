@@ -33,6 +33,9 @@ const MerraPreset = definePreset(Aura, {
       color: '{primary.500}',
       offset: '0px',
     },
+    formField: {
+      borderRadius: '0',
+    },
     colorScheme: {
       light: {
         primary: {
@@ -47,6 +50,19 @@ const MerraPreset = definePreset(Aura, {
           color: '{primary.700}',
           focusColor: '{primary.800}',
         },
+      },
+    },
+  },
+  components: {
+    button: {
+      root: {
+        borderRadius: '0',
+        roundedBorderRadius: '0',
+      },
+    },
+    card: {
+      root: {
+        borderRadius: '0',
       },
     },
   },

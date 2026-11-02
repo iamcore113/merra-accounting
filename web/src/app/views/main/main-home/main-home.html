@@ -1,1 +1,142 @@
-<p>main-home works!</p>
+<div class="dashboard-container">
+  <!-- Welcome Header Banner -->
+  <header class="dashboard-banner">
+    <div class="banner-text">
+      <h1 class="greeting">Welcome{{ userName ? ', ' + userName : '' }}</h1>
+      <p class="subgreeting">
+        Here's what is happening with <strong>{{ orgName }}</strong> today.
+      </p>
+    </div>
+    <div class="banner-actions">
+      <a routerLink="/main/invoice/new">
+        <p-button label="New Invoice" icon="pi pi-plus" [size]="'small'"></p-button>
+      </a>
+      <a routerLink="/main/contacts">
+        <p-button label="Contacts" icon="pi pi-users" [outlined]="true" [size]="'small'"></p-button>
+      </a>
+    </div>
+  </header>
+
+  <!-- Metric Cards -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon-wrap org-icon">
+        <i class="pi pi-building"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Organization</span>
+        <div class="metric-value-row">
+          <span class="metric-value">{{ orgName }}</span>
+          <span class="status-pill active">{{ orgStatus }}</span>
+        </div>
+        <span class="metric-footnote">Currency: {{ orgCurrency }}</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-wrap invoice-icon">
+        <i class="pi pi-receipt"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Invoices</span>
+        <div class="metric-value-row">
+          <span class="metric-value">Active Billing</span>
+        </div>
+        <span class="metric-footnote">Ready to draft & issue</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-wrap contact-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Directory</span>
+        <div class="metric-value-row">
+          <span class="metric-value">Contacts</span>
+        </div>
+        <span class="metric-footnote">Suppliers & Customers</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-wrap fiscal-icon">
+        <i class="pi pi-calendar"></i>
+      </div>
+      <div class="metric-info">
+        <span class="metric-label">Financial Year End</span>
+        <div class="metric-value-row">
+          <span class="metric-value">{{ financialYearEnd || 'Dec 31' }}</span>
+        </div>
+        <span class="metric-footnote">Accounting closing date</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workspace Cards Section -->
+  <section class="content-grid">
+    <!-- Left Column: Quick Launch Actions -->
+    <div class="workspace-section launchpad-section">
+      <div class="section-header">
+        <h2 class="section-title">Quick Launchpad</h2>
+        <span class="section-subtitle">Get things done quickly</span>
+      </div>
+
+      <div class="launchpad-items">
+        <a routerLink="/main/invoice/new" class="launch-card">
+          <div class="launch-icon">
+            <i class="pi pi-file-edit"></i>
+          </div>
+          <div class="launch-details">
+            <h3 class="launch-title">Create an Invoice</h3>
+            <p class="launch-desc">Generate a professional sales invoice, calculate taxes, and send to customers.</p>
+          </div>
+          <i class="pi pi-arrow-right launch-arrow"></i>
+        </a>
+
+        <a routerLink="/main/contacts" class="launch-card">
+          <div class="launch-icon">
+            <i class="pi pi-user-plus"></i>
+          </div>
+          <div class="launch-details">
+            <h3 class="launch-title">Manage Contacts</h3>
+            <p class="launch-desc">View and organize customer and supplier records in one consolidated directory.</p>
+          </div>
+          <i class="pi pi-arrow-right launch-arrow"></i>
+        </a>
+
+        <a routerLink="/main/organization" class="launch-card">
+          <div class="launch-icon">
+            <i class="pi pi-sliders-h"></i>
+          </div>
+          <div class="launch-details">
+            <h3 class="launch-title">Organization Settings</h3>
+            <p class="launch-desc">Update addresses, company details, tax preferences, and financial reporting periods.</p>
+          </div>
+          <i class="pi pi-arrow-right launch-arrow"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Activity / Invoice Status Overview -->
+    <div class="workspace-section activity-section">
+      <div class="section-header">
+        <h2 class="section-title">Invoicing Status</h2>
+        <a routerLink="/main/invoice" class="header-link">View all invoices</a>
+      </div>
+
+      <div class="empty-activity-card">
+        <div class="empty-icon-wrap">
+          <i class="pi pi-receipt"></i>
+        </div>
+        <h3 class="empty-title">Ready for your first invoice</h3>
+        <p class="empty-desc">
+          Create invoices and track billing effortlessly. All drafts, approvals, and paid statements will appear here.
+        </p>
+        <a routerLink="/main/invoice/new" class="empty-cta">
+          <p-button label="Create Invoice" icon="pi pi-plus" [size]="'small'"></p-button>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>

@@ -27,12 +27,35 @@ import { UtilityService } from '../../../shared/services/utility-service';
       <div class="profile-image-placeholder">
         <i class="pi pi-user profile-image-icon"></i>
       </div>
-      <div class="dialog-actions flex justify-end gap-2 mt-4">
+      <div class="dialog-actions-row">
         <p-button label="Close" [size]="'small'" [outlined]="true" (click)="close()"></p-button>
         <p-button label="Upload Photo" [size]="'small'"></p-button>
       </div>
     </section>
   `,
+  styles: [`
+    .profile-image-dialog {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .profile-image-placeholder {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem 0;
+    }
+    .profile-image-icon {
+      font-size: 4rem;
+      color: #94B4C1;
+    }
+    .dialog-actions-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+  `]
 })
 export class ProfileImageDialog {
   private readonly dialogRef = inject(DynamicDialogRef);
@@ -50,32 +73,69 @@ export class ProfileImageDialog {
     <section class="change-password-dialog">
       <p class="sheet-description">Set a new password for your account.</p>
 
-      <div class="field-wrapper mb-3">
-        <label class="field-label block mb-1">Current password</label>
-        <p-password [(ngModel)]="currentPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Enter current password"></p-password>
+      <div class="field-wrapper">
+        <label class="field-label">Current password</label>
+        <p-password [(ngModel)]="currentPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="full-width" [inputStyleClass]="'full-width'" placeholder="Enter current password"></p-password>
       </div>
 
-      <div class="field-wrapper mb-3">
-        <label class="field-label block mb-1">New password</label>
-        <p-password [(ngModel)]="newPassword" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Enter new password"></p-password>
+      <div class="field-wrapper">
+        <label class="field-label">New password</label>
+        <p-password [(ngModel)]="newPassword" [toggleMask]="true" [size]="'small'" styleClass="full-width" [inputStyleClass]="'full-width'" placeholder="Enter new password"></p-password>
       </div>
 
-      <div class="field-wrapper mb-4">
-        <label class="field-label block mb-1">Confirm new password</label>
-        <p-password [(ngModel)]="confirmPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="w-full" [inputStyleClass]="'w-full'" placeholder="Re-enter new password"></p-password>
+      <div class="field-wrapper">
+        <label class="field-label">Confirm new password</label>
+        <p-password [(ngModel)]="confirmPassword" [feedback]="false" [toggleMask]="true" [size]="'small'" styleClass="full-width" [inputStyleClass]="'full-width'" placeholder="Re-enter new password"></p-password>
       </div>
 
-      <p class="sheet-note mb-4">
+      <p class="sheet-note">
         Once you change your password, you will be automatically logged out.<br>
         You will also receive an email with instructions on how to sign in again using your new password.
       </p>
 
-      <div class="dialog-actions flex justify-end gap-2">
+      <div class="dialog-actions-row">
         <p-button label="Cancel" [outlined]="true" [size]="'small'" (click)="close()"></p-button>
         <p-button label="Update Password" severity="danger" [size]="'small'" (click)="close()"></p-button>
       </div>
     </section>
   `,
+  styles: [`
+    .change-password-dialog {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .sheet-description {
+      margin: 0;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+    .field-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .field-label {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #475569;
+    }
+    .sheet-note {
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #64748b;
+    }
+    .dialog-actions-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .full-width {
+      width: 100%;
+    }
+  `]
 })
 export class ChangePasswordDialog {
   private readonly dialogRef = inject(DynamicDialogRef);
@@ -124,7 +184,7 @@ export class MainProfile implements OnInit {
   isEditingName = false;
   isEditingGender = false;
   countries: RestCountriesSelection = [];
-  filteredCountries: any[] = [];
+  filteredCountries: string[] = [];
 
   genderOptions = [
     { label: 'Male', value: 'male' },
@@ -150,7 +210,7 @@ export class MainProfile implements OnInit {
       next: (response: any) => {
         this.personalDetails = response.data as PrincipalDetailsResponse;
         if (this.personalDetails?.organizationAffiliation) {
-          this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count;
+          this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count || (this.personalDetails.organizationAffiliation.organizations?.length ?? 0);
         }
         this.patchForm(this.personalDetails);
         this.isLoading = false;
@@ -206,23 +266,29 @@ export class MainProfile implements OnInit {
   }
 
   searchCountry(event: any): void {
-    const query = event.query?.toLowerCase() || '';
-    this.filteredCountries = this.countries
-      .filter(c => c.name.toLowerCase().includes(query))
-      .map(c => c.name);
+    const query = (event.query || '').toLowerCase().trim();
+    if (!query) {
+      this.filteredCountries = this.countries.map(c => c.name);
+    } else {
+      this.filteredCountries = this.countries
+        .filter(c => (c.name && c.name.toLowerCase().includes(query)) || (c.cca2 && c.cca2.toLowerCase().includes(query)))
+        .map(c => c.name);
+    }
   }
 
   private loadCountries(): void {
     this.utilityService.getCountries().subscribe({
       next: (response: Config) => {
-        if (response.success && 'data' in response) {
-          this.profileForm.get('country')!.setValue(this.personalDetails?.country ?? '', { emitEvent: false });
+        if (response.success && 'data' in response && Array.isArray(response.data)) {
           const countryList = response.data as any[];
-          this.countries = countryList.map(country => ({
-            name: country.countryName,
-            cca2: country.isoAlpha2Code,
-            currency: country.symbol || 'N/A'
-          })).sort((a, b) => a.name.localeCompare(b.name));
+          this.countries = countryList
+            .map(c => ({
+              name: c.countryName || c.common || c.official || c.name || '',
+              cca2: c.isoAlpha2Code || c.alpha2 || c.cca2 || '',
+              currency: c.code || c.symbol || 'N/A'
+            }))
+            .filter(c => !!c.name && !!c.cca2)
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           this.cdRef.detectChanges();
         }
       },
@@ -265,10 +331,19 @@ export class MainProfile implements OnInit {
     });
   }
 
-  getGenderLetter(): string {
-    if (!this.personalDetails?.gender) {
-      return 'Not set';
-    }
-    return this.personalDetails.gender.charAt(0).toUpperCase();
+  getGenderDisplay(): string {
+    const g = this.personalDetails?.gender?.toLowerCase();
+    if (g === 'm' || g === 'male') return 'Male';
+    if (g === 'f' || g === 'female') return 'Female';
+    return this.personalDetails?.gender || 'Not set';
+  }
+
+  getCountryDisplay(): string {
+    const code = this.personalDetails?.country;
+    if (!code) return 'Not set';
+    const found = this.countries.find(
+      c => c.cca2?.toLowerCase() === code.toLowerCase() || c.name?.toLowerCase() === code.toLowerCase()
+    );
+    return found ? `${found.name} (${found.cca2})` : code;
   }
 }

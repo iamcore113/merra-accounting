@@ -1,112 +1,117 @@
-# Merra Accounting - Frontend
+<div align="center">
+  <img src="public/merra-logo.svg" alt="MERRA Logo" width="300">
+  <br />
+  <p><strong>Merra Accounting - Web Application Client</strong></p>
+  <p><em>Angular 20 Standalone Architecture powered by PrimeNG 20</em></p>
+</div>
 
-Angular 20 frontend for the Merra Accounting platform.
+---
 
 ## Overview
 
-This app provides the user interface for Merra Accounting and communicates with the Spring Boot backend API.
+The `web` workspace provides the responsive accounting interface for Merra, communicating with the Spring Boot REST API.
 
-Current focus:
+Key workflows covered:
+- **Authentication & Setup**: Sign up, sign in, email confirmation, profile personalization, and multi-step organization creation.
+- **Organization Management**: Multi-entity affiliation, address configuration, and financial year-end dates.
+- **Invoicing System**: Sales and purchase invoice management, draft/approval states, and line-item tax calculations.
+- **Contacts Directory**: Suppliers and customers with ledger categorization.
+- **Personal Profile**: Password management, personal details, and linked organizations.
 
-- Building core accounting workflows and screens
-- Integrating frontend features with backend APIs
-- Improving form validation, UX, and state management
+---
 
 ## Tech Stack
 
-- Angular 20 (standalone components)
-- Angular Material (Material 3)
-- SCSS styling
-- Angular Router
-- Signals for reactive state in selected areas
+- **Framework**: Angular 20 (Standalone Components, Signals, new Control Flow)
+- **Component Library**: PrimeNG 20.4.0 (Aura preset customized with flat botanical green `#689D4B` theme)
+- **Icons**: PrimeIcons (`pi`)
+- **Styling**: SCSS (minimal border radius, flat aesthetics, responsive flex/grid layouts)
+- **Router**: Angular Router with centralized lazy-loaded routes
+- **Forms**: ReactiveFormsModule with typed FormGroups
+
+---
 
 ## Prerequisites
 
-- Node.js 20+
-- npm 10+
-- Angular CLI 20+
+- **Node.js**: 20+
+- **npm**: 10+
+- **Angular CLI**: 20+ (`npm install -g @angular/cli`)
+
+---
 
 ## Project Structure
 
 ```text
 web/
+├── public/                   # Static assets & SVG icons (merra-logo.svg)
 ├── src/
 │   ├── app/
-│   │   ├── core/             # Core app concerns (state, shared app-level logic)
-│   │   ├── features/         # Feature modules/screens
-│   │   ├── shared/           # Shared components, services, models, utilities
-│   │   ├── views/            # Routed view/page components
-│   │   ├── app.ts            # Root standalone component
-│   │   ├── app.routes.ts     # Route definitions
-│   │   └── app.config.ts     # App bootstrap/configuration
-│   ├── styles.scss           # Global styles and Material theme setup
-│   ├── index.html            # HTML entry point
-│   └── main.ts               # App bootstrap entry
+│   │   ├── features/         # Specialized workflows (e.g. create-invoice)
+│   │   ├── shared/
+│   │   │   ├── api/          # Environment-driven endpoints (base.ts, auth.ts, org.ts)
+│   │   │   ├── components/   # MainHeader, MainSidenav, MainLayout, Dialogs
+│   │   │   ├── guards/       # AuthGuard, OfflineGuard
+│   │   │   ├── interceptors/ # AuthInterceptor, InitInterceptor
+│   │   │   ├── models/       # TypeScript API models and responses
+│   │   │   └── services/     # UserService, OrganizationService, InvoiceService, etc.
+│   │   ├── views/            # Top-level view routes
+│   │   │   ├── landing-page/ # SaaS landing page
+│   │   │   ├── signin/       # Authentication sign-in
+│   │   │   ├── signup/       # Account registration
+│   │   │   ├── main/         # Main workspace views (home, profile, org, invoices, contacts)
+│   │   │   └── offline-page/ # Connection lost & system health fallback
+│   │   ├── app.routes.ts     # Route mapping
+│   │   └── app.config.ts     # PrimeNG & HTTP Client providers
+│   ├── styles.scss           # Global tokens, buttons, form controls & expansion panels
+│   └── main.ts               # Application entry point
+├── set-env.js                # Environment injection script before build
 └── angular.json
 ```
 
-## Install Dependencies
+---
 
-From the project root:
+## Getting Started
+
+### 1. Install Dependencies
 
 ```bash
 cd web
 npm install
 ```
 
-## Run in Development
+### 2. Environment Configuration
+
+The environment file `.env` controls API endpoints:
+
+```env
+NG_APP_BASE_URL=http://localhost:8080/api/
+NG_APP_HEALTH_URL=http://localhost:8080/actuator/health/
+NG_APP_API_VERSION=1.1
+```
+
+Running `npm start` or `npm run build` executes `set-env.js` which generates `src/app/shared/api/base.ts`.
+
+### 3. Run Development Server
 
 ```bash
-cd web
 ng serve
 ```
 
-App URL:
+Access the frontend at **`http://localhost:4200`**.
 
-- http://localhost:4200
-
-The app auto-reloads when source files change.
-
-## Build
+### 4. Build Production Bundle
 
 ```bash
-cd web
-ng build
+npm run build
 ```
 
-Build artifacts are generated under `dist/`.
+The compiled bundle is generated in `dist/web/`.
 
-## Test
+---
 
-Run unit tests:
+## UI Conventions & Guidelines
 
-```bash
-cd web
-ng test
-```
-
-## Frontend Conventions
-
-- Use SCSS for all component styles (`.scss` files).
-- Prefer Angular Material components over custom raw HTML controls.
-- Use outlined Material icons with `fontSet="material-icons-outlined"`.
-- Keep components standalone and import only required Angular Material modules.
-- Keep routing centralized in `src/app/app.routes.ts`.
-
-### Buttons
-
-- For `<button>` elements, use `matButton="filled"`.
-- For `<a>` elements styled as buttons, use `matButton`.
-
-## Backend Integration Notes
-
-- Backend runs separately in the `backend` folder.
-- Ensure backend API is running when testing integrated flows.
-- API and proxy/environment settings should be aligned with your local backend URL.
-
-## Related Documentation
-
-- Root project guide: [../README.md](../README.md)
-- Backend guide: [../backend/README.md](../backend/README.md)
-
-Use this README for frontend-only development. For full-stack setup, read the root and backend READMEs as well.
+- **Primary Color**: `#689D4B` (hover `#58883e`, active `#497332`, light background `#f4f8f1`).
+- **Aesthetic**: Flat design, minimal border radii (`4px` or `0`), high-contrast slate text (`#1e293b` / `#0f172a`).
+- **Icons**: Use PrimeIcons (`<i class="pi pi-..."></i>`).
+- **Inputs & Fields**: Prefer PrimeNG components (`p-select`, `p-datepicker`, `p-iconfield`, `p-inputicon`, `p-table`). Small size `[pSize]="'small'"` is preferred for dense accounting data views.

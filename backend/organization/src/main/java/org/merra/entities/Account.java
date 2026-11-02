@@ -7,15 +7,14 @@ import java.util.UUID;
 import org.hibernate.annotations.SQLRestriction;
 import org.merra.utilities.AccountConstants;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +28,7 @@ public class Account {
 	@Column(name = "account_id", nullable = false, unique = true)
 	private UUID accountId;
 
-	@OneToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
 	private Organization organization;
 
@@ -41,17 +40,18 @@ public class Account {
 	@NotBlank(message = "accountName attribute cannot be blank.")
 	private String accountName;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id", referencedColumnName = "id")
 	@NotNull(message = "category attribute cannot be null.")
 	private AccountCategory category;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "account_type", referencedColumnName = "id")
 	@NotNull(message = "accountType attribute cannot be null.")
 	private AccountType accountType;
 
-	private String status;
+	@Column(name = "status")
+	private String status = AccountConstants.ACCOUNT_STATUS_ACTIVE;
 
 	@NotBlank(message = "description attribute cannot be blank.")
 	private String description;
@@ -91,22 +91,23 @@ public class Account {
 		this.accountName = accountName;
 		this.accountType = type;
 		this.category = category;
+		this.status = AccountConstants.ACCOUNT_STATUS_ACTIVE;
 	}
 
 	// Check the type of entry: debit or credit
 	public static String checkEntryType(String accountCategory) {
 		Set<String> debits = Set.of(
-				AccountConstants.ACC__CLASS_TYPE_ASSET,
-				AccountConstants.ACC__CLASS_TYPE_EXPENSE);
+				AccountConstants.ACCOUNT_CLASS_TYPE_ASSET,
+				AccountConstants.ACCOUNT_CLASS_TYPE_EXPENSE);
 
 		Set<String> credit = Set.of(
-				AccountConstants.ACC__CLASS_TYPE_LIABILITY,
-				AccountConstants.ACC__CLASS_TYPE_EQUITY,
-				AccountConstants.ACC__CLASS_TYPE_REVENUE);
+				AccountConstants.ACCOUNT_CLASS_TYPE_LIABILITY,
+				AccountConstants.ACCOUNT_CLASS_TYPE_EQUITY,
+				AccountConstants.ACCOUNT_CLASS_TYPE_REVENUE);
 		if (debits.contains(accountCategory)) {
-			return AccountConstants.ACC_ENTRY_DEBIT;
+			return AccountConstants.ACCOUNT_ENTRY_DEBIT;
 		} else if (credit.contains(accountCategory)) {
-			return AccountConstants.ACC_ENTRY_CREDIT;
+			return AccountConstants.ACCOUNT_ENTRY_CREDIT;
 		}
 		return null;
 	}

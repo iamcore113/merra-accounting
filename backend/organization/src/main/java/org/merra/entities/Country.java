@@ -1,9 +1,7 @@
 package org.merra.entities;
 
+import java.io.Serializable;
 import java.util.UUID;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +12,9 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "countries")
-@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
-public class Country {
+public class Country implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -24,11 +23,11 @@ public class Country {
     private String common;
     @Column(nullable = false)
     private String official;
-    @Column(name = "alpha_2", nullable = false)
+    @Column(name = "alpha_2")
     private String alpha2;
-    @Column(name = "alpha_3", nullable = false)
+    @Column(name = "alpha_3")
     private String alpha3;
-    @Column(name = "numeric", nullable = false)
+    @Column(name = "\"numeric\"")
     private String numeric;
     private String symbol;
     private String code;

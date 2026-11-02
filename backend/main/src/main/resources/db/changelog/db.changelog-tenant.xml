@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <preConditions onFail="HALT" onErrorMessage="Error in preCondition">
+        <expectedQuotingStrategy strategy="LEGACY" />
+        <dbms type="postgresql" />
+    </preConditions>
+
+    <!-- 1. Contacts -->
+    <changeSet id="tenant-20250821-01-contacts" author="brian">
+        <createTable tableName="contacts">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="organization" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="contact_status" type="varchar(50)" defaultValue="ACTIVE">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_number" type="varchar(100)" />
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="first_name" type="varchar(100)" />
+            <column name="last_name" type="varchar(100)" />
+            <column name="email" type="varchar(255)" />
+            <column name="website" type="varchar(255)" />
+            <column name="phone_no" type="jsonb" />
+            <column name="discount" type="numeric(5,2)" />
+            <column name="payment_terms" type="jsonb" />
+            <column name="tax_number" type="varchar(100)" />
+            <column name="currency" type="varchar(10)" />
+            <column name="created_at" type="timestamp" />
+            <column name="updated_at" type="timestamp" />
+        </createTable>
+    </changeSet>
+
+    <!-- 2. Payment Terms -->
+    <changeSet id="tenant-20250821-02-payment_terms" author="brian">
+        <createTable tableName="payment_terms">
+            <column name="payment_term_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="label" type="varchar(255)">
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="description" type="text" />
+        </createTable>
+    </changeSet>
+
+    <!-- 3. Chart of Accounts / Ledger Account -->
+    <changeSet id="tenant-20250821-03-ledger_account" author="brian">
+        <createTable tableName="ledger_account">
+            <column name="account_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="organization" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="code" type="varchar(100)">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="category_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_type" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="varchar(100)" defaultValue="ACTIVE" />
+            <column name="description" type="text" />
+            <column name="tax_type" type="varchar(200)" />
+            <column name="enable_payments_account" type="boolean" defaultValue="false" />
+            <column name="updated_date" type="date" />
+            <column name="add_to_watch_list" type="boolean" defaultValue="false" />
+            <column name="archived" type="boolean" defaultValue="false" />
+        </createTable>
+    </changeSet>
+
+    <!-- 4. Tax Type, Tax Component, Tax Rate -->
+    <changeSet id="tenant-20250821-04-tax_tables" author="brian">
+        <createTable tableName="tax_type">
+            <column name="tax_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="description" type="text" />
+            <column name="tax_components" type="jsonb" />
+        </createTable>
+
+        <createTable tableName="tax_component">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="rate" type="numeric(5,2)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="tax_rate">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true" />
+            </column>
+            <column name="tax_type" type="uuid" />
+            <column name="tax_components" type="jsonb" />
+            <column name="effective_rate" type="numeric(5,2)" />
+        </createTable>
+    </changeSet>
+
+    <!-- 5. Invoice -->
+    <changeSet id="tenant-20250821-05-invoice" author="brian">
+        <createTable tableName="invoice">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="organization" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="invoice_type" type="varchar(100)" />
+            <column name="contact_id" type="uuid">
+                <constraints
+                    nullable="false"
+                    foreignKeyName="fk_tenant_invoice__contacts"
+                    referencedTableName="contacts"
+                    referencedColumnNames="id"
+                    deleteCascade="true" />
+            </column>
+            <column name="date" type="date">
+                <constraints nullable="false" />
+            </column>
+            <column name="due_date" type="date">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="varchar(50)" defaultValue="DRAFT">
+                <constraints nullable="false" />
+            </column>
+            <column name="invoice_number" type="varchar(100)" />
+            <column name="reference" type="varchar(255)" />
+            <column name="currency" type="varchar(10)" />
+            <column name="subtotal" type="numeric(19,4)" />
+            <column name="total_tax" type="numeric(19,4)" />
+            <column name="total_discount" type="numeric(19,4)" />
+            <column name="total" type="numeric(19,4)" />
+            <column name="amount_due" type="numeric(19,4)" />
+            <column name="amount_paid" type="numeric(19,4)" defaultValueNumeric="0.0" />
+            <column name="actions" type="jsonb" />
+            <column name="created_at" type="timestamp" />
+            <column name="updated_at" type="timestamp" />
+        </createTable>
+    </changeSet>
+
+    <!-- 6. Line Item -->
+    <changeSet id="tenant-20250821-06-line_item" author="brian">
+        <createTable tableName="line_item">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="invoice_id" type="uuid">
+                <constraints
+                    nullable="false"
+                    foreignKeyName="fk_tenant_line_item__invoice"
+                    referencedTableName="invoice"
+                    referencedColumnNames="id"
+                    deleteCascade="true" />
+            </column>
+            <column name="account_id" type="uuid" />
+            <column name="description" type="text" />
+            <column name="quantity" type="numeric(19,4)" />
+            <column name="unit_amount" type="numeric(19,4)" />
+            <column name="discount" type="numeric(5,2)" />
+            <column name="tax_amount" type="numeric(19,4)" />
+            <column name="line_amount" type="numeric(19,4)" />
+            <column name="tax_type" type="varchar(200)" />
+        </createTable>
+    </changeSet>
+
+    <!-- 7. Journal and Journal Line -->
+    <changeSet id="tenant-20250821-07-journal" author="brian">
+        <createTable tableName="journal">
+            <column name="journal_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="journal_date" type="date">
+                <constraints nullable="false" />
+            </column>
+            <column name="journal_number" type="bigint" />
+            <column name="reference" type="varchar(255)" />
+            <column name="narration" type="text" />
+            <column name="organization" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="invoice_id" type="uuid" />
+            <column name="status" type="varchar(50)" defaultValue="POSTED" />
+            <column name="total_amounts" type="jsonb" />
+            <column name="created_at" type="timestamp" />
+            <column name="updated_at" type="timestamp" />
+        </createTable>
+
+        <createTable tableName="journal_line">
+            <column name="journal_line_id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true" />
+            </column>
+            <column name="journal_id" type="uuid">
+                <constraints
+                    nullable="false"
+                    foreignKeyName="fk_tenant_journal_line__journal"
+                    referencedTableName="journal"
+                    referencedColumnNames="journal_id"
+                    deleteCascade="true" />
+            </column>
+            <column name="account_id" type="uuid" />
+            <column name="description" type="text" />
+            <column name="tax_type" type="varchar(200)" />
+            <column name="amount" type="numeric(19,4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="entry_type" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_detail" type="jsonb" />
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
+

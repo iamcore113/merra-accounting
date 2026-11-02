@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.merra.config.JwtUtils;
 import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
+import org.merra.dto.EmailVerificationStatusResponse;
 import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
@@ -25,6 +26,7 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
+import org.merra.utilities.SecurityUtils;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -58,11 +60,11 @@ public class AuthService {
   private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
   @Value("${token.access-token-duration}")
-  private int forAccessToken;
+  private long forAccessToken;
   @Value("${token.refresh-token-duration}")
-  private int refreshTokenExpiration;
+  private long refreshTokenExpiration;
   @Value("${token.email-verification-duration}")
-  private int verificationTokenDuration;
+  private long verificationTokenDuration;
   @Value("${spring.mail.username}")
   private String emailFrom;
   @Value("${app.frontend.url}")
@@ -369,7 +371,7 @@ public class AuthService {
       } else {
         var user = userEmail.get();
         var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of("tenant", null),
+        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of(),
             verificationTokenDuration, false);
         user.setVerificationToken(userTokens);
         sendVerificationEmail(user.getEmail(), resetToken);
@@ -384,7 +386,7 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of("tenant", null),
+    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of(),
         verificationTokenDuration, false);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
@@ -402,7 +404,14 @@ public class AuthService {
   }
 
   public VerificationResponse resendEmailVerification(ResendEmailVerification request) {
-    Optional<UserAccount> findUser = userRepository.findById(request.userId());
+    Optional<UserAccount> findUser;
+    if (request.userId() != null) {
+      findUser = userRepository.findById(request.userId());
+    } else if (request.email() != null && !request.email().isBlank()) {
+      findUser = userRepository.findUserByEmailIgnoreCase(request.email().trim());
+    } else {
+      throw new IllegalArgumentException("User ID or email is required to resend verification email.");
+    }
 
     if (findUser.isEmpty()) {
       throw new EntityNotFoundException("User not found.");
@@ -445,17 +454,29 @@ public class AuthService {
    *                                 is not a UserAccount
    */
   public UserAccount getCurrentAuthenticatedUser() {
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    UserAccount principal = SecurityUtils.getPrincipal(UserAccount.class)
+        .orElseThrow(() -> new EntityNotFoundException("No authenticated UserAccount found."));
+    logger.info("Authenticated user: {}", principal);
+    return principal;
+  }
 
-    if (auth == null || !auth.isAuthenticated()) {
-      throw new EntityNotFoundException("No authenticated user found.");
+  /**
+   * Checks the verification status of an account by its email.
+   * Used to prevent access to the verification page if the account is already verified.
+   *
+   * @param email The user email address
+   * @return EmailVerificationStatusResponse indicating existence and verification status
+   */
+  public EmailVerificationStatusResponse checkVerificationStatus(String email) {
+    if (email == null || email.isBlank()) {
+      return new EmailVerificationStatusResponse(false, false, false);
     }
-
-    if (auth.getPrincipal() instanceof UserAccount principal) {
-      logger.info("Authenticated user: {}", principal);
-      return principal;
-    } else {
-      throw new EntityNotFoundException("Authenticated principal is not a UserAccount.");
+    Optional<UserAccount> userOpt = userRepository.findUserByEmailIgnoreCase(email.trim());
+    if (userOpt.isEmpty()) {
+      return new EmailVerificationStatusResponse(false, false, false);
     }
+    UserAccount user = userOpt.get();
+    boolean isVerified = user.isEnabled();
+    return new EmailVerificationStatusResponse(true, isVerified, !isVerified);
   }
 }

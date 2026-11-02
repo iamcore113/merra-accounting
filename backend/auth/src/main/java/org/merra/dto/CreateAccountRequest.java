@@ -15,8 +15,8 @@ public record CreateAccountRequest(
 		if (password == null || password.isBlank()) {
 			throw new IllegalArgumentException("password component cannot be blank.");
 		}
-		if (password.length() < 10) {
-			throw new IllegalArgumentException("password must be at least 10 characters long.");
+		if (password.length() < 8) {
+			throw new IllegalArgumentException("password must be at least 8 characters long.");
 		}
 	}
 }

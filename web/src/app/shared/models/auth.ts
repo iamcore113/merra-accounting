@@ -53,7 +53,8 @@ export interface VerificationResponse {
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/ResendEmailVerification.java
 export interface ResendEmailVerification {
-  userId: string;
+  userId?: string;
+  email?: string;
 }
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/FillPersonalInformation.java
@@ -92,4 +93,11 @@ interface Userdetails {
   userId: string;
   email: string;
   roles: string[];
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/EmailVerificationStatusResponse.java
+export interface EmailVerificationStatusResponse {
+  exists: boolean;
+  isVerified: boolean;
+  isPendingVerification: boolean;
 }

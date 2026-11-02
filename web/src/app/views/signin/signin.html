@@ -1,12 +1,8 @@
 <div class="auth-container">
-  <nav class="top-navbar">
-    <a pButton [outlined]="true" routerLink="/account/signup" label="Don't have an account?" [size]="'small'"></a>
-  </nav>
-
   <div class="auth-card">
     <div class="auth-card-header">
-      <h1 class="brand-logo">MERRA</h1>
-      <p class="sub-brand-logo">SIGN IN</p>
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="auth-title">Entry Please</h2>
     </div>
 
     <div class="auth-card-content">
@@ -33,16 +29,21 @@
 
         <div class="field-group">
           <label for="password" class="field-label">Password</label>
-          <p-password
-            id="password"
-            formControlName="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            size="small"
-            styleClass="full-width"
-            inputStyleClass="full-width"
-            placeholder="Enter your password">
-          </p-password>
+          <p-iconfield iconPosition="left" class="full-width">
+            <p-inputicon styleClass="pi pi-lock"></p-inputicon>
+            <p-password
+              id="password"
+              formControlName="password"
+              [feedback]="false"
+              [toggleMask]="true"
+              [fluid]="true"
+              size="small"
+              class="full-width"
+              styleClass="full-width"
+              inputStyleClass="full-width"
+              placeholder="Enter your password">
+            </p-password>
+          </p-iconfield>
           @if (signinForm.get('password')?.hasError('required') && signinForm.get('password')?.touched) {
             <small class="field-error">Password is required</small>
           }
@@ -55,9 +56,24 @@
             class="submit-button"
             [loading]="isSubmitting()"
             [disabled]="signinForm.invalid || isSubmitting()"
-            label="SIGN IN"
+            icon="pi pi-lock"
+            label="Sign in"
             [size]="'small'">
           </button>
+        </div>
+
+        <div class="auth-footer">
+          <p class="privacy-notice">
+            By selecting Sign in for your Merra Account, you agree to our
+            <a href="javascript:void(0)" class="policy-link">Terms</a>. Our
+            <a href="javascript:void(0)" class="policy-link">Privacy Policy</a>
+            applies to your personal data.
+          </p>
+
+          <div class="signup-prompt">
+            <span>New to Merra? </span>
+            <a routerLink="/account/signup" class="signup-link">Create an account</a>
+          </div>
         </div>
       </form>
     </div>

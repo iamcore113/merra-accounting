@@ -13,6 +13,7 @@ import org.merra.services.UserAccountService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -29,11 +30,11 @@ public class TokenService {
     private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
     @Value("${token.access-token-duration}")
-    private int forAccessToken;
+    private long forAccessToken;
     @Value("${token.refresh-token-duration}")
-    private int refreshTokenExpiration;
+    private long refreshTokenExpiration;
     @Value("${token.email-verification-duration}")
-    private int verificationTokenDuration;
+    private long verificationTokenDuration;
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
@@ -76,20 +77,26 @@ public class TokenService {
     }
 
     public JwtTokens obtainNewAccessToken(String refreshToken) {
-        final String email = jwtUtils.extractUsername(refreshToken);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        String getAccessToken = null;
-        String getRefreshToken = null;
-        if (jwtUtils.isTokenValid(refreshToken, userDetails)) {
-            var getUser = userRepository.findUserByEmailIgnoreCase(email);
-            if (getUser.isEmpty()) {
-                throw new EntityNotFoundException("User with email " + email + " not found.");
-            }
-            UserAccount user = getUser.get();
-            final Map<String, Object> claims = Map.of("role", user.getRoles());
-            getAccessToken = jwtUtils.generateToken(email, claims, forAccessToken, false);
-            getRefreshToken = jwtUtils.generateToken(email, claims, refreshTokenExpiration, true);
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadCredentialsException("Refresh token cannot be blank.");
         }
-        return new JwtTokens(getAccessToken, getRefreshToken);
+        try {
+            final String email = jwtUtils.extractUsername(refreshToken);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            if (!jwtUtils.isTokenValid(refreshToken, userDetails)) {
+                throw new BadCredentialsException("Invalid or expired refresh token.");
+            }
+            UserAccount user = userRepository.findUserByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new EntityNotFoundException("User with email " + email + " not found."));
+            final Map<String, Object> claims = Map.of("role", user.getRoles());
+            String getAccessToken = jwtUtils.generateToken(email, claims, forAccessToken, false);
+            String getRefreshToken = jwtUtils.generateToken(email, claims, refreshTokenExpiration, true);
+            return new JwtTokens(getAccessToken, getRefreshToken);
+        } catch (BadCredentialsException | EntityNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.warn("Failed to obtain new access token: {}", e.getMessage());
+            throw new BadCredentialsException("Invalid or expired refresh token.", e);
+        }
     }
 }

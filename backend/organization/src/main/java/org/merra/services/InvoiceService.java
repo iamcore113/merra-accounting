@@ -129,7 +129,7 @@ public class InvoiceService {
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
 
-		final String status = request.status().isBlank() ? "DRAFT" : request.status();
+		final String status = request.status();
 		invoice.setStatus(status);
 
 		// set invoice actions

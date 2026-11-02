@@ -44,6 +44,11 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
 	boolean existsByCodeIgnoreCase(String code);
 
+	@Query("SELECT COUNT(ac) > 0 FROM Account ac WHERE UPPER(ac.code) = UPPER(:code) AND ac.organization.id = :organizationId")
+	boolean existsByCodeIgnoreCaseAndOrganizationId(
+			@Param("code") String code,
+			@Param("organizationId") UUID organizationId);
+
 	@Query("SELECT ac FROM Account ac WHERE ac.archived = false")
 	Set<Account> findAllNotArchived();
 

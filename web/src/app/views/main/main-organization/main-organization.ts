@@ -83,6 +83,15 @@ export class MainOrganization implements OnInit {
     return `${monthAbbr}. ${yearEndDay}`;
   }
 
+  getCountryDisplay(): string {
+    const code = this.organizationForm.get('address.country')?.value;
+    if (!code) return '—';
+    const found = this.countries.find(
+      (c) => c.cca2?.toLowerCase() === code.toLowerCase()
+    );
+    return found ? `${found.name} (${found.cca2})` : code;
+  }
+
   currentOrganization: CurrentOrganizationResponse | undefined;
 
   public organizationTypesMetadata: OrganizationTypesMetaData[] = [];

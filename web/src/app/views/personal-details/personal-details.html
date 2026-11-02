@@ -18,7 +18,7 @@
       } @else {
         <div class="field-group">
           <label for="detailsEmail" class="field-label">Email</label>
-          <p-iconfield iconPosition="left" class="full-width">
+          <p-iconfield iconPosition="left" class="full-width" styleClass="full-width">
             <p-inputicon styleClass="pi pi-envelope"></p-inputicon>
             <input id="detailsEmail" pInputText [pSize]="'small'" type="email" formControlName="email" class="full-width" placeholder="Enter your email" />
           </p-iconfield>
@@ -34,7 +34,7 @@
       <div class="two-col-row">
         <div class="field-group flex-1">
           <label for="firstName" class="field-label">First Name</label>
-          <p-iconfield iconPosition="left" class="full-width">
+          <p-iconfield iconPosition="left" class="full-width" styleClass="full-width">
             <p-inputicon styleClass="pi pi-user"></p-inputicon>
             <input id="firstName" pInputText [pSize]="'small'" type="text" formControlName="firstName" class="full-width" placeholder="Enter your first name" />
           </p-iconfield>
@@ -45,7 +45,7 @@
 
         <div class="field-group flex-1">
           <label for="lastName" class="field-label">Last Name</label>
-          <p-iconfield iconPosition="left" class="full-width">
+          <p-iconfield iconPosition="left" class="full-width" styleClass="full-width">
             <p-inputicon styleClass="pi pi-user"></p-inputicon>
             <input id="lastName" pInputText [pSize]="'small'" type="text" formControlName="lastName" class="full-width" placeholder="Enter your last name" />
           </p-iconfield>
@@ -57,23 +57,30 @@
 
       <div class="field-group">
         <label for="country" class="field-label">Country</label>
-        <p-autocomplete
-          id="country"
-          formControlName="country"
-          [suggestions]="filteredCountries"
-          (completeMethod)="filterCountries($event)"
-          optionLabel="name"
-          optionValue="cca2"
-          [size]="'small'"
-          styleClass="full-width"
-          inputStyleClass="full-width"
-          placeholder="Start typing to search your country">
-          <ng-template let-country #item>
-            <div class="country-option">
-              <span>{{ country.name }}</span>
-            </div>
-          </ng-template>
-        </p-autocomplete>
+        <p-iconfield iconPosition="left" class="full-width" styleClass="full-width">
+          <p-inputicon styleClass="pi pi-globe"></p-inputicon>
+          <p-autocomplete
+            id="country"
+            formControlName="country"
+            [suggestions]="filteredCountries"
+            (completeMethod)="filterCountries($event)"
+            optionLabel="name"
+            optionValue="cca2"
+            [size]="'small'"
+            [fluid]="true"
+            [dropdown]="true"
+            [completeOnFocus]="true"
+            class="full-width"
+            styleClass="full-width"
+            inputStyleClass="full-width"
+            placeholder="Start typing to search your country">
+            <ng-template let-country #item>
+              <div class="country-option">
+                <span>{{ country.name }}</span>
+              </div>
+            </ng-template>
+          </p-autocomplete>
+        </p-iconfield>
         @if (personalDetailsForm.get('country')?.hasError('required') && personalDetailsForm.get('country')?.touched) {
           <small class="field-error">Country is required</small>
         }

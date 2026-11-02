@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (findUserByEmail.isPresent()) {
             return findUserByEmail.get();
         } else {
-            throw new RuntimeException("The email isn't connected to any account.");
+            throw new RuntimeException("This email " + username + " is not registered in the system.");
         }
 	}
 

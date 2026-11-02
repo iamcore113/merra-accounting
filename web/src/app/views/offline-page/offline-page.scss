@@ -86,7 +86,7 @@
   backdrop-filter: blur(24px) saturate(190%);
   -webkit-backdrop-filter: blur(24px) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.45);
-  border-radius: 28px;
+  border-radius: 0;
   padding: 2.5rem 2.25rem;
   box-shadow: 
     0 4px 24px rgba(2, 70, 132, 0.03),
@@ -254,7 +254,7 @@
   button {
     flex: 1;
     height: 48px;
-    border-radius: 12px;
+    border-radius: 0;
     font-weight: 600;
     font-size: 0.9rem;
     transition: all 0.2s ease;
@@ -273,16 +273,16 @@
   .btn-primary {
     background-color: var(--brand-color);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(2, 70, 132, 0.15);
+    box-shadow: 0 4px 12px rgba(104, 157, 75, 0.15);
 
     &:hover:not(:disabled) {
-      background-color: #013666;
+      background-color: #58883e;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(2, 70, 132, 0.22);
+      box-shadow: 0 6px 16px rgba(104, 157, 75, 0.22);
     }
 
     &:disabled {
-      background-color: rgba(2, 70, 132, 0.5);
+      background-color: rgba(104, 157, 75, 0.5);
       color: rgba(255, 255, 255, 0.7);
     }
   }
@@ -390,7 +390,7 @@
 @media (max-width: 480px) {
   .offline-card {
     padding: 2rem 1.5rem;
-    border-radius: 20px;
+    border-radius: 0;
   }
 
   .offline-title {

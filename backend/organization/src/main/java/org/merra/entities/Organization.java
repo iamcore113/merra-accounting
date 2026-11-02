@@ -16,6 +16,7 @@ import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.EOrganizationAddresses;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
+import org.merra.multitenancy.TenantResolver;
 
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
@@ -30,6 +31,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -51,6 +53,9 @@ public class Organization {
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
 	private Set<Contact> contacts;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
+	private Set<Account> accounts;
 
 	@Column(name = "display_name", nullable = false, unique = true)
 	@NotBlank(message = "displayName attribute cannot be blank.")
@@ -122,6 +127,34 @@ public class Organization {
 	@Enumerated(EnumType.STRING)
 	private StatusEn status = StatusEn.ACTIVE_ACCOUNT;
 
+	@Column(name = "schema_name", unique = true, nullable = false, length = 63)
+	private String schemaName;
+
+	@PrePersist
+	protected void onPrePersist() {
+		if (this.id == null) {
+			this.id = UUID.randomUUID();
+		}
+		if (this.schemaName == null) {
+			this.schemaName = TenantResolver.toSchemaName(this.id);
+		}
+	}
+
+	public void setId(UUID id) {
+		this.id = id;
+		if (id != null && this.schemaName == null) {
+			this.schemaName = TenantResolver.toSchemaName(id);
+		}
+	}
+
+	public String getSchemaName() {
+		return schemaName;
+	}
+
+	public void setSchemaName(String schemaName) {
+		this.schemaName = schemaName;
+	}
+
 	public void setStatus(StatusEn status) {
 		if (status != null) {
 			this.status = status;
@@ -140,6 +173,14 @@ public class Organization {
 
 	public void setContacts(Set<Contact> contacts) {
 		this.contacts = contacts;
+	}
+
+	public Set<Account> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(Set<Account> accounts) {
+		this.accounts = accounts;
 	}
 
 	public void setBasicInformation(String displayName,

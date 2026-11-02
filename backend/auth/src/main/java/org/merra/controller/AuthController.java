@@ -3,6 +3,7 @@ package org.merra.controller;
 import org.merra.api.ApiResponse;
 import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
+import org.merra.dto.EmailVerificationStatusResponse;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
@@ -51,6 +52,26 @@ public class AuthController {
                 HttpStatus.CREATED,
                 res);
 
+        return ResponseEntity.ok(apiRes);
+    }
+
+    /**
+     * Checks whether an account with the specified email has already completed
+     * verification. Used to protect the verification page from being accessed
+     * once the account has been activated.
+     *
+     * @param email the email address to inspect
+     * @return ResponseEntity with existence and verification status
+     */
+    @GetMapping("verification-status")
+    public ResponseEntity<ApiResponse<EmailVerificationStatusResponse>> checkVerificationStatus(
+            @RequestParam("email") String email) {
+        final EmailVerificationStatusResponse res = authService.checkVerificationStatus(email);
+        final ApiResponse<EmailVerificationStatusResponse> apiRes = new ApiResponse<>(
+                "Verification status retrieved successfully",
+                true,
+                HttpStatus.OK,
+                res);
         return ResponseEntity.ok(apiRes);
     }
 
@@ -111,7 +132,7 @@ public class AuthController {
      * @return ResponseEntity with confirmation that the verification email was
      *         resent
      */
-    @PostMapping("resend/verification/email")
+    @PostMapping(value = {"resend/verification/email", "resend-verification-email"})
     public ResponseEntity<ApiResponse<VerificationResponse>> resendEmailVerification(
             @Valid @RequestBody ResendEmailVerification req) {
         final var resentToken = authService.resendEmailVerification(req);

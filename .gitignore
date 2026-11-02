@@ -43,8 +43,13 @@
 Thumbs.db
 #=====WEB=====
 
+
+#=====ENVIRONMENT FILES=====
+**/.env
+**/.env.*
+!**/.env.example
+
 #=====BACKEND=====
-/backend/main/.env
 /backend/application/
 HELP.md
 target/
@@ -80,4 +85,3 @@ build/
 
 ### VS Code ###
 .vscode/
-#=====BACKEND=====

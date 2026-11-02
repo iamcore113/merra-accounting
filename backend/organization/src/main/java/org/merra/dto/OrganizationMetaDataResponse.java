@@ -1,5 +1,6 @@
 package org.merra.dto;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
@@ -12,10 +13,14 @@ public record OrganizationMetaDataResponse(
                 Set<OrganizationTypesMetaData> organizationTypes,
                 EnumSet<AddressEn> addresses,
                 PaymentTermsMetaData paymentTerms,
-                Set<OrganizationAddressType> organizationAddressTypes) {
+                Set<OrganizationAddressType> organizationAddressTypes) implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         public record OrganizationTypesMetaData(
                         UUID id,
-                        String name) {
+                        String name) implements Serializable {
+                private static final long serialVersionUID = 1L;
+
                 public OrganizationTypesMetaData {
                         if (id == null || name == null || name.isBlank()) {
                                 throw new IllegalArgumentException(
@@ -29,12 +34,15 @@ public record OrganizationMetaDataResponse(
 
         public record PaymentTermsMetaData(
                         EnumSet<PaymentTermsEn> subElements,
-                        EnumSet<PaymentTermTypes> types) {
+                        EnumSet<PaymentTermTypes> types) implements Serializable {
+                private static final long serialVersionUID = 1L;
         }
 
         public record OrganizationAddressType(
                         UUID id,
-                        String name) {
+                        String name) implements Serializable {
+                private static final long serialVersionUID = 1L;
+
                 public OrganizationAddressType {
                         if (id == null || name == null || name.isBlank()) {
                                 throw new IllegalArgumentException(

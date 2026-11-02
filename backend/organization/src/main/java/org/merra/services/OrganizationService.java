@@ -12,6 +12,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.merra.dto.CountriesCache;
 import org.merra.dto.CountriesResponse;
 import org.merra.dto.CreateOrganizationRequest;
@@ -46,10 +49,13 @@ import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.repositories.projections.UserOrganizationAffiliations;
-import org.merra.service.AuthService;
-import org.merra.services.phone.PhoneService;
+import org.merra.multitenancy.TenantContext;
+import org.merra.multitenancy.TenantInfo;
+import org.merra.multitenancy.TenantProvisioner;
+import org.merra.multitenancy.TenantResolver;
 import org.merra.utilities.InvoiceConstants;
 import org.merra.utilities.RedisKeys;
+import org.merra.utilities.SecurityUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +67,8 @@ import jakarta.validation.constraints.NotBlank;
 @Service
 @Validated
 public class OrganizationService {
+	private static final Logger logger = LoggerFactory.getLogger(OrganizationService.class);
+
 	private final OrganizationRepository organizationRepository;
 	private final OrganizationTypeRepository organizationTypeRepository;
 	private final OrganizationMembersRepository organizationMembersRepository;
@@ -68,13 +76,13 @@ public class OrganizationService {
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final InvoiceRepository invoiceRepository;
 	private final AccountService accountService;
-	private final AuthService authService;
 	private final CountryRepository countryRepository;
 	private final UserAccountService userAccountService;
 	private final UserAccountRepository userAccountRepository;
 	private final OrganizationMapper organizationMapper;
 	private final OrganizationAffiliationMapper organizationAffiliationMapper;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final org.merra.multitenancy.TenantProvisioner tenantProvisioner;
 
 	public OrganizationService(
 			OrganizationRepository organizationRepository,
@@ -85,13 +93,33 @@ public class OrganizationService {
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			InvoiceRepository invoiceRepository,
 			AccountService accountService,
-			AuthService authService,
 			CountryRepository countryRepository,
 			UserAccountRepository userAccountRepository,
-			PhoneService phoneService,
 			OrganizationMapper organizationMapper,
 			OrganizationAffiliationMapper organizationAffiliationMapper,
 			RedisTemplate<String, Object> redisTemplate) {
+		this(organizationRepository, userAccountService, organizationTypeRepository, addressTypeRepository,
+				organizationMembersRepository, userWorkspaceStateRepository, invoiceRepository, accountService,
+				countryRepository, userAccountRepository, organizationMapper, organizationAffiliationMapper,
+				redisTemplate, null);
+	}
+
+	@org.springframework.beans.factory.annotation.Autowired
+	public OrganizationService(
+			OrganizationRepository organizationRepository,
+			UserAccountService userAccountService,
+			OrganizationTypeRepository organizationTypeRepository,
+			AddressTypeRepository addressTypeRepository,
+			OrganizationMembersRepository organizationMembersRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository,
+			InvoiceRepository invoiceRepository,
+			AccountService accountService,
+			CountryRepository countryRepository,
+			UserAccountRepository userAccountRepository,
+			OrganizationMapper organizationMapper,
+			OrganizationAffiliationMapper organizationAffiliationMapper,
+			RedisTemplate<String, Object> redisTemplate,
+			@org.springframework.beans.factory.annotation.Autowired(required = false) org.merra.multitenancy.TenantProvisioner tenantProvisioner) {
 		this.redisTemplate = redisTemplate;
 		this.organizationRepository = organizationRepository;
 		this.organizationMembersRepository = organizationMembersRepository;
@@ -102,10 +130,10 @@ public class OrganizationService {
 		this.organizationAffiliationMapper = organizationAffiliationMapper;
 		this.organizationTypeRepository = organizationTypeRepository;
 		this.accountService = accountService;
-		this.authService = authService;
 		this.countryRepository = countryRepository;
 		this.addressTypeRepository = addressTypeRepository;
 		this.userAccountRepository = userAccountRepository;
+		this.tenantProvisioner = tenantProvisioner;
 	}
 
 	/**
@@ -164,8 +192,15 @@ public class OrganizationService {
 	 */
 	public OrganizationMetaDataResponse metadata() {
 		// Get organization types from cache
-		OrganizationMetaDataResponse organizationMetaData = (OrganizationMetaDataResponse) redisTemplate
-				.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
+		OrganizationMetaDataResponse organizationMetaData = null;
+		try {
+			Object cached = redisTemplate.opsForValue().get(RedisKeys.ORGANIZATION_METADATA);
+			if (cached instanceof OrganizationMetaDataResponse omd) {
+				organizationMetaData = omd;
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to retrieve organization metadata from Redis: {}", e.getMessage());
+		}
 
 		if (organizationMetaData == null) {
 			Set<OrganizationMetaDataResponse.OrganizationTypesMetaData> organizationTypes = organizationTypeRepository
@@ -192,8 +227,12 @@ public class OrganizationService {
 					new OrganizationMetaDataResponse.PaymentTermsMetaData(subElements, types),
 					organizationAddressTypes);
 			// Cache the result for 3 hour
-			redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
-					RedisKeys.CONSTANT_DURATION);
+			try {
+				redisTemplate.opsForValue().set(RedisKeys.ORGANIZATION_METADATA, organizationMetaData,
+						RedisKeys.CONSTANT_DURATION);
+			} catch (Exception e) {
+				logger.warn("Failed to cache organization metadata to Redis: {}", e.getMessage());
+			}
 		}
 		return organizationMetaData;
 	}
@@ -213,22 +252,115 @@ public class OrganizationService {
 	 *         countries
 	 */
 	public List<CountriesResponse> fetchCountries() {
-		CountriesCache countriesCache = (CountriesCache) redisTemplate.opsForValue()
-				.get(RedisKeys.COUNTRY_METADATA);
-		List<CountriesResponse> getCountries = countriesCache != null ? countriesCache.countries() : null;
-		if (getCountries == null) {
-			getCountries = countryRepository.findAll().stream().map(country -> new CountriesResponse(
-					country.getId(),
-					country.getOfficial(),
-					country.getAlpha2(),
-					country.getAlpha3(),
-					country.getNumeric(),
-					country.getSymbol(),
-					country.getCode())).toList();
-			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries),
-					RedisKeys.CONSTANT_DURATION);
+		List<CountriesResponse> getCountries = null;
+
+		// 1. Try querying Redis cache
+		try {
+			Object cached = redisTemplate.opsForValue().get(RedisKeys.COUNTRY_METADATA);
+			if (cached instanceof CountriesCache cc && cc.countries() != null && !cc.countries().isEmpty()) {
+				getCountries = cc.countries();
+			} else if (cached instanceof List<?> list && !list.isEmpty()) {
+				List<CountriesResponse> mapped = new ArrayList<>();
+				for (Object item : list) {
+					if (item instanceof CountriesResponse cr) {
+						mapped.add(cr);
+					}
+				}
+				if (!mapped.isEmpty()) {
+					getCountries = mapped;
+				}
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to query Redis for country metadata: {}", e.getMessage());
 		}
-		return getCountries;
+
+		// 2. Fallback to database lookup if cache miss
+		if (getCountries == null || getCountries.isEmpty()) {
+			try {
+				List<org.merra.entities.Country> countries = countryRepository.findAll();
+				if (!countries.isEmpty()) {
+					getCountries = countries.stream().map(country -> new CountriesResponse(
+							country.getId(),
+							country.getCommon() != null && !country.getCommon().isBlank() ? country.getCommon() : country.getOfficial(),
+							country.getAlpha2(),
+							country.getAlpha3(),
+							country.getNumeric(),
+							country.getSymbol(),
+							country.getCode())).toList();
+				}
+			} catch (Exception e) {
+				logger.error("Failed to query database for country metadata: {}", e.getMessage(), e);
+			}
+		}
+
+		// 3. Fallback to static fallback list if database is also empty
+		if (getCountries == null || getCountries.isEmpty()) {
+			try {
+				List<org.merra.entities.Country> fallback = getFallbackCountries();
+				List<org.merra.entities.Country> saved = countryRepository.saveAll(fallback);
+				getCountries = saved.stream().map(country -> new CountriesResponse(
+						country.getId(),
+						country.getCommon() != null && !country.getCommon().isBlank() ? country.getCommon() : country.getOfficial(),
+						country.getAlpha2(),
+						country.getAlpha3(),
+						country.getNumeric(),
+						country.getSymbol(),
+						country.getCode())).toList();
+			} catch (Exception e) {
+				logger.error("Failed to seed fallback countries into database: {}", e.getMessage(), e);
+				getCountries = getFallbackCountries().stream().map(country -> new CountriesResponse(
+						country.getId() != null ? country.getId() : UUID.randomUUID(),
+						country.getCommon() != null && !country.getCommon().isBlank() ? country.getCommon() : country.getOfficial(),
+						country.getAlpha2(),
+						country.getAlpha3(),
+						country.getNumeric(),
+						country.getSymbol(),
+						country.getCode())).toList();
+			}
+		}
+
+		// 4. Update Redis cache
+		if (getCountries != null && !getCountries.isEmpty()) {
+			try {
+				redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries),
+						RedisKeys.CONSTANT_DURATION);
+			} catch (Exception e) {
+				logger.warn("Failed to cache country metadata to Redis: {}", e.getMessage());
+			}
+		}
+
+		return getCountries != null ? getCountries : List.of();
+	}
+
+	private static List<org.merra.entities.Country> getFallbackCountries() {
+		return List.of(
+				new org.merra.entities.Country("Philippines", "Republic of the Philippines", "PH", "PHL", "608", "₱", "PHP"),
+				new org.merra.entities.Country("United States", "United States of America", "US", "USA", "840", "$", "USD"),
+				new org.merra.entities.Country("United Kingdom", "United Kingdom of Great Britain and Northern Ireland", "GB", "GBR", "826", "£", "GBP"),
+				new org.merra.entities.Country("Canada", "Canada", "CA", "CAN", "124", "$", "CAD"),
+				new org.merra.entities.Country("Australia", "Commonwealth of Australia", "AU", "AUS", "036", "$", "AUD"),
+				new org.merra.entities.Country("Singapore", "Republic of Singapore", "SG", "SGP", "702", "$", "SGD"),
+				new org.merra.entities.Country("Japan", "Japan", "JP", "JPN", "392", "¥", "JPY"),
+				new org.merra.entities.Country("Germany", "Federal Republic of Germany", "DE", "DEU", "276", "€", "EUR"),
+				new org.merra.entities.Country("France", "French Republic", "FR", "FRA", "250", "€", "EUR"),
+				new org.merra.entities.Country("United Arab Emirates", "United Arab Emirates", "AE", "ARE", "784", "د.إ", "AED"),
+				new org.merra.entities.Country("New Zealand", "New Zealand", "NZ", "NZL", "554", "$", "NZD"),
+				new org.merra.entities.Country("India", "Republic of India", "IN", "IND", "356", "₹", "INR"),
+				new org.merra.entities.Country("China", "People's Republic of China", "CN", "CHN", "156", "¥", "CNY"),
+				new org.merra.entities.Country("Hong Kong", "Hong Kong", "HK", "HKG", "344", "$", "HKD"),
+				new org.merra.entities.Country("Malaysia", "Malaysia", "MY", "MYS", "458", "RM", "MYR"),
+				new org.merra.entities.Country("Indonesia", "Republic of Indonesia", "ID", "IDN", "360", "Rp", "IDR"),
+				new org.merra.entities.Country("Thailand", "Kingdom of Thailand", "TH", "THA", "764", "฿", "THB"),
+				new org.merra.entities.Country("Vietnam", "Socialist Republic of Vietnam", "VN", "VNM", "704", "₫", "VND"),
+				new org.merra.entities.Country("Spain", "Kingdom of Spain", "ES", "ESP", "724", "€", "EUR"),
+				new org.merra.entities.Country("Italy", "Italian Republic", "IT", "ITA", "380", "€", "EUR"),
+				new org.merra.entities.Country("Netherlands", "Kingdom of the Netherlands", "NL", "NLD", "528", "€", "EUR"),
+				new org.merra.entities.Country("Switzerland", "Swiss Confederation", "CH", "CHE", "756", "CHF", "CHF"),
+				new org.merra.entities.Country("Brazil", "Federative Republic of Brazil", "BR", "BRA", "076", "R$", "BRL"),
+				new org.merra.entities.Country("Mexico", "United Mexican States", "MX", "MEX", "484", "$", "MXN"),
+				new org.merra.entities.Country("Saudi Arabia", "Kingdom of Saudi Arabia", "SA", "SAU", "682", "﷼", "SAR"),
+				new org.merra.entities.Country("South Africa", "Republic of South Africa", "ZA", "ZAF", "710", "R", "ZAR")
+		);
 	}
 
 	/**
@@ -250,7 +382,8 @@ public class OrganizationService {
 		}
 
 		// 2. Retrieve the currently authenticated user creating this organization
-		UserAccount user = authService.getCurrentAuthenticatedUser();
+		UserAccount user = SecurityUtils.getPrincipal(UserAccount.class)
+				.orElseThrow(() -> new EntityNotFoundException("No authenticated user found."));
 
 		// 3. Resolve the organization type entity
 		OrganizationType organizationType = getOrganizationType(req.type());
@@ -280,7 +413,7 @@ public class OrganizationService {
 			setAddresses(org, req.addresses());
 		}
 
-		// 8. Persist the organization to generate its unique identifier
+		// 8. Persist the organization (id and schema_name are automatically generated in @PrePersist)
 		Organization newOrganization = organizationRepository.save(org);
 
 		// 9. Register the user as the organization's creator/owner member
@@ -293,10 +426,27 @@ public class OrganizationService {
 		user.setPartOfOrganization(true);
 		userAccountRepository.save(user);
 
-		// 11. Provision the default chart of accounts for the new organization
-		accountService.createDefaultAccounts(newOrganization);
+		// 11. Cache tenant metadata in Redis
+		String tenantSchema = newOrganization.getSchemaName();
+		redisTemplate.opsForValue().set(
+				RedisKeys.getTenantInfoKey(newOrganization.getId()),
+				new TenantInfo(tenantSchema, newOrganization.getStatus().name()),
+				RedisKeys.CONSTANT_DURATION);
 
-		// 12. Set or update the active workspace state for the user
+		// 12. Provision the dedicated database schema for the new organization
+		if (tenantProvisioner != null) {
+			tenantProvisioner.provisionTenant(newOrganization.getId());
+		}
+
+		// 13. Switch to tenant schema to provision default chart of accounts
+		try {
+			TenantContext.setCurrentTenant(tenantSchema);
+			accountService.createDefaultAccounts(newOrganization);
+		} finally {
+			TenantContext.clear();
+		}
+
+		// 14. Set or update the active workspace state for the user
 		// Uses upsert semantics to prevent unique constraint violations on user_id when creating multiple organizations
 		UserWorkspaceState workspace = userWorkspaceStateRepository.findByUser(user)
 				.orElseGet(() -> new UserWorkspaceState(user, newOrganization));

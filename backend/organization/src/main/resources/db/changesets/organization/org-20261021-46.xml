@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changesets/organization/org-20261021-46.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Add schema_name column to organization table -->
+    <changeSet id="2026-add-schema_name-to-organization" author="merra">
+        <comment>Add schema_name column to organization table with not-null constraint</comment>
+        <addColumn tableName="organization" schemaName="app">
+            <column name="schema_name" type="varchar(63)" />
+        </addColumn>
+        <!-- Backfill any existing organizations before adding not-null constraint -->
+        <sql>
+            UPDATE app.organization
+            SET schema_name = 'tenant_' || REPLACE(id::text, '-', '')
+            WHERE schema_name IS NULL;
+        </sql>
+        <addNotNullConstraint
+            schemaName="app"
+            tableName="organization"
+            columnName="schema_name"
+            columnDataType="varchar(63)" />
+        <addUniqueConstraint
+            schemaName="app"
+            tableName="organization"
+            columnNames="schema_name"
+            constraintName="uq_organization_schema_name" />
+    </changeSet>
+
+</databaseChangeLog>

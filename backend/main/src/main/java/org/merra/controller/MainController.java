@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/main/utilities/")
 public class MainController {
     private final OrganizationService organizationService;
 
@@ -20,7 +19,12 @@ public class MainController {
         this.organizationService = organizationService;
     }
 
-    @GetMapping("countries")
+    @GetMapping("/")
+    public ResponseEntity<String> defaultLandingPage() {
+        return ResponseEntity.ok("backend is now running..");
+    }
+
+    @GetMapping("api/main/utilities/countries")
     public ResponseEntity<ApiResponse<List<CountriesResponse>>> countries() {
         List<CountriesResponse> res = organizationService.fetchCountries();
         ApiResponse<List<CountriesResponse>> response = new ApiResponse<>(
