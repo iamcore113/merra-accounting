@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -33,6 +33,7 @@ export class PersonalDetails implements OnInit {
   private route = inject(ActivatedRoute);
   private userService = inject(UserService);
   private utilityService = inject(UtilityService);
+  private cdr = inject(ChangeDetectorRef);
 
   personalDetailsForm!: FormGroup;
   isEmailDisabled = true;
@@ -55,31 +56,37 @@ export class PersonalDetails implements OnInit {
       }
     });
 
-    let collect_response: RestCountryList;
     this.utilityService.getCountries().subscribe({
       next: (response: Config) => {
-        if (response.success && 'data' in response) {
-          collect_response = response.data as RestCountryList;
+        if (response.success && 'data' in response && Array.isArray(response.data)) {
+          const countryList = response.data as RestCountryList;
+          this.countries = countryList
+            .map(country => ({
+              name: country.countryName,
+              cca2: country.isoAlpha2Code,
+              currency: country.code || country.symbol || 'N/A',
+            }))
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+          this.filteredCountries = [...this.countries];
+          this.cdr.markForCheck();
         }
       },
       error: (error) => {
         console.error('Error loading countries:', error);
       },
-      complete: () => {
-        this.countries = collect_response.map(country => ({
-          name: country.countryName,
-          cca2: country.isoAlpha2Code,
-          currency: country.code || 'N/A',
-        }));
-      },
     });
   }
 
   filterCountries(event: AutoCompleteCompleteEvent): void {
-    const query = (event.query || '').toLowerCase();
-    this.filteredCountries = this.countries.filter(c =>
-      c.name.toLowerCase().includes(query)
-    );
+    const query = (event.query || '').toLowerCase().trim();
+    if (!query) {
+      this.filteredCountries = [...this.countries];
+    } else {
+      this.filteredCountries = this.countries.filter(c =>
+        c.name && c.name.toLowerCase().includes(query)
+      );
+    }
+    this.cdr.markForCheck();
   }
 
   enableEmailEditing(): void {

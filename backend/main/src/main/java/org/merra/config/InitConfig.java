@@ -184,7 +184,8 @@ public class InitConfig implements CommandLineRunner {
                     if (!philippinesPresent) {
                         countries.add(new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"));
                     }
-                    List<CountriesResponse> countryList = countries.stream().map(country -> new CountriesResponse(
+                    List<Country> savedCountries = countryRepository.saveAll(countries);
+                    List<CountriesResponse> countryList = savedCountries.stream().map(country -> new CountriesResponse(
                             country.getId(),
                             country.getOfficial(),
                             country.getAlpha2(),
@@ -192,11 +193,64 @@ public class InitConfig implements CommandLineRunner {
                             country.getNumeric(),
                             country.getSymbol(),
                             country.getCode())).toList();
-                    redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(countryList),
-                            RedisKeys.CONSTANT_DURATION);
+                    try {
+                        redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(countryList),
+                                RedisKeys.CONSTANT_DURATION);
+                    } catch (Exception re) {
+                        logger.warn("Failed to cache countries in Redis: {}", re.getMessage());
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("Failed to seed countries from API: " + e.getMessage());
+                logger.error("Failed to seed countries from API: {}", e.getMessage());
+                seedFallbackCountries();
+            }
+        }
+    }
+
+    private void seedFallbackCountries() {
+        if (countryRepository.findAll().isEmpty()) {
+            List<Country> fallbackCountries = List.of(
+                    new Country("Philippines", "Philippines", "PH", "PHL", "608", "₱", "PHP"),
+                    new Country("United States", "United States of America", "US", "USA", "840", "$", "USD"),
+                    new Country("United Kingdom", "United Kingdom of Great Britain and Northern Ireland", "GB", "GBR", "826", "£", "GBP"),
+                    new Country("Canada", "Canada", "CA", "CAN", "124", "$", "CAD"),
+                    new Country("Australia", "Commonwealth of Australia", "AU", "AUS", "036", "$", "AUD"),
+                    new Country("Singapore", "Republic of Singapore", "SG", "SGP", "702", "$", "SGD"),
+                    new Country("Japan", "Japan", "JP", "JPN", "392", "¥", "JPY"),
+                    new Country("Germany", "Federal Republic of Germany", "DE", "DEU", "276", "€", "EUR"),
+                    new Country("France", "French Republic", "FR", "FRA", "250", "€", "EUR"),
+                    new Country("United Arab Emirates", "United Arab Emirates", "AE", "ARE", "784", "د.إ", "AED"),
+                    new Country("New Zealand", "New Zealand", "NZ", "NZL", "554", "$", "NZD"),
+                    new Country("India", "Republic of India", "IN", "IND", "356", "₹", "INR"),
+                    new Country("China", "People's Republic of China", "CN", "CHN", "156", "¥", "CNY"),
+                    new Country("Hong Kong", "Hong Kong", "HK", "HKG", "344", "$", "HKD"),
+                    new Country("Malaysia", "Malaysia", "MY", "MYS", "458", "RM", "MYR"),
+                    new Country("Indonesia", "Republic of Indonesia", "ID", "IDN", "360", "Rp", "IDR"),
+                    new Country("Thailand", "Kingdom of Thailand", "TH", "THA", "764", "฿", "THB"),
+                    new Country("Vietnam", "Socialist Republic of Vietnam", "VN", "VNM", "704", "₫", "VND"),
+                    new Country("Spain", "Kingdom of Spain", "ES", "ESP", "724", "€", "EUR"),
+                    new Country("Italy", "Italian Republic", "IT", "ITA", "380", "€", "EUR"),
+                    new Country("Netherlands", "Kingdom of the Netherlands", "NL", "NLD", "528", "€", "EUR"),
+                    new Country("Switzerland", "Swiss Confederation", "CH", "CHE", "756", "CHF", "CHF"),
+                    new Country("Brazil", "Federative Republic of Brazil", "BR", "BRA", "076", "R$", "BRL"),
+                    new Country("Mexico", "United Mexican States", "MX", "MEX", "484", "$", "MXN"),
+                    new Country("Saudi Arabia", "Kingdom of Saudi Arabia", "SA", "SAU", "682", "﷼", "SAR"),
+                    new Country("South Africa", "Republic of South Africa", "ZA", "ZAF", "710", "R", "ZAR")
+            );
+            List<Country> saved = countryRepository.saveAll(fallbackCountries);
+            List<CountriesResponse> countryList = saved.stream().map(country -> new CountriesResponse(
+                    country.getId(),
+                    country.getOfficial(),
+                    country.getAlpha2(),
+                    country.getAlpha3(),
+                    country.getNumeric(),
+                    country.getSymbol(),
+                    country.getCode())).toList();
+            try {
+                redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(countryList),
+                        RedisKeys.CONSTANT_DURATION);
+            } catch (Exception re) {
+                logger.warn("Failed to cache fallback countries in Redis: {}", re.getMessage());
             }
         }
     }

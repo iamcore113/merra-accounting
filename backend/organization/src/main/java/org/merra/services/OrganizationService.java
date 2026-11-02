@@ -236,22 +236,34 @@ public class OrganizationService {
 	 *         countries
 	 */
 	public List<CountriesResponse> fetchCountries() {
-		CountriesCache countriesCache = (CountriesCache) redisTemplate.opsForValue()
-				.get(RedisKeys.COUNTRY_METADATA);
-		List<CountriesResponse> getCountries = countriesCache != null ? countriesCache.countries() : null;
-		if (getCountries == null) {
-			getCountries = countryRepository.findAll().stream().map(country -> new CountriesResponse(
-					country.getId(),
-					country.getOfficial(),
-					country.getAlpha2(),
-					country.getAlpha3(),
-					country.getNumeric(),
-					country.getSymbol(),
-					country.getCode())).toList();
-			redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries),
-					RedisKeys.CONSTANT_DURATION);
+		CountriesCache countriesCache = null;
+		try {
+			countriesCache = (CountriesCache) redisTemplate.opsForValue()
+					.get(RedisKeys.COUNTRY_METADATA);
+		} catch (Exception e) {
+			logger.warn("Failed to query Redis for country metadata: {}", e.getMessage());
 		}
-		return getCountries;
+		List<CountriesResponse> getCountries = countriesCache != null ? countriesCache.countries() : null;
+		if (getCountries == null || getCountries.isEmpty()) {
+			List<org.merra.entities.Country> countries = countryRepository.findAll();
+			if (!countries.isEmpty()) {
+				getCountries = countries.stream().map(country -> new CountriesResponse(
+						country.getId(),
+						country.getOfficial(),
+						country.getAlpha2(),
+						country.getAlpha3(),
+						country.getNumeric(),
+						country.getSymbol(),
+						country.getCode())).toList();
+				try {
+					redisTemplate.opsForValue().set(RedisKeys.COUNTRY_METADATA, new CountriesCache(getCountries),
+							RedisKeys.CONSTANT_DURATION);
+				} catch (Exception e) {
+					logger.warn("Failed to cache country metadata to Redis: {}", e.getMessage());
+				}
+			}
+		}
+		return getCountries != null ? getCountries : List.of();
 	}
 
 	/**
