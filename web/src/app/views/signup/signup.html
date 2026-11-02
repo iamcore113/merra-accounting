@@ -1,12 +1,8 @@
 <div class="auth-container">
-  <nav class="top-navbar">
-    <a pButton [outlined]="true" routerLink="/account/signin" label="Already have an account?" [size]="'small'"></a>
-  </nav>
-
   <div class="auth-card">
     <div class="auth-card-header">
-      <h1 class="brand-logo">MERRA</h1>
-      <p class="sub-brand-logo">CREATE ACCOUNT</p>
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="auth-title">Create Account</h2>
     </div>
 
     <div class="auth-card-content">
@@ -43,44 +39,88 @@
         </div>
 
         <div class="field-group">
-          <label for="signupPassword" class="field-label">Create Password</label>
-          <p-password
-            id="signupPassword"
-            formControlName="password"
-            [feedback]="false"
-            [toggleMask]="true"
-            size="small"
-            styleClass="full-width"
-            inputStyleClass="full-width"
-            placeholder="Min 10 characters, 1 uppercase, 1 number">
-          </p-password>
-          @if (signupForm.get('password')?.hasError('required') && signupForm.get('password')?.touched) {
-            <small class="field-error">Password is required</small>
-          }
-          @if (signupForm.get('password')?.hasError('minlength') && signupForm.get('password')?.touched) {
-            <small class="field-error">Password must be at least 10 characters long</small>
-          }
-          @if (signupForm.get('password')?.hasError('pattern') && signupForm.get('password')?.touched) {
-            <small class="field-error">Password must contain at least 1 uppercase letter and 1 number</small>
-          }
+          <div class="field-label-row">
+            <label for="signupPassword" class="field-label">Password</label>
+            <button type="button" class="toggle-show-btn" (click)="toggleShowPassword()">
+              <i class="pi" [ngClass]="showPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+              <span>{{ showPassword() ? 'Hide' : 'Show' }}</span>
+            </button>
+          </div>
+          <div class="password-input-wrapper">
+            <input
+              id="signupPassword"
+              pInputText
+              [pSize]="'small'"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              class="full-width password-input"
+              [class.invalid-field]="(passwordTouched || passwordValue.length > 0) && !isPasswordAllValid"
+              [class.valid-field]="passwordValue.length > 0 && isPasswordAllValid"
+              placeholder="Enter your password" />
+            <span class="lock-icon-container">
+              @if (passwordValue.length > 0 && isPasswordAllValid) {
+                <i class="pi pi-lock lock-status-icon valid"></i>
+              } @else if ((passwordTouched || passwordValue.length > 0) && !isPasswordAllValid) {
+                <i class="pi pi-lock-open lock-status-icon invalid"></i>
+              } @else {
+                <i class="pi pi-lock lock-status-icon"></i>
+              }
+            </span>
+          </div>
+
+          <ul class="password-hints">
+            <li [class.met]="hasMinLength" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasMinLength">
+              <i class="pi" [ngClass]="hasMinLength ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+              <span>Use 8 or more characters</span>
+            </li>
+            <li [class.met]="hasUpperAndLower" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasUpperAndLower">
+              <i class="pi" [ngClass]="hasUpperAndLower ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+              <span>Use upper and lower case letters</span>
+            </li>
+            <li [class.met]="hasNumber" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasNumber">
+              <i class="pi" [ngClass]="hasNumber ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+              <span>Use a number</span>
+            </li>
+            <li [class.met]="hasSymbol" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasSymbol">
+              <i class="pi" [ngClass]="hasSymbol ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+              <span>Use a symbol</span>
+            </li>
+          </ul>
         </div>
 
         <div class="field-group">
-          <label for="confirmPassword" class="field-label">Confirm Password</label>
-          <p-password
-            id="confirmPassword"
-            formControlName="confirmPassword"
-            [feedback]="false"
-            [toggleMask]="true"
-            size="small"
-            styleClass="full-width"
-            inputStyleClass="full-width"
-            placeholder="Confirm password">
-          </p-password>
+          <div class="field-label-row">
+            <label for="confirmPassword" class="field-label">Confirm Password</label>
+            <button type="button" class="toggle-show-btn" (click)="toggleShowConfirmPassword()">
+              <i class="pi" [ngClass]="showConfirmPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+              <span>{{ showConfirmPassword() ? 'Hide' : 'Show' }}</span>
+            </button>
+          </div>
+          <div class="password-input-wrapper">
+            <input
+              id="confirmPassword"
+              pInputText
+              [pSize]="'small'"
+              [type]="showConfirmPassword() ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              class="full-width password-input"
+              [class.invalid-field]="confirmPasswordTouched && !isConfirmPasswordValid"
+              [class.valid-field]="confirmPasswordTouched && isConfirmPasswordValid"
+              placeholder="Confirm password" />
+            <span class="lock-icon-container">
+              @if (confirmPasswordTouched && isConfirmPasswordValid) {
+                <i class="pi pi-lock lock-status-icon valid"></i>
+              } @else if (confirmPasswordTouched && !isConfirmPasswordValid) {
+                <i class="pi pi-lock-open lock-status-icon invalid"></i>
+              } @else {
+                <i class="pi pi-lock lock-status-icon"></i>
+              }
+            </span>
+          </div>
           @if (signupForm.get('confirmPassword')?.hasError('required') && signupForm.get('confirmPassword')?.touched) {
             <small class="field-error">Please confirm your password</small>
           }
-          @if (signupForm.get('confirmPassword')?.hasError('passwordMismatch')) {
+          @if (signupForm.get('confirmPassword')?.hasError('passwordMismatch') && signupForm.get('confirmPassword')?.touched) {
             <small class="field-error">Passwords do not match</small>
           }
         </div>
@@ -101,10 +141,25 @@
             type="submit"
             class="submit-button"
             [loading]="isSubmitting()"
-            [disabled]="isSubmitting()"
-            label="SIGNUP FOR FREE"
+            [disabled]="isSubmitting() || signupForm.invalid"
+            icon="pi pi-user-plus"
+            label="Sign up"
             [size]="'small'">
           </button>
+        </div>
+
+        <div class="auth-footer">
+          <p class="privacy-notice">
+            By creating an account, you agree to our
+            <a href="javascript:void(0)" class="policy-link">Terms</a>. Our
+            <a href="javascript:void(0)" class="policy-link">Privacy Policy</a>
+            applies to your personal data.
+          </p>
+
+          <div class="signup-prompt">
+            <span>Already have an account? </span>
+            <a routerLink="/account/signin" class="signup-link">Sign in</a>
+          </div>
         </div>
       </form>
     </div>

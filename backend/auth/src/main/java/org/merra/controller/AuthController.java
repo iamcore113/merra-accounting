@@ -111,7 +111,7 @@ public class AuthController {
      * @return ResponseEntity with confirmation that the verification email was
      *         resent
      */
-    @PostMapping("resend/verification/email")
+    @PostMapping(value = {"resend/verification/email", "resend-verification-email"})
     public ResponseEntity<ApiResponse<VerificationResponse>> resendEmailVerification(
             @Valid @RequestBody ResendEmailVerification req) {
         final var resentToken = authService.resendEmailVerification(req);

@@ -2,6 +2,8 @@ package org.merra.dto;
 
 import java.util.UUID;
 
-public record ResendEmailVerification(UUID userId) {
-
+public record ResendEmailVerification(UUID userId, String email) {
+    public ResendEmailVerification(UUID userId) {
+        this(userId, null);
+    }
 }

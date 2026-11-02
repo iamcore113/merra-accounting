@@ -403,7 +403,14 @@ public class AuthService {
   }
 
   public VerificationResponse resendEmailVerification(ResendEmailVerification request) {
-    Optional<UserAccount> findUser = userRepository.findById(request.userId());
+    Optional<UserAccount> findUser;
+    if (request.userId() != null) {
+      findUser = userRepository.findById(request.userId());
+    } else if (request.email() != null && !request.email().isBlank()) {
+      findUser = userRepository.findUserByEmailIgnoreCase(request.email().trim());
+    } else {
+      throw new IllegalArgumentException("User ID or email is required to resend verification email.");
+    }
 
     if (findUser.isEmpty()) {
       throw new EntityNotFoundException("User not found.");

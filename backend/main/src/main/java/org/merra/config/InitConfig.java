@@ -187,7 +187,7 @@ public class InitConfig implements CommandLineRunner {
                     List<Country> savedCountries = countryRepository.saveAll(countries);
                     List<CountriesResponse> countryList = savedCountries.stream().map(country -> new CountriesResponse(
                             country.getId(),
-                            country.getOfficial(),
+                            country.getCommon() != null && !country.getCommon().isBlank() ? country.getCommon() : country.getOfficial(),
                             country.getAlpha2(),
                             country.getAlpha3(),
                             country.getNumeric(),
@@ -240,7 +240,7 @@ public class InitConfig implements CommandLineRunner {
             List<Country> saved = countryRepository.saveAll(fallbackCountries);
             List<CountriesResponse> countryList = saved.stream().map(country -> new CountriesResponse(
                     country.getId(),
-                    country.getOfficial(),
+                    country.getCommon() != null && !country.getCommon().isBlank() ? country.getCommon() : country.getOfficial(),
                     country.getAlpha2(),
                     country.getAlpha3(),
                     country.getNumeric(),

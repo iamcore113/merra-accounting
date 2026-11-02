@@ -1,20 +1,54 @@
-<div class="verify-email-wrapper">
-  <div class="verify-email-header">
-    <i class="pi pi-envelope-open text-2xl"></i>
-    <span>Verify Your Email</span>
-  </div>
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="auth-title">Verify Your Email</h2>
+    </div>
 
-  <div class="message-container">
-    <p class="message-text">
-      We've sent a verification email to your inbox <span class="email-highlight">{{ email }}</span>. Please check your email and click the
-      verification link to activate your account.
-    </p>
-    <p class="message-subtext">
-      Didn't receive the email? Check your spam folder or click the button below to resend.
-    </p>
-  </div>
+    <div class="email-icon-wrapper">
+      <div class="email-icon-badge">
+        <i class="pi pi-envelope-open"></i>
+      </div>
+    </div>
 
-  <div class="button-container">
-    <button pButton type="button" (click)="onResend()" class="verification-button" icon="pi pi-refresh" label="Resend Verification Email" [size]="'small'"></button>
+    <div class="message-container">
+      <p class="message-text">
+        We've sent a verification email to your inbox:
+        @if (email) {
+          <span class="email-highlight">{{ email }}</span>
+        } @else {
+          <span class="email-highlight">your email address</span>
+        }
+      </p>
+      <p class="message-subtext">
+        Please check your email and click the verification link to activate your account.
+      </p>
+      <p class="spam-notice">
+        Didn't receive the email? Check your spam folder or click the button below to resend.
+      </p>
+    </div>
+
+    <div class="button-container">
+      <button
+        pButton
+        type="button"
+        (click)="onResend()"
+        class="verification-button"
+        [loading]="isResending()"
+        [disabled]="isResending() || cooldownSeconds() > 0"
+        icon="pi pi-refresh"
+        [label]="cooldownSeconds() > 0 ? ('Resend in ' + cooldownSeconds() + 's') : 'Resend Verification Email'"
+        [size]="'small'">
+      </button>
+    </div>
+
+    <div class="auth-footer">
+      <div class="signin-prompt">
+        <a routerLink="/account/signin" class="signin-link">
+          <i class="pi pi-arrow-left"></i>
+          <span>Back to Sign in</span>
+        </a>
+      </div>
+    </div>
   </div>
 </div>

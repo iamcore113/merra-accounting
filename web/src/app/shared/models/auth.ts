@@ -53,7 +53,8 @@ export interface VerificationResponse {
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/ResendEmailVerification.java
 export interface ResendEmailVerification {
-  userId: string;
+  userId?: string;
+  email?: string;
 }
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/FillPersonalInformation.java

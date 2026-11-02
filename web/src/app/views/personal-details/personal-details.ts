@@ -61,11 +61,12 @@ export class PersonalDetails implements OnInit {
         if (response.success && 'data' in response && Array.isArray(response.data)) {
           const countryList = response.data as RestCountryList;
           this.countries = countryList
-            .map(country => ({
-              name: country.countryName,
-              cca2: country.isoAlpha2Code,
+            .map((country: any) => ({
+              name: country.countryName || country.common || country.official || country.name || '',
+              cca2: country.isoAlpha2Code || country.alpha2 || country.cca2 || '',
               currency: country.code || country.symbol || 'N/A',
             }))
+            .filter(c => !!c.name && !!c.cca2)
             .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
           this.filteredCountries = [...this.countries];
           this.cdr.markForCheck();
