@@ -19,8 +19,18 @@ public class RedisKeys {
     public static final String COUNTRY_METADATA = "country_metadata";
     public static final String INVOICE_METADATA = "invoice_metadata";
     public static final String TENANT_INFO_PREFIX = "tenant_info:";
+    public static final String BLACKLIST_TOKEN_PREFIX = "blacklist:";
+    public static final String USER_LOGOUT_EPOCH_PREFIX = "user_epoch:";
 
     public static String getTenantInfoKey(Object orgId) {
         return TENANT_INFO_PREFIX + orgId;
+    }
+
+    public static String getBlacklistKey(String token) {
+        return BLACKLIST_TOKEN_PREFIX + token;
+    }
+
+    public static String getUserLogoutEpochKey(String email) {
+        return USER_LOGOUT_EPOCH_PREFIX + (email != null ? email.toLowerCase().trim() : "");
     }
 }

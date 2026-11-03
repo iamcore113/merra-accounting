@@ -19,6 +19,8 @@ import { verifyEmailGuard } from './shared/guards/verify-email-guard';
 
 export const routes: Routes = [
   { path: '', component: LandingPage, title: 'MERRA - Landing Page' },
+  { path: 'signin', redirectTo: 'account/signin', pathMatch: 'full' },
+  { path: 'login', redirectTo: 'account/signin', pathMatch: 'full' },
   { path: 'offline', component: OfflinePage, canActivate: [offlineGuard], title: 'MERRA - Offline' },
   { path: 'account/signup', component: Signup, title: 'Signup for free | MERRA' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },

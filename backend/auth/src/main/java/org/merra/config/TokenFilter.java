@@ -1,13 +1,10 @@
 package org.merra.config;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
-import io.jsonwebtoken.Claims;
+import org.merra.service.TokenBlacklistService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,13 +28,13 @@ public class TokenFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(TokenFilter.class);
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public TokenFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService,
-            RedisTemplate<String, Object> redisTemplate) {
+            TokenBlacklistService tokenBlacklistService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
-        this.redisTemplate = redisTemplate;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -46,26 +43,6 @@ public class TokenFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Handle logout request
-        if ("/api/auth/logout".equals(request.getRequestURI())) {
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String jwt = authHeader.substring(7);
-                try {
-                    Date expiration = jwtUtils.extractClaim(jwt, Claims::getExpiration);
-                    long remainingTimeMs = expiration.getTime() - System.currentTimeMillis();
-                    if (remainingTimeMs > 0) {
-                        redisTemplate.opsForValue().set("blacklist:" + jwt, "blacklisted", remainingTimeMs,
-                                TimeUnit.MILLISECONDS);
-                        logger.info("Blacklisted token on logout: remaining time {} ms", remainingTimeMs);
-                    }
-                } catch (Exception e) {
-                    logger.error("Error blacklisting token on logout", e);
-                }
-            }
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return; // Exit early
@@ -73,8 +50,9 @@ public class TokenFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         // Check if token is blacklisted
-        if (isTokenBlacklisted(jwt)) {
-            logger.warn("Attempted authentication with blacklisted token");
+        if (tokenBlacklistService.isBlacklisted(jwt)) {
+            logger.warn("Attempted authentication with blacklisted token for URI: {}", request.getRequestURI());
+            SecurityContextHolder.clearContext();
             filterChain.doFilter(request, response);
             return;
         }
@@ -101,14 +79,5 @@ public class TokenFilter extends OncePerRequestFilter {
             logger.warn("Cannot set user authentication from token: {}", e.getMessage());
         }
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isTokenBlacklisted(String jwt) {
-        try {
-            return Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + jwt));
-        } catch (Exception e) {
-            logger.error("Error checking token blacklist in Redis", e);
-            return false;
-        }
     }
 }

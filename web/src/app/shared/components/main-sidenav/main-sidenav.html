@@ -47,6 +47,10 @@
   <div class="side-nav-footer">
     @if (isOpen) {
       <div class="footer-links">
+        <button type="button" class="footer-link logout-btn" (click)="onLogout()">
+          <i class="pi pi-sign-out"></i>
+          <span>Sign Out</span>
+        </button>
         <a routerLink="/main" class="footer-link">
           <i class="pi pi-question-circle"></i>
           <span>Help & Support</span>
@@ -56,16 +60,28 @@
         <span class="version-tag">Merra Accounting v1.0</span>
       </div>
     } @else {
-      <button
-        pButton
-        [text]="true"
-        [rounded]="true"
-        class="footer-icon-btn"
-        pTooltip="Help & Support"
-        tooltipPosition="right"
-        routerLink="/main">
-        <i class="pi pi-question-circle"></i>
-      </button>
+      <div class="footer-collapsed-actions">
+        <button
+          pButton
+          [text]="true"
+          [rounded]="true"
+          class="footer-icon-btn logout-icon-btn"
+          pTooltip="Sign Out"
+          tooltipPosition="right"
+          (click)="onLogout()">
+          <i class="pi pi-sign-out"></i>
+        </button>
+        <button
+          pButton
+          [text]="true"
+          [rounded]="true"
+          class="footer-icon-btn"
+          pTooltip="Help & Support"
+          tooltipPosition="right"
+          routerLink="/main">
+          <i class="pi pi-question-circle"></i>
+        </button>
+      </div>
     }
   </div>
 </aside>

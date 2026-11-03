@@ -26,6 +26,7 @@ import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
+import org.merra.utilities.RedisKeys;
 import org.merra.utilities.SecurityUtils;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,6 +86,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final UserAccountRepository userRepository;
   private final UserAccountService userAccountService;
+  private final TokenBlacklistService tokenBlacklistService;
 
   public AuthService(
       RedisTemplate<String, Object> redisTemplate,
@@ -94,7 +96,8 @@ public class AuthService {
       AuthenticationManager authenticationManager,
       PasswordEncoder passwordEncoder,
       UserAccountRepository userAccountRepository,
-      UserAccountService userAccountService) {
+      UserAccountService userAccountService,
+      TokenBlacklistService tokenBlacklistService) {
     this.redisTemplate = redisTemplate;
     this.mailSender = mailSender;
     this.userDetailsService = userDetailsService;
@@ -103,6 +106,7 @@ public class AuthService {
     this.passwordEncoder = passwordEncoder;
     this.userRepository = userAccountRepository;
     this.userAccountService = userAccountService;
+    this.tokenBlacklistService = tokenBlacklistService;
   }
 
   public VisitorAccessToken generateVisitorAccessToken() {
@@ -478,5 +482,30 @@ public class AuthService {
     UserAccount user = userOpt.get();
     boolean isVerified = user.isEnabled();
     return new EmailVerificationStatusResponse(true, isVerified, !isVerified);
+  }
+
+  /**
+   * Invalidate the current user session by blacklisting both the access token
+   * and refresh token (if provided), clearing the security context, and evicting
+   * cached user principal data.
+   *
+   * @param accessToken  the Bearer access token string
+   * @param refreshToken the optional refresh token string
+   */
+  public void logout(String accessToken, String refreshToken) {
+    if (accessToken != null && !accessToken.isBlank()) {
+      tokenBlacklistService.blacklistToken(accessToken);
+    }
+    if (refreshToken != null && !refreshToken.isBlank()) {
+      tokenBlacklistService.blacklistToken(refreshToken);
+    }
+    SecurityContextHolder.clearContext();
+    try {
+      redisTemplate.delete(RedisKeys.PRINCIPAL);
+      redisTemplate.delete(RedisKeys.PRINCIPAL_ACCOUNT_SETTINGS);
+    } catch (Exception e) {
+      logger.warn("Could not delete principal keys from Redis during logout: {}", e.getMessage());
+    }
+    logger.info("Successfully completed user logout and token invalidation");
   }
 }

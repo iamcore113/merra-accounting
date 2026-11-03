@@ -1,8 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { RouterModule } from '@angular/router';
+import { DialogService } from 'primeng/dynamicdialog';
+import { AuthService } from '../../services/auth-service';
+import { Dialog } from '../dialog/dialog';
 
 export interface NavItem {
   label: string;
@@ -19,6 +22,9 @@ export interface NavItem {
   styleUrl: './main-sidenav.scss',
 })
 export class MainSidenav {
+  private readonly authService = inject(AuthService);
+  private readonly dialogService = inject(DialogService);
+
   @Input() isOpen = true;
   @Input() isMobile = false;
   @Output() readonly isOpenChange = new EventEmitter<boolean>();
@@ -34,5 +40,29 @@ export class MainSidenav {
   toggleSidenav(): void {
     this.isOpen = !this.isOpen;
     this.isOpenChange.emit(this.isOpen);
+  }
+
+  onLogout(): void {
+    const ref = this.dialogService.open(Dialog, {
+      header: 'Confirm Sign Out',
+      width: '420px',
+      modal: true,
+      data: {
+        title: 'Sign Out',
+        messages: ['Are you sure you want to sign out of your account?'],
+        confirmLabel: 'Sign Out',
+        cancelLabel: 'Cancel',
+        confirmColor: 'warn',
+        icon: 'pi pi-sign-out',
+      },
+    });
+
+    if (ref) {
+      ref.onClose.subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.authService.logout().subscribe();
+        }
+      });
+    }
   }
 }

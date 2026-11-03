@@ -5,6 +5,7 @@ import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.EmailVerificationStatusResponse;
 import org.merra.dto.LoginRequest;
+import org.merra.dto.LogoutRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -145,13 +147,37 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("logout")
-    public ResponseEntity<ApiResponse<?>> logout() {
-        return ResponseEntity.ok(new ApiResponse<>(
+    /**
+     * Invalidate user session and blacklist access & refresh tokens.
+     *
+     * @param request       the HTTP servlet request containing the Authorization header
+     * @param logoutRequest optional request body containing the refresh token
+     * @return ResponseEntity confirming logout
+     */
+    @PostMapping("logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            HttpServletRequest request,
+            @RequestBody(required = false) LogoutRequest logoutRequest) {
+        String accessToken = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
+        String refreshToken = logoutRequest != null ? logoutRequest.refreshToken() : null;
+        authService.logout(accessToken, refreshToken);
+
+        ApiResponse<Void> response = new ApiResponse<>(
                 "Logout successful",
                 true,
                 HttpStatus.OK,
-                null));
+                null);
+        return ResponseEntity.ok(response);
     }
 
+    @GetMapping("logout")
+    public ResponseEntity<ApiResponse<Void>> logoutGet(
+            HttpServletRequest request,
+            @RequestParam(value = "refreshToken", required = false) String refreshToken) {
+        return logout(request, new LogoutRequest(refreshToken));
+    }
 }

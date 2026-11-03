@@ -40,13 +40,15 @@ public class TokenService {
     private final UserDetailsService userDetailsService;
     private final UserAccountService userAccountService;
     private final UserAccountRepository userRepository;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public TokenService(UserAccountRepository userRepository, UserAccountService userAccountService, JwtUtils jwtUtils,
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService, TokenBlacklistService tokenBlacklistService) {
         this.userRepository = userRepository;
         this.userAccountService = userAccountService;
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     public JwtTokens requestTokens(UUID userId) {
@@ -65,6 +67,10 @@ public class TokenService {
     }
 
     public ValidateTokenResponse validateToken(String token) {
+        if (tokenBlacklistService.isBlacklisted(token)) {
+            logger.info("Token validation rejected: token is blacklisted");
+            return new ValidateTokenResponse(false);
+        }
         try {
             final String email = jwtUtils.extractUsername(token);
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -80,6 +86,10 @@ public class TokenService {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new BadCredentialsException("Refresh token cannot be blank.");
         }
+        if (tokenBlacklistService.isBlacklisted(refreshToken)) {
+            logger.warn("Attempted token refresh with blacklisted refresh token");
+            throw new BadCredentialsException("Invalid or expired refresh token.");
+        }
         try {
             final String email = jwtUtils.extractUsername(refreshToken);
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
@@ -91,6 +101,10 @@ public class TokenService {
             final Map<String, Object> claims = Map.of("role", user.getRoles());
             String getAccessToken = jwtUtils.generateToken(email, claims, forAccessToken, false);
             String getRefreshToken = jwtUtils.generateToken(email, claims, refreshTokenExpiration, true);
+
+            // Invalidate the old refresh token (refresh token rotation)
+            tokenBlacklistService.blacklistToken(refreshToken);
+
             return new JwtTokens(getAccessToken, getRefreshToken);
         } catch (BadCredentialsException | EntityNotFoundException e) {
             throw e;

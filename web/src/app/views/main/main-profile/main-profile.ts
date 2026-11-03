@@ -17,6 +17,7 @@ import { PrincipalDetailsResponse } from '../../../shared/models/organization';
 import { RestCountriesSelection, Config } from '../../../shared/models/api_response';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { UtilityService } from '../../../shared/services/utility-service';
+import { AuthService } from '../../../shared/services/auth-service';
 
 @Component({
   selector: 'app-profile-image-dialog',
@@ -169,6 +170,7 @@ export class ChangePasswordDialog {
 })
 export class MainProfile implements OnInit {
   private userService = inject(UserService);
+  private readonly authService = inject(AuthService);
   private readonly dialogService = inject(DialogService);
   private readonly messageService = inject(MessageService);
   private readonly cdRef = inject(ChangeDetectorRef);
@@ -329,6 +331,30 @@ export class MainProfile implements OnInit {
       header: 'Change Password',
       width: '420px'
     });
+  }
+
+  onLogout(): void {
+    const ref = this.dialogService.open(Dialog, {
+      header: 'Confirm Sign Out',
+      width: '420px',
+      modal: true,
+      data: {
+        title: 'Sign Out',
+        messages: ['Are you sure you want to sign out of your account?'],
+        confirmLabel: 'Sign Out',
+        cancelLabel: 'Cancel',
+        confirmColor: 'warn',
+        icon: 'pi pi-sign-out',
+      },
+    });
+
+    if (ref) {
+      ref.onClose.subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.authService.logout().subscribe();
+        }
+      });
+    }
   }
 
   getGenderDisplay(): string {

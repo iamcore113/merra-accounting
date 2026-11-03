@@ -21,6 +21,6 @@ describe('MainContact', () => {
   });
 
   it('should render at least 5 static contacts in the table', () => {
-    expect(component.dataSource.data.length).toBeGreaterThanOrEqual(5);
+    expect(component.contacts.length).toBeGreaterThanOrEqual(5);
   });
 });
