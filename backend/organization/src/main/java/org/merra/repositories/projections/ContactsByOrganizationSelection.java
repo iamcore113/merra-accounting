@@ -7,6 +7,8 @@ public interface ContactsByOrganizationSelection {
 	UUID getId();
 	String getName();
 	String getAccountNumber();
+	String getEmailAddress();
 	Boolean getIsSupplier();
 	Boolean getIsCustomer();
+	String getContactStatus();
 }

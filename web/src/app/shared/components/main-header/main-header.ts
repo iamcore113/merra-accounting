@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Output, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Output, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
@@ -14,6 +14,7 @@ import { OrganizationService } from '../../services/organization-service';
 })
 export class MainHeader implements OnInit {
   private readonly organizationService = inject(OrganizationService);
+  private readonly cdr = inject(ChangeDetectorRef);
   isMenuOpen = false;
   currentOrgName = 'Loading...';
   orgInitial = 'M';
@@ -30,14 +31,20 @@ export class MainHeader implements OnInit {
           const orgData = res.data;
           const name = orgData.names?.displayName || orgData.displayName || orgData.name;
           if (name) {
-            this.currentOrgName = name;
-            this.orgInitial = name.charAt(0).toUpperCase();
+            queueMicrotask(() => {
+              this.currentOrgName = name;
+              this.orgInitial = name.charAt(0).toUpperCase();
+              this.cdr.markForCheck();
+            });
           }
         }
       },
       error: () => {
-        this.currentOrgName = 'My Organization';
-        this.orgInitial = 'M';
+        queueMicrotask(() => {
+          this.currentOrgName = 'My Organization';
+          this.orgInitial = 'M';
+          this.cdr.markForCheck();
+        });
       }
     });
   }

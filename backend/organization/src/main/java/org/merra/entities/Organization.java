@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.merra.embedded.PhoneDetailsEmb;
@@ -18,7 +16,6 @@ import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.StatusEn;
 import org.merra.multitenancy.TenantResolver;
 
-import jakarta.persistence.Cacheable;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,8 +37,6 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "organization")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Organization {
 
 	@Id

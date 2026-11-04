@@ -22,8 +22,10 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 				c.id AS id,
 				c.name AS name,
 				c.accountNumber AS accountNumber,
+				c.emailAddress AS emailAddress,
 				c.isSupplier AS isSupplier,
-				c.isCustomer AS isCustomer
+				c.isCustomer AS isCustomer,
+				c.contactStatus AS contactStatus
 			FROM
 				Contact c
 			JOIN
@@ -32,4 +34,13 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 				o.id = :organizationId
 			""")
 	List<ContactsByOrganizationSelection> findContactsByOrganizationId(UUID organizationId);
+
+	@Query("""
+			SELECT COUNT(c) > 0
+			FROM Contact c
+			JOIN c.organization o
+			WHERE o.id = :organizationId
+			  AND LOWER(c.accountNumber) = LOWER(:accountNumber)
+			""")
+	boolean existsByAccountNumberAndOrganizationId(String accountNumber, UUID organizationId);
 }

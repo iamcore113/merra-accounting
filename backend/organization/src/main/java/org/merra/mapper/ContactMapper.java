@@ -21,8 +21,10 @@ public interface ContactMapper {
 			@Mapping(target = "contactId", source = "id"),
 			@Mapping(target = "contactName", source = "name"),
 			@Mapping(target = "accountNumber", source = "accountNumber"),
+			@Mapping(target = "emailAddress", source = "emailAddress"),
 			@Mapping(target = "isSupplier", source = "isSupplier"),
-			@Mapping(target = "isCustomer", source = "isCustomer")
+			@Mapping(target = "isCustomer", source = "isCustomer"),
+			@Mapping(target = "status", source = "contactStatus")
 	})
 	ContactsByOrganizationResponse toContactsByOrganizationSelections(ContactsByOrganizationSelection contact);
 

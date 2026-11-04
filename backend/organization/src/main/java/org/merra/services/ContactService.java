@@ -9,6 +9,7 @@ import org.merra.dto.ContactsByOrganizationResponse;
 import org.merra.dto.NewContactrequest;
 import org.merra.entities.Contact;
 import org.merra.entities.Organization;
+import org.merra.exception.ResourceAlreadyExistsException;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.ContactMapper;
 import org.merra.repositories.ContactRepository;
@@ -53,16 +54,67 @@ public class ContactService {
 	 */
 	public ContactResponse newSimpleContact(@NotNull NewContactrequest request) {
 		Contact contact = new Contact();
-		contact.setName(request.firstName() + " " + request.lastName());
+		String fullName = request.name();
+		if (fullName == null || fullName.isBlank()) {
+			fullName = ((request.firstName() != null ? request.firstName() : "") + " "
+					+ (request.lastName() != null ? request.lastName() : "")).trim();
+		}
+		if (fullName.isBlank()) {
+			throw new IllegalArgumentException("Contact name or person name is required");
+		}
+		contact.setName(fullName);
 		contact.setFirstName(request.firstName());
 		contact.setLastName(request.lastName());
+		String email = (request.emailAddress() != null && !request.emailAddress().isBlank()) ? request.emailAddress().trim() : null;
+		contact.setEmailAddress(email);
 
 		Organization currentOrg = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 		contact.setOrganization(currentOrg);
+
+		boolean isSup = Boolean.TRUE.equals(request.isSupplier());
+		boolean isCust = Boolean.TRUE.equals(request.isCustomer());
+		contact.setIsSupplier(isSup);
+		contact.setIsCustomer(isCust);
+
+		String expectedPrefix = (isCust && isSup) ? "BOTH" : isSup ? "SUP" : "CUST";
+		String accNum = request.accountNumber();
+		if (accNum != null && !accNum.isBlank()) {
+			accNum = accNum.trim().toUpperCase();
+			if (accNum.matches("^[A-Z]+-\\d{4}$")) {
+				String digits = accNum.substring(accNum.indexOf('-') + 1);
+				accNum = expectedPrefix + "-" + digits;
+			} else if (accNum.matches("^\\d{4}$")) {
+				accNum = expectedPrefix + "-" + accNum;
+			}
+			boolean exists = contactRepository.existsByAccountNumberAndOrganizationId(accNum, currentOrg.getId());
+			if (exists) {
+				throw new ResourceAlreadyExistsException("Account number '" + accNum + "' already exists for this organization");
+			}
+			contact.setAccountNumber(accNum);
+		}
+
+		contact.setTaxNumber(request.taxNumber());
+		contact.setCompanyNumber(request.companyNumber());
+		if (request.contactStatus() != null && !request.contactStatus().isBlank()) {
+			contact.setContactStatus(request.contactStatus());
+		} else {
+			contact.setContactStatus("ACTIVE");
+		}
+
 		Contact newContact = contactRepository.save(contact);
 
 		return new ContactResponse(newContact.getId(), newContact.getName());
+	}
+
+	public boolean checkIfAccountNumberExists(String accountNumber) {
+		if (accountNumber == null || accountNumber.isBlank()) {
+			return false;
+		}
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
+		return contactRepository.existsByAccountNumberAndOrganizationId(accountNumber.trim(), organizationId);
 	}
 
 	public CompleteContactRequest newCompleteContact(@NotNull CompleteContactRequest request) {

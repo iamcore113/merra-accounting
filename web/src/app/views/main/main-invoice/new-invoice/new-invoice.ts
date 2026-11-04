@@ -111,7 +111,7 @@ export class NewInvoice implements OnInit {
 
   goToCreateContact(event: Event): void {
     event.stopPropagation();
-    this.router.navigate(['/main/invoice']);
+    this.router.navigate(['/main/contacts/new']);
   }
 
   ngOnInit(): void {

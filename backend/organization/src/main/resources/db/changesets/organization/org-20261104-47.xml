@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changesets/organization/org-20261104-47.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Unique constraint on (organization, account_number) for contacts table -->
+    <changeSet id="2026-contacts-unique-organization-account-number" author="merra">
+        <comment>Ensure account_number is unique per organization</comment>
+        <addUniqueConstraint
+            schemaName="app"
+            tableName="contacts"
+            columnNames="organization, account_number"
+            constraintName="uq_contacts_organization_account_number" />
+    </changeSet>
+
+</databaseChangeLog>
+

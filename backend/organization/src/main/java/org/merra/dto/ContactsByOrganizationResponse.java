@@ -7,24 +7,16 @@ public record ContactsByOrganizationResponse(
 		UUID contactId,
 		String contactName,
 		String accountNumber,
+		String emailAddress,
 		Boolean isSupplier,
-		Boolean isCustomer
+		Boolean isCustomer,
+		String status
 ) {
 	public ContactsByOrganizationResponse {
-		if (organizationName == null || organizationName.isBlank()) {
-			throw new IllegalArgumentException("Organization name cannot be null or blank");
-		}
-		if (contactId == null) {
-			throw new IllegalArgumentException("Contact ID cannot be null");
-		}
-		if (contactName == null || contactName.isBlank()) {
-			throw new IllegalArgumentException("Contact name cannot be null or blank");
-		}
-		if (isSupplier == null) {
-			throw new IllegalArgumentException("Supplier status cannot be null");
-		}
-		if (isCustomer == null) {
-			throw new IllegalArgumentException("Customer status cannot be null");
-		}
+		organizationName = organizationName != null ? organizationName : "";
+		contactName = contactName != null ? contactName : "";
+		isSupplier = Boolean.TRUE.equals(isSupplier);
+		isCustomer = Boolean.TRUE.equals(isCustomer);
+		status = (status != null && !status.isBlank()) ? status : "ACTIVE";
 	}
 }

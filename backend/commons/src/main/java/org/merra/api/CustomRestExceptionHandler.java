@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.merra.exception.EmailAlreadyEnabledException;
+import org.merra.exception.ResourceAlreadyExistsException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -198,8 +200,8 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
          * @param ex - {EntityExistsException} object
          * @return - {ResponseEntity}
          */
-        @ExceptionHandler({ EntityExistsException.class })
-        public ResponseEntity<Object> entityExistsException(EntityExistsException ex) {
+        @ExceptionHandler({ EntityExistsException.class, ResourceAlreadyExistsException.class })
+        public ResponseEntity<Object> entityExistsException(RuntimeException ex) {
                 ApiError apiError = new ApiError(
                                 ex.getLocalizedMessage(), false, HttpStatus.CONFLICT);
                 return new ResponseEntity<Object>(
@@ -208,8 +210,38 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                                 apiError.getResponse());
         }
 
+        /**
+         * Only genuine unique-constraint violations (SQLState 23505) are reported as
+         * duplicates (409). Any other integrity problem (e.g. NOT NULL) is reported
+         * with its real cause and a 400.
+         */
+        @ExceptionHandler({ DataIntegrityViolationException.class })
+        public ResponseEntity<Object> dataIntegrityViolation(DataIntegrityViolationException ex) {
+                Throwable root = ex.getMostSpecificCause();
+                boolean unique = root instanceof java.sql.SQLException sql && "23505".equals(sql.getSQLState());
+                String message = unique
+                                ? "A record with the same unique value already exists"
+                                : "Data integrity violation: " + root.getLocalizedMessage();
+                ApiError apiError = new ApiError(
+                                message, false, unique ? HttpStatus.CONFLICT : HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<Object>(
+                                apiError,
+                                new HttpHeaders(),
+                                apiError.getResponse());
+        }
+
         @ExceptionHandler({ EmailAlreadyEnabledException.class })
         public ResponseEntity<Object> emailAlreadyEnabledException(EmailAlreadyEnabledException ex) {
+                ApiError apiError = new ApiError(
+                                ex.getLocalizedMessage(), false, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<Object>(
+                                apiError,
+                                new HttpHeaders(),
+                                apiError.getResponse());
+        }
+
+        @ExceptionHandler({ IllegalArgumentException.class })
+        public ResponseEntity<Object> illegalArgumentException(IllegalArgumentException ex) {
                 ApiError apiError = new ApiError(
                                 ex.getLocalizedMessage(), false, HttpStatus.BAD_REQUEST);
                 return new ResponseEntity<Object>(

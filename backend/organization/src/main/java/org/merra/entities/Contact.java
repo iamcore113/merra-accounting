@@ -23,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,7 +32,9 @@ import jakarta.validation.constraints.NotNull;
  * field @name is the only non optional attribute in this entity.
  */
 @Entity(name = "Contact")
-@Table(name = "contacts")
+@Table(name = "contacts", uniqueConstraints = {
+		@UniqueConstraint(name = "uq_contacts_organization_account_number", columnNames = { "organization", "account_number" })
+})
 public class Contact extends TenantAuditableEntity {
 
 	@Id
@@ -40,7 +43,7 @@ public class Contact extends TenantAuditableEntity {
 	private UUID id;
 
 	@ManyToOne
-	@JoinColumn(name = "organization_id", nullable = false, referencedColumnName = "id")
+	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
 	private Organization organization;
 
 	// Full name of contact / organization
@@ -58,8 +61,8 @@ public class Contact extends TenantAuditableEntity {
 	@Email(message = "Email address must be valid")
 	private String emailAddress;
 
-	@JdbcTypeCode(SqlTypes.JSON_ARRAY)
-	@Column(name = "phone_no", columnDefinition = "jsonb[]")
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "phone_no", columnDefinition = "jsonb")
 	private LinkedHashSet<PhoneDetailsEmb> phoneNo;
 
 	@Column(name = "account_number")
@@ -81,11 +84,11 @@ public class Contact extends TenantAuditableEntity {
 
 	@Column(name = "is_supplier", nullable = false)
 	@NotNull(message = "Supplier status cannot be null")
-	private Boolean isSupplier;
+	private Boolean isSupplier = Boolean.FALSE;
 
 	@Column(name = "is_customer", nullable = false)
 	@NotNull(message = "Customer status cannot be null")
-	private Boolean isCustomer;
+	private Boolean isCustomer = Boolean.FALSE;
 
 	// Only shown in GET response, not in POST/PUT
 	@JdbcTypeCode(SqlTypes.JSON_ARRAY)

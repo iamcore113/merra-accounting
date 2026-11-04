@@ -3,9 +3,11 @@ package org.merra.entities.templates;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
+@MappedSuperclass
 public abstract class TenantAuditableEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -1,0 +1,243 @@
+<section class="new-contact-page">
+  <!-- Breadcrumb -->
+  <div class="header-breadcrumb">
+    <a routerLink="/main/contacts" class="breadcrumb-link">Contacts</a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-active">New Contact</span>
+  </div>
+
+  <!-- Header Action Row -->
+  <div class="header-action-row">
+    <div class="header-left">
+      <div class="title-with-badge">
+        <h1 class="page-title">New Contact</h1>
+        <span class="status-badge">Draft</span>
+      </div>
+      <p class="page-subtitle">Add a customer, supplier, or business partner</p>
+    </div>
+
+    <div class="header-right">
+      <p-button
+        label="Cancel"
+        [outlined]="true"
+        [size]="'small'"
+        (click)="onCancel()"
+        [disabled]="isSubmitting"></p-button>
+
+      <p-button
+        label="Save Contact"
+        icon="pi pi-check"
+        [size]="'small'"
+        (click)="onSubmit()"
+        [loading]="isSubmitting"></p-button>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="contact-card">
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+      <!-- Section 1: Basic Information -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-building section-icon"></i>
+          <div>
+            <h3 class="section-title">Primary Details</h3>
+            <p class="section-subtitle">Basic identity and accounting classification</p>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-field-wrapper full-span">
+            <label class="field-label" for="contact-name">
+              Contact / Business Name <span class="required-star">*</span>
+            </label>
+            <input
+              id="contact-name"
+              pInputText
+              [pSize]="'small'"
+              formControlName="name"
+              placeholder="e.g. Acme Corporation or Jane Doe"
+              class="w-full"
+              [class.ng-invalid]="contactForm.get('name')?.invalid && contactForm.get('name')?.touched" />
+            @if (contactForm.get('name')?.invalid && contactForm.get('name')?.touched) {
+              <small class="field-error">Contact name is required (min 2 characters)</small>
+            }
+          </div>
+
+          <div class="form-field-wrapper">
+            <label class="field-label" for="account-number">Account Number</label>
+            <div class="account-number-input-group">
+              <span class="account-prefix-addon" [class.prefix-both]="currentPrefix === 'BOTH'">
+                {{ currentPrefix }}-
+              </span>
+              <input
+                id="account-number"
+                pInputText
+                [pSize]="'small'"
+                formControlName="accountNumberSuffix"
+                placeholder="1001"
+                maxlength="4"
+                class="account-suffix-input"
+                (input)="onAccountSuffixInput($event)"
+                [class.ng-invalid]="(contactForm.get('accountNumberSuffix')?.invalid || !!accountNumberExistsError) && contactForm.get('accountNumberSuffix')?.touched" />
+            </div>
+            <small class="field-hint">Pattern: {{ currentPrefix }}-#### (4 digits)</small>
+            @if (accountNumberExistsError || contactForm.get('accountNumberSuffix')?.errors?.['alreadyExists']) {
+              <small class="field-error">
+                {{ accountNumberExistsError || ('Account number ' + currentPrefix + '-' + contactForm.get('accountNumberSuffix')?.value + ' already exists for this organization') }}
+              </small>
+            } @else if (contactForm.get('accountNumberSuffix')?.invalid && contactForm.get('accountNumberSuffix')?.touched) {
+              <small class="field-error">Must be a 4-digit number (e.g. 1001)</small>
+            }
+          </div>
+
+          <div class="form-field-wrapper">
+            <label class="field-label">Status</label>
+            <p-select
+              formControlName="contactStatus"
+              [options]="statusOptions"
+              optionLabel="label"
+              optionValue="value"
+              [size]="'small'"
+              styleClass="w-full"></p-select>
+          </div>
+
+          <div class="form-field-wrapper checkboxes-wrapper">
+            <div class="field-label-with-help">
+              <label class="field-label">Relationship Type</label>
+              <i
+                class="pi pi-question-circle help-icon"
+                pTooltip="A contact can be a customer, a supplier, or both. Selecting both enables the entity for both sales invoicing and supplier billing."
+                tooltipPosition="top"></i>
+            </div>
+            <div class="checkboxes-row">
+              <div class="checkbox-item">
+                <p-checkbox
+                  inputId="isCustomer"
+                  formControlName="isCustomer"
+                  [binary]="true"></p-checkbox>
+                <label for="isCustomer" class="checkbox-label">Customer</label>
+              </div>
+              <div class="checkbox-item">
+                <p-checkbox
+                  inputId="isSupplier"
+                  formControlName="isSupplier"
+                  [binary]="true"></p-checkbox>
+                <label for="isSupplier" class="checkbox-label">Supplier</label>
+              </div>
+            </div>
+            @if (!contactForm.get('isCustomer')?.value && !contactForm.get('isSupplier')?.value && contactForm.touched) {
+              <small class="field-error">Please select at least one relationship type</small>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 2: Contact Person -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-user section-icon"></i>
+          <div>
+            <h3 class="section-title">Primary Contact Person</h3>
+            <p class="section-subtitle">Name and direct communication channel</p>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-field-wrapper">
+            <label class="field-label" for="first-name">First Name</label>
+            <input
+              id="first-name"
+              pInputText
+              [pSize]="'small'"
+              formControlName="firstName"
+              placeholder="e.g. Jane"
+              class="w-full" />
+          </div>
+
+          <div class="form-field-wrapper">
+            <label class="field-label" for="last-name">Last Name</label>
+            <input
+              id="last-name"
+              pInputText
+              [pSize]="'small'"
+              formControlName="lastName"
+              placeholder="e.g. Doe"
+              class="w-full" />
+          </div>
+
+          <div class="form-field-wrapper">
+            <label class="field-label" for="email-address">Email Address</label>
+            <input
+              id="email-address"
+              type="email"
+              pInputText
+              [pSize]="'small'"
+              formControlName="emailAddress"
+              placeholder="e.g. jane@acme.com"
+              class="w-full"
+              [class.ng-invalid]="contactForm.get('emailAddress')?.invalid && contactForm.get('emailAddress')?.touched" />
+            @if (contactForm.get('emailAddress')?.invalid && contactForm.get('emailAddress')?.touched) {
+              <small class="field-error">Please enter a valid email address</small>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 3: Business & Tax Information -->
+      <div class="form-section">
+        <div class="section-header">
+          <i class="pi pi-id-card section-icon"></i>
+          <div>
+            <h3 class="section-title">Business & Tax Details</h3>
+            <p class="section-subtitle">Registration and tax identification numbers</p>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-field-wrapper">
+            <label class="field-label" for="tax-number">Tax / VAT Number</label>
+            <input
+              id="tax-number"
+              pInputText
+              [pSize]="'small'"
+              formControlName="taxNumber"
+              placeholder="e.g. US123456789"
+              class="w-full" />
+          </div>
+
+          <div class="form-field-wrapper">
+            <label class="field-label" for="company-number">Company Registration Number</label>
+            <input
+              id="company-number"
+              pInputText
+              [pSize]="'small'"
+              formControlName="companyNumber"
+              placeholder="e.g. CRN-987654"
+              class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom action buttons -->
+      <div class="card-footer-actions">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="onCancel()"
+          [disabled]="isSubmitting"></p-button>
+        <p-button
+          label="Save Contact"
+          icon="pi pi-check"
+          [size]="'small'"
+          type="submit"
+          [loading]="isSubmitting"></p-button>
+      </div>
+    </form>
+  </div>
+</section>
