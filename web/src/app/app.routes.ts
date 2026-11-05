@@ -66,6 +66,11 @@ export const routes: Routes = [
         path: 'contacts/new',
         loadComponent: () => import('./views/main/main-contact/new-contact/new-contact').then(m => m.NewContact),
         title: 'MERRA - New Contact'
+      },
+      {
+        path: 'contacts/:id',
+        loadComponent: () => import('./views/main/main-contact/contact-detail/contact-detail').then(m => m.ContactDetail),
+        title: 'MERRA - Contact Details'
       }
     ]
   },

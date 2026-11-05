@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.merra.dto.CompleteContactRequest;
+import org.merra.dto.ContactDetailResponse;
 import org.merra.dto.ContactResponse;
 import org.merra.dto.ContactsByOrganizationResponse;
 import org.merra.dto.NewContactrequest;
+import org.merra.dto.UpdateContactRequest;
 import org.merra.entities.Contact;
 import org.merra.entities.Organization;
 import org.merra.exception.ResourceAlreadyExistsException;
@@ -163,6 +165,126 @@ public class ContactService {
 		List<ContactsByOrganizationSelection> contactsByOrganization = contactRepository
 				.findContactsByOrganizationId(organizationId);
 		return contactMapper.toContactsByOrganizationSelections(contactsByOrganization);
+	}
+
+	public ContactDetailResponse getContactById(UUID contactId) {
+		if (contactId == null) {
+			throw new IllegalArgumentException("Contact ID cannot be null");
+		}
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
+
+		Contact contact = contactRepository.findByIdAndOrganizationId(contactId, organizationId)
+				.orElseThrow(() -> new EntityNotFoundException("Contact not found with ID: " + contactId));
+
+		return new ContactDetailResponse(
+				contact.getId(),
+				contact.getName(),
+				contact.getFirstName(),
+				contact.getLastName(),
+				contact.getEmailAddress(),
+				contact.getAccountNumber(),
+				contact.getIsSupplier(),
+				contact.getIsCustomer(),
+				contact.getTaxNumber(),
+				contact.getCompanyNumber(),
+				contact.getContactStatus(),
+				contact.getCreatedAt(),
+				contact.getUpdatedAt()
+		);
+	}
+
+	public ContactDetailResponse updateContact(UUID contactId, @NotNull UpdateContactRequest request) {
+		if (contactId == null) {
+			throw new IllegalArgumentException("Contact ID cannot be null");
+		}
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
+
+		Contact contact = contactRepository.findByIdAndOrganizationId(contactId, organizationId)
+				.orElseThrow(() -> new EntityNotFoundException("Contact not found with ID: " + contactId));
+
+		String fullName = request.name();
+		if (fullName == null || fullName.isBlank()) {
+			fullName = ((request.firstName() != null ? request.firstName() : "") + " "
+					+ (request.lastName() != null ? request.lastName() : "")).trim();
+		}
+		if (fullName.isBlank()) {
+			throw new IllegalArgumentException("Contact name or person name is required");
+		}
+		contact.setName(fullName);
+		contact.setFirstName(request.firstName());
+		contact.setLastName(request.lastName());
+
+		String email = (request.emailAddress() != null && !request.emailAddress().isBlank()) ? request.emailAddress().trim() : null;
+		contact.setEmailAddress(email);
+
+		boolean isSup = Boolean.TRUE.equals(request.isSupplier());
+		boolean isCust = Boolean.TRUE.equals(request.isCustomer());
+		contact.setIsSupplier(isSup);
+		contact.setIsCustomer(isCust);
+
+		String expectedPrefix = (isCust && isSup) ? "BOTH" : isSup ? "SUP" : "CUST";
+		String accNum = request.accountNumber();
+		if (accNum != null && !accNum.isBlank()) {
+			accNum = accNum.trim().toUpperCase();
+			if (accNum.matches("^[A-Z]+-\\d{4}$")) {
+				String digits = accNum.substring(accNum.indexOf('-') + 1);
+				accNum = expectedPrefix + "-" + digits;
+			} else if (accNum.matches("^\\d{4}$")) {
+				accNum = expectedPrefix + "-" + accNum;
+			}
+
+			if (contact.getAccountNumber() == null || !accNum.equalsIgnoreCase(contact.getAccountNumber())) {
+				boolean exists = contactRepository.existsByAccountNumberAndOrganizationId(accNum, organizationId);
+				if (exists) {
+					throw new ResourceAlreadyExistsException("Account number '" + accNum + "' already exists for this organization");
+				}
+			}
+			contact.setAccountNumber(accNum);
+		} else {
+			contact.setAccountNumber(null);
+		}
+
+		contact.setTaxNumber(request.taxNumber());
+		contact.setCompanyNumber(request.companyNumber());
+		if (request.contactStatus() != null && !request.contactStatus().isBlank()) {
+			contact.setContactStatus(request.contactStatus());
+		}
+
+		Contact updated = contactRepository.save(contact);
+
+		return new ContactDetailResponse(
+				updated.getId(),
+				updated.getName(),
+				updated.getFirstName(),
+				updated.getLastName(),
+				updated.getEmailAddress(),
+				updated.getAccountNumber(),
+				updated.getIsSupplier(),
+				updated.getIsCustomer(),
+				updated.getTaxNumber(),
+				updated.getCompanyNumber(),
+				updated.getContactStatus(),
+				updated.getCreatedAt(),
+				updated.getUpdatedAt()
+		);
+	}
+
+	public void deleteContact(UUID contactId) {
+		if (contactId == null) {
+			throw new IllegalArgumentException("Contact ID cannot be null");
+		}
+		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION))
+				.getId();
+
+		Contact contact = contactRepository.findByIdAndOrganizationId(contactId, organizationId)
+				.orElseThrow(() -> new EntityNotFoundException("Contact not found with ID: " + contactId));
+
+		contactRepository.delete(contact);
 	}
 
 }

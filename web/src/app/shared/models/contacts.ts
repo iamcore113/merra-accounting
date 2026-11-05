@@ -34,3 +34,32 @@ export interface ContactAccountNumberExistsResponse {
 	accountNumber: string;
 	exists: boolean;
 }
+
+export interface ContactDetailResponse {
+	contactId: string;
+	name: string;
+	firstName?: string | null;
+	lastName?: string | null;
+	emailAddress?: string | null;
+	accountNumber?: string | null;
+	isSupplier: boolean;
+	isCustomer: boolean;
+	taxNumber?: string | null;
+	companyNumber?: string | null;
+	contactStatus: string;
+	createdAt?: string | null;
+	updatedAt?: string | null;
+}
+
+export interface UpdateContactRequest {
+	name: string;
+	firstName?: string | null;
+	lastName?: string | null;
+	emailAddress?: string | null;
+	accountNumber?: string | null;
+	isSupplier: boolean;
+	isCustomer: boolean;
+	taxNumber?: string | null;
+	companyNumber?: string | null;
+	contactStatus: string;
+}

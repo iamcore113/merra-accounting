@@ -92,14 +92,22 @@
             <td>
               <p-tableCheckbox [value]="row"></p-tableCheckbox>
             </td>
-            <td class="account-cell">{{ row.accountNumber || '—' }}</td>
+            <td class="account-cell">
+              @if (row.accountNumber) {
+                <a [routerLink]="['/main/contacts', row.id]" class="table-account-link">
+                  {{ row.accountNumber }}
+                </a>
+              } @else {
+                <span>—</span>
+              }
+            </td>
             <td class="font-medium">
-              <span class="contact-name-cell">
+              <a [routerLink]="['/main/contacts', row.id]" class="contact-name-cell contact-name-link">
                 <span class="contact-avatar">
                   <i class="pi pi-user"></i>
                 </span>
-                <span>{{ row.name }}</span>
-              </span>
+                <span class="contact-name-text">{{ row.name }}</span>
+              </a>
             </td>
             <td class="email-cell">{{ row.emailAddress || '—' }}</td>
             <td class="text-center">

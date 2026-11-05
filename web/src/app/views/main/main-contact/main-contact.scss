@@ -107,6 +107,39 @@
       align-items: center;
       justify-content: center;
       font-size: 0.8125rem;
+      transition: all 0.15s ease;
+    }
+  }
+
+  .contact-name-link {
+    text-decoration: none;
+    cursor: pointer;
+
+    .contact-name-text {
+      color: #0f172a;
+      transition: color 0.15s ease;
+    }
+
+    &:hover .contact-name-text {
+      color: #689d4b;
+      text-decoration: underline;
+    }
+
+    &:hover .contact-avatar {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+  }
+
+  .table-account-link {
+    color: #475569;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #689d4b;
+      text-decoration: underline;
     }
   }
 

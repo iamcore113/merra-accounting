@@ -4,3 +4,4 @@ const CONTACTS_URL = `${BASE_URL}business/contact/`
 export const ORGANIZATION_CONTACTS = `${CONTACTS_URL}all`
 export const CREATE_CONTACT = `${CONTACTS_URL}new`
 export const CHECK_CONTACT_ACCOUNT_NUMBER = `${CONTACTS_URL}check-account-number`
+export const CONTACT_DETAILS = (id: string) => `${CONTACTS_URL}${id}`

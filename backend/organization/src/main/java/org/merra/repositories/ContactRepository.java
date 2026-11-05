@@ -1,6 +1,7 @@
 package org.merra.repositories;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.merra.entities.Contact;
@@ -43,4 +44,13 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 			  AND LOWER(c.accountNumber) = LOWER(:accountNumber)
 			""")
 	boolean existsByAccountNumberAndOrganizationId(String accountNumber, UUID organizationId);
+
+	@Query("""
+			SELECT c
+			FROM Contact c
+			JOIN c.organization o
+			WHERE c.id = :contactId
+			  AND o.id = :organizationId
+			""")
+	Optional<Contact> findByIdAndOrganizationId(UUID contactId, UUID organizationId);
 }

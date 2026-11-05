@@ -10,14 +10,19 @@ import java.util.List;
 
 import org.merra.api.ApiResponse;
 import org.merra.dto.ContactAccountNumberExistsResponse;
+import org.merra.dto.ContactDetailResponse;
 import org.merra.dto.ContactResponse;
 import org.merra.dto.ContactsByOrganizationResponse;
 import org.merra.dto.NewContactrequest;
+import org.merra.dto.UpdateContactRequest;
 import org.merra.services.ContactService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -73,6 +78,39 @@ public class ContactController {
 		response.setSuccess(true);
 		response.setResponse(HttpStatus.OK);
 		response.setData(new ContactAccountNumberExistsResponse(accountNumber, exists));
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("{id}")
+	public ResponseEntity<ApiResponse<ContactDetailResponse>> getContactById(@PathVariable("id") java.util.UUID contactId) {
+		ContactDetailResponse detail = contactService.getContactById(contactId);
+		ApiResponse<ContactDetailResponse> response = new ApiResponse<>();
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		response.setData(detail);
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("{id}")
+	public ResponseEntity<ApiResponse<ContactDetailResponse>> updateContact(
+			@PathVariable("id") java.util.UUID contactId,
+			@RequestBody @Valid UpdateContactRequest request) {
+		ContactDetailResponse detail = contactService.updateContact(contactId, request);
+		ApiResponse<ContactDetailResponse> response = new ApiResponse<>();
+		response.setMessage("Contact updated successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		response.setData(detail);
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("{id}")
+	public ResponseEntity<ApiResponse<Void>> deleteContact(@PathVariable("id") java.util.UUID contactId) {
+		contactService.deleteContact(contactId);
+		ApiResponse<Void> response = new ApiResponse<>();
+		response.setMessage("Contact deleted successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
 		return ResponseEntity.ok(response);
 	}
 
