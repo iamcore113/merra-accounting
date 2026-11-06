@@ -288,6 +288,28 @@ export class NewInvoice implements OnInit {
       this.updateInvoiceNumberValidation();
     });
 
+    this.invoiceForm.get('date')?.valueChanges.subscribe((newIssueDate) => {
+      this.validateInvoiceDates();
+      const dueDateVal = this.invoiceForm.get('dueDate')?.value;
+      if (newIssueDate && dueDateVal) {
+        const dIssue = new Date(newIssueDate);
+        const dDue = new Date(dueDateVal);
+        dIssue.setHours(0, 0, 0, 0);
+        dDue.setHours(0, 0, 0, 0);
+        if (dDue.getTime() < dIssue.getTime()) {
+          const newDue = new Date(dIssue.getTime() + 30 * 24 * 60 * 60 * 1000);
+          this.invoiceForm.get('dueDate')?.setValue(newDue, { emitEvent: false });
+          this.validateInvoiceDates();
+        }
+      }
+    });
+
+    this.invoiceForm.get('dueDate')?.valueChanges.subscribe(() => {
+      this.validateInvoiceDates();
+    });
+
+    this.validateInvoiceDates();
+
     this.invoiceForm.get('invoiceNumber')?.valueChanges.subscribe((val: string) => {
       if (this.isCurrentTypeCustomerInvoice) {
         if (!val) {
@@ -448,6 +470,57 @@ export class NewInvoice implements OnInit {
     const invType = this.getSelectedInvoiceType();
     if (!invType) return false;
     return this.isSupplierInvoice(invType.code) || this.isSupplierInvoice(invType.name);
+  }
+
+  get minDueDate(): Date {
+    const issueDateVal = this.invoiceForm?.get('date')?.value;
+    if (issueDateVal) {
+      const d = new Date(issueDateVal);
+      if (!isNaN(d.getTime())) {
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  }
+
+  validateInvoiceDates(): void {
+    const dateCtrl = this.invoiceForm?.get('date');
+    const dueDateCtrl = this.invoiceForm?.get('dueDate');
+    if (!dateCtrl || !dueDateCtrl) return;
+
+    const issueDateVal = dateCtrl.value;
+    const dueDateVal = dueDateCtrl.value;
+
+    if (!issueDateVal || !dueDateVal) {
+      if (dueDateCtrl.hasError('dueDateBeforeIssueDate')) {
+        const errors = { ...dueDateCtrl.errors };
+        delete errors['dueDateBeforeIssueDate'];
+        dueDateCtrl.setErrors(Object.keys(errors).length ? errors : null);
+      }
+      return;
+    }
+
+    const issueDate = new Date(issueDateVal);
+    const dueDate = new Date(dueDateVal);
+    issueDate.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
+
+    if (dueDate.getTime() < issueDate.getTime()) {
+      dueDateCtrl.setErrors({
+        ...dueDateCtrl.errors,
+        dueDateBeforeIssueDate: true
+      });
+    } else {
+      if (dueDateCtrl.hasError('dueDateBeforeIssueDate')) {
+        const errors = { ...dueDateCtrl.errors };
+        delete errors['dueDateBeforeIssueDate'];
+        dueDateCtrl.setErrors(Object.keys(errors).length ? errors : null);
+      }
+    }
+    this.cdr.markForCheck();
   }
 
   onCustomerInvoiceSuffixInput(event: Event): void {
@@ -705,6 +778,25 @@ export class NewInvoice implements OnInit {
           severity: 'error',
           summary: 'Validation Error',
           detail: this.customerInvoiceExistsError,
+          life: 3000
+        });
+        return;
+      }
+    }
+
+    const dateVal = this.invoiceForm.get('date')?.value;
+    const dueDateVal = this.invoiceForm.get('dueDate')?.value;
+    if (dateVal && dueDateVal) {
+      const dIssue = new Date(dateVal);
+      const dDue = new Date(dueDateVal);
+      dIssue.setHours(0, 0, 0, 0);
+      dDue.setHours(0, 0, 0, 0);
+      if (dDue.getTime() < dIssue.getTime()) {
+        this.invoiceForm.get('dueDate')?.markAsTouched();
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Validation Error',
+          detail: 'Due date cannot be earlier than issue date.',
           life: 3000
         });
         return;

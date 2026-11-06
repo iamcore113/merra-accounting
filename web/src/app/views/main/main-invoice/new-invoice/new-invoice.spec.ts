@@ -337,4 +337,36 @@ describe('NewInvoice', () => {
       expect(component.invoiceForm.get('invoiceNumber')?.valid).toBeTrue();
     });
   });
+
+  describe('Issue Date and Due Date Constraints', () => {
+    it('should set minDueDate based on issue date', () => {
+      const testIssueDate = new Date('2026-11-06T00:00:00');
+      component.invoiceForm.patchValue({
+        date: testIssueDate
+      });
+      expect(component.minDueDate.getTime()).toBeLessThanOrEqual(testIssueDate.getTime() + 1000);
+    });
+
+    it('should invalidate due date if earlier than issue date', () => {
+      component.invoiceForm.patchValue({
+        date: new Date('2026-11-06'),
+        dueDate: new Date('2025-08-01')
+      });
+      component.validateInvoiceDates();
+
+      const dueDateCtrl = component.invoiceForm.get('dueDate');
+      expect(dueDateCtrl?.hasError('dueDateBeforeIssueDate')).toBeTrue();
+    });
+
+    it('should validate due date if equal to or after issue date', () => {
+      component.invoiceForm.patchValue({
+        date: new Date('2026-11-06'),
+        dueDate: new Date('2026-12-06')
+      });
+      component.validateInvoiceDates();
+
+      const dueDateCtrl = component.invoiceForm.get('dueDate');
+      expect(dueDateCtrl?.hasError('dueDateBeforeIssueDate')).toBeFalse();
+    });
+  });
 });

@@ -155,12 +155,35 @@
       <!-- Row 2: Issue date, Due date, Amounts are, Status -->
       <div class="form-field-wrapper">
         <label class="field-label">Issue date</label>
-        <p-datepicker formControlName="date" [showIcon]="true" [size]="'small'" [iconDisplay]="'button'" styleClass="w-full" appendTo="body"></p-datepicker>
+        <p-datepicker
+          formControlName="date"
+          [showIcon]="true"
+          [size]="'small'"
+          [iconDisplay]="'button'"
+          styleClass="w-full"
+          appendTo="body"></p-datepicker>
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Due date</label>
-        <p-datepicker formControlName="dueDate" [showIcon]="true" [size]="'small'" [iconDisplay]="'button'" styleClass="w-full" appendTo="body"></p-datepicker>
+        <p-datepicker
+          formControlName="dueDate"
+          [showIcon]="true"
+          [size]="'small'"
+          [iconDisplay]="'button'"
+          [minDate]="minDueDate"
+          styleClass="w-full"
+          appendTo="body"
+          [class.ng-invalid]="invoiceForm.get('dueDate')?.invalid && (invoiceForm.get('dueDate')?.touched || invoiceForm.get('dueDate')?.dirty)"></p-datepicker>
+        @if (invoiceForm.get('dueDate')?.hasError('dueDateBeforeIssueDate') && (invoiceForm.get('dueDate')?.touched || invoiceForm.get('dueDate')?.dirty)) {
+          <small class="field-error">
+            <i class="pi pi-exclamation-circle"></i> Due date cannot be earlier than issue date
+          </small>
+        } @else if (invoiceForm.get('dueDate')?.hasError('required') && (invoiceForm.get('dueDate')?.touched || invoiceForm.get('dueDate')?.dirty)) {
+          <small class="field-error">
+            <i class="pi pi-exclamation-circle"></i> Due date is required
+          </small>
+        }
       </div>
 
       <div class="form-field-wrapper">

@@ -42,6 +42,9 @@ public record CreateInvoiceRequest(
 		if (dueDate != null && dueDate.isBefore(LocalDate.now())) {
 			throw new IllegalArgumentException("dueDate component must be a future date.");
 		}
+		if (date != null && dueDate != null && dueDate.isBefore(date)) {
+			throw new IllegalArgumentException("dueDate cannot be earlier than issue date.");
+		}
 		if (status == null || status.isBlank()) {
 			throw new IllegalArgumentException("status component cannot be null or blank.");
 		}
