@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
 import jakarta.validation.Valid;
 
 @RestController
@@ -34,6 +36,17 @@ public class InvoiceController {
 		return ResponseEntity.ok(response);
 	}
 
+	@GetMapping("check-invoice-number")
+	public ResponseEntity<ApiResponse<Boolean>> checkInvoiceNumber(
+			@RequestParam("invoiceNumber") String invoiceNumber) {
+		boolean exists = invoicesService.checkInvoiceNumberExists(invoiceNumber);
+		ApiResponse<Boolean> response = new ApiResponse<>();
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		response.setData(exists);
+		return ResponseEntity.ok(response);
+	}
+
 	/**
 	 * This will handle invoice create requests.
 	 * 
@@ -41,7 +54,12 @@ public class InvoiceController {
 	 * @return
 	 */
 	@PostMapping("new")
-	public ResponseEntity<?> newInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
-		return null;
+	public ResponseEntity<ApiResponse<Void>> newInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
+		invoicesService.createNewInvoiceObject(request);
+		ApiResponse<Void> response = new ApiResponse<>();
+		response.setMessage("Invoice created successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		return ResponseEntity.ok(response);
 	}
 }

@@ -51,4 +51,16 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	 */
 	@Query(value = "SELECT nextval('invoice_number_seq')", nativeQuery = true)
 	Long getNextInvoiceSequence();
+
+	/**
+	 * Checks if an invoice with the specified invoice number exists within an organization.
+	 *
+	 * @param invoiceNumber  The invoice number to check
+	 * @param organizationId The organization UUID
+	 * @return true if an invoice with the number exists in the organization, false otherwise
+	 */
+	@Query("SELECT COUNT(i) > 0 FROM Invoice i WHERE i.invoiceNumber = :invoiceNumber AND i.organization.id = :organizationId")
+	boolean existsByInvoiceNumberAndOrganizationId(
+			@Param("invoiceNumber") String invoiceNumber,
+			@Param("organizationId") UUID organizationId);
 }

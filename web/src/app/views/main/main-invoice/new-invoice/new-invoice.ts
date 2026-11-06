@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
@@ -61,6 +61,10 @@ export class NewInvoice implements OnInit {
   showNewContactDialog = false;
   newContactForm!: FormGroup;
   isSubmittingContact = false;
+
+  // Invoice Number State
+  customerInvoiceExistsError: string | null = null;
+  isCheckingInvoiceNumber = false;
 
   // Dropdown list options
   organizations = [
@@ -254,7 +258,8 @@ export class NewInvoice implements OnInit {
     this.initContactForm();
 
     this.invoiceForm = this.fb.group({
-      invoiceNumber: ['INV-0001', Validators.required],
+      invoiceNumber: [''],
+      customerInvoiceSuffix: [''],
       organization: ['oscorp', Validators.required],
       type: ['', Validators.required],
       contact: ['', Validators.required],
@@ -277,8 +282,25 @@ export class NewInvoice implements OnInit {
 
     this.invoiceForm.get('type')?.valueChanges.subscribe(() => {
       this.validateContactInvoiceTypeMatch();
+      this.updateInvoiceNumberValidation();
     });
 
+    this.invoiceForm.get('invoiceNumber')?.valueChanges.subscribe((val: string) => {
+      if (this.isCurrentTypeCustomerInvoice) {
+        if (!val) {
+          if (this.invoiceForm.get('customerInvoiceSuffix')?.value) {
+            this.invoiceForm.get('customerInvoiceSuffix')?.setValue('', { emitEvent: false });
+          }
+        } else {
+          const suffix = val.replace(/^INV-?/i, '').replace(/[^0-9-]/g, '').slice(0, 9);
+          if (this.invoiceForm.get('customerInvoiceSuffix')?.value !== suffix) {
+            this.invoiceForm.get('customerInvoiceSuffix')?.setValue(suffix, { emitEvent: false });
+          }
+        }
+      }
+    });
+
+    this.updateInvoiceNumberValidation();
     this.loadInvoiceMetadata();
     this.loadContacts();
   }
@@ -296,6 +318,7 @@ export class NewInvoice implements OnInit {
             }));
             this.invoiceForm.patchValue({ type: this.types[0].code });
             this.validateContactInvoiceTypeMatch();
+            this.updateInvoiceNumberValidation();
           }
 
           if (metadata.invoiceStatusCodes && metadata.invoiceStatusCodes.length > 0) {
@@ -410,6 +433,130 @@ export class NewInvoice implements OnInit {
     return null;
   }
 
+  get isCurrentTypeCustomerInvoice(): boolean {
+    const invType = this.getSelectedInvoiceType();
+    if (!invType) return true;
+    return this.isCustomerInvoice(invType.code) || this.isCustomerInvoice(invType.name);
+  }
+
+  get isCurrentTypeSupplierInvoice(): boolean {
+    const invType = this.getSelectedInvoiceType();
+    if (!invType) return false;
+    return this.isSupplierInvoice(invType.code) || this.isSupplierInvoice(invType.name);
+  }
+
+  onCustomerInvoiceSuffixInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let val = input.value.replace(/^INV-?/i, '').replace(/[^0-9-]/g, '');
+    if (val.length > 9) {
+      val = val.slice(0, 9);
+    }
+    input.value = val;
+    this.invoiceForm.get('customerInvoiceSuffix')?.setValue(val, { emitEvent: false });
+    const fullNumber = val ? `INV-${val}` : '';
+    this.invoiceForm.get('invoiceNumber')?.setValue(fullNumber, { emitEvent: false });
+    this.validateCustomerInvoiceDuplication();
+  }
+
+  onSupplierInvoiceInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let val = input.value;
+    if (val.length > 13) {
+      val = val.slice(0, 13);
+    }
+    input.value = val;
+    this.invoiceForm.get('invoiceNumber')?.setValue(val, { emitEvent: false });
+  }
+
+  validateCustomerInvoiceDuplication(): void {
+    const suffix = this.invoiceForm.get('customerInvoiceSuffix')?.value?.trim();
+    if (!suffix || suffix.length < 4) {
+      this.customerInvoiceExistsError = null;
+      if (this.invoiceForm.get('customerInvoiceSuffix')?.hasError('alreadyExists')) {
+        const errors = { ...this.invoiceForm.get('customerInvoiceSuffix')?.errors };
+        delete errors['alreadyExists'];
+        this.invoiceForm.get('customerInvoiceSuffix')?.setErrors(Object.keys(errors).length ? errors : null);
+      }
+      return;
+    }
+
+    const fullInvoiceNumber = `INV-${suffix}`;
+    if (fullInvoiceNumber.length > 13) {
+      return;
+    }
+
+    this.isCheckingInvoiceNumber = true;
+    this.invoiceService.checkInvoiceNumberExists(fullInvoiceNumber).subscribe({
+      next: (res) => {
+        this.isCheckingInvoiceNumber = false;
+        if (res.data) {
+          this.customerInvoiceExistsError = `Customer invoice number '${fullInvoiceNumber}' already exists for this organization`;
+          this.invoiceForm.get('customerInvoiceSuffix')?.setErrors({
+            ...this.invoiceForm.get('customerInvoiceSuffix')?.errors,
+            alreadyExists: true
+          });
+        } else {
+          this.customerInvoiceExistsError = null;
+          if (this.invoiceForm.get('customerInvoiceSuffix')?.hasError('alreadyExists')) {
+            const errors = { ...this.invoiceForm.get('customerInvoiceSuffix')?.errors };
+            delete errors['alreadyExists'];
+            this.invoiceForm.get('customerInvoiceSuffix')?.setErrors(Object.keys(errors).length ? errors : null);
+          }
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isCheckingInvoiceNumber = false;
+        this.customerInvoiceExistsError = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  updateInvoiceNumberValidation(): void {
+    const control = this.invoiceForm?.get('invoiceNumber');
+    const suffixControl = this.invoiceForm?.get('customerInvoiceSuffix');
+    if (!control || !suffixControl) return;
+
+    if (this.isCurrentTypeSupplierInvoice) {
+      this.customerInvoiceExistsError = null;
+      suffixControl.clearValidators();
+      suffixControl.setErrors(null);
+      control.setValidators([Validators.required, Validators.maxLength(13)]);
+    } else {
+      control.setValidators([
+        (ctrl: AbstractControl) => {
+          const val = ctrl.value?.trim();
+          if (!val) return null; // optional
+          if (!val.toUpperCase().startsWith('INV-')) {
+            return { invalidPrefix: true };
+          }
+          if (val.length > 13) {
+            return { maxlength: true };
+          }
+          return null;
+        }
+      ]);
+
+      suffixControl.setValidators([
+        (ctrl: AbstractControl) => {
+          const val = ctrl.value?.trim();
+          if (!val) return null; // optional
+          if (val.length > 9) {
+            return { maxlength: true };
+          }
+          if (!/^[0-9-]+$/.test(val)) {
+            return { invalidSuffix: true };
+          }
+          return null;
+        }
+      ]);
+    }
+    control.updateValueAndValidity();
+    suffixControl.updateValueAndValidity();
+    this.cdr.markForCheck();
+  }
+
   validateContactInvoiceTypeMatch(): void {
     const error = this.contactTypeMismatchError;
     const contactControl = this.invoiceForm?.get('contact');
@@ -506,6 +653,59 @@ export class NewInvoice implements OnInit {
       return;
     }
 
+    let invoiceNumberVal = this.invoiceForm.get('invoiceNumber')?.value?.trim();
+
+    if (this.isCurrentTypeSupplierInvoice) {
+      if (!invoiceNumberVal) {
+        this.invoiceForm.get('invoiceNumber')?.markAsTouched();
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Validation Error',
+          detail: 'Invoice number is required for supplier invoices.',
+          life: 3000
+        });
+        return;
+      }
+      if (invoiceNumberVal.length > 13) {
+        this.invoiceForm.get('invoiceNumber')?.markAsTouched();
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Validation Error',
+          detail: 'Supplier invoice number cannot exceed 13 characters.',
+          life: 3000
+        });
+        return;
+      }
+    } else if (this.isCurrentTypeCustomerInvoice) {
+      const suffix = this.invoiceForm.get('customerInvoiceSuffix')?.value?.trim();
+      if (suffix) {
+        if (suffix.length > 9 || !/^[0-9-]+$/.test(suffix)) {
+          this.invoiceForm.get('customerInvoiceSuffix')?.markAsTouched();
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Validation Error',
+            detail: 'Customer invoice number cannot exceed 13 characters total (max 9 characters after INV-).',
+            life: 3000
+          });
+          return;
+        }
+        invoiceNumberVal = `INV-${suffix}`;
+      } else {
+        invoiceNumberVal = null;
+      }
+
+      if (this.customerInvoiceExistsError) {
+        this.invoiceForm.get('customerInvoiceSuffix')?.markAsTouched();
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Validation Error',
+          detail: this.customerInvoiceExistsError,
+          life: 3000
+        });
+        return;
+      }
+    }
+
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
       this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fill in all required fields.', life: 3000 });
@@ -514,18 +714,24 @@ export class NewInvoice implements OnInit {
 
     const payload = {
       ...this.invoiceForm.value,
+      invoiceNumber: invoiceNumberVal,
       status: status,
       subTotal: this.subTotal,
       grandTotal: this.grandTotal,
       totalTax: this.totalTax,
       lineItems: this.lineItems
     };
+    delete payload.customerInvoiceSuffix;
 
     console.log('Saving Invoice Payload:', payload);
+    const successDetail = invoiceNumberVal
+      ? `Invoice ${invoiceNumberVal} successfully saved as ${status}!`
+      : `Customer invoice successfully saved as ${status}! (Invoice number will be auto-generated)`;
+
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
-      detail: `Invoice successfully saved as ${status}! (UI Mode)`,
+      detail: successDetail,
       life: 3000
     });
   }

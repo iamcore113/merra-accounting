@@ -17,6 +17,7 @@ import org.merra.entities.InvoiceType;
 import org.merra.entities.LineItem;
 import org.merra.entities.Organization;
 import org.merra.entities.embedded.InvoiceActionsEmb;
+import org.merra.exception.ResourceAlreadyExistsException;
 import org.merra.exceptions.OrganizationExceptions;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.ContactRepository;
@@ -150,7 +151,49 @@ public class InvoiceService {
 
 		// set invoice actions
 		setInvoiceActions(invoice, status);
-		invoice.setInvoiceNumber(generateInvoiceNumber());
+
+		// Resolve invoice number according to invoice type constraints
+		String invoiceNumber = request.invoiceNumber();
+		if (invoiceNumber != null) {
+			invoiceNumber = invoiceNumber.trim();
+		}
+
+		if (isCustomerInvoice) {
+			if (invoiceNumber == null || invoiceNumber.isBlank()) {
+				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
+			} else {
+				if (!invoiceNumber.toUpperCase().startsWith("INV-")) {
+					throw new IllegalArgumentException("Customer invoice number must be prefixed with 'INV-'");
+				}
+				if (invoiceNumber.length() > 13) {
+					throw new IllegalArgumentException("Customer invoice number cannot exceed 13 characters");
+				}
+				if (invoiceRepository.existsByInvoiceNumberAndOrganizationId(invoiceNumber, currentOrganization.getId())) {
+					throw new ResourceAlreadyExistsException(
+							"Customer invoice number '" + invoiceNumber + "' already exists for this organization");
+				}
+			}
+		} else if (isSupplierInvoice) {
+			if (invoiceNumber == null || invoiceNumber.isBlank()) {
+				throw new IllegalArgumentException("Invoice number is required for supplier invoices");
+			}
+			if (invoiceNumber.length() > 13) {
+				throw new IllegalArgumentException("Supplier invoice number cannot exceed 13 characters");
+			}
+			// Supplier invoice numbers are non-unique and not forced to be prefixed with "INV-"
+		} else {
+			if (invoiceNumber == null || invoiceNumber.isBlank()) {
+				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
+			} else if (invoiceNumber.length() > 13) {
+				throw new IllegalArgumentException("Invoice number cannot exceed 13 characters");
+			}
+		}
+			if (invoiceNumber == null || invoiceNumber.isBlank()) {
+				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
+			}
+		}
+
+		invoice.setInvoiceNumber(invoiceNumber);
 		invoice.setReference(request.reference());
 
 		this.save(invoice);
@@ -392,17 +435,27 @@ public class InvoiceService {
 	}
 
 	/**
-	 * Generates the next invoice number using the invoice sequence and current
-	 * year.
+	 * Generates a unique customer invoice number using the invoice sequence and current year.
+	 * Guarantees uniqueness within the organization.
 	 *
-	 * @return A formatted invoice number in the pattern INV-YYYY-NNN.
+	 * @param organizationId The organization UUID
+	 * @return A unique, formatted invoice number in the pattern INV-YYYY-NNNN.
 	 */
-	private String generateInvoiceNumber() {
-		Long nextVal = invoiceRepository.getNextInvoiceSequence();
+	private String generateUniqueCustomerInvoiceNumber(UUID organizationId) {
 		int year = LocalDate.now().getYear();
+		String invoiceNumber;
+		do {
+			Long nextVal = invoiceRepository.getNextInvoiceSequence();
+			invoiceNumber = String.format("INV-%d-%04d", year, nextVal);
+		} while (invoiceRepository.existsByInvoiceNumberAndOrganizationId(invoiceNumber, organizationId));
 
-		// Format: INV - [Year] - [4-digit padded number]
-		return String.format("INV-%d-%03d", year, nextVal);
+		return invoiceNumber;
+	}
+
+	public boolean checkInvoiceNumberExists(String invoiceNumber) {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+		return invoiceRepository.existsByInvoiceNumberAndOrganizationId(invoiceNumber, currentOrganization.getId());
 	}
 
 	/**

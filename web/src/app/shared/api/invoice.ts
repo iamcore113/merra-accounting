@@ -1,4 +1,6 @@
 import { BASE_URL } from "./base";
 
-const INVOICE_ENDPOINT: string = `${BASE_URL}business/invoice/`
-export const INVOICE_METADATA_URL: string = `${INVOICE_ENDPOINT}metadata`
+const INVOICE_ENDPOINT: string = `${BASE_URL}business/invoice/`;
+export const INVOICE_METADATA_URL: string = `${INVOICE_ENDPOINT}metadata`;
+export const CREATE_INVOICE_URL: string = `${INVOICE_ENDPOINT}new`;
+export const CHECK_INVOICE_NUMBER_URL: string = `${INVOICE_ENDPOINT}check-invoice-number`;

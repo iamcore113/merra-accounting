@@ -88,8 +88,63 @@
       </div>
 
       <div class="form-field-wrapper">
-        <label class="field-label">Invoice number</label>
-        <input pInputText [pSize]="'small'" formControlName="invoiceNumber" class="w-full" />
+        <label class="field-label">
+          Invoice number
+          @if (isCurrentTypeSupplierInvoice) {
+            <span class="required-star">*</span>
+          } @else {
+            <span class="optional-tag">(Optional)</span>
+          }
+        </label>
+
+        @if (isCurrentTypeSupplierInvoice) {
+          <input
+            pInputText
+            [pSize]="'small'"
+            formControlName="invoiceNumber"
+            maxlength="13"
+            placeholder="Enter supplier invoice number"
+            class="w-full"
+            (input)="onSupplierInvoiceInput($event)"
+            [class.ng-invalid]="invoiceForm.get('invoiceNumber')?.invalid && (invoiceForm.get('invoiceNumber')?.touched || invoiceForm.get('invoiceNumber')?.dirty)" />
+          <small class="field-hint">Maximum 13 characters</small>
+          @if (invoiceForm.get('invoiceNumber')?.hasError('required') && (invoiceForm.get('invoiceNumber')?.touched || invoiceForm.get('invoiceNumber')?.dirty)) {
+            <small class="field-error">
+              <i class="pi pi-exclamation-circle"></i> Invoice number is required for supplier invoices
+            </small>
+          } @else if (invoiceForm.get('invoiceNumber')?.hasError('maxlength') && (invoiceForm.get('invoiceNumber')?.touched || invoiceForm.get('invoiceNumber')?.dirty)) {
+            <small class="field-error">
+              <i class="pi pi-exclamation-circle"></i> Maximum 13 characters allowed
+            </small>
+          }
+        } @else {
+          <div class="account-number-input-group">
+            <span class="invoice-prefix-addon">INV-</span>
+            <input
+              pInputText
+              [pSize]="'small'"
+              formControlName="customerInvoiceSuffix"
+              placeholder="2026-0001"
+              maxlength="9"
+              class="account-suffix-input"
+              (input)="onCustomerInvoiceSuffixInput($event)"
+              [class.ng-invalid]="(invoiceForm.get('customerInvoiceSuffix')?.invalid || !!customerInvoiceExistsError) && (invoiceForm.get('customerInvoiceSuffix')?.touched || invoiceForm.get('customerInvoiceSuffix')?.dirty)" />
+          </div>
+          <small class="field-hint">Pattern: INV-YYYY-#### (max 13 characters)</small>
+          @if (customerInvoiceExistsError) {
+            <small class="field-error">
+              <i class="pi pi-exclamation-circle"></i> {{ customerInvoiceExistsError }}
+            </small>
+          } @else if (invoiceForm.get('customerInvoiceSuffix')?.hasError('maxlength') && (invoiceForm.get('customerInvoiceSuffix')?.touched || invoiceForm.get('customerInvoiceSuffix')?.dirty)) {
+            <small class="field-error">
+              <i class="pi pi-exclamation-circle"></i> Maximum 13 characters allowed (max 9 after INV-)
+            </small>
+          } @else if (invoiceForm.get('customerInvoiceSuffix')?.hasError('invalidSuffix') && (invoiceForm.get('customerInvoiceSuffix')?.touched || invoiceForm.get('customerInvoiceSuffix')?.dirty)) {
+            <small class="field-error">
+              <i class="pi pi-exclamation-circle"></i> Must contain numbers or hyphens (e.g. 2026-0001 or 0001)
+            </small>
+          }
+        }
       </div>
 
       <div class="form-field-wrapper">

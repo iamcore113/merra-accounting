@@ -22,7 +22,9 @@ describe('NewInvoice', () => {
       'checkAccountNumberExists'
     ]);
     mockInvoiceService = jasmine.createSpyObj('InvoiceService', [
-      'getInvoiceMetadata'
+      'getInvoiceMetadata',
+      'checkInvoiceNumberExists',
+      'createInvoice'
     ]);
 
     mockContactService.getAllContacts.and.returnValue(
@@ -221,5 +223,118 @@ describe('NewInvoice', () => {
 
     expect(component.contactTypeMismatchError).toBeTruthy();
     expect(component.contactTypeMismatchError).toContain("only a Customer, not a Supplier");
+  });
+
+  describe('Invoice Number Constraints', () => {
+    beforeEach(() => {
+      component.types = [
+        { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
+        { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
+      ];
+    });
+
+    it('should allow customer invoice with blank invoice number', () => {
+      component.invoiceForm.patchValue({
+        type: 'CUSTOMER_INVOICE',
+        invoiceNumber: ''
+      });
+      const invoiceNumberCtrl = component.invoiceForm.get('invoiceNumber');
+      expect(invoiceNumberCtrl?.valid).toBeTrue();
+      expect(component.isCurrentTypeCustomerInvoice).toBeTrue();
+      expect(component.isCurrentTypeSupplierInvoice).toBeFalse();
+    });
+
+    it('should validate customer invoice number starts with INV- if provided', () => {
+      component.invoiceForm.patchValue({
+        type: 'CUSTOMER_INVOICE',
+        invoiceNumber: '12345'
+      });
+      const invoiceNumberCtrl = component.invoiceForm.get('invoiceNumber');
+      expect(invoiceNumberCtrl?.hasError('invalidPrefix')).toBeTrue();
+
+      invoiceNumberCtrl?.setValue('INV-0001');
+      expect(invoiceNumberCtrl?.valid).toBeTrue();
+    });
+
+    it('should constrain customer invoice suffix to max 9 characters (13 total with INV-)', () => {
+      component.invoiceForm.patchValue({
+        type: 'CUSTOMER_INVOICE'
+      });
+      const inputEl = document.createElement('input');
+      inputEl.value = 'INV-2026-0001999';
+      component.onCustomerInvoiceSuffixInput({ target: inputEl } as unknown as Event);
+
+      expect(component.invoiceForm.get('customerInvoiceSuffix')?.value).toBe('2026-0001');
+      expect(component.invoiceForm.get('invoiceNumber')?.value).toBe('INV-2026-0001');
+      expect(component.invoiceForm.get('invoiceNumber')?.value.length).toBe(13);
+    });
+
+    it('should constrain supplier invoice number to max 13 characters', () => {
+      component.invoiceForm.patchValue({
+        type: 'SUPPLIER_INVOICE'
+      });
+      const inputEl = document.createElement('input');
+      inputEl.value = 'BILL-2026-0010099';
+      component.onSupplierInvoiceInput({ target: inputEl } as unknown as Event);
+
+      expect(component.invoiceForm.get('invoiceNumber')?.value).toBe('BILL-2026-001');
+      expect(component.invoiceForm.get('invoiceNumber')?.value.length).toBe(13);
+      expect(component.invoiceForm.get('invoiceNumber')?.valid).toBeTrue();
+    });
+
+    it('should fail supplier invoice validation if length exceeds 13 characters', () => {
+      component.invoiceForm.patchValue({
+        type: 'SUPPLIER_INVOICE',
+        invoiceNumber: '12345678901234'
+      });
+      expect(component.invoiceForm.get('invoiceNumber')?.hasError('maxlength')).toBeTrue();
+    });
+
+    it('should require invoice number when type is supplier invoice', () => {
+      component.invoiceForm.patchValue({
+        type: 'SUPPLIER_INVOICE',
+        invoiceNumber: ''
+      });
+      const invoiceNumberCtrl = component.invoiceForm.get('invoiceNumber');
+      expect(invoiceNumberCtrl?.hasError('required')).toBeTrue();
+      expect(component.isCurrentTypeSupplierInvoice).toBeTrue();
+    });
+
+    it('should allow arbitrary invoice number format without INV- for supplier invoice', () => {
+      component.invoiceForm.patchValue({
+        type: 'SUPPLIER_INVOICE',
+        invoiceNumber: 'BILL-OCT-9988'
+      });
+      const invoiceNumberCtrl = component.invoiceForm.get('invoiceNumber');
+      expect(invoiceNumberCtrl?.valid).toBeTrue();
+      expect(invoiceNumberCtrl?.hasError('invalidPrefix')).toBeFalse();
+    });
+
+    it('should switch validation dynamically when toggling between customer and supplier invoice types', () => {
+      // Start as Customer Invoice with arbitrary number (invalid prefix)
+      component.invoiceForm.patchValue({
+        type: 'CUSTOMER_INVOICE',
+        invoiceNumber: 'VENDOR-BILL-01'
+      });
+      expect(component.invoiceForm.get('invoiceNumber')?.hasError('invalidPrefix')).toBeTrue();
+
+      // Switch to Supplier Invoice (now arbitrary number is valid)
+      component.invoiceForm.patchValue({
+        type: 'SUPPLIER_INVOICE'
+      });
+      expect(component.invoiceForm.get('invoiceNumber')?.valid).toBeTrue();
+
+      // Clear value on Supplier Invoice (now required error)
+      component.invoiceForm.patchValue({
+        invoiceNumber: ''
+      });
+      expect(component.invoiceForm.get('invoiceNumber')?.hasError('required')).toBeTrue();
+
+      // Switch back to Customer Invoice (blank is now valid/optional)
+      component.invoiceForm.patchValue({
+        type: 'CUSTOMER_INVOICE'
+      });
+      expect(component.invoiceForm.get('invoiceNumber')?.valid).toBeTrue();
+    });
   });
 });

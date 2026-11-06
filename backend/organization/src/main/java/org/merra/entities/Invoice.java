@@ -36,7 +36,7 @@ public class Invoice extends TenantAuditableEntity {
 	@Column(name = "invoice_id", nullable = false, unique = true)
 	private UUID invoiceId;
 
-	@Column(name = "invoice_number", nullable = false, unique = true)
+	@Column(name = "invoice_number", nullable = false)
 	@NotBlank(message = "Invoice number cannot be blank")
 	private String invoiceNumber;
 

@@ -24,7 +24,8 @@ public record CreateInvoiceRequest(
 		@Future(message = "Invalid value for dueDate component.") @DateTimeFormat(iso = ISO.DATE) LocalDate dueDate,
 		String status,
 		Boolean taxEligible,
-		String reference) {
+		String reference,
+		String invoiceNumber) {
 	public CreateInvoiceRequest {
 		if (lineItems != null && lineItems.isEmpty()) {
 			throw new IllegalArgumentException("lineItems component cannot be empty.");
