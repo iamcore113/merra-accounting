@@ -15,7 +15,7 @@
     </div>
     <div class="header-right">
       <!-- Approve & Email split button -->
-      <p-splitbutton label="Approve" (onClick)="saveInvoice('APPROVED')" [model]="approveItems" [size]="'small'" styleClass="primary-split-btn"></p-splitbutton>
+      <p-splitbutton label="Approve" (onClick)="saveInvoice('AUTHORISED')" [model]="approveItems" [size]="'small'" styleClass="primary-split-btn"></p-splitbutton>
 
       <!-- Save & Close split button -->
       <p-splitbutton label="Save & close" (onClick)="saveInvoice('DRAFT')" [model]="saveItems" [outlined]="true" [size]="'small'"></p-splitbutton>
@@ -31,14 +31,60 @@
       <div class="form-field-wrapper">
         <label class="field-label">Contact</label>
         <div class="contact-select-row">
-          <p-select formControlName="contact" [options]="contacts" optionLabel="name" optionValue="id" placeholder="Select contact" [size]="'small'" styleClass="w-full flex-1"></p-select>
+          <p-select
+            formControlName="contact"
+            [options]="contacts"
+            optionLabel="displayName"
+            optionValue="id"
+            placeholder="Select contact"
+            [size]="'small'"
+            styleClass="w-full flex-1">
+            <ng-template #selectedItem let-selectedOption>
+              @if (selectedOption) {
+                <div class="contact-select-item">
+                  <span class="contact-name">{{ selectedOption.name }}</span>
+                  @if (selectedOption.typeInitials) {
+                    <span
+                      class="contact-badge"
+                      [ngClass]="'badge-' + selectedOption.typeInitials.toLowerCase()"
+                      [title]="selectedOption.typeLabel">
+                      {{ selectedOption.typeInitials }}
+                    </span>
+                  }
+                </div>
+              }
+            </ng-template>
+            <ng-template #item let-contact>
+              <div class="contact-select-item">
+                <span class="contact-name">{{ contact.name }}</span>
+                @if (contact.typeInitials) {
+                  <span
+                    class="contact-badge"
+                    [ngClass]="'badge-' + contact.typeInitials.toLowerCase()"
+                    [title]="contact.typeLabel">
+                    {{ contact.typeInitials }}
+                  </span>
+                }
+              </div>
+            </ng-template>
+          </p-select>
           <p-button icon="pi pi-plus" [outlined]="true" [size]="'small'" (click)="openNewContactDialog($event)" title="Add new contact"></p-button>
         </div>
+        @if (contactTypeMismatchError) {
+          <small class="field-error">
+            <i class="pi pi-exclamation-circle"></i> {{ contactTypeMismatchError }}
+          </small>
+        }
       </div>
 
       <div class="form-field-wrapper">
         <label class="field-label">Invoice Type</label>
         <p-select formControlName="type" [options]="types" optionLabel="name" optionValue="code" [size]="'small'" styleClass="w-full"></p-select>
+        @if (contactTypeMismatchError) {
+          <small class="field-error">
+            <i class="pi pi-exclamation-circle"></i> Incompatible with selected contact
+          </small>
+        }
       </div>
 
       <div class="form-field-wrapper">

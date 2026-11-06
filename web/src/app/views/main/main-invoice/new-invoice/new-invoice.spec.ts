@@ -30,7 +30,11 @@ describe('NewInvoice', () => {
         success: true,
         message: 'Success',
         response: 200,
-        data: [{ contactId: 'c-1', contactName: 'Existing Client' }]
+        data: [
+          { contactId: 'c-cust', contactName: 'Customer Only', isCustomer: true, isSupplier: false },
+          { contactId: 'c-supp', contactName: 'Supplier Only', isCustomer: false, isSupplier: true },
+          { contactId: 'c-both', contactName: 'Both Client', isCustomer: true, isSupplier: true }
+        ]
       })
     );
 
@@ -58,7 +62,7 @@ describe('NewInvoice', () => {
         message: 'Success',
         response: 200,
         data: {
-          invoiceTypes: [{ id: 'ACCOUNTS_RECEIVABLE', name: 'Accounts Receivable' }],
+          invoiceTypes: [{ id: 'CUSTOMER_INVOICE', name: 'Customer Invoice' }],
           invoiceStatusCodes: [{ code: 'DRAFT' }],
           lineAmountTypes: [{ name: 'EXCLUSIVE' }]
         }
@@ -145,5 +149,77 @@ describe('NewInvoice', () => {
 
     component.onCloseNewContactDialog();
     expect(component.showNewContactDialog).toBeFalse();
+  });
+
+  it('should map contact types, typeLabels, and typeInitials correctly', () => {
+    expect(component.contacts.length).toBe(3);
+    const cust = component.contacts.find(c => c.id === 'c-cust');
+    const supp = component.contacts.find(c => c.id === 'c-supp');
+    const both = component.contacts.find(c => c.id === 'c-both');
+
+    expect(cust?.typeLabel).toBe('Customer');
+    expect(cust?.typeInitials).toBe('CT');
+    expect(cust?.displayName).toBe('Customer Only (CT)');
+
+    expect(supp?.typeLabel).toBe('Supplier');
+    expect(supp?.typeInitials).toBe('SP');
+    expect(supp?.displayName).toBe('Supplier Only (SP)');
+
+    expect(both?.typeLabel).toBe('Both');
+    expect(both?.typeInitials).toBe('BT');
+    expect(both?.displayName).toBe('Both Client (BT)');
+  });
+
+  it('should prevent creating a customer invoice when the selected contact is only a supplier', () => {
+    component.types = [
+      { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
+      { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
+    ];
+
+    // Select Customer Invoice type and Supplier only contact
+    component.invoiceForm.patchValue({
+      type: 'CUSTOMER_INVOICE',
+      contact: 'c-supp'
+    });
+
+    expect(component.contactTypeMismatchError).toBeTruthy();
+    expect(component.contactTypeMismatchError).toContain("only a Supplier, not a Customer");
+    expect(component.invoiceForm.get('type')?.hasError('contactTypeMismatch')).toBeTrue();
+  });
+
+  it('should allow creating a customer invoice when contact is customer or both', () => {
+    component.types = [
+      { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
+      { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
+    ];
+
+    // Select Customer Invoice with Customer Only contact
+    component.invoiceForm.patchValue({
+      type: 'CUSTOMER_INVOICE',
+      contact: 'c-cust'
+    });
+    expect(component.contactTypeMismatchError).toBeNull();
+
+    // Select Customer Invoice with Both contact
+    component.invoiceForm.patchValue({
+      type: 'CUSTOMER_INVOICE',
+      contact: 'c-both'
+    });
+    expect(component.contactTypeMismatchError).toBeNull();
+  });
+
+  it('should prevent creating a supplier invoice when the selected contact is only a customer', () => {
+    component.types = [
+      { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
+      { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
+    ];
+
+    component.invoiceForm.patchValue({
+      type: 'SUPPLIER_INVOICE',
+      contact: 'c-cust'
+    });
+
+    expect(component.contactTypeMismatchError).toBeTruthy();
+    expect(component.contactTypeMismatchError).toContain("only a Customer, not a Supplier");
   });
 });

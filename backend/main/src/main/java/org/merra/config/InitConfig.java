@@ -24,6 +24,7 @@ import org.merra.repositories.LineAmountTypeRepository;
 import org.merra.repositories.OrganizationTypeRepository;
 import org.merra.repositories.TaxTypeRepository;
 import org.merra.utilities.AccountConstants;
+import org.merra.utilities.InvoiceConstants;
 import org.merra.utilities.RedisKeys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,11 +83,12 @@ public class InitConfig implements CommandLineRunner {
         logger.debug("Seeding invoice status codes");
         if (invoiceStatusCodeRepository.findAll().isEmpty()) {
             invoiceStatusCodeRepository.saveAll(List.of(
-                    new InvoiceStatusCode("DRAFT"),
-                    new InvoiceStatusCode("SUBMITTED"),
-                    new InvoiceStatusCode("VOID"),
-                    new InvoiceStatusCode("AUTHORISED"),
-                    new InvoiceStatusCode("PAID")));
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_DRAFT),
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_SUBMITTED),
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_AUTHORISED),
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_PAID),
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_VOIDED),
+                    new InvoiceStatusCode(InvoiceConstants.INVOICE_STATUS_DELETED)));
         }
     }
 
@@ -94,8 +96,8 @@ public class InitConfig implements CommandLineRunner {
         logger.debug("Seeding invoice types");
         if (invoiceTypeRepository.findAll().isEmpty()) {
             invoiceTypeRepository.saveAll(Set.of(
-                    new InvoiceType("PAYABLE"),
-                    new InvoiceType("RECEIVABLE")));
+                    new InvoiceType(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE),
+                    new InvoiceType(InvoiceConstants.INVOICE_TYPE_SUPPLIER_INVOICE)));
         }
     }
 
@@ -103,9 +105,9 @@ public class InitConfig implements CommandLineRunner {
         logger.debug("Seeding line amount types");
         if (lineAmountTypeRepository.findAll().isEmpty()) {
             lineAmountTypeRepository.saveAll(Set.of(
-                    new LineAmountType("NO_TAX"),
-                    new LineAmountType("INCLUSIVE"),
-                    new LineAmountType("EXCLUSIVE")));
+                    new LineAmountType(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_NOTAX),
+                    new LineAmountType(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE),
+                    new LineAmountType(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE)));
         }
     }
 

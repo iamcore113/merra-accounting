@@ -8,6 +8,8 @@ public final class InvoiceConstants {
 	public static final String INVOICE_STATUS_SUBMITTED = "SUBMITTED";
 	public static final String INVOICE_STATUS_AUTHORISED = "AUTHORISED";
 	public static final String INVOICE_STATUS_DELETED = "DELETED";
+	public static final String INVOICE_STATUS_VOIDED = "VOIDED";
+	public static final String INVOICE_STATUS_PAID = "PAID";
 	
 	// Invoice Line amount types
 	// this means the provided unitAmount for each line item

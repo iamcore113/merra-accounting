@@ -25,6 +25,16 @@ export interface InvoiceLineItem {
   amount: number;  // calculated
 }
 
+export interface InvoiceContactOption {
+  id: string;
+  name: string;
+  isCustomer: boolean;
+  isSupplier: boolean;
+  typeLabel: 'Customer' | 'Supplier' | 'Both' | 'None';
+  typeInitials: 'CT' | 'SP' | 'BT' | '';
+  displayName: string;
+}
+
 @Component({
   selector: 'app-new-invoice',
   standalone: true,
@@ -60,11 +70,11 @@ export class NewInvoice implements OnInit {
   ];
 
   types = [
-    { code: 'ACCOUNTS_RECEIVABLE', name: 'Accounts Receivable (Sales)' },
-    { code: 'ACCOUNTS_PAYABLE', name: 'Accounts Payable (Bills)' }
+    { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
+    { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
   ];
 
-  contacts: any[] = [];
+  contacts: InvoiceContactOption[] = [];
 
   lineAmountTypesOptions = [
     { value: 'EXCLUSIVE', label: 'Tax Exclusive' },
@@ -75,7 +85,7 @@ export class NewInvoice implements OnInit {
   statuses = [
     { value: 'DRAFT', label: 'Draft' },
     { value: 'SUBMITTED', label: 'Submitted' },
-    { value: 'APPROVED', label: 'Approved' }
+    { value: 'AUTHORISED', label: 'Authorised' }
   ];
 
   accounts = [
@@ -101,9 +111,9 @@ export class NewInvoice implements OnInit {
 
   // Split button items
   approveItems: MenuItem[] = [
-    { label: 'Approve Only', command: () => this.saveInvoice('APPROVED') },
-    { label: 'Approve & Email', command: () => this.saveInvoice('APPROVED') },
-    { label: 'Approve & Print', command: () => this.saveInvoice('APPROVED') }
+    { label: 'Approve Only', command: () => this.saveInvoice('AUTHORISED') },
+    { label: 'Approve & Email', command: () => this.saveInvoice('AUTHORISED') },
+    { label: 'Approve & Print', command: () => this.saveInvoice('AUTHORISED') }
   ];
 
   saveItems: MenuItem[] = [
@@ -188,7 +198,21 @@ export class NewInvoice implements OnInit {
           const newContactName = res.data?.contactName || payload.name;
 
           if (newContactId) {
-            const newEntry = { id: String(newContactId), name: newContactName };
+            const isCust = !!payload.isCustomer;
+            const isSupp = !!payload.isSupplier;
+            const typeLabel: 'Customer' | 'Supplier' | 'Both' | 'None' =
+              isCust && isSupp ? 'Both' : isCust ? 'Customer' : isSupp ? 'Supplier' : 'None';
+            const typeInitials: 'CT' | 'SP' | 'BT' | '' =
+              isCust && isSupp ? 'BT' : isCust ? 'CT' : isSupp ? 'SP' : '';
+            const newEntry: InvoiceContactOption = {
+              id: String(newContactId),
+              name: newContactName,
+              isCustomer: isCust,
+              isSupplier: isSupp,
+              typeLabel,
+              typeInitials,
+              displayName: typeInitials ? `${newContactName} (${typeInitials})` : newContactName
+            };
             const existingIndex = this.contacts.findIndex(c => c.id === newEntry.id);
             if (existingIndex >= 0) {
               this.contacts[existingIndex] = newEntry;
@@ -201,6 +225,7 @@ export class NewInvoice implements OnInit {
           }
 
           this.showNewContactDialog = false;
+          this.validateContactInvoiceTypeMatch();
           this.cdr.markForCheck();
         } else {
           this.messageService.add({
@@ -246,6 +271,14 @@ export class NewInvoice implements OnInit {
       this.calculateTotals();
     });
 
+    this.invoiceForm.get('contact')?.valueChanges.subscribe(() => {
+      this.validateContactInvoiceTypeMatch();
+    });
+
+    this.invoiceForm.get('type')?.valueChanges.subscribe(() => {
+      this.validateContactInvoiceTypeMatch();
+    });
+
     this.loadInvoiceMetadata();
     this.loadContacts();
   }
@@ -262,6 +295,7 @@ export class NewInvoice implements OnInit {
               name: t.name
             }));
             this.invoiceForm.patchValue({ type: this.types[0].code });
+            this.validateContactInvoiceTypeMatch();
           }
 
           if (metadata.invoiceStatusCodes && metadata.invoiceStatusCodes.length > 0) {
@@ -294,16 +328,30 @@ export class NewInvoice implements OnInit {
         if (res.success && 'data' in res) {
           const contactList = res.data as any[];
           if (contactList && contactList.length > 0) {
-            this.contacts = contactList.map(c => ({
-              id: c.contactId,
-              name: c.contactName
-            }));
+            this.contacts = contactList.map(c => {
+              const isCustomer = !!c.isCustomer;
+              const isSupplier = !!c.isSupplier;
+              const typeLabel: 'Customer' | 'Supplier' | 'Both' | 'None' =
+                isCustomer && isSupplier ? 'Both' : isCustomer ? 'Customer' : isSupplier ? 'Supplier' : 'None';
+              const typeInitials: 'CT' | 'SP' | 'BT' | '' =
+                isCustomer && isSupplier ? 'BT' : isCustomer ? 'CT' : isSupplier ? 'SP' : '';
+              return {
+                id: c.contactId,
+                name: c.contactName,
+                isCustomer,
+                isSupplier,
+                typeLabel,
+                typeInitials,
+                displayName: typeInitials ? `${c.contactName} (${typeInitials})` : c.contactName
+              };
+            });
             if (selectContactName) {
               const matched = this.contacts.find(c => c.name === selectContactName);
               if (matched) {
                 this.invoiceForm.patchValue({ contact: matched.id });
               }
             }
+            this.validateContactInvoiceTypeMatch();
           }
         }
       },
@@ -312,6 +360,77 @@ export class NewInvoice implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error loading contacts.', life: 3000 });
       }
     });
+  }
+
+  getSelectedContact(): InvoiceContactOption | undefined {
+    const contactId = this.invoiceForm?.get('contact')?.value;
+    return this.contacts.find(c => c.id === contactId);
+  }
+
+  getSelectedInvoiceType(): { code: string; name: string } | undefined {
+    const typeCode = this.invoiceForm?.get('type')?.value;
+    return this.types.find(t => t.code === typeCode);
+  }
+
+  private isCustomerInvoice(typeCodeOrName?: string): boolean {
+    if (!typeCodeOrName) return false;
+    const val = typeCodeOrName.toUpperCase();
+    return val.includes('CUSTOMER') || val.includes('RECEIVABLE') || val.includes('SALES');
+  }
+
+  private isSupplierInvoice(typeCodeOrName?: string): boolean {
+    if (!typeCodeOrName) return false;
+    const val = typeCodeOrName.toUpperCase();
+    return val.includes('SUPPLIER') || val.includes('PAYABLE') || val.includes('BILL');
+  }
+
+  get contactTypeMismatchError(): string | null {
+    const contact = this.getSelectedContact();
+    const invType = this.getSelectedInvoiceType();
+    if (!contact || !invType) {
+      return null;
+    }
+
+    // Contacts marked as 'Both' can be used for both Customer and Supplier invoices
+    if (contact.isCustomer && contact.isSupplier) {
+      return null;
+    }
+
+    const isCustType = this.isCustomerInvoice(invType.code) || this.isCustomerInvoice(invType.name);
+    const isSuppType = this.isSupplierInvoice(invType.code) || this.isSupplierInvoice(invType.name);
+
+    if (isCustType && !contact.isCustomer) {
+      return `Cannot create a ${invType.name} because '${contact.name}' is only a Supplier, not a Customer.`;
+    }
+
+    if (isSuppType && !contact.isSupplier) {
+      return `Cannot create a ${invType.name} because '${contact.name}' is only a Customer, not a Supplier.`;
+    }
+
+    return null;
+  }
+
+  validateContactInvoiceTypeMatch(): void {
+    const error = this.contactTypeMismatchError;
+    const contactControl = this.invoiceForm?.get('contact');
+    const typeControl = this.invoiceForm?.get('type');
+
+    if (error) {
+      contactControl?.setErrors({ ...contactControl.errors, contactTypeMismatch: true });
+      typeControl?.setErrors({ ...typeControl.errors, contactTypeMismatch: true });
+    } else {
+      if (contactControl?.hasError('contactTypeMismatch')) {
+        const errors = { ...contactControl.errors };
+        delete errors['contactTypeMismatch'];
+        contactControl.setErrors(Object.keys(errors).length ? errors : null);
+      }
+      if (typeControl?.hasError('contactTypeMismatch')) {
+        const errors = { ...typeControl.errors };
+        delete errors['contactTypeMismatch'];
+        typeControl.setErrors(Object.keys(errors).length ? errors : null);
+      }
+    }
+    this.cdr.markForCheck();
   }
 
   addLineItem(): void {
@@ -377,6 +496,16 @@ export class NewInvoice implements OnInit {
   }
 
   saveInvoice(status: string): void {
+    if (this.contactTypeMismatchError) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Invalid Contact / Invoice Type',
+        detail: this.contactTypeMismatchError,
+        life: 4000
+      });
+      return;
+    }
+
     if (this.invoiceForm.invalid) {
       this.invoiceForm.markAllAsTouched();
       this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Please fill in all required fields.', life: 3000 });

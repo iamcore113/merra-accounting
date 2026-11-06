@@ -120,6 +120,22 @@ public class InvoiceService {
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
 		invoice.setContact(getContact);
 
+		// Validate contact type constraint with invoice type
+		boolean isCustomerInvoice = invoiceType.getType().equalsIgnoreCase(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE)
+				|| invoiceType.getType().toUpperCase().contains("RECEIVABLE");
+		boolean isSupplierInvoice = invoiceType.getType().equalsIgnoreCase(InvoiceConstants.INVOICE_TYPE_SUPPLIER_INVOICE)
+				|| invoiceType.getType().toUpperCase().contains("PAYABLE");
+
+		boolean contactIsCustomer = Boolean.TRUE.equals(getContact.getIsCustomer());
+		boolean contactIsSupplier = Boolean.TRUE.equals(getContact.getIsSupplier());
+
+		if (isCustomerInvoice && !contactIsCustomer) {
+			throw new IllegalArgumentException("Cannot create a customer invoice for a contact that is not a customer");
+		}
+		if (isSupplierInvoice && !contactIsSupplier) {
+			throw new IllegalArgumentException("Cannot create a supplier invoice for a contact that is not a supplier");
+		}
+
 		final Integer contactDefaultDiscount = getContact.getDefaultDiscount();
 
 		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount,
