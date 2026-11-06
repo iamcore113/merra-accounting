@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { TooltipModule } from 'primeng/tooltip';
 
 export interface InvoiceItem {
   id: string;
@@ -22,7 +23,7 @@ export interface InvoiceItem {
 @Component({
   selector: 'app-list-invoice',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableModule, ButtonModule, InputTextModule, TagModule, IconFieldModule, InputIconModule],
+  imports: [CommonModule, RouterModule, FormsModule, TableModule, ButtonModule, InputTextModule, TagModule, IconFieldModule, InputIconModule, TooltipModule],
   templateUrl: './list-invoice.html',
   styleUrl: './list-invoice.scss',
 })

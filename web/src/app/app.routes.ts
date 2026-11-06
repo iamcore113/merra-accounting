@@ -58,6 +58,21 @@ export const routes: Routes = [
         title: 'MERRA - New Invoice'
       },
       {
+        path: 'invoice/preview',
+        loadComponent: () => import('./views/main/main-invoice/invoice-preview/invoice-preview').then(m => m.InvoicePreview),
+        title: 'MERRA - Invoice Preview'
+      },
+      {
+        path: 'invoice/preview/:id',
+        loadComponent: () => import('./views/main/main-invoice/invoice-preview/invoice-preview').then(m => m.InvoicePreview),
+        title: 'MERRA - Invoice Preview'
+      },
+      {
+        path: 'invoice/:id',
+        loadComponent: () => import('./views/main/main-invoice/invoice-preview/invoice-preview').then(m => m.InvoicePreview),
+        title: 'MERRA - Invoice Details'
+      },
+      {
         path: 'contacts',
         loadComponent: () => import('./views/main/main-contact/main-contact').then(m => m.MainContact),
         title: 'MERRA - Contacts'

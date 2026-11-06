@@ -14,6 +14,7 @@ import { MenuItem, MessageService } from 'primeng/api';
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
 import { CreateContactRequest } from '../../../../shared/models/contacts';
+import { InvoicePreviewData } from '../invoice-preview/invoice-preview';
 
 export interface InvoiceLineItem {
   itemCode: string;
@@ -33,6 +34,8 @@ export interface InvoiceContactOption {
   typeLabel: 'Customer' | 'Supplier' | 'Both' | 'None';
   typeInitials: 'CT' | 'SP' | 'BT' | '';
   displayName: string;
+  accountNumber?: string;
+  emailAddress?: string;
 }
 
 @Component({
@@ -365,7 +368,9 @@ export class NewInvoice implements OnInit {
                 isSupplier,
                 typeLabel,
                 typeInitials,
-                displayName: typeInitials ? `${c.contactName} (${typeInitials})` : c.contactName
+                displayName: typeInitials ? `${c.contactName} (${typeInitials})` : c.contactName,
+                accountNumber: c.accountNumber || undefined,
+                emailAddress: c.emailAddress || undefined
               };
             });
             if (selectContactName) {
@@ -733,6 +738,74 @@ export class NewInvoice implements OnInit {
       summary: 'Success',
       detail: successDetail,
       life: 3000
+    });
+  }
+
+  buildPreviewData(): InvoicePreviewData {
+    const contact = this.getSelectedContact();
+    const invType = this.getSelectedInvoiceType();
+    const orgId = this.invoiceForm.get('organization')?.value;
+    const org = this.organizations.find(o => o.id === orgId);
+
+    let invoiceNumberVal = this.invoiceForm.get('invoiceNumber')?.value?.trim();
+    if (this.isCurrentTypeCustomerInvoice) {
+      const suffix = this.invoiceForm.get('customerInvoiceSuffix')?.value?.trim();
+      if (suffix) {
+        invoiceNumberVal = `INV-${suffix}`;
+      } else if (!invoiceNumberVal) {
+        invoiceNumberVal = 'INV-2026-DRAFT';
+      }
+    } else {
+      if (!invoiceNumberVal) {
+        invoiceNumberVal = 'SUPP-DRAFT';
+      }
+    }
+
+    return {
+      invoiceNumber: invoiceNumberVal,
+      organizationName: org?.name || 'Oscorp Industries',
+      organizationEmail: 'billing@merra.io',
+      organizationPhone: '+1 (555) 019-2834',
+      organizationAddress: '100 Innovation Way, Suite 400, New York, NY 10001',
+      organizationTaxNumber: 'US-94829103',
+      type: invType?.code || 'CUSTOMER_INVOICE',
+      typeName: invType?.name || 'Customer Invoice (Sales)',
+      contactName: contact?.name || 'Selected Contact',
+      contactAccountNumber: contact?.accountNumber,
+      contactTypeInitials: contact?.typeInitials,
+      date: this.invoiceForm.get('date')?.value || new Date(),
+      dueDate: this.invoiceForm.get('dueDate')?.value || new Date(),
+      lineAmountTypes: this.invoiceForm.get('lineAmountTypes')?.value || 'EXCLUSIVE',
+      status: this.invoiceForm.get('status')?.value || 'DRAFT',
+      reference: this.invoiceForm.get('reference')?.value || '',
+      currencySymbol: '$',
+      lineItems: this.lineItems.map(item => ({
+        item: item.itemCode || 'Service / Product',
+        description: item.description || '',
+        account: item.account || 'Sales (200)',
+        quantity: item.quantity || 1,
+        price: item.price || 0,
+        taxRate: item.taxRate || 0,
+        amount: item.amount || 0
+      })),
+      subTotal: this.subTotal,
+      totalTax: this.totalTax,
+      grandTotal: this.grandTotal,
+      notes: 'Payment is due according to agreed terms. Please quote invoice number upon remittance.',
+      bankDetails: {
+        bankName: 'Silicon Valley Commercial Bank',
+        accountName: org?.name || 'Oscorp Industries Global LLC',
+        accountNumber: '4829-1029-4481',
+        routingNumber: '021000021',
+        swiftBic: 'SVCBUS33'
+      }
+    };
+  }
+
+  onPreview(): void {
+    const previewData = this.buildPreviewData();
+    this.router.navigate(['/main/invoice/preview'], {
+      state: { invoiceData: previewData }
     });
   }
 }

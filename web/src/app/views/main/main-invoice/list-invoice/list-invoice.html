@@ -76,6 +76,7 @@
           <th>Due Date</th>
           <th class="text-center" style="width: 7rem">Status</th>
           <th class="text-right" style="width: 9rem">Total Amount</th>
+          <th class="text-center" style="width: 5rem">Preview</th>
         </tr>
       </ng-template>
       <ng-template #body let-inv>
@@ -84,7 +85,7 @@
             <p-tableCheckbox [value]="inv"></p-tableCheckbox>
           </td>
           <td class="inv-number-cell">
-            <a routerLink="/main/invoice/new" class="inv-link">{{ inv.invoiceNumber }}</a>
+            <a [routerLink]="['/main/invoice/preview', inv.id]" class="inv-link" pTooltip="Click to preview invoice">{{ inv.invoiceNumber }}</a>
           </td>
           <td class="font-medium">{{ inv.contactName }}</td>
           <td class="text-secondary">{{ inv.issueDate }}</td>
@@ -93,11 +94,21 @@
             <p-tag [value]="inv.status" [severity]="getStatusSeverity(inv.status)" [rounded]="false"></p-tag>
           </td>
           <td class="text-right font-medium">${{ inv.totalAmount | number:'1.2-2' }}</td>
+          <td class="text-center">
+            <p-button
+              icon="pi pi-eye"
+              [rounded]="true"
+              [text]="true"
+              [size]="'small'"
+              pTooltip="Preview Invoice"
+              [routerLink]="['/main/invoice/preview', inv.id]">
+            </p-button>
+          </td>
         </tr>
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td colspan="7" class="empty-state-cell">
+          <td colspan="8" class="empty-state-cell">
             <div class="empty-state">
               <i class="pi pi-receipt empty-icon"></i>
               <p class="empty-title">No invoices found</p>

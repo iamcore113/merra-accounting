@@ -188,10 +188,6 @@ public class InvoiceService {
 				throw new IllegalArgumentException("Invoice number cannot exceed 13 characters");
 			}
 		}
-			if (invoiceNumber == null || invoiceNumber.isBlank()) {
-				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
-			}
-		}
 
 		invoice.setInvoiceNumber(invoiceNumber);
 		invoice.setReference(request.reference());

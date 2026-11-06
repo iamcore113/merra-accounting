@@ -1,0 +1,291 @@
+<div class="invoice-preview-page" [class.is-modal-view]="isModal">
+  <!-- Top Action & Navigation Bar (hidden in print mode) -->
+  @if (!isModal) {
+    <div class="header-breadcrumb no-print">
+      <a routerLink="/main/invoice" class="breadcrumb-link">Invoices</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-active">{{ invoice?.invoiceNumber || 'Invoice Preview' }}</span>
+      <span class="breadcrumb-separator">/</span>
+      <span class="preview-mode-tag">Preview</span>
+    </div>
+
+    <div class="preview-actions-bar no-print">
+      <div class="actions-left">
+        <p-button
+          label="Back"
+          icon="pi pi-arrow-left"
+          [text]="true"
+          [size]="'small'"
+          (onClick)="goBack()">
+        </p-button>
+        <div class="title-meta">
+          <h2 class="preview-page-title">{{ invoice?.invoiceNumber }}</h2>
+          <p-tag
+            [value]="invoice?.status || 'DRAFT'"
+            [severity]="getStatusSeverity(invoice?.status)"
+            [rounded]="false"
+            class="status-tag">
+          </p-tag>
+        </div>
+      </div>
+
+      <div class="actions-right">
+        <p-button
+          label="Edit"
+          icon="pi pi-pencil"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="editInvoice()">
+        </p-button>
+        <p-button
+          label="Print"
+          icon="pi pi-print"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="printInvoice()">
+        </p-button>
+        <p-button
+          label="Download PDF"
+          icon="pi pi-download"
+          [size]="'small'"
+          (onClick)="downloadPdf()">
+        </p-button>
+      </div>
+    </div>
+  }
+
+  <!-- Main Invoice Document Canvas (Printable A4 Sheet) -->
+  <div class="invoice-document-wrapper">
+    <div class="invoice-paper-canvas">
+      <!-- Top Branding and Document Header -->
+      <div class="doc-header">
+        <div class="doc-brand">
+          <div class="brand-logo-badge">
+            <span class="brand-icon">M</span>
+            <span class="brand-name">MERRA</span>
+          </div>
+          <h1 class="org-name">{{ invoice?.organizationName }}</h1>
+          <div class="org-meta">
+            @if (invoice?.organizationAddress) {
+              <div class="meta-line"><i class="pi pi-map-marker"></i> {{ invoice?.organizationAddress }}</div>
+            }
+            @if (invoice?.organizationEmail) {
+              <div class="meta-line"><i class="pi pi-envelope"></i> {{ invoice?.organizationEmail }}</div>
+            }
+            @if (invoice?.organizationPhone) {
+              <div class="meta-line"><i class="pi pi-phone"></i> {{ invoice?.organizationPhone }}</div>
+            }
+            @if (invoice?.organizationTaxNumber) {
+              <div class="meta-line"><i class="pi pi-id-card"></i> Tax ID: {{ invoice?.organizationTaxNumber }}</div>
+            }
+          </div>
+        </div>
+
+        <div class="doc-meta-title">
+          <div class="doc-type-heading">
+            {{ invoice?.type === 'SUPPLIER_INVOICE' ? 'SUPPLIER BILL' : 'TAX INVOICE' }}
+          </div>
+          <div class="doc-number-box">
+            <span class="number-label">Invoice Number</span>
+            <span class="number-val">{{ invoice?.invoiceNumber }}</span>
+          </div>
+          <div class="doc-status-badge">
+            <p-tag
+              [value]="invoice?.status || 'DRAFT'"
+              [severity]="getStatusSeverity(invoice?.status)"
+              [rounded]="false">
+            </p-tag>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Parties and Key Dates Grid -->
+      <div class="parties-dates-grid">
+        <div class="party-card billed-to">
+          <div class="card-caption">
+            {{ invoice?.type === 'SUPPLIER_INVOICE' ? 'Billed From (Supplier)' : 'Billed To (Customer)' }}
+          </div>
+          <div class="party-name-row">
+            <h3 class="party-name">{{ invoice?.contactName }}</h3>
+            @if (invoice?.contactTypeInitials) {
+              <span class="type-badge" [class.type-both]="invoice?.contactTypeInitials === 'BT'">
+                {{ invoice?.contactTypeInitials }}
+              </span>
+            }
+          </div>
+
+          @if (invoice?.contactAccountNumber) {
+            <div class="party-account-row">
+              <span class="account-lbl">Account #:</span>
+              <span class="account-val">{{ invoice?.contactAccountNumber }}</span>
+            </div>
+          }
+
+          @if (invoice?.contactAddress) {
+            <div class="party-address">{{ invoice?.contactAddress }}</div>
+          }
+          @if (invoice?.contactEmail) {
+            <div class="party-email">{{ invoice?.contactEmail }}</div>
+          }
+          @if (invoice?.contactPhone) {
+            <div class="party-phone">{{ invoice?.contactPhone }}</div>
+          }
+        </div>
+
+        <div class="party-card invoice-meta-card">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="meta-key">Issue Date</span>
+              <span class="meta-val">{{ formatDate(invoice?.date) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-key">Due Date</span>
+              <span class="meta-val highlight-due">{{ formatDate(invoice?.dueDate) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-key">Reference</span>
+              <span class="meta-val">{{ invoice?.reference || '—' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-key">Amounts Are</span>
+              <span class="meta-val">
+                {{ invoice?.lineAmountTypes === 'INCLUSIVE' ? 'Tax Inclusive' : (invoice?.lineAmountTypes === 'NO_TAX' ? 'No Tax' : 'Tax Exclusive') }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Items Table -->
+      <div class="table-container">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th class="col-index">#</th>
+              <th class="col-desc">Item & Description</th>
+              <th class="col-account">Account</th>
+              <th class="col-qty text-right">Qty</th>
+              <th class="col-price text-right">Unit Price</th>
+              <th class="col-discount text-right">Disc %</th>
+              <th class="col-tax text-right">Tax Rate</th>
+              <th class="col-amount text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of invoice?.lineItems; track $index) {
+              <tr>
+                <td class="col-index text-muted">{{ $index + 1 }}</td>
+                <td class="col-desc">
+                  @if (item.item) {
+                    <div class="item-title">{{ item.item }}</div>
+                  }
+                  @if (item.description) {
+                    <div class="item-desc">{{ item.description }}</div>
+                  }
+                </td>
+                <td class="col-account text-muted">{{ item.account || '—' }}</td>
+                <td class="col-qty text-right">{{ item.quantity }}</td>
+                <td class="col-price text-right">{{ invoice?.currencySymbol || '$' }}{{ item.price | number:'1.2-2' }}</td>
+                <td class="col-discount text-right">{{ item.discount ? (item.discount + '%') : '—' }}</td>
+                <td class="col-tax text-right">{{ item.taxRate ? (item.taxRate + '%') : '0%' }}</td>
+                <td class="col-amount text-right font-semibold">
+                  {{ invoice?.currencySymbol || '$' }}{{ item.amount | number:'1.2-2' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary & Financial Breakdown -->
+      <div class="doc-summary-section">
+        <div class="summary-left">
+          @if (invoice?.notes) {
+            <div class="notes-block">
+              <div class="block-title">Terms & Notes</div>
+              <p class="notes-text">{{ invoice?.notes }}</p>
+            </div>
+          }
+
+          @if (invoice?.bankDetails) {
+            <div class="payment-advice-card">
+              <div class="advice-header">
+                <i class="pi pi-building-columns"></i>
+                <span>Payment Advice / Bank Details</span>
+              </div>
+              <div class="advice-grid">
+                <div class="advice-row">
+                  <span class="adv-label">Bank:</span>
+                  <span class="adv-value">{{ invoice?.bankDetails?.bankName }}</span>
+                </div>
+                <div class="advice-row">
+                  <span class="adv-label">Account Name:</span>
+                  <span class="adv-value">{{ invoice?.bankDetails?.accountName }}</span>
+                </div>
+                <div class="advice-row">
+                  <span class="adv-label">Account #:</span>
+                  <span class="adv-value font-mono">{{ invoice?.bankDetails?.accountNumber }}</span>
+                </div>
+                @if (invoice?.bankDetails?.routingNumber) {
+                  <div class="advice-row">
+                    <span class="adv-label">Routing / Sort:</span>
+                    <span class="adv-value font-mono">{{ invoice?.bankDetails?.routingNumber }}</span>
+                  </div>
+                }
+                @if (invoice?.bankDetails?.swiftBic) {
+                  <div class="advice-row">
+                    <span class="adv-label">SWIFT / BIC:</span>
+                    <span class="adv-value font-mono">{{ invoice?.bankDetails?.swiftBic }}</span>
+                  </div>
+                }
+                <div class="advice-row">
+                  <span class="adv-label">Reference:</span>
+                  <span class="adv-value highlight-ref font-mono">{{ invoice?.invoiceNumber }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="summary-right">
+          <div class="totals-table">
+            <div class="total-row">
+              <span class="t-label">Subtotal</span>
+              <span class="t-value">{{ invoice?.currencySymbol || '$' }}{{ invoice?.subTotal | number:'1.2-2' }}</span>
+            </div>
+
+            @if ((invoice?.totalDiscount ?? 0) > 0) {
+              <div class="total-row discount-row">
+                <span class="t-label">Total Discount</span>
+                <span class="t-value">-{{ invoice?.currencySymbol || '$' }}{{ invoice?.totalDiscount | number:'1.2-2' }}</span>
+              </div>
+            }
+
+            <div class="total-row">
+              <span class="t-label">Tax Total</span>
+              <span class="t-value">{{ invoice?.currencySymbol || '$' }}{{ invoice?.totalTax | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="total-row grand-total-row">
+              <span class="t-label">Total Amount Due</span>
+              <span class="t-value">{{ invoice?.currencySymbol || '$' }}{{ invoice?.grandTotal | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Footer -->
+      <div class="doc-footer">
+        <div class="footer-left">
+          <span>Generated by MERRA Accounting Cloud System</span>
+        </div>
+        <div class="footer-right">
+          <span>Thank you for your business!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
