@@ -32,7 +32,7 @@
         <label class="field-label">Contact</label>
         <div class="contact-select-row">
           <p-select formControlName="contact" [options]="contacts" optionLabel="name" optionValue="id" placeholder="Select contact" [size]="'small'" styleClass="w-full flex-1"></p-select>
-          <p-button icon="pi pi-plus" [outlined]="true" [size]="'small'" (click)="goToCreateContact($event)" title="Add new contact"></p-button>
+          <p-button icon="pi pi-plus" [outlined]="true" [size]="'small'" (click)="openNewContactDialog($event)" title="Add new contact"></p-button>
         </div>
       </div>
 
@@ -142,4 +142,81 @@
       </div>
     </div>
   </div>
+
+  <!-- Create New Contact Dialog -->
+  <p-dialog
+    header="Create New Contact"
+    [(visible)]="showNewContactDialog"
+    [modal]="true"
+    [closable]="!isSubmittingContact"
+    [draggable]="false"
+    [resizable]="false"
+    appendTo="body"
+    [style]="{ width: '480px', maxWidth: '95vw' }"
+    styleClass="new-contact-dialog"
+    (onHide)="onCloseNewContactDialog()">
+    
+    <form [formGroup]="newContactForm" (ngSubmit)="saveNewContact()">
+      <div class="dialog-form-content">
+        <!-- Contact / Business Name -->
+        <div class="dialog-field-wrapper">
+          <label class="field-label" for="dialog-contact-name">
+            Contact / Business Name <span class="required-star">*</span>
+          </label>
+          <input
+            id="dialog-contact-name"
+            pInputText
+            [pSize]="'small'"
+            formControlName="name"
+            placeholder="e.g. Acme Corporation or Jane Doe"
+            class="w-full"
+            [class.ng-invalid]="newContactForm.get('name')?.invalid && newContactForm.get('name')?.touched" />
+          @if (newContactForm.get('name')?.invalid && newContactForm.get('name')?.touched) {
+            <small class="field-error">Contact name is required (min 2 characters)</small>
+          }
+        </div>
+
+        <!-- Relationship Type -->
+        <div class="dialog-field-wrapper">
+          <label class="field-label">Relationship Type <span class="required-star">*</span></label>
+          <div class="dialog-checkboxes-row">
+            <div class="dialog-checkbox-item">
+              <p-checkbox
+                inputId="dialogIsCustomer"
+                formControlName="isCustomer"
+                [binary]="true"></p-checkbox>
+              <label for="dialogIsCustomer" class="dialog-checkbox-label">Customer</label>
+            </div>
+            <div class="dialog-checkbox-item">
+              <p-checkbox
+                inputId="dialogIsSupplier"
+                formControlName="isSupplier"
+                [binary]="true"></p-checkbox>
+              <label for="dialogIsSupplier" class="dialog-checkbox-label">Supplier</label>
+            </div>
+          </div>
+          @if (!newContactForm.get('isCustomer')?.value && !newContactForm.get('isSupplier')?.value && newContactForm.touched) {
+            <small class="field-error">Please select at least one relationship type</small>
+          }
+        </div>
+      </div>
+    </form>
+
+    <ng-template #footer>
+      <div class="dialog-footer-actions">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          [disabled]="isSubmittingContact"
+          (click)="onCloseNewContactDialog()"></p-button>
+        <p-button
+          label="Save Contact"
+          icon="pi pi-check"
+          [size]="'small'"
+          [loading]="isSubmittingContact"
+          (click)="saveNewContact()"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
 </div>

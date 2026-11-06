@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -8,9 +8,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { SplitButtonModule } from 'primeng/splitbutton';
+import { DialogModule } from 'primeng/dialog';
+import { CheckboxModule } from 'primeng/checkbox';
 import { MenuItem, MessageService } from 'primeng/api';
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { CreateContactRequest } from '../../../../shared/models/contacts';
 
 export interface InvoiceLineItem {
   itemCode: string;
@@ -34,13 +37,20 @@ export interface InvoiceLineItem {
     InputTextModule,
     SelectModule,
     TableModule,
-    SplitButtonModule
+    SplitButtonModule,
+    DialogModule,
+    CheckboxModule
   ],
   templateUrl: './new-invoice.html',
   styleUrl: './new-invoice.scss',
 })
 export class NewInvoice implements OnInit {
   invoiceForm!: FormGroup;
+
+  // New Contact Dialog
+  showNewContactDialog = false;
+  newContactForm!: FormGroup;
+  isSubmittingContact = false;
 
   // Dropdown list options
   organizations = [
@@ -106,15 +116,118 @@ export class NewInvoice implements OnInit {
     private readonly messageService: MessageService,
     private readonly invoiceService: InvoiceService,
     private readonly contactService: ContactService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
+  openNewContactDialog(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.initContactForm();
+    this.showNewContactDialog = true;
+  }
+
   goToCreateContact(event: Event): void {
-    event.stopPropagation();
-    this.router.navigate(['/main/contacts/new']);
+    this.openNewContactDialog(event);
+  }
+
+  onCloseNewContactDialog(): void {
+    this.showNewContactDialog = false;
+    this.isSubmittingContact = false;
+  }
+
+  private initContactForm(): void {
+    this.newContactForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      isSupplier: [false],
+      isCustomer: [true],
+      contactStatus: ['ACTIVE']
+    });
+  }
+
+  saveNewContact(): void {
+    if (this.newContactForm.invalid) {
+      this.newContactForm.markAllAsTouched();
+      return;
+    }
+
+    const isCustomer = !!this.newContactForm.get('isCustomer')?.value;
+    const isSupplier = !!this.newContactForm.get('isSupplier')?.value;
+    if (!isCustomer && !isSupplier) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Relationship Required',
+        detail: 'Please select at least one relationship type (Customer, Supplier, or Both).',
+        life: 3000
+      });
+      return;
+    }
+
+    this.isSubmittingContact = true;
+    const formValue = { ...this.newContactForm.value };
+    const payload: CreateContactRequest = {
+      name: formValue.name?.trim(),
+      contactStatus: 'ACTIVE',
+      isCustomer,
+      isSupplier
+    };
+
+    this.contactService.createContact(payload).subscribe({
+      next: (res: any) => {
+        this.isSubmittingContact = false;
+        if (res.success) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: res.message || 'Contact created successfully',
+            life: 3000
+          });
+
+          const newContactId = res.data?.contactId;
+          const newContactName = res.data?.contactName || payload.name;
+
+          if (newContactId) {
+            const newEntry = { id: String(newContactId), name: newContactName };
+            const existingIndex = this.contacts.findIndex(c => c.id === newEntry.id);
+            if (existingIndex >= 0) {
+              this.contacts[existingIndex] = newEntry;
+            } else {
+              this.contacts = [...this.contacts, newEntry];
+            }
+            this.invoiceForm.patchValue({ contact: newEntry.id });
+          } else {
+            this.loadContacts(payload.name);
+          }
+
+          this.showNewContactDialog = false;
+          this.cdr.markForCheck();
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: res.message || 'Failed to create contact',
+            life: 3000
+          });
+        }
+      },
+      error: (err) => {
+        this.isSubmittingContact = false;
+        const msg = err.error?.message || err.message || 'Failed to create contact';
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: msg,
+          life: 3000
+        });
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnInit(): void {
+    this.initContactForm();
+
     this.invoiceForm = this.fb.group({
       invoiceNumber: ['INV-0001', Validators.required],
       organization: ['oscorp', Validators.required],
@@ -175,7 +288,7 @@ export class NewInvoice implements OnInit {
     });
   }
 
-  loadContacts(): void {
+  loadContacts(selectContactName?: string): void {
     this.contactService.getAllContacts().subscribe({
       next: (res) => {
         if (res.success && 'data' in res) {
@@ -185,6 +298,12 @@ export class NewInvoice implements OnInit {
               id: c.contactId,
               name: c.contactName
             }));
+            if (selectContactName) {
+              const matched = this.contacts.find(c => c.name === selectContactName);
+              if (matched) {
+                this.invoiceForm.patchValue({ contact: matched.id });
+              }
+            }
           }
         }
       },
