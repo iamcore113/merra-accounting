@@ -10,10 +10,14 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TooltipModule } from 'primeng/tooltip';
 
+export type InvoiceTypeFilter = 'ALL' | 'CUSTOMER' | 'SUPPLIER';
+
 export interface InvoiceItem {
   id: string;
   invoiceNumber: string;
+  type: 'CUSTOMER' | 'SUPPLIER';
   contactName: string;
+  contactType?: 'CT' | 'SP' | 'BT';
   issueDate: string;
   dueDate: string;
   status: 'DRAFT' | 'APPROVED' | 'PAID' | 'VOIDED';
@@ -30,6 +34,7 @@ export interface InvoiceItem {
 export class ListInvoice implements OnInit {
   private readonly route = inject(ActivatedRoute);
 
+  selectedType: InvoiceTypeFilter = 'ALL';
   selectedStatus = 'ALL';
   searchQuery = '';
   selectedInvoices: InvoiceItem[] = [];
@@ -38,7 +43,9 @@ export class ListInvoice implements OnInit {
     {
       id: 'inv-001',
       invoiceNumber: 'INV-00101',
+      type: 'CUSTOMER',
       contactName: 'Acme Corporation',
+      contactType: 'CT',
       issueDate: '2026-10-15',
       dueDate: '2026-11-15',
       status: 'APPROVED',
@@ -47,7 +54,9 @@ export class ListInvoice implements OnInit {
     {
       id: 'inv-002',
       invoiceNumber: 'INV-00102',
+      type: 'CUSTOMER',
       contactName: 'Globex Industries',
+      contactType: 'CT',
       issueDate: '2026-10-20',
       dueDate: '2026-11-20',
       status: 'DRAFT',
@@ -56,7 +65,9 @@ export class ListInvoice implements OnInit {
     {
       id: 'inv-003',
       invoiceNumber: 'INV-00103',
+      type: 'CUSTOMER',
       contactName: 'Initech LLC',
+      contactType: 'BT',
       issueDate: '2026-09-01',
       dueDate: '2026-10-01',
       status: 'PAID',
@@ -64,17 +75,47 @@ export class ListInvoice implements OnInit {
     },
     {
       id: 'inv-004',
-      invoiceNumber: 'INV-00104',
+      invoiceNumber: 'SUP-2026-01',
+      type: 'SUPPLIER',
       contactName: 'Umbrella Trading Co.',
+      contactType: 'SP',
       issueDate: '2026-10-28',
       dueDate: '2026-11-28',
       status: 'DRAFT',
       totalAmount: 950.00,
     },
+    {
+      id: 'inv-005',
+      invoiceNumber: 'BILL-8891',
+      type: 'SUPPLIER',
+      contactName: 'Cyberdyne Systems',
+      contactType: 'SP',
+      issueDate: '2026-10-12',
+      dueDate: '2026-11-12',
+      status: 'APPROVED',
+      totalAmount: 2450.00,
+    },
+    {
+      id: 'inv-006',
+      invoiceNumber: 'BILL-9042',
+      type: 'SUPPLIER',
+      contactName: 'Stark Logistics',
+      contactType: 'BT',
+      issueDate: '2026-10-05',
+      dueDate: '2026-11-05',
+      status: 'PAID',
+      totalAmount: 5120.00,
+    },
   ];
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
+      if (params['type']) {
+        const t = params['type'].toUpperCase();
+        if (['CUSTOMER', 'SUPPLIER', 'ALL'].includes(t)) {
+          this.selectedType = t as InvoiceTypeFilter;
+        }
+      }
       if (params['status']) {
         const s = params['status'].toUpperCase();
         if (['DRAFT', 'APPROVED', 'PAID', 'ALL'].includes(s)) {
@@ -84,20 +125,46 @@ export class ListInvoice implements OnInit {
     });
   }
 
+  get allCount(): number {
+    return this.allInvoices.length;
+  }
+
+  get customerCount(): number {
+    return this.allInvoices.filter((inv) => inv.type === 'CUSTOMER').length;
+  }
+
+  get supplierCount(): number {
+    return this.allInvoices.filter((inv) => inv.type === 'SUPPLIER').length;
+  }
+
   get filteredInvoices(): InvoiceItem[] {
     return this.allInvoices.filter((inv) => {
+      const matchType =
+        this.selectedType === 'ALL' || inv.type === this.selectedType;
       const matchStatus =
         this.selectedStatus === 'ALL' || inv.status === this.selectedStatus;
       const matchSearch =
         !this.searchQuery.trim() ||
         inv.invoiceNumber.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         inv.contactName.toLowerCase().includes(this.searchQuery.toLowerCase());
-      return matchStatus && matchSearch;
+      return matchType && matchStatus && matchSearch;
     });
+  }
+
+  setType(type: InvoiceTypeFilter): void {
+    this.selectedType = type;
   }
 
   setStatus(status: string): void {
     this.selectedStatus = status;
+  }
+
+  getTypeTagSeverity(type: 'CUSTOMER' | 'SUPPLIER'): 'success' | 'warn' {
+    return type === 'CUSTOMER' ? 'success' : 'warn';
+  }
+
+  getTypeLabel(type: 'CUSTOMER' | 'SUPPLIER'): string {
+    return type === 'CUSTOMER' ? 'Customer' : 'Supplier';
   }
 
   getStatusSeverity(status: string): 'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast' {

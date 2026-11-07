@@ -210,6 +210,30 @@ export class InvoicePreview implements OnInit {
         subTotal: 826.09,
         totalTax: 123.91,
         grandTotal: 950.0
+      },
+      'inv-005': {
+        invoiceNumber: 'BILL-8891',
+        contactName: 'Cyberdyne Systems',
+        contactAccountNumber: 'SUPP-1005',
+        contactTypeInitials: 'SP',
+        type: 'SUPPLIER_INVOICE',
+        typeName: 'Supplier Invoice (Bills)',
+        status: 'APPROVED',
+        subTotal: 2130.43,
+        totalTax: 319.57,
+        grandTotal: 2450.0
+      },
+      'inv-006': {
+        invoiceNumber: 'BILL-9042',
+        contactName: 'Stark Logistics',
+        contactAccountNumber: 'BOTH-1006',
+        contactTypeInitials: 'BT',
+        type: 'SUPPLIER_INVOICE',
+        typeName: 'Supplier Invoice (Bills)',
+        status: 'PAID',
+        subTotal: 4452.17,
+        totalTax: 667.83,
+        grandTotal: 5120.0
       }
     };
 

@@ -2,7 +2,7 @@
   <div class="page-header">
     <div class="header-text">
       <h1 class="page-title">Invoices</h1>
-      <p class="page-subtitle">Track, approve, and manage customer billing</p>
+      <p class="page-subtitle">Track, approve, and manage customer sales and supplier expenses</p>
     </div>
     <div class="header-actions">
       <a routerLink="/main/invoice/new">
@@ -11,8 +11,39 @@
     </div>
   </div>
 
+  <!-- Primary Type Navigation Tabs (All, Customer Invoices, Supplier Invoices) -->
+  <div class="type-nav-tabs">
+    <button
+      type="button"
+      class="type-tab-btn"
+      [class.active]="selectedType === 'ALL'"
+      (click)="setType('ALL')">
+      <i class="pi pi-receipt"></i>
+      <span>All Invoices</span>
+      <span class="count-badge">{{ allCount }}</span>
+    </button>
+    <button
+      type="button"
+      class="type-tab-btn"
+      [class.active]="selectedType === 'CUSTOMER'"
+      (click)="setType('CUSTOMER')">
+      <i class="pi pi-arrow-up-right"></i>
+      <span>Customer Invoices</span>
+      <span class="count-badge customer-badge">{{ customerCount }}</span>
+    </button>
+    <button
+      type="button"
+      class="type-tab-btn"
+      [class.active]="selectedType === 'SUPPLIER'"
+      (click)="setType('SUPPLIER')">
+      <i class="pi pi-arrow-down-left"></i>
+      <span>Supplier Invoices</span>
+      <span class="count-badge supplier-badge">{{ supplierCount }}</span>
+    </button>
+  </div>
+
   <div class="invoice-card">
-    <!-- Filter Tabs & Search Bar -->
+    <!-- Filter Tabs (Status) & Search Bar -->
     <div class="table-controls">
       <div class="status-tabs">
         <button
@@ -52,7 +83,7 @@
           [pSize]="'small'"
           type="text"
           [(ngModel)]="searchQuery"
-          placeholder="Search by invoice # or contact..."
+          [placeholder]="selectedType === 'CUSTOMER' ? 'Search customer invoices...' : (selectedType === 'SUPPLIER' ? 'Search supplier invoices...' : 'Search by invoice # or contact...')"
           class="search-input" />
       </p-iconfield>
     </div>
@@ -71,6 +102,7 @@
             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
           </th>
           <th>Invoice #</th>
+          <th style="width: 8rem">Type</th>
           <th>Contact</th>
           <th>Issue Date</th>
           <th>Due Date</th>
@@ -87,7 +119,24 @@
           <td class="inv-number-cell">
             <a [routerLink]="['/main/invoice/preview', inv.id]" class="inv-link" pTooltip="Click to preview invoice">{{ inv.invoiceNumber }}</a>
           </td>
-          <td class="font-medium">{{ inv.contactName }}</td>
+          <td>
+            <p-tag
+              [value]="getTypeLabel(inv.type)"
+              [severity]="getTypeTagSeverity(inv.type)"
+              [rounded]="false"
+              class="type-tag">
+            </p-tag>
+          </td>
+          <td class="font-medium">
+            <div class="contact-name-cell">
+              <span>{{ inv.contactName }}</span>
+              @if (inv.contactType) {
+                <span class="contact-initials-badge" [class.badge-both]="inv.contactType === 'BT'">
+                  {{ inv.contactType }}
+                </span>
+              }
+            </div>
+          </td>
           <td class="text-secondary">{{ inv.issueDate }}</td>
           <td class="text-secondary">{{ inv.dueDate }}</td>
           <td class="text-center">
@@ -108,13 +157,21 @@
       </ng-template>
       <ng-template #emptymessage>
         <tr>
-          <td colspan="8" class="empty-state-cell">
+          <td colspan="9" class="empty-state-cell">
             <div class="empty-state">
               <i class="pi pi-receipt empty-icon"></i>
-              <p class="empty-title">No invoices found</p>
-              <p class="empty-desc">There are no invoices matching your current filter criteria.</p>
+              <p class="empty-title">
+                {{ selectedType === 'CUSTOMER' ? 'No customer invoices found' : (selectedType === 'SUPPLIER' ? 'No supplier invoices found' : 'No invoices found') }}
+              </p>
+              <p class="empty-desc">
+                {{ searchQuery ? 'No records match your search criteria.' : 'There are no invoices matching your current filter criteria.' }}
+              </p>
               <a routerLink="/main/invoice/new">
-                <p-button label="Create Invoice" icon="pi pi-plus" [size]="'small'"></p-button>
+                <p-button
+                  [label]="selectedType === 'CUSTOMER' ? 'New Customer Invoice' : (selectedType === 'SUPPLIER' ? 'New Supplier Invoice' : 'Create Invoice')"
+                  icon="pi pi-plus"
+                  [size]="'small'">
+                </p-button>
               </a>
             </div>
           </td>
