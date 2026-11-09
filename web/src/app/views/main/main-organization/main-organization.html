@@ -1,16 +1,27 @@
 <section class="organization-panels shared-expansion-panels">
+	<!-- Page Header -->
 	<div class="organization-header">
 		<div class="organization-title-group">
-			<h2 class="organization-title">Organization Information</h2>
-			<p class="organization-subtitle">Configure organization profile, financial settings, and contact information</p>
+			<div class="title-badge-row">
+				<h1 class="organization-title">Organization Settings</h1>
+				<span class="settings-pill"><i class="pi pi-cog"></i> Settings</span>
+			</div>
+			<p class="organization-subtitle">Configure organization profile, network keys, physical addresses, contact channels, and financial preferences</p>
 		</div>
-		<button class="organization-image-button" type="button" aria-label="Organization profile" (click)="openOrganizationImageDialog()">
+		<button
+			class="organization-image-button"
+			type="button"
+			pTooltip="View Organization Profile"
+			tooltipPosition="left"
+			aria-label="Organization profile"
+			(click)="openOrganizationImageDialog()">
 			<i class="pi pi-building organization-image-icon"></i>
+			<span class="profile-badge-dot"></span>
 		</button>
 	</div>
 	
-	<p-accordion [value]="['0']" [multiple]="true">
-		<!-- Panel 1: Organization -->
+	<p-accordion [value]="['0', 'network-keys']" [multiple]="true">
+		<!-- Panel 1: Organization Profile -->
 		<p-accordion-panel value="0">
 			<p-accordion-header>
 				<div class="detail-title">
@@ -35,9 +46,13 @@
 							<div class="skeleton-value"></div>
 						</div>
 					} @else {
-						<p class="organization-info-date-created"><span class="organization-info-date-label">Date created:</span> {{ organizationForm.get('createdDate')?.value | date:'longDate' }}</p>
+						<p class="organization-info-date-created">
+							<span class="organization-info-date-label">Date created:</span>
+							{{ organizationForm.get('createdDate')?.value | date:'longDate' }}
+						</p>
 					}
 					
+					<!-- Organization Type -->
 					<div class="organization-type-block">
 						<p class="organization-type-display-title">Organization Type</p>
 						@if (isLoadingOrganizationTypes) {
@@ -61,6 +76,7 @@
 						}
 					</div>
 
+					<!-- Organization Names -->
 					<div class="organization-names-block">
 						<p class="organization-names-display-title">Organization Name</p>
 						@if (isLoadingOrganization) {
@@ -103,6 +119,7 @@
 						}
 					</div>
 
+					<!-- Organization Description -->
 					@if (isLoadingOrganization) {
 						<div class="organization-description-skeleton">
 							<div class="skeleton-title"></div>
@@ -132,8 +149,382 @@
 			</p-accordion-content>
 		</p-accordion-panel>
 
-		<!-- Panel 2: Website -->
-		<p-accordion-panel value="1">
+		<!-- Panel 2: Merra Network Keys (Moved & Embedded Section) -->
+		<p-accordion-panel value="network-keys">
+			<p-accordion-header>
+				<div class="detail-title">
+					<span class="row-lead-icon network-key-icon-lead">
+						<i class="pi pi-key"></i>
+					</span>
+					<div class="detail-text">
+						<span class="detail-label">Network Keys:</span>
+						@if (isLoadingNetworkKeys) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">
+								{{ networkKeys.length }} active key{{ networkKeys.length === 1 ? '' : 's' }}
+							</span>
+						}
+					</div>
+				</div>
+			</p-accordion-header>
+			<p-accordion-content>
+				<div class="section-container network-keys-section">
+					<!-- Section Header Row -->
+					<div class="section-sub-header">
+						<div class="section-sub-info">
+							<div class="section-badge-row">
+								<h3 class="section-inner-title">Merra Network Keys</h3>
+								<span class="network-badge-hero">
+									<i class="pi pi-bolt"></i> B2B Network Subscription
+								</span>
+							</div>
+							<p class="section-inner-desc">
+								Share your Merra Network Key with other businesses to establish direct organization-to-organization connections and exchange invoices seamlessly.
+							</p>
+						</div>
+						<div class="section-sub-actions">
+							<p-button
+								label="Generate Network Key"
+								icon="pi pi-plus"
+								[size]="'small'"
+								[outlined]="true"
+								styleClass="compact-action-btn"
+								(click)="openCreateNetworkKeyDialog()"
+								[disabled]="isLoadingNetworkKeys"></p-button>
+						</div>
+					</div>
+
+					<!-- Keys Content Grid -->
+					<div class="network-keys-content">
+						@if (isLoadingNetworkKeys) {
+							<div class="key-card skeleton-card">
+								<div class="key-card-header">
+									<p-skeleton width="10rem" height="1.25rem"></p-skeleton>
+									<p-skeleton width="4rem" height="1.25rem" borderRadius="12px"></p-skeleton>
+								</div>
+								<div class="key-box-skeleton">
+									<p-skeleton width="100%" height="2.5rem" borderRadius="4px"></p-skeleton>
+								</div>
+								<div class="key-card-footer">
+									<p-skeleton width="8rem" height="1rem"></p-skeleton>
+									<p-skeleton width="5rem" height="1.75rem"></p-skeleton>
+								</div>
+							</div>
+						} @else if (networkKeys.length === 0) {
+							<div class="empty-keys-state">
+								<div class="empty-icon-wrap">
+									<i class="pi pi-key empty-icon"></i>
+								</div>
+								<h4 class="empty-title">No Network Key Generated Yet</h4>
+								<p class="empty-description">
+									Generate your organization's first Merra Network Key to start connecting with partner organizations, customers, and suppliers.
+								</p>
+								<p-button
+									label="Generate Network Key"
+									icon="pi pi-plus"
+									[size]="'small'"
+									[outlined]="true"
+									styleClass="compact-action-btn"
+									(click)="openCreateNetworkKeyDialog()"></p-button>
+							</div>
+						} @else {
+							<div class="key-cards-list">
+								@for (k of networkKeys; track k.id) {
+									<div class="key-card">
+										<div class="key-card-header">
+											<div class="key-info-title">
+												<span class="key-name">{{ k.name || 'Primary Network Key' }}</span>
+												<span class="key-status-pill">
+													<span class="status-dot"></span> Active
+												</span>
+											</div>
+											<button
+												type="button"
+												class="revoke-btn"
+												pTooltip="Revoke this key"
+												tooltipPosition="left"
+												(click)="openDeleteNetworkKeyDialog(k)">
+												<i class="pi pi-trash"></i>
+												<span>Revoke</span>
+											</button>
+										</div>
+
+										<!-- Key Value Box -->
+										<div class="key-display-box">
+											<span class="key-text" [class.unmasked]="isNetworkKeyVisible(k.id)">
+												{{ getMaskedNetworkKey(k.networkKey, isNetworkKeyVisible(k.id)) }}
+											</span>
+											<div class="key-box-actions">
+												<button
+													type="button"
+													class="key-action-btn"
+													[pTooltip]="isNetworkKeyVisible(k.id) ? 'Hide Key' : 'Reveal Key'"
+													tooltipPosition="top"
+													(click)="toggleNetworkKeyVisibility(k.id)">
+													<i class="pi" [ngClass]="isNetworkKeyVisible(k.id) ? 'pi-eye-slash' : 'pi-eye'"></i>
+												</button>
+												<button
+													type="button"
+													class="key-action-btn copy-btn"
+													pTooltip="Copy Key to Clipboard"
+													tooltipPosition="top"
+													(click)="copyNetworkKeyToClipboard(k.networkKey)">
+													<i class="pi pi-copy"></i>
+													<span>Copy</span>
+												</button>
+											</div>
+										</div>
+
+										<div class="key-card-footer">
+											<span class="meta-item">
+												<i class="pi pi-calendar"></i>
+												Created: {{ k.createdAt ? (k.createdAt | date: 'mediumDate') : 'Recently' }}
+											</span>
+											<span class="meta-tag">
+												<i class="pi pi-shield"></i> Verified Subscription
+											</span>
+										</div>
+									</div>
+								}
+							</div>
+						}
+
+						<!-- Explainer Workflow Guide -->
+						<div class="network-guide-card">
+							<div class="guide-header">
+								<i class="pi pi-info-circle guide-icon"></i>
+								<h4 class="guide-title">How Merra Network Keys Work</h4>
+							</div>
+							<div class="workflow-steps-grid">
+								<div class="step-card">
+									<div class="step-badge">1</div>
+									<div class="step-body">
+										<strong class="step-title">Generate your key</strong>
+										<p class="step-desc">Your key authorizes other Merra tenants to connect and send you automated transactions.</p>
+									</div>
+								</div>
+								<div class="step-card">
+									<div class="step-badge">2</div>
+									<div class="step-body">
+										<strong class="step-title">Share with partners</strong>
+										<p class="step-desc">Provide your key to your customers or vendors so they can link your company to their contacts book.</p>
+									</div>
+								</div>
+								<div class="step-card">
+									<div class="step-badge">3</div>
+									<div class="step-body">
+										<strong class="step-title">Direct dispatch</strong>
+										<p class="step-desc">When they issue an invoice for your contact, transactions are verified and transmitted directly.</p>
+									</div>
+								</div>
+								<div class="step-card">
+									<div class="step-badge">4</div>
+									<div class="step-body">
+										<strong class="step-title">Full control</strong>
+										<p class="step-desc">You can revoke a key at any time to instantly block unauthorized transactions.</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</p-accordion-content>
+		</p-accordion-panel>
+
+		<!-- Panel 3: Addresses (With Full Update, Add, and Delete Capabilities) -->
+		<p-accordion-panel value="addresses">
+			<p-accordion-header>
+				<div class="detail-title">
+					<span class="row-lead-icon">
+						<i class="pi pi-map-marker"></i>
+					</span>
+					<div class="detail-text">
+						<span class="detail-label">Addresses:</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ addresses.length }} address{{ addresses.length === 1 ? '' : 'es' }} configured</span>
+						}
+					</div>
+				</div>
+			</p-accordion-header>
+			<p-accordion-content>
+				<div class="section-container addresses-section">
+					<div class="section-sub-header">
+						<div class="section-sub-info">
+							<h3 class="section-inner-title">Organization Addresses</h3>
+							<p class="section-inner-desc">
+								Manage registered offices, billing locations, and shipping destinations used for invoice headers, payments, and tax filings.
+							</p>
+						</div>
+						<div class="section-sub-actions">
+							<p-button
+								label="Add Address"
+								icon="pi pi-plus"
+								[size]="'small'"
+								[outlined]="true"
+								styleClass="compact-action-btn"
+								(click)="openAddAddressDialog()"></p-button>
+						</div>
+					</div>
+
+					<div class="organization-addresses-container">
+						@for (addr of addresses; track $index) {
+							<div class="organization-address-card">
+								<div class="address-header">
+									<div class="address-type-group">
+										<i class="pi" [ngClass]="getAddressTypeIcon(addr.type)"></i>
+										<span class="address-type-label">{{ addr.type | titlecase }} Address</span>
+									</div>
+									<div class="address-actions">
+										<button
+											type="button"
+											class="card-action-btn edit-action"
+											pTooltip="Edit Address"
+											tooltipPosition="top"
+											(click)="openEditAddressDialog($index)">
+											<i class="pi pi-pencil"></i>
+											<span>Edit</span>
+										</button>
+										<button
+											type="button"
+											class="card-action-btn delete-action"
+											pTooltip="Delete Address"
+											tooltipPosition="top"
+											(click)="openDeleteAddressDialog($index)">
+											<i class="pi pi-trash"></i>
+											<span>Delete</span>
+										</button>
+									</div>
+								</div>
+								<div class="address-content">
+									@for (line of addr.addresses; track line) {
+										<p class="address-line">{{ line }}</p>
+									}
+									<p class="address-line">
+										<span class="city-postal">{{ addr.city }}, {{ addr.postalCode }}</span>
+									</p>
+									<p class="address-line address-country">
+										<i class="pi pi-globe"></i> {{ getAddressCountryName(addr.country) }} ({{ addr.country }})
+									</p>
+								</div>
+							</div>
+						} @empty {
+							<div class="empty-address-state">
+								<div class="empty-icon-wrap">
+									<i class="pi pi-map-marker empty-icon"></i>
+								</div>
+								<h4 class="empty-title">No Physical Addresses Configured</h4>
+								<p class="empty-description">
+									Add your registered office, mailing address, or billing location to ensure your invoices and compliance documents have accurate tax and postal info.
+								</p>
+								<p-button
+									label="Add Address"
+									icon="pi pi-plus"
+									[size]="'small'"
+									[outlined]="true"
+									styleClass="compact-action-btn"
+									(click)="openAddAddressDialog()"></p-button>
+							</div>
+						}
+					</div>
+				</div>
+			</p-accordion-content>
+		</p-accordion-panel>
+
+		<!-- Panel 4: Contact Information (Improved with Edit, Validation, & Actions) -->
+		<p-accordion-panel value="contact">
+			<p-accordion-header>
+				<div class="detail-title">
+					<span class="row-lead-icon">
+						<i class="pi pi-envelope"></i>
+					</span>
+					<div class="detail-text">
+						<span class="detail-label">Contact:</span>
+						@if (isLoadingOrganization) {
+							<span class="detail-skeleton"></span>
+						} @else {
+							<span class="detail-value">{{ organizationForm.get('address.email')?.value || '—' }}</span>
+						}
+					</div>
+				</div>
+			</p-accordion-header>
+			<p-accordion-content>
+				<div class="section-container contact-section" [formGroup]="organizationForm">
+					<div class="contact-card-box">
+						<div class="contact-header-info">
+							<div class="contact-title-row">
+								<h3 class="section-inner-title">Primary Contact Information</h3>
+								<span class="contact-badge-pill">
+									<i class="pi pi-shield"></i> Official Channel
+								</span>
+							</div>
+							<p class="section-inner-desc">
+								This email receives system notices, network invitations, invoice delivery updates, and administrative communications.
+							</p>
+						</div>
+
+						<div class="contact-editor-block">
+							<p class="field-heading-label">Contact Email Address</p>
+
+							@if (!isEditingContact) {
+								<button class="organization-display-button contact-display-btn" type="button" (click)="isEditingContact = true">
+									<div class="display-btn-content">
+										<i class="pi pi-envelope contact-lead-icon"></i>
+										<span class="organization-display-value">{{ organizationForm.get('address.email')?.value || 'Not configured' }}</span>
+									</div>
+									<span class="edit-hint"><i class="pi pi-pencil"></i> Edit</span>
+								</button>
+							} @else {
+								<div formGroupName="address" class="contact-edit-form">
+									<div class="form-field full-width">
+										<label class="field-label" for="contact-email-input">Official Email Address</label>
+										<input
+											id="contact-email-input"
+											pInputText
+											[pSize]="'small'"
+											type="email"
+											formControlName="email"
+											placeholder="e.g. contact@yourcompany.com"
+											class="full-width" />
+										@if (organizationForm.get('address.email')?.invalid && organizationForm.get('address.email')?.touched) {
+											<small class="field-error-text">Please enter a valid email address.</small>
+										}
+									</div>
+
+									<div class="editor-actions">
+										<p-button
+											label="Update Email"
+											icon="pi pi-check"
+											[size]="'small'"
+											[disabled]="isUpdatingContact() || !hasContactChanged() || organizationForm.get('address.email')?.invalid"
+											[loading]="isUpdatingContact()"
+											(click)="updateContactEmail()"></p-button>
+										<p-button
+											label="Cancel"
+											[outlined]="true"
+											[size]="'small'"
+											(click)="cancelContactEditing()"></p-button>
+									</div>
+								</div>
+							}
+						</div>
+
+						<div class="contact-secondary-notice">
+							<i class="pi pi-info-circle notice-icon"></i>
+							<div class="notice-text">
+								<strong>Security Notice:</strong>
+								Changing the primary organization email ensures billing statements, invoice status webhooks, and team invites are routed to the updated address.
+							</div>
+						</div>
+					</div>
+				</div>
+			</p-accordion-content>
+		</p-accordion-panel>
+
+		<!-- Panel 5: Website -->
+		<p-accordion-panel value="website">
 			<p-accordion-header>
 				<div class="detail-title">
 					<span class="row-lead-icon">
@@ -158,26 +549,31 @@
 						</div>
 					} @else {
 						<div class="form-field">
-							<label class="field-label">Website</label>
-							<input pInputText [pSize]="'small'" type="text" formControlName="website" placeholder="Enter website" class="full-width" />
+							<label class="field-label">Official Website URL</label>
+							<input pInputText [pSize]="'small'" type="text" formControlName="website" placeholder="e.g. https://www.yourcompany.com" class="full-width" />
 						</div>
 					}
 					<div class="editor-actions">
-						<p-button label="Update" [size]="'small'"></p-button>
+						<p-button
+							label="Update Website"
+							[size]="'small'"
+							[disabled]="isUpdatingWebsite() || !hasWebsiteChanged()"
+							[loading]="isUpdatingWebsite()"
+							(click)="updateWebsite()"></p-button>
 					</div>
 				</div>
 			</p-accordion-content>
 		</p-accordion-panel>
 
-		<!-- Panel 3: Country -->
-		<p-accordion-panel value="2">
+		<!-- Panel 6: Country & Regional -->
+		<p-accordion-panel value="country">
 			<p-accordion-header>
 				<div class="detail-title">
 					<span class="row-lead-icon">
 						<i class="pi pi-map"></i>
 					</span>
 					<div class="detail-text">
-						<span class="detail-label">Country:</span>
+						<span class="detail-label">Country & Regional:</span>
 						@if (isLoadingOrganization) {
 							<span class="detail-skeleton"></span>
 						} @else {
@@ -219,82 +615,25 @@
 						} @else {
 							<div formGroupName="address" class="form-field">
 								<label class="field-label">Timezone</label>
-								<input pInputText [pSize]="'small'" type="text" formControlName="timeZone" placeholder="Enter timezone" class="full-width" />
+								<input pInputText [pSize]="'small'" type="text" formControlName="timeZone" placeholder="e.g. UTC, America/New_York" class="full-width" />
 							</div>
 						}
 					</div>
 
 					<div class="editor-actions">
-						<p-button label="Update" [size]="'small'"></p-button>
+						<p-button
+							label="Update Regional Settings"
+							[size]="'small'"
+							[disabled]="isUpdatingRegional() || !hasRegionalChanged()"
+							[loading]="isUpdatingRegional()"
+							(click)="updateRegionalSettings()"></p-button>
 					</div>
 				</div>
 			</p-accordion-content>
 		</p-accordion-panel>
 
-		<!-- Panel 4: Contact -->
-		<p-accordion-panel value="3">
-			<p-accordion-header>
-				<div class="detail-title">
-					<span class="row-lead-icon">
-						<i class="pi pi-envelope"></i>
-					</span>
-					<div class="detail-text">
-						<span class="detail-label">Contact:</span>
-						@if (isLoadingOrganization) {
-							<span class="detail-skeleton"></span>
-						} @else {
-							<span class="detail-value">{{ organizationForm.get('address.email')?.value || '—' }}</span>
-						}
-					</div>
-				</div>
-			</p-accordion-header>
-			<p-accordion-content>
-				<p class="organization-info-helper">Organization contact email: <strong>{{ organizationForm.get('address.email')?.value || 'Not configured' }}</strong></p>
-			</p-accordion-content>
-		</p-accordion-panel>
-
-		<!-- Panel 5: Addresses -->
-		<p-accordion-panel value="4">
-			<p-accordion-header>
-				<div class="detail-title">
-					<span class="row-lead-icon">
-						<i class="pi pi-map-marker"></i>
-					</span>
-					<div class="detail-text">
-						<span class="detail-label">Addresses:</span>
-						@if (isLoadingOrganization) {
-							<span class="detail-skeleton"></span>
-						} @else {
-							<span class="detail-value">{{ currentOrganization?.address?.addresses?.length || 0 }} address{{ currentOrganization?.address?.addresses?.length === 1 ? '' : 'es' }} configured</span>
-						}
-					</div>
-				</div>
-			</p-accordion-header>
-			<p-accordion-content>
-				<div class="organization-addresses-container">
-					@for (addr of currentOrganization?.address?.addresses; track addr.type) {
-						<div class="organization-address-card">
-							<div class="address-header">
-								<i class="pi" [class.pi-receipt]="addr.type === 'BILLING'" [class.pi-truck]="addr.type === 'SHIPPING'" [class.pi-map-marker]="addr.type !== 'BILLING' && addr.type !== 'SHIPPING'"></i>
-								<span class="address-type-label">{{ addr.type | titlecase }} Address</span>
-							</div>
-							<div class="address-content">
-								@for (line of addr.addresses; track line) {
-									<p class="address-line">{{ line }}</p>
-								}
-								<p class="address-line">{{ addr.city }}, {{ addr.postalCode }}</p>
-								<p class="address-line">{{ addr.country }}</p>
-							</div>
-						</div>
-					} @empty {
-						<p class="organization-info-helper">No physical addresses configured for this organization.</p>
-					}
-				</div>
-			</p-accordion-content>
-		</p-accordion-panel>
-
-		<!-- Panel 6: Financial Settings -->
-		<p-accordion-panel value="5">
+		<!-- Panel 7: Financial Settings -->
+		<p-accordion-panel value="financial">
 			<p-accordion-header>
 				<div class="detail-title">
 					<span class="row-lead-icon">
@@ -312,27 +651,32 @@
 			</p-accordion-header>
 			<p-accordion-content>
 				<div class="organization-editor" [formGroup]="organizationForm">
-					<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the boundary for your financial reports.</p>
+					<p class="organization-financial-settings-helper">Define the closing date of your organization's accounting cycle. Together, they establish the boundary for your financial reports and period-end balances.</p>
 					<div class="financial-fields-row" formGroupName="financialYear">
 						<div class="form-field flex-1">
 							<label class="field-label">Financial Year End Month</label>
-							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndMonth" placeholder="Enter end month (1-12)" class="full-width" />
+							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndMonth" placeholder="Month (1-12)" class="full-width" />
 						</div>
 						<div class="form-field flex-1">
 							<label class="field-label">Financial Year End Day</label>
-							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndDay" placeholder="Enter end day (1-31)" class="full-width" />
+							<input pInputText [pSize]="'small'" type="number" formControlName="yearEndDay" placeholder="Day (1-31)" class="full-width" />
 						</div>
 					</div>
 
 					<div class="editor-actions">
-						<p-button label="Update" [size]="'small'"></p-button>
+						<p-button
+							label="Update Financial Year"
+							[size]="'small'"
+							[disabled]="isUpdatingFinancialYear() || !hasFinancialYearChanged() || organizationForm.get('financialYear')?.invalid"
+							[loading]="isUpdatingFinancialYear()"
+							(click)="updateFinancialYear()"></p-button>
 					</div>
 				</div>
 			</p-accordion-content>
 		</p-accordion-panel>
 
-		<!-- Panel 7: Status -->
-		<p-accordion-panel value="6">
+		<!-- Panel 8: Organization Status -->
+		<p-accordion-panel value="status">
 			<p-accordion-header>
 				<div class="detail-title">
 					<span class="row-lead-icon">
@@ -357,10 +701,246 @@
 				} @else {
 					<div class="organization-status-row">
 						<p-toggleswitch [(ngModel)]="isOrganizationActive" (ngModelChange)="confirmDisableOrganization($event)" ariaLabel="Organization status toggle"></p-toggleswitch>
-						<span class="organization-status-text">The organization is currently active with active members.</span>
+						<span class="organization-status-text">The organization is currently active with active members and transactions enabled.</span>
 					</div>
 				}
 			</p-accordion-content>
 		</p-accordion-panel>
 	</p-accordion>
+
+	<!-- ======================================================== -->
+	<!-- DIALOGS -->
+	<!-- ======================================================== -->
+
+	<!-- Address Add/Edit Dialog -->
+	<p-dialog
+		[header]="editingAddressIndex !== null ? 'Edit Organization Address' : 'Add Organization Address'"
+		[(visible)]="showAddressDialog"
+		[modal]="true"
+		[closable]="!isSavingAddress()"
+		[style]="{ width: '520px' }"
+		[draggable]="false"
+		[resizable]="false">
+		<form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="address-modal-form">
+			<p class="dialog-desc">
+				Specify the physical location details for this organization. Used for billing, tax calculation, and invoices.
+			</p>
+
+			<div class="form-field">
+				<label class="field-label">Address Type <span class="required-star">*</span></label>
+				<p-select
+					formControlName="type"
+					[options]="availableAddressTypes"
+					optionLabel="name"
+					optionValue="name"
+					[size]="'small'"
+					styleClass="full-width"></p-select>
+			</div>
+
+			<div class="form-field">
+				<label class="field-label">Address Line 1 <span class="required-star">*</span></label>
+				<input
+					pInputText
+					[pSize]="'small'"
+					formControlName="addressLine1"
+					placeholder="Street address, P.O. Box, company name"
+					class="full-width" />
+				@if (addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched) {
+					<small class="field-error-text">Address line 1 is required.</small>
+				}
+			</div>
+
+			<div class="form-field">
+				<label class="field-label">Address Line 2 <span class="optional-label">(Optional)</span></label>
+				<input
+					pInputText
+					[pSize]="'small'"
+					formControlName="addressLine2"
+					placeholder="Apartment, suite, unit, building, floor"
+					class="full-width" />
+			</div>
+
+			<div class="two-column-row">
+				<div class="form-field flex-1">
+					<label class="field-label">City / Municipality <span class="required-star">*</span></label>
+					<input
+						pInputText
+						[pSize]="'small'"
+						formControlName="city"
+						placeholder="City or Town"
+						class="full-width" />
+					@if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
+						<small class="field-error-text">City is required.</small>
+					}
+				</div>
+
+				<div class="form-field flex-1">
+					<label class="field-label">Postal / Zip Code <span class="required-star">*</span></label>
+					<input
+						pInputText
+						[pSize]="'small'"
+						formControlName="postalCode"
+						placeholder="Postal Code"
+						class="full-width" />
+					@if (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched) {
+						<small class="field-error-text">Postal code is required.</small>
+					}
+				</div>
+			</div>
+
+			<div class="form-field">
+				<label class="field-label">Country <span class="required-star">*</span></label>
+				<p-select
+					formControlName="country"
+					[options]="countries"
+					optionLabel="name"
+					optionValue="cca2"
+					[filter]="true"
+					filterBy="name"
+					[size]="'small'"
+					styleClass="full-width"></p-select>
+				@if (addressForm.get('country')?.invalid && addressForm.get('country')?.touched) {
+					<small class="field-error-text">Country is required.</small>
+				}
+			</div>
+		</form>
+
+		<ng-template #footer>
+			<div class="dialog-footer">
+				<p-button
+					label="Cancel"
+					[outlined]="true"
+					[size]="'small'"
+					(click)="closeAddressDialog()"
+					[disabled]="isSavingAddress()"></p-button>
+				<p-button
+					[label]="editingAddressIndex !== null ? 'Save Changes' : 'Add Address'"
+					icon="pi pi-check"
+					[size]="'small'"
+					(click)="saveAddress()"
+					[loading]="isSavingAddress()"
+					[disabled]="addressForm.invalid"></p-button>
+			</div>
+		</ng-template>
+	</p-dialog>
+
+	<!-- Address Delete Confirmation Dialog -->
+	<p-dialog
+		header="Delete Address"
+		[(visible)]="showDeleteAddressDialog"
+		[modal]="true"
+		[closable]="!isDeletingAddress()"
+		[style]="{ width: '440px' }"
+		[draggable]="false"
+		[resizable]="false">
+		<div class="delete-dialog-content">
+			<div class="delete-icon-wrapper">
+				<i class="pi pi-exclamation-triangle"></i>
+			</div>
+			<div class="delete-text">
+				<p class="delete-primary-msg">Are you sure you want to remove this address?</p>
+				<p class="delete-warning-msg">This will remove the address from your organization records. Invoices already issued will retain their original snapshot.</p>
+			</div>
+		</div>
+		<ng-template #footer>
+			<div class="dialog-footer">
+				<p-button
+					label="Cancel"
+					[outlined]="true"
+					[size]="'small'"
+					(click)="closeDeleteAddressDialog()"
+					[disabled]="isDeletingAddress()"></p-button>
+				<p-button
+					label="Yes, Remove"
+					icon="pi pi-trash"
+					severity="danger"
+					[size]="'small'"
+					(click)="confirmDeleteAddress()"
+					[loading]="isDeletingAddress()"></p-button>
+			</div>
+		</ng-template>
+	</p-dialog>
+
+	<!-- Generate Network Key Dialog -->
+	<p-dialog
+		header="Generate Merra Network Key"
+		[(visible)]="showCreateNetworkKeyDialog"
+		[modal]="true"
+		[closable]="!isGeneratingNetworkKey"
+		[style]="{ width: '460px' }"
+		[draggable]="false"
+		[resizable]="false">
+		<div class="dialog-body">
+			<p class="dialog-desc">
+				Give this key a label (e.g. "Primary Network Key" or "Vendor Portal Key") to easily identify which business partners use it.
+			</p>
+			<div class="form-field">
+				<label class="field-label" for="key-name-input">Key Label</label>
+				<input
+					id="key-name-input"
+					pInputText
+					[pSize]="'small'"
+					[(ngModel)]="newNetworkKeyName"
+					placeholder="e.g. Primary Network Key"
+					class="full-width" />
+			</div>
+		</div>
+		<ng-template #footer>
+			<div class="dialog-footer">
+				<p-button
+					label="Cancel"
+					[outlined]="true"
+					[size]="'small'"
+					(click)="showCreateNetworkKeyDialog = false"
+					[disabled]="isGeneratingNetworkKey"></p-button>
+				<p-button
+					label="Generate Key"
+					icon="pi pi-check"
+					[size]="'small'"
+					(click)="generateNetworkKey()"
+					[loading]="isGeneratingNetworkKey"></p-button>
+			</div>
+		</ng-template>
+	</p-dialog>
+
+	<!-- Revoke Network Key Dialog -->
+	<p-dialog
+		header="Revoke Network Key"
+		[(visible)]="showDeleteNetworkKeyDialog"
+		[modal]="true"
+		[closable]="!isDeletingNetworkKey"
+		[style]="{ width: '480px' }"
+		[draggable]="false"
+		[resizable]="false">
+		<div class="delete-dialog-content">
+			<div class="delete-icon-wrapper">
+				<i class="pi pi-exclamation-triangle"></i>
+			</div>
+			<div class="delete-text">
+				<p class="delete-primary-msg">
+					Are you sure you want to revoke key <strong>{{ selectedNetworkKeyToDelete?.name || 'Primary Network Key' }}</strong>?
+				</p>
+				<p class="delete-warning-msg">
+					Counterparty organizations using this key will no longer be able to establish connections or dispatch invoices to you until provided with a new active key.
+				</p>
+			</div>
+		</div>
+		<ng-template #footer>
+			<div class="dialog-footer">
+				<p-button
+					label="Cancel"
+					[outlined]="true"
+					[size]="'small'"
+					(click)="closeDeleteNetworkKeyDialog()"
+					[disabled]="isDeletingNetworkKey"></p-button>
+				<p-button
+					label="Yes, Revoke Key"
+					icon="pi pi-trash"
+					severity="danger"
+					[size]="'small'"
+					(click)="confirmDeleteNetworkKey()"
+					[loading]="isDeletingNetworkKey"></p-button>
+			</div>
+		</ng-template>
+	</p-dialog>
 </section>

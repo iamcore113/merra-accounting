@@ -65,8 +65,8 @@ describe('NewInvoice', () => {
         response: 200,
         data: {
           invoiceTypes: [{ id: 'CUSTOMER_INVOICE', name: 'Customer Invoice' }],
-          invoiceStatusCodes: [{ code: 'DRAFT' }],
-          lineAmountTypes: [{ name: 'EXCLUSIVE' }]
+          invoiceStatusCodes: [{ id: '1', code: 'DRAFT' }],
+          lineAmountTypes: [{ id: '1', name: 'EXCLUSIVE' }]
         }
       })
     );

@@ -623,13 +623,100 @@ public class OrganizationService {
 							() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION_TYPE)));
 		}
 
-		final String requestEmail = req.address().email();
+		if (req.address() != null) {
+			final String requestEmail = req.address().email();
+			if (requestEmail != null && !Objects.equals(requestEmail, currentOrganization.getEmail())) {
+				currentOrganization.setEmail(requestEmail);
+			}
 
-		if (!Objects.equals(requestEmail, currentOrganization.getEmail())) {
-			currentOrganization.setEmail(requestEmail);
+			final String requestCountry = req.address().country();
+			if (requestCountry != null && !Objects.equals(requestCountry, currentOrganization.getCountry())) {
+				currentOrganization.setCountry(requestCountry);
+			}
+
+			final String requestCurrency = req.address().currency();
+			if (requestCurrency != null && !Objects.equals(requestCurrency, currentOrganization.getDefaultCurrency())) {
+				currentOrganization.setDefaultCurrency(requestCurrency);
+			}
+
+			final String requestTimeZone = req.address().timeZone();
+			if (requestTimeZone != null && !Objects.equals(requestTimeZone, currentOrganization.getTimeZone())) {
+				currentOrganization.setTimeZone(requestTimeZone);
+			}
+
+			if (req.address().addresses() != null) {
+				updateOrganizationAddresses(currentOrganization, req.address().addresses());
+			}
+		}
+
+		if (req.website() != null && !Objects.equals(req.website(), currentOrganization.getWebsite())) {
+			currentOrganization.setWebsite(req.website());
+		}
+
+		if (req.financialYear() != null && req.financialYear().yearEndDay() != null && req.financialYear().yearEndMonth() != null) {
+			try {
+				int day = Integer.parseInt(req.financialYear().yearEndDay());
+				int month = Integer.parseInt(req.financialYear().yearEndMonth());
+				currentOrganization.setFinancialYear(new FinancialYearEmb(day, month));
+			} catch (NumberFormatException ignored) {
+			}
 		}
 
 		organizationRepository.save(currentOrganization);
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
+	}
+
+	private void updateOrganizationAddresses(Organization org, List<CurrentOrganizationResponse.Contact.Address> addressDtos) {
+		if (org.getAddresses() == null) {
+			org.setAddresses(new ArrayList<>());
+		} else {
+			org.getAddresses().clear();
+		}
+
+		if (addressDtos == null || addressDtos.isEmpty()) {
+			return;
+		}
+
+		List<AddressType> allAddressTypes = addressTypeRepository.findAll();
+		for (CurrentOrganizationResponse.Contact.Address add : addressDtos) {
+			if (add == null) continue;
+			AddressType type = null;
+			if (add.type() != null) {
+				type = allAddressTypes.stream()
+						.filter(t -> t.getName().equalsIgnoreCase(add.type()) ||
+								(t.getId() != null && t.getId().toString().equalsIgnoreCase(add.type())))
+						.findFirst()
+						.orElse(null);
+			}
+			if (type == null && !allAddressTypes.isEmpty()) {
+				type = allAddressTypes.get(0);
+			}
+			if (type == null) {
+				type = addressTypeRepository.save(new AddressType(add.type() != null ? add.type() : "STREET", "Default Address Type"));
+			}
+
+			Map<String, String> addressMap = new HashMap<>();
+			if (add.addresses() != null) {
+				for (int i = 0; i < add.addresses().size(); i++) {
+					String line = add.addresses().get(i);
+					if (line != null && !line.isBlank()) {
+						addressMap.put("address" + (i + 1), line.trim());
+					}
+				}
+			}
+			if (addressMap.isEmpty()) {
+				addressMap.put("address1", "N/A");
+			}
+
+			OrganizationAddresses orgAddress = new OrganizationAddresses();
+			orgAddress.setAddresses(addressMap);
+			orgAddress.setCity(add.city() != null && !add.city().isBlank() ? add.city() : "N/A");
+			orgAddress.setPostalCode(add.postalCode() != null && !add.postalCode().isBlank() ? add.postalCode() : "N/A");
+			orgAddress.setCountry(add.country() != null && !add.country().isBlank() ? add.country() : "N/A");
+			orgAddress.setType(type);
+			orgAddress.setOrganization(org);
+
+			org.getAddresses().add(orgAddress);
+		}
 	}
 }

@@ -89,8 +89,8 @@ export const routes: Routes = [
       },
       {
         path: 'network-key',
-        loadComponent: () => import('./views/main/main-network-key/main-network-key').then(m => m.MainNetworkKey),
-        title: 'MERRA - Network Key'
+        redirectTo: 'organization',
+        pathMatch: 'full'
       }
     ]
   },

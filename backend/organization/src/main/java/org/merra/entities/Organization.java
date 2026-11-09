@@ -100,7 +100,7 @@ public class Organization {
 	@Column(name = "financial_year", columnDefinition = "jsonb")
 	private FinancialYearEmb financialYear;
 
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER, orphanRemoval = true)
 	private List<OrganizationAddresses> addresses;
 
 	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
