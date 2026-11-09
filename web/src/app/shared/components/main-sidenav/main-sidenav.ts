@@ -33,6 +33,7 @@ export class MainSidenav {
     { label: 'Dashboard', route: '/main', icon: 'pi pi-th-large', exact: true },
     { label: 'Invoices', route: '/main/invoice', icon: 'pi pi-receipt', exact: false },
     { label: 'Contacts', route: '/main/contacts', icon: 'pi pi-users', exact: false },
+    { label: 'Network Key', route: '/main/network-key', icon: 'pi pi-key', exact: false },
     { label: 'Organization', route: '/main/organization', icon: 'pi pi-building', exact: false },
     { label: 'Profile', route: '/main/profile', icon: 'pi pi-user', exact: false },
   ];

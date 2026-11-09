@@ -1,0 +1,270 @@
+<section class="network-key-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-text">
+      <div class="title-row">
+        <h1 class="page-title">Merra Network Keys</h1>
+        <span class="network-badge-hero">
+          <i class="pi pi-bolt"></i> B2B Network Subscription
+        </span>
+      </div>
+      <p class="page-subtitle">
+        Share your Merra Network Key with other businesses to establish direct organization-to-organization connections and exchange invoices seamlessly.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <p-button
+        label="Generate Network Key"
+        icon="pi pi-plus"
+        [size]="'small'"
+        (click)="openCreateDialog()"
+        [disabled]="isLoading"></p-button>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="network-content-grid">
+    <!-- Left Column: Active Keys List -->
+    <div class="keys-section">
+      <div class="section-title-bar">
+        <div class="bar-left">
+          <i class="pi pi-key section-icon"></i>
+          <h2 class="section-heading">Your Active Network Keys</h2>
+        </div>
+        <span class="keys-count" *ngIf="!isLoading">
+          {{ keys.length }} active key{{ keys.length === 1 ? '' : 's' }}
+        </span>
+      </div>
+
+      <!-- Loading State -->
+      @if (isLoading) {
+        <div class="key-card skeleton-card">
+          <div class="key-card-header">
+            <p-skeleton width="10rem" height="1.25rem"></p-skeleton>
+            <p-skeleton width="4rem" height="1.25rem" borderRadius="12px"></p-skeleton>
+          </div>
+          <div class="key-box-skeleton">
+            <p-skeleton width="100%" height="2.5rem" borderRadius="4px"></p-skeleton>
+          </div>
+          <div class="key-card-footer">
+            <p-skeleton width="8rem" height="1rem"></p-skeleton>
+            <p-skeleton width="5rem" height="1.75rem"></p-skeleton>
+          </div>
+        </div>
+      } @else if (keys.length === 0) {
+        <!-- Empty State -->
+        <div class="empty-keys-state">
+          <div class="empty-icon-wrap">
+            <i class="pi pi-key empty-icon"></i>
+          </div>
+          <h3 class="empty-title">No Network Key Generated Yet</h3>
+          <p class="empty-description">
+            Generate your organization's first Merra Network Key to start connecting with partner organizations, customers, and suppliers.
+          </p>
+          <p-button
+            label="Generate Network Key"
+            icon="pi pi-plus"
+            [size]="'small'"
+            (click)="openCreateDialog()"></p-button>
+        </div>
+      } @else {
+        <!-- Key Cards -->
+        <div class="key-cards-list">
+          @for (k of keys; track k.id) {
+            <div class="key-card">
+              <div class="key-card-header">
+                <div class="key-info-title">
+                  <span class="key-name">{{ k.name || 'Primary Network Key' }}</span>
+                  <span class="key-status-pill">
+                    <span class="status-dot"></span> Active
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  class="revoke-btn"
+                  pTooltip="Revoke this key"
+                  tooltipPosition="left"
+                  (click)="openDeleteDialog(k)">
+                  <i class="pi pi-trash"></i>
+                  <span>Revoke</span>
+                </button>
+              </div>
+
+              <!-- Key Value Box -->
+              <div class="key-display-box">
+                <span class="key-text" [class.unmasked]="isKeyVisible(k.id)">
+                  {{ getMaskedKey(k.networkKey, isKeyVisible(k.id)) }}
+                </span>
+                <div class="key-box-actions">
+                  <button
+                    type="button"
+                    class="key-action-btn"
+                    [pTooltip]="isKeyVisible(k.id) ? 'Hide Key' : 'Reveal Key'"
+                    tooltipPosition="top"
+                    (click)="toggleKeyVisibility(k.id)">
+                    <i class="pi" [ngClass]="isKeyVisible(k.id) ? 'pi-eye-slash' : 'pi-eye'"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="key-action-btn copy-btn"
+                    pTooltip="Copy Key to Clipboard"
+                    tooltipPosition="top"
+                    (click)="copyKeyToClipboard(k.networkKey)">
+                    <i class="pi pi-copy"></i>
+                    <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="key-card-footer">
+                <span class="meta-item">
+                  <i class="pi pi-calendar"></i>
+                  Created: {{ k.createdAt ? (k.createdAt | date: 'mediumDate') : 'Recently' }}
+                </span>
+                <span class="meta-tag">
+                  <i class="pi pi-shield"></i> Verified Subscription
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Right Column: Explainer & Workflow Guide -->
+    <div class="guide-section">
+      <div class="guide-card">
+        <div class="guide-card-header">
+          <i class="pi pi-info-circle guide-icon"></i>
+          <h3 class="guide-title">How Merra Network Keys Work</h3>
+        </div>
+
+        <div class="workflow-steps">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong class="step-title">Generate your key</strong>
+              <p class="step-desc">
+                Your organization's network key is a secure identifier that authorizes other Merra tenants to send you transactions.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong class="step-title">Share with partner organizations</strong>
+              <p class="step-desc">
+                Provide your key to your customers or vendors so they can link your company to their contacts book.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong class="step-title">Direct cross-organization transactions</strong>
+              <p class="step-desc">
+                When they create an invoice for your contact, the Merra Network validates your active subscription key and dispatches transactions directly.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong class="step-title">Complete control & revocation</strong>
+              <p class="step-desc">
+                As long as you keep your key active, subscriptions remain valid. If you revoke a key, incoming transactions using it are blocked immediately.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate Key Dialog -->
+  <p-dialog
+    header="Generate Merra Network Key"
+    [(visible)]="showCreateDialog"
+    [modal]="true"
+    [closable]="!isGenerating"
+    [style]="{ width: '460px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="dialog-body">
+      <p class="dialog-desc">
+        Give this key an optional label (e.g. "Primary Network Key" or "Vendor Portal Key") to easily identify it later.
+      </p>
+      <div class="form-field-wrapper">
+        <label class="field-label" for="key-name-input">Key Label</label>
+        <input
+          id="key-name-input"
+          pInputText
+          [pSize]="'small'"
+          [(ngModel)]="newKeyName"
+          placeholder="e.g. Primary Network Key"
+          class="w-full" />
+      </div>
+    </div>
+    <ng-template #footer>
+      <div class="dialog-footer">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="showCreateDialog = false"
+          [disabled]="isGenerating"></p-button>
+        <p-button
+          label="Generate Key"
+          icon="pi pi-check"
+          [size]="'small'"
+          (click)="generateKey()"
+          [loading]="isGenerating"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Revoke Key Confirmation Dialog -->
+  <p-dialog
+    header="Revoke Network Key"
+    [(visible)]="showDeleteDialog"
+    [modal]="true"
+    [closable]="!isDeleting"
+    [style]="{ width: '480px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="delete-dialog-content">
+      <div class="delete-icon-wrapper">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <div class="delete-text">
+        <p class="delete-primary-msg">
+          Are you sure you want to revoke key <strong>{{ selectedKeyToDelete?.name || 'Primary Network Key' }}</strong>?
+        </p>
+        <p class="delete-warning-msg">
+          Counterparty organizations using this key will no longer be able to create or dispatch invoices to you until you provide them with a new key.
+        </p>
+      </div>
+    </div>
+    <ng-template #footer>
+      <div class="dialog-footer">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="closeDeleteDialog()"
+          [disabled]="isDeleting"></p-button>
+        <p-button
+          label="Yes, Revoke Key"
+          icon="pi pi-trash"
+          severity="danger"
+          [size]="'small'"
+          (click)="confirmDelete()"
+          [loading]="isDeleting"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</section>

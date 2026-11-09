@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changesets/organization/org-20261109-50.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 1. Rename table app.contacts to app.organization_contacts -->
+    <changeSet id="20261109-rename-contacts-to-organization-contacts" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists schemaName="app" tableName="contacts"/>
+        </preConditions>
+        <renameTable
+            schemaName="app"
+            oldTableName="contacts"
+            newTableName="organization_contacts"/>
+    </changeSet>
+
+    <!-- 2. Add columns counter_party, is_tenant, and counterparty_key to app.organization_contacts -->
+    <changeSet id="20261109-add-organization-contacts-network-columns" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists schemaName="app" tableName="organization_contacts"/>
+        </preConditions>
+        <addColumn schemaName="app" tableName="organization_contacts">
+            <column name="counter_party" type="uuid">
+                <constraints
+                    nullable="true"
+                    foreignKeyName="fk_org_contacts__counter_party__organization"
+                    referencedTableSchemaName="app"
+                    referencedTableName="organization"
+                    referencedColumnNames="id"/>
+            </column>
+            <column name="is_tenant" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="counterparty_key" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <createIndex schemaName="app" tableName="organization_contacts" indexName="idx_org_contacts_counter_party">
+            <column name="counter_party"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 3. Create table app.organization_network_keys for managing subscription tokens -->
+    <changeSet id="20261109-create-organization-network-keys-table" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <tableExists schemaName="app" tableName="organization_network_keys"/>
+            </not>
+        </preConditions>
+        <createTable schemaName="app" tableName="organization_network_keys">
+            <column name="id" type="uuid" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="organization_id" type="uuid">
+                <constraints
+                    nullable="false"
+                    foreignKeyName="fk_org_network_keys__organization"
+                    referencedTableSchemaName="app"
+                    referencedTableName="organization"
+                    referencedColumnNames="id"
+                    deleteCascade="true"/>
+            </column>
+            <column name="network_key" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(100)"/>
+            <column name="is_active" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+        <createIndex schemaName="app" tableName="organization_network_keys" indexName="idx_org_network_keys_org_id">
+            <column name="organization_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

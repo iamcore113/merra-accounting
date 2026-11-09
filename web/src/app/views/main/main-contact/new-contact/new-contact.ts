@@ -9,6 +9,8 @@ import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { NetworkKeyService } from '../../../../shared/services/network-key-service';
+import { ResolveNetworkKeyResponse } from '../../../../shared/models/network-key';
 import { Config } from '../../../../shared/models/api_response';
 
 @Component({
@@ -32,6 +34,7 @@ export class NewContact implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly contactService = inject(ContactService);
+  private readonly networkKeyService = inject(NetworkKeyService);
   private readonly messageService = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -39,6 +42,11 @@ export class NewContact implements OnInit {
   isSubmitting = false;
   isCheckingAccountNumber = false;
   accountNumberExistsError: string | null = null;
+
+  // Merra Network Subscription state
+  isResolvingKey = false;
+  resolvedCounterparty: ResolveNetworkKeyResponse | null = null;
+  resolveKeyError: string | null = null;
 
   readonly statusOptions = [
     { label: 'Active', value: 'ACTIVE' },
@@ -57,6 +65,8 @@ export class NewContact implements OnInit {
       taxNumber: [''],
       companyNumber: [''],
       contactStatus: ['ACTIVE'],
+      isTenant: [false],
+      counterpartyKey: [''],
     });
 
     this.contactForm.get('isCustomer')?.valueChanges.subscribe(() => {
@@ -131,6 +141,76 @@ export class NewContact implements OnInit {
     });
   }
 
+  onToggleTenant(checked: boolean): void {
+    if (!checked) {
+      this.contactForm.get('counterpartyKey')?.setValue('');
+      this.resolvedCounterparty = null;
+      this.resolveKeyError = null;
+    }
+  }
+
+  onCounterpartyKeyInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const key = input.value.trim();
+    this.resolveKeyError = null;
+    this.resolvedCounterparty = null;
+
+    if (key.length >= 10 && key.startsWith('mrk_live_')) {
+      this.verifyNetworkKey();
+    }
+  }
+
+  verifyNetworkKey(): void {
+    const key = this.contactForm.get('counterpartyKey')?.value?.trim();
+    if (!key) {
+      this.resolveKeyError = 'Please enter a Merra Network Key to verify';
+      this.resolvedCounterparty = null;
+      return;
+    }
+
+    this.isResolvingKey = true;
+    this.resolveKeyError = null;
+    this.networkKeyService.resolveNetworkKey(key).subscribe({
+      next: (res) => {
+        this.isResolvingKey = false;
+        if (res.success && res.data && res.data.isValid) {
+          this.resolvedCounterparty = res.data;
+          this.resolveKeyError = null;
+
+          // If contact name is empty or default, suggest the resolved organization's legal name
+          const currentName = this.contactForm.get('name')?.value?.trim();
+          const legalName = res.data.legalName || res.data.organizationName;
+          if (!currentName && legalName) {
+            this.contactForm.get('name')?.setValue(legalName);
+          }
+        } else {
+          this.resolvedCounterparty = null;
+          this.resolveKeyError = res.data?.message || res.message || 'Invalid or inactive Merra Network Key';
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResolvingKey = false;
+        this.resolvedCounterparty = null;
+        this.resolveKeyError = err.error?.message || err.message || 'Failed to verify Merra Network Key';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  applyResolvedName(): void {
+    const legalName = this.resolvedCounterparty?.legalName || this.resolvedCounterparty?.organizationName;
+    if (legalName) {
+      this.contactForm.get('name')?.setValue(legalName);
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Name Updated',
+        detail: `Contact name updated to legal name '${legalName}'`,
+        life: 2000,
+      });
+    }
+  }
+
   onSubmit(): void {
     if (this.contactForm.invalid) {
       this.contactForm.markAllAsTouched();
@@ -148,12 +228,26 @@ export class NewContact implements OnInit {
       return;
     }
 
+    const isTenant = !!this.contactForm.get('isTenant')?.value;
+    const counterpartyKey = this.contactForm.get('counterpartyKey')?.value?.trim() || null;
+
+    if (isTenant && !counterpartyKey) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Network Key Required',
+        detail: 'Please enter a Counterparty Network Key to connect as a Merra Organization.',
+      });
+      return;
+    }
+
     this.isSubmitting = true;
     const formValue = { ...this.contactForm.value };
     const suffix = formValue.accountNumberSuffix?.trim();
     const payload = {
       ...formValue,
       accountNumber: suffix ? `${this.currentPrefix}-${suffix}` : null,
+      isTenant,
+      counterpartyKey,
     };
     delete payload.accountNumberSuffix;
 

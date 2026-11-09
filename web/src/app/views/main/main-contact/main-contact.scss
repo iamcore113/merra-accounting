@@ -131,6 +131,36 @@
     }
   }
 
+  .name-cell-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .network-avatar {
+      background-color: #ecfdf5;
+      color: #059669;
+    }
+
+    .network-tenant-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.1rem 0.45rem;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 9999px;
+
+      i {
+        font-size: 0.65rem;
+        color: #16a34a;
+      }
+    }
+  }
+
   .table-account-link {
     color: #475569;
     text-decoration: none;

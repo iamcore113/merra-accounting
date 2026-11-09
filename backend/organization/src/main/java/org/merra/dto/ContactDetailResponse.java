@@ -15,13 +15,17 @@ public record ContactDetailResponse(
         String taxNumber,
         String companyNumber,
         String contactStatus,
+        Boolean isTenant,
+        UUID counterPartyId,
+        String counterPartyName,
+        String counterpartyKey,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
     public ContactDetailResponse {
         isSupplier = Boolean.TRUE.equals(isSupplier);
         isCustomer = Boolean.TRUE.equals(isCustomer);
+        isTenant = Boolean.TRUE.equals(isTenant);
         contactStatus = (contactStatus != null && !contactStatus.isBlank()) ? contactStatus : "ACTIVE";
     }
 }
-

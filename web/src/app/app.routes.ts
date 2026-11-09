@@ -86,6 +86,11 @@ export const routes: Routes = [
         path: 'contacts/:id',
         loadComponent: () => import('./views/main/main-contact/contact-detail/contact-detail').then(m => m.ContactDetail),
         title: 'MERRA - Contact Details'
+      },
+      {
+        path: 'network-key',
+        loadComponent: () => import('./views/main/main-network-key/main-network-key').then(m => m.MainNetworkKey),
+        title: 'MERRA - Network Key'
       }
     ]
   },

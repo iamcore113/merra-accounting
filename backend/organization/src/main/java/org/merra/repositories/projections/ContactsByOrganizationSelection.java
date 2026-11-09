@@ -11,4 +11,8 @@ public interface ContactsByOrganizationSelection {
 	Boolean getIsSupplier();
 	Boolean getIsCustomer();
 	String getContactStatus();
+	Boolean getIsTenant();
+	UUID getCounterPartyId();
+	String getCounterPartyName();
+	String getCounterpartyKey();
 }

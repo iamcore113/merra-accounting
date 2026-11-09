@@ -26,11 +26,17 @@ public interface ContactRepository extends JpaRepository<Contact, UUID> {
 				c.emailAddress AS emailAddress,
 				c.isSupplier AS isSupplier,
 				c.isCustomer AS isCustomer,
-				c.contactStatus AS contactStatus
+				c.contactStatus AS contactStatus,
+				c.isTenant AS isTenant,
+				cp.id AS counterPartyId,
+				cp.displayName AS counterPartyName,
+				c.counterpartyKey AS counterpartyKey
 			FROM
 				Contact c
 			JOIN
 				c.organization o
+			LEFT JOIN
+				c.counterParty cp
 			WHERE
 				o.id = :organizationId
 			""")

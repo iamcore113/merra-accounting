@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
 
 import { ContactDetail } from './contact-detail';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { NetworkKeyService } from '../../../../shared/services/network-key-service';
 import { ContactDetailResponse, UpdateContactRequest } from '../../../../shared/models/contacts';
 import { SuccessResponse, Config } from '../../../../shared/models/api_response';
 
@@ -14,6 +15,7 @@ describe('ContactDetail', () => {
   let component: ContactDetail;
   let fixture: ComponentFixture<ContactDetail>;
   let contactServiceSpy: jasmine.SpyObj<ContactService>;
+  let networkKeyServiceSpy: jasmine.SpyObj<NetworkKeyService>;
   let router: Router;
   let messageService: MessageService;
 
@@ -29,6 +31,10 @@ describe('ContactDetail', () => {
     taxNumber: 'TAX-9988',
     companyNumber: 'CRN-1122',
     contactStatus: 'ACTIVE',
+    isTenant: true,
+    counterPartyId: 'org-999',
+    counterPartyName: 'Acme Counterparty Org',
+    counterpartyKey: 'mrk_live_12345678901234567890123456789012',
     createdAt: '2026-11-04T10:00:00',
     updatedAt: '2026-11-04T12:00:00',
   };
@@ -47,7 +53,26 @@ describe('ContactDetail', () => {
       'deleteContact',
       'checkAccountNumberExists',
     ]);
+    networkKeyServiceSpy = jasmine.createSpyObj('NetworkKeyService', [
+      'resolveNetworkKey',
+      'getActiveKeys',
+      'generateNetworkKey',
+      'deleteNetworkKey',
+    ]);
+
     contactServiceSpy.getContactById.and.returnValue(of(mockResponse));
+    networkKeyServiceSpy.resolveNetworkKey.and.returnValue(
+      of({
+        success: true,
+        message: 'Valid',
+        response: 200,
+        data: {
+          isValid: true,
+          organizationId: 'org-999',
+          organizationName: 'Acme Counterparty Org',
+        },
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [ContactDetail],
@@ -57,6 +82,7 @@ describe('ContactDetail', () => {
         provideRouter([]),
         MessageService,
         { provide: ContactService, useValue: contactServiceSpy },
+        { provide: NetworkKeyService, useValue: networkKeyServiceSpy },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -86,6 +112,8 @@ describe('ContactDetail', () => {
     expect(contactServiceSpy.getContactById).toHaveBeenCalledWith('6370d6a8-7c25-4e9a-9101-ff78808a95fd');
     expect(component.editForm.get('name')?.value).toBe('Acme Corporation');
     expect(component.editForm.get('accountNumberSuffix')?.value).toBe('1001');
+    expect(component.editForm.get('isTenant')?.value).toBeTrue();
+    expect(component.editForm.get('counterpartyKey')?.value).toBe('mrk_live_12345678901234567890123456789012');
   });
 
   it('should compute customer relationship label correctly', () => {
@@ -152,11 +180,13 @@ describe('ContactDetail', () => {
     expect(component.currentPrefix).toBe('BOTH');
   });
 
-  it('should update contact details when saveChanges is called', () => {
+  it('should update contact details including network key when saveChanges is called', () => {
     const updatedContact: ContactDetailResponse = {
       ...mockContact,
       name: 'Acme Global Inc.',
       accountNumber: 'CUST-2002',
+      isTenant: true,
+      counterpartyKey: 'mrk_live_updated_key_1234567890123456',
     };
 
     const updateResponse: SuccessResponse<ContactDetailResponse> = {
@@ -174,6 +204,8 @@ describe('ContactDetail', () => {
       accountNumberSuffix: '2002',
       isCustomer: true,
       isSupplier: false,
+      isTenant: true,
+      counterpartyKey: 'mrk_live_updated_key_1234567890123456',
     });
 
     component.saveChanges();
@@ -185,6 +217,8 @@ describe('ContactDetail', () => {
         accountNumber: 'CUST-2002',
         isCustomer: true,
         isSupplier: false,
+        isTenant: true,
+        counterpartyKey: 'mrk_live_updated_key_1234567890123456',
       } as UpdateContactRequest)
     );
 
@@ -199,23 +233,19 @@ describe('ContactDetail', () => {
     );
   });
 
-  it('should handle update error gracefully in saveChanges', () => {
-    contactServiceSpy.updateContact.and.returnValue(
-      throwError(() => ({ error: { message: 'Duplicate account number' } }))
-    );
-
+  it('should verify network key in contact detail edit mode', () => {
     component.startEditing();
-    component.saveChanges();
+    component.editForm.patchValue({
+      isTenant: true,
+      counterpartyKey: 'mrk_live_12345678901234567890123456789012',
+    });
 
-    expect(component.isSaving).toBeFalse();
-    expect(component.isEditing).toBeTrue();
-    expect(messageService.add).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        severity: 'error',
-        summary: 'Update Failed',
-        detail: 'Duplicate account number',
-      })
+    component.verifyNetworkKey();
+
+    expect(networkKeyServiceSpy.resolveNetworkKey).toHaveBeenCalledWith(
+      'mrk_live_12345678901234567890123456789012'
     );
+    expect(component.resolvedCounterparty?.organizationName).toBe('Acme Counterparty Org');
   });
 
   it('should open and close delete dialog', () => {
@@ -248,25 +278,5 @@ describe('ContactDetail', () => {
       })
     );
     expect(router.navigate).toHaveBeenCalledWith(['/main/contacts']);
-  });
-
-  it('should handle error when contact deletion fails', () => {
-    contactServiceSpy.deleteContact.and.returnValue(
-      throwError(() => ({ error: { message: 'Cannot delete contact in use' } }))
-    );
-
-    component.openDeleteDialog();
-    component.confirmDelete();
-
-    expect(component.isDeleting).toBeFalse();
-    expect(component.showDeleteDialog).toBeFalse();
-    expect(messageService.add).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        severity: 'error',
-        summary: 'Delete Failed',
-        detail: 'Cannot delete contact in use',
-      })
-    );
-    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

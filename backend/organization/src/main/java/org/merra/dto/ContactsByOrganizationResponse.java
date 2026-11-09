@@ -10,13 +10,18 @@ public record ContactsByOrganizationResponse(
 		String emailAddress,
 		Boolean isSupplier,
 		Boolean isCustomer,
-		String status
+		String status,
+		Boolean isTenant,
+		UUID counterPartyId,
+		String counterPartyName,
+		String counterpartyKey
 ) {
 	public ContactsByOrganizationResponse {
 		organizationName = organizationName != null ? organizationName : "";
 		contactName = contactName != null ? contactName : "";
 		isSupplier = Boolean.TRUE.equals(isSupplier);
 		isCustomer = Boolean.TRUE.equals(isCustomer);
+		isTenant = Boolean.TRUE.equals(isTenant);
 		status = (status != null && !status.isBlank()) ? status : "ACTIVE";
 	}
 }

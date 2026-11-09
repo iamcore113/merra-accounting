@@ -8,6 +8,7 @@ import org.merra.dto.ContactDetailResponse;
 import org.merra.dto.ContactResponse;
 import org.merra.dto.ContactsByOrganizationResponse;
 import org.merra.dto.NewContactrequest;
+import org.merra.dto.ResolveNetworkKeyResponse;
 import org.merra.dto.UpdateContactRequest;
 import org.merra.entities.Contact;
 import org.merra.entities.Organization;
@@ -31,28 +32,28 @@ public class ContactService {
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final ContactRepository contactRepository;
 	private final ContactMapper contactMapper;
+	private final NetworkKeyService networkKeyService;
 
 	public ContactService(
 			OrganizationRepository organizationRepository,
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
 			ContactRepository contactRepository,
-			ContactMapper contactMapper) {
+			ContactMapper contactMapper,
+			NetworkKeyService networkKeyService) {
 		this.organizationRepository = organizationRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.contactRepository = contactRepository;
 		this.contactMapper = contactMapper;
+		this.networkKeyService = networkKeyService;
 	}
 
 	/**
-	 * Creates a new contact with the provided first and last name for the currently
-	 * authenticated user's organization.
+	 * Creates a new contact with the provided details for the currently
+	 * authenticated user's organization. Supports linking a Merra Network
+	 * Organization via counterparty network key.
 	 * 
-	 * @param request - accepts {@linkplain NewContactrequest} object containing the
-	 *                first and last name.
-	 * @return - {@linkplain ContactResponse} object containing the newly created
-	 *         contact's ID and full name.
-	 * @throws EntityNotFoundException if the current organization cannot be
-	 *                                 determined.
+	 * @param request - accepts {@linkplain NewContactrequest} object
+	 * @return - {@linkplain ContactResponse} object containing the newly created contact's ID and name.
 	 */
 	public ContactResponse newSimpleContact(@NotNull NewContactrequest request) {
 		Contact contact = new Contact();
@@ -60,9 +61,6 @@ public class ContactService {
 		if (fullName == null || fullName.isBlank()) {
 			fullName = ((request.firstName() != null ? request.firstName() : "") + " "
 					+ (request.lastName() != null ? request.lastName() : "")).trim();
-		}
-		if (fullName.isBlank()) {
-			throw new IllegalArgumentException("Contact name or person name is required");
 		}
 		contact.setName(fullName);
 		contact.setFirstName(request.firstName());
@@ -104,6 +102,13 @@ public class ContactService {
 			contact.setContactStatus("ACTIVE");
 		}
 
+		// Handle Merra Network subscription and set legal name if tenant
+		handleNetworkSubscription(contact, request.isTenant(), request.counterpartyKey());
+
+		if (contact.getName() == null || contact.getName().isBlank()) {
+			throw new IllegalArgumentException("Contact name or person name is required");
+		}
+
 		Contact newContact = contactRepository.save(contact);
 
 		return new ContactResponse(newContact.getId(), newContact.getName());
@@ -138,17 +143,9 @@ public class ContactService {
 	}
 
 	/**
-	 * Retrieves all contacts that belong to the organization identified by the
-	 * current organization tenant in {@link TenantContext}. The method first
-	 * ensures the tenant ID is present, verifies that the organization exists,
-	 * then loads the matching contact projections and maps them into response
-	 * DTOs.
+	 * Retrieves all contacts that belong to the current organization.
 	 *
-	 * @return a list of {@link ContactsByOrganizationResponse} for the current
-	 *         organization
-	 * @throws IllegalStateException   if the organization tenant ID is missing from
-	 *                                 the context
-	 * @throws EntityNotFoundException if no organization exists for the tenant ID
+	 * @return a list of {@link ContactsByOrganizationResponse}
 	 */
 	public List<ContactsByOrganizationResponse> getContactsByOrganizationId() {
 		final UUID organizationId = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
@@ -178,21 +175,7 @@ public class ContactService {
 		Contact contact = contactRepository.findByIdAndOrganizationId(contactId, organizationId)
 				.orElseThrow(() -> new EntityNotFoundException("Contact not found with ID: " + contactId));
 
-		return new ContactDetailResponse(
-				contact.getId(),
-				contact.getName(),
-				contact.getFirstName(),
-				contact.getLastName(),
-				contact.getEmailAddress(),
-				contact.getAccountNumber(),
-				contact.getIsSupplier(),
-				contact.getIsCustomer(),
-				contact.getTaxNumber(),
-				contact.getCompanyNumber(),
-				contact.getContactStatus(),
-				contact.getCreatedAt(),
-				contact.getUpdatedAt()
-		);
+		return contactMapper.toContactDetailResponse(contact);
 	}
 
 	public ContactDetailResponse updateContact(UUID contactId, @NotNull UpdateContactRequest request) {
@@ -210,9 +193,6 @@ public class ContactService {
 		if (fullName == null || fullName.isBlank()) {
 			fullName = ((request.firstName() != null ? request.firstName() : "") + " "
 					+ (request.lastName() != null ? request.lastName() : "")).trim();
-		}
-		if (fullName.isBlank()) {
-			throw new IllegalArgumentException("Contact name or person name is required");
 		}
 		contact.setName(fullName);
 		contact.setFirstName(request.firstName());
@@ -254,23 +234,16 @@ public class ContactService {
 			contact.setContactStatus(request.contactStatus());
 		}
 
+		// Handle Merra Network subscription and set legal name if tenant
+		handleNetworkSubscription(contact, request.isTenant(), request.counterpartyKey());
+
+		if (contact.getName() == null || contact.getName().isBlank()) {
+			throw new IllegalArgumentException("Contact name or person name is required");
+		}
+
 		Contact updated = contactRepository.save(contact);
 
-		return new ContactDetailResponse(
-				updated.getId(),
-				updated.getName(),
-				updated.getFirstName(),
-				updated.getLastName(),
-				updated.getEmailAddress(),
-				updated.getAccountNumber(),
-				updated.getIsSupplier(),
-				updated.getIsCustomer(),
-				updated.getTaxNumber(),
-				updated.getCompanyNumber(),
-				updated.getContactStatus(),
-				updated.getCreatedAt(),
-				updated.getUpdatedAt()
-		);
+		return contactMapper.toContactDetailResponse(updated);
 	}
 
 	public void deleteContact(UUID contactId) {
@@ -287,4 +260,43 @@ public class ContactService {
 		contactRepository.delete(contact);
 	}
 
+	/**
+	 * Dedicated function for handling Merra Network subscription linking.
+	 * If the contact is linked as a network tenant with a valid counterparty key:
+	 * - Resolves the key and links the counterparty organization
+	 * - Sets isTenant = true and updates the counterparty key
+	 * - Sets the "name" column in organization_contacts to the legal name of the contact organization
+	 * If not a network tenant or key is cleared, resets subscription attributes.
+	 *
+	 * @param contact            the contact entity being updated
+	 * @param isTenantRequested  flag indicating whether tenant connection was requested
+	 * @param counterpartyKey    the network key provided for the counterparty
+	 */
+	private void handleNetworkSubscription(Contact contact, Boolean isTenantRequested, String counterpartyKey) {
+		boolean isTenant = Boolean.TRUE.equals(isTenantRequested) || (counterpartyKey != null && !counterpartyKey.isBlank());
+		if (isTenant && counterpartyKey != null && !counterpartyKey.isBlank()) {
+			ResolveNetworkKeyResponse resolveRes = networkKeyService.resolveNetworkKey(counterpartyKey);
+			if (!resolveRes.isValid()) {
+				throw new IllegalArgumentException("Invalid Merra Network Key: " + resolveRes.message());
+			}
+			Organization counterParty = organizationRepository.findById(resolveRes.organizationId())
+					.orElseThrow(() -> new EntityNotFoundException("Counterparty organization not found"));
+
+			contact.setCounterParty(counterParty);
+			contact.setIsTenant(true);
+			contact.setCounterpartyKey(counterpartyKey.trim());
+
+			// The "name" attribute/column in organization_contacts stores the legal name of the contact organization
+			String legalName = counterParty.getLegalName();
+			if (legalName != null && !legalName.isBlank()) {
+				contact.setName(legalName.trim());
+			} else if (counterParty.getDisplayName() != null && !counterParty.getDisplayName().isBlank()) {
+				contact.setName(counterParty.getDisplayName().trim());
+			}
+		} else {
+			contact.setCounterParty(null);
+			contact.setIsTenant(false);
+			contact.setCounterpartyKey(null);
+		}
+	}
 }

@@ -102,12 +102,19 @@
               }
             </td>
             <td class="font-medium">
-              <a [routerLink]="['/main/contacts', row.id]" class="contact-name-cell contact-name-link">
-                <span class="contact-avatar">
-                  <i class="pi pi-user"></i>
-                </span>
-                <span class="contact-name-text">{{ row.name }}</span>
-              </a>
+              <div class="name-cell-group">
+                <a [routerLink]="['/main/contacts', row.id]" class="contact-name-cell contact-name-link">
+                  <span class="contact-avatar" [class.network-avatar]="row.isTenant">
+                    <i class="pi" [ngClass]="row.isTenant ? 'pi-building' : 'pi-user'"></i>
+                  </span>
+                  <span class="contact-name-text">{{ row.name }}</span>
+                </a>
+                @if (row.isTenant) {
+                  <span class="network-tenant-pill" pTooltip="Merra Network Subscription" tooltipPosition="top">
+                    <i class="pi pi-bolt"></i> Network
+                  </span>
+                }
+              </div>
             </td>
             <td class="email-cell">{{ row.emailAddress || '—' }}</td>
             <td class="text-center">

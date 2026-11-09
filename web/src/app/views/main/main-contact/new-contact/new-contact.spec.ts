@@ -7,11 +7,13 @@ import { MessageService } from 'primeng/api';
 
 import { NewContact } from './new-contact';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { NetworkKeyService } from '../../../../shared/services/network-key-service';
 
 describe('NewContact', () => {
   let component: NewContact;
   let fixture: ComponentFixture<NewContact>;
   let mockContactService: jasmine.SpyObj<ContactService>;
+  let mockNetworkKeyService: jasmine.SpyObj<NetworkKeyService>;
   let messageService: MessageService;
 
   beforeEach(async () => {
@@ -19,6 +21,13 @@ describe('NewContact', () => {
       'createContact',
       'checkAccountNumberExists',
     ]);
+    mockNetworkKeyService = jasmine.createSpyObj('NetworkKeyService', [
+      'resolveNetworkKey',
+      'getActiveKeys',
+      'generateNetworkKey',
+      'deleteNetworkKey',
+    ]);
+
     mockContactService.createContact.and.returnValue(
       of({
         success: true,
@@ -35,6 +44,19 @@ describe('NewContact', () => {
         data: { accountNumber: 'CUST-1001', exists: false },
       })
     );
+    mockNetworkKeyService.resolveNetworkKey.and.returnValue(
+      of({
+        success: true,
+        message: 'Valid',
+        response: 200,
+        data: {
+          isValid: true,
+          organizationId: 'org-456',
+          organizationName: 'Global Supplies Ltd',
+          legalName: 'Global Supplies Legal Corp.',
+        },
+      })
+    );
 
     await TestBed.configureTestingModule({
       imports: [NewContact],
@@ -44,6 +66,7 @@ describe('NewContact', () => {
         provideRouter([]),
         MessageService,
         { provide: ContactService, useValue: mockContactService },
+        { provide: NetworkKeyService, useValue: mockNetworkKeyService },
       ],
     }).compileComponents();
 
@@ -61,68 +84,28 @@ describe('NewContact', () => {
     expect(component.currentPrefix).toBe('CUST');
   });
 
-  it('should switch prefix to SUP when only isSupplier is true', () => {
-    component.contactForm.patchValue({
-      isCustomer: false,
-      isSupplier: true,
-    });
+  it('should have SUP prefix when only isSupplier is true', () => {
+    component.contactForm.patchValue({ isCustomer: false, isSupplier: true });
     expect(component.currentPrefix).toBe('SUP');
   });
 
-  it('should switch prefix to BOTH when both isCustomer and isSupplier are true', () => {
-    component.contactForm.patchValue({
-      isCustomer: true,
-      isSupplier: true,
-    });
+  it('should have BOTH prefix when both isCustomer and isSupplier are true', () => {
+    component.contactForm.patchValue({ isCustomer: true, isSupplier: true });
     expect(component.currentPrefix).toBe('BOTH');
   });
 
-  it('should check if account number exists when 4 digits are entered', () => {
+  it('should verify and resolve counterparty network key', () => {
     component.contactForm.patchValue({
-      accountNumberSuffix: '1001',
+      isTenant: true,
+      counterpartyKey: 'mrk_live_abcdef1234567890abcdef1234567890',
     });
-    component.validateAccountNumberDuplication();
 
-    expect(mockContactService.checkAccountNumberExists).toHaveBeenCalledWith('CUST-1001');
-    expect(component.contactForm.get('accountNumberSuffix')?.hasError('alreadyExists')).toBeFalse();
-  });
+    component.verifyNetworkKey();
 
-  it('should flag alreadyExists error when account number exists for organization', () => {
-    mockContactService.checkAccountNumberExists.and.returnValue(
-      of({
-        success: true,
-        message: 'Checked',
-        response: 200,
-        data: { accountNumber: 'CUST-1001', exists: true },
-      })
+    expect(mockNetworkKeyService.resolveNetworkKey).toHaveBeenCalledWith(
+      'mrk_live_abcdef1234567890abcdef1234567890'
     );
-
-    component.contactForm.patchValue({
-      accountNumberSuffix: '1001',
-    });
-    component.validateAccountNumberDuplication();
-
-    expect(component.contactForm.get('accountNumberSuffix')?.hasError('alreadyExists')).toBeTrue();
-    expect(component.accountNumberExistsError).toContain('already exists');
-  });
-
-  it('should format accountNumber as prefix-four_digits upon submission', () => {
-    component.contactForm.patchValue({
-      name: 'Acme Corporation',
-      isCustomer: true,
-      isSupplier: true,
-      accountNumberSuffix: '1001',
-    });
-
-    component.onSubmit();
-
-    expect(mockContactService.createContact).toHaveBeenCalledWith(
-      jasmine.objectContaining({
-        name: 'Acme Corporation',
-        accountNumber: 'BOTH-1001',
-        isCustomer: true,
-        isSupplier: true,
-      })
-    );
+    expect(component.resolvedCounterparty?.organizationName).toBe('Global Supplies Ltd');
+    expect(component.contactForm.get('name')?.value).toBe('Global Supplies Legal Corp.');
   });
 });

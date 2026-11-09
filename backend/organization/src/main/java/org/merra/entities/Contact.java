@@ -32,7 +32,7 @@ import jakarta.validation.constraints.NotNull;
  * field @name is the only non optional attribute in this entity.
  */
 @Entity(name = "Contact")
-@Table(name = "contacts", uniqueConstraints = {
+@Table(name = "organization_contacts", uniqueConstraints = {
 		@UniqueConstraint(name = "uq_contacts_organization_account_number", columnNames = { "organization", "account_number" })
 })
 public class Contact extends TenantAuditableEntity {
@@ -45,6 +45,16 @@ public class Contact extends TenantAuditableEntity {
 	@ManyToOne
 	@JoinColumn(name = "organization", nullable = false, referencedColumnName = "id")
 	private Organization organization;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "counter_party", referencedColumnName = "id")
+	private Organization counterParty;
+
+	@Column(name = "is_tenant", nullable = false)
+	private Boolean isTenant = Boolean.FALSE;
+
+	@Column(name = "counterparty_key")
+	private String counterpartyKey;
 
 	// Full name of contact / organization
 	@Column(name = "name", nullable = false, unique = true)
@@ -244,6 +254,30 @@ public class Contact extends TenantAuditableEntity {
 
 	public void setUpdatedDateUTC(Instant updatedDateUTC) {
 		this.updatedDateUTC = updatedDateUTC;
+	}
+
+	public Organization getCounterParty() {
+		return counterParty;
+	}
+
+	public void setCounterParty(Organization counterParty) {
+		this.counterParty = counterParty;
+	}
+
+	public Boolean getIsTenant() {
+		return isTenant;
+	}
+
+	public void setIsTenant(Boolean isTenant) {
+		this.isTenant = isTenant != null ? isTenant : Boolean.FALSE;
+	}
+
+	public String getCounterpartyKey() {
+		return counterpartyKey;
+	}
+
+	public void setCounterpartyKey(String counterpartyKey) {
+		this.counterpartyKey = counterpartyKey;
 	}
 
 }

@@ -10,6 +10,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { ContactService } from '../../../shared/services/contact-service';
 import { ContactsByOrganizationResponse } from '../../../shared/models/contacts';
 import { Config } from '../../../shared/models/api_response';
@@ -22,6 +23,9 @@ export interface ContactTableRow {
   isSupplier: boolean;
   isCustomer: boolean;
   status: string;
+  isTenant?: boolean;
+  counterPartyId?: string | null;
+  counterpartyKey?: string | null;
 }
 
 @Component({
@@ -39,6 +43,7 @@ export interface ContactTableRow {
     InputIconModule,
     TagModule,
     SkeletonModule,
+    TooltipModule,
   ],
   templateUrl: './main-contact.html',
   styleUrl: './main-contact.scss',
@@ -60,6 +65,7 @@ export class MainContact implements OnInit {
     isSupplier: false,
     isCustomer: false,
     status: '',
+    isTenant: false,
   }));
 
   ngOnInit(): void {
@@ -80,6 +86,9 @@ export class MainContact implements OnInit {
             isSupplier: !!c.isSupplier,
             isCustomer: !!c.isCustomer,
             status: c.status || 'ACTIVE',
+            isTenant: !!c.isTenant,
+            counterPartyId: c.counterPartyId || null,
+            counterpartyKey: c.counterpartyKey || null,
           }));
         } else {
           this.contacts = [];

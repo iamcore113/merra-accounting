@@ -8,6 +8,10 @@ export interface ContactsByOrganizationResponse {
 	isSupplier: boolean;
 	isCustomer: boolean;
 	status?: string;
+	isTenant?: boolean;
+	counterPartyId?: string | null;
+	counterPartyName?: string | null;
+	counterpartyKey?: string | null;
 }
 
 export type ContactsByOrganizationList = ContactsByOrganizationResponse[];
@@ -23,6 +27,8 @@ export interface CreateContactRequest {
 	taxNumber?: string;
 	companyNumber?: string;
 	contactStatus?: string;
+	isTenant?: boolean;
+	counterpartyKey?: string | null;
 }
 
 export interface ContactResponse {
@@ -47,6 +53,10 @@ export interface ContactDetailResponse {
 	taxNumber?: string | null;
 	companyNumber?: string | null;
 	contactStatus: string;
+	isTenant?: boolean;
+	counterPartyId?: string | null;
+	counterPartyName?: string | null;
+	counterpartyKey?: string | null;
 	createdAt?: string | null;
 	updatedAt?: string | null;
 }
@@ -62,4 +72,6 @@ export interface UpdateContactRequest {
 	taxNumber?: string | null;
 	companyNumber?: string | null;
 	contactStatus: string;
+	isTenant?: boolean;
+	counterpartyKey?: string | null;
 }

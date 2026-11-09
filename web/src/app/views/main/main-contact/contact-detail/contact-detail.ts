@@ -13,7 +13,9 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 
 import { ContactService } from '../../../../shared/services/contact-service';
+import { NetworkKeyService } from '../../../../shared/services/network-key-service';
 import { ContactDetailResponse, UpdateContactRequest } from '../../../../shared/models/contacts';
+import { ResolveNetworkKeyResponse } from '../../../../shared/models/network-key';
 import { Config, SuccessResponse } from '../../../../shared/models/api_response';
 
 @Component({
@@ -40,6 +42,7 @@ export class ContactDetail implements OnInit {
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly contactService = inject(ContactService);
+  private readonly networkKeyService = inject(NetworkKeyService);
   private readonly messageService = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -55,6 +58,11 @@ export class ContactDetail implements OnInit {
   isCheckingAccountNumber = false;
   accountNumberExistsError: string | null = null;
   initialAccountNumber: string | null = null;
+
+  // Merra Network Subscription state
+  isResolvingKey = false;
+  resolvedCounterparty: ResolveNetworkKeyResponse | null = null;
+  resolveKeyError: string | null = null;
 
   // Delete state
   showDeleteDialog = false;
@@ -88,6 +96,8 @@ export class ContactDetail implements OnInit {
       taxNumber: [''],
       companyNumber: [''],
       contactStatus: ['ACTIVE'],
+      isTenant: [false],
+      counterpartyKey: [''],
     });
 
     this.editForm.get('isCustomer')?.valueChanges.subscribe(() => {
@@ -141,7 +151,19 @@ export class ContactDetail implements OnInit {
       taxNumber: c.taxNumber || '',
       companyNumber: c.companyNumber || '',
       contactStatus: c.contactStatus || 'ACTIVE',
+      isTenant: !!c.isTenant,
+      counterpartyKey: c.counterpartyKey || '',
     });
+
+    if (c.counterPartyName || c.counterPartyId) {
+      this.resolvedCounterparty = {
+        isValid: true,
+        organizationId: c.counterPartyId || undefined,
+        organizationName: c.counterPartyName || undefined,
+      };
+    } else {
+      this.resolvedCounterparty = null;
+    }
   }
 
   get currentPrefix(): 'CUST' | 'SUP' | 'BOTH' {
@@ -226,6 +248,87 @@ export class ContactDetail implements OnInit {
     this.accountNumberExistsError = null;
   }
 
+  onToggleTenant(checked: boolean): void {
+    if (!checked) {
+      this.editForm.get('counterpartyKey')?.setValue('');
+      this.resolvedCounterparty = null;
+      this.resolveKeyError = null;
+    }
+  }
+
+  onCounterpartyKeyInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const key = input.value.trim();
+    this.resolveKeyError = null;
+    this.resolvedCounterparty = null;
+
+    if (key.length >= 10 && key.startsWith('mrk_live_')) {
+      this.verifyNetworkKey();
+    }
+  }
+
+  verifyNetworkKey(): void {
+    const key = this.editForm.get('counterpartyKey')?.value?.trim();
+    if (!key) {
+      this.resolveKeyError = 'Please enter a Merra Network Key to verify';
+      this.resolvedCounterparty = null;
+      return;
+    }
+
+    this.isResolvingKey = true;
+    this.resolveKeyError = null;
+    this.networkKeyService.resolveNetworkKey(key).subscribe({
+      next: (res) => {
+        this.isResolvingKey = false;
+        if (res.success && res.data && res.data.isValid) {
+          this.resolvedCounterparty = res.data;
+          this.resolveKeyError = null;
+          const currentName = this.editForm.get('name')?.value?.trim();
+          const legalName = res.data.legalName || res.data.organizationName;
+          if (!currentName && legalName) {
+            this.editForm.get('name')?.setValue(legalName);
+          }
+        } else {
+          this.resolvedCounterparty = null;
+          this.resolveKeyError = res.data?.message || res.message || 'Invalid or inactive Merra Network Key';
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isResolvingKey = false;
+        this.resolvedCounterparty = null;
+        this.resolveKeyError = err.error?.message || err.message || 'Failed to verify Merra Network Key';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  applyResolvedName(): void {
+    const legalName = this.resolvedCounterparty?.legalName || this.resolvedCounterparty?.organizationName;
+    if (legalName) {
+      this.editForm.get('name')?.setValue(legalName);
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Name Updated',
+        detail: `Contact name updated to legal name '${legalName}'`,
+        life: 2000,
+      });
+    }
+  }
+
+  copyCounterpartyKey(key: string): void {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(key).then(() => {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Copied',
+          detail: 'Counterparty Key copied to clipboard',
+          life: 2000,
+        });
+      });
+    }
+  }
+
   saveChanges(): void {
     if (this.editForm.invalid) {
       this.editForm.markAllAsTouched();
@@ -239,6 +342,18 @@ export class ContactDetail implements OnInit {
         severity: 'warn',
         summary: 'Relationship Required',
         detail: 'Please select at least one relationship type (Customer, Supplier, or Both).',
+      });
+      return;
+    }
+
+    const isTenant = !!this.editForm.get('isTenant')?.value;
+    const counterpartyKey = this.editForm.get('counterpartyKey')?.value?.trim() || null;
+
+    if (isTenant && !counterpartyKey) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Network Key Required',
+        detail: 'Please enter a Counterparty Network Key to connect as a Merra Organization.',
       });
       return;
     }
@@ -259,6 +374,8 @@ export class ContactDetail implements OnInit {
       taxNumber: formValue.taxNumber || null,
       companyNumber: formValue.companyNumber || null,
       contactStatus: formValue.contactStatus || 'ACTIVE',
+      isTenant,
+      counterpartyKey,
     };
 
     this.contactService.updateContact(this.contactId, payload).subscribe({

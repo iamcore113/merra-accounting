@@ -36,6 +36,93 @@
   <!-- Form Card -->
   <div class="contact-card">
     <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+      <!-- Section 0: Merra Network Subscription -->
+      <div class="form-section network-subscription-section">
+        <div class="section-header network-section-header">
+          <div class="section-header-left">
+            <i class="pi pi-bolt section-icon network-icon"></i>
+            <div>
+              <h3 class="section-title">Merra Network Connection</h3>
+              <p class="section-subtitle">Link directly to another Merra organization using their Network Key</p>
+            </div>
+          </div>
+          <div class="tenant-toggle-wrap">
+            <p-checkbox
+              formControlName="isTenant"
+              [binary]="true"
+              inputId="is-tenant-checkbox"
+              (onChange)="onToggleTenant($event.checked)"></p-checkbox>
+            <label for="is-tenant-checkbox" class="toggle-label">Connect as Merra Organization</label>
+          </div>
+        </div>
+
+        @if (contactForm.get('isTenant')?.value) {
+          <div class="network-key-input-block">
+            <div class="form-field-wrapper full-span">
+              <label class="field-label" for="counterparty-key">
+                Counterparty Network Key <span class="required-star">*</span>
+              </label>
+              <div class="key-input-row">
+                <input
+                  id="counterparty-key"
+                  pInputText
+                  [pSize]="'small'"
+                  formControlName="counterpartyKey"
+                  placeholder="e.g. mrk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
+                  class="key-input"
+                  (input)="onCounterpartyKeyInput($event)" />
+                <p-button
+                  label="Verify"
+                  icon="pi pi-search"
+                  [size]="'small'"
+                  [outlined]="true"
+                  styleClass="verify-btn"
+                  (click)="verifyNetworkKey()"
+                  [loading]="isResolvingKey"
+                  [disabled]="!contactForm.get('counterpartyKey')?.value"></p-button>
+              </div>
+              <small class="field-hint">
+                Enter the Merra Network Key shared with you by the counterparty organization.
+              </small>
+
+              @if (resolveKeyError) {
+                <div class="key-resolve-error">
+                  <i class="pi pi-times-circle"></i>
+                  <span>{{ resolveKeyError }}</span>
+                </div>
+              }
+
+              @if (resolvedCounterparty && resolvedCounterparty.isValid) {
+                <div class="verified-org-card">
+                  <div class="org-badge-left">
+                    <span class="verified-icon"><i class="pi pi-verified"></i></span>
+                    <div class="org-meta">
+                      <span class="org-name-text">{{ resolvedCounterparty.organizationName }}</span>
+                      <span class="org-subtext">
+                        {{ resolvedCounterparty.legalName || resolvedCounterparty.organizationName }}
+                        @if (resolvedCounterparty.country) { • {{ resolvedCounterparty.country }} }
+                        @if (resolvedCounterparty.currency) { • {{ resolvedCounterparty.currency }} }
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="use-name-btn"
+                    pTooltip="Use this organization name for Contact Name"
+                    tooltipPosition="top"
+                    (click)="applyResolvedName()">
+                    <i class="pi pi-copy"></i>
+                    <span>Use Name</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="section-divider"></div>
+
       <!-- Section 1: Basic Information -->
       <div class="form-section">
         <div class="section-header">

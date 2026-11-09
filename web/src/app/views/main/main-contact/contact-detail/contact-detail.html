@@ -78,6 +78,12 @@
           </div>
 
           <div class="badges-row">
+            @if (contact.isTenant) {
+              <span class="network-tenant-badge" pTooltip="Verified Merra Network Organization" tooltipPosition="top">
+                <i class="pi pi-bolt"></i> Merra Network
+              </span>
+            }
+
             @if (contact.accountNumber) {
               <span
                 class="account-badge"
@@ -186,6 +192,16 @@
         <div class="stat-pill">
           <span class="stat-label">Direct Contact</span>
           <span class="stat-value">{{ contact.firstName ? personFullName : (contact.emailAddress || '—') }}</span>
+        </div>
+        <div class="stat-pill" [class.stat-pill-network]="contact.isTenant">
+          <span class="stat-label">Network Subscription</span>
+          <span class="stat-value">
+            @if (contact.isTenant) {
+              <span class="text-network"><i class="pi pi-bolt"></i> Connected</span>
+            } @else {
+              Standard
+            }
+          </span>
         </div>
       </div>
     }
@@ -546,6 +562,140 @@
                 {{ contact.updatedAt ? (contact.updatedAt | date:'MMM d, y, h:mm a') : '—' }}
               </span>
             </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Merra Network Subscription -->
+        <div class="detail-card network-detail-card" [class.is-connected]="contact.isTenant">
+          <div class="card-header">
+            <div class="card-title-group">
+              <i class="pi pi-bolt card-icon network-icon"></i>
+              <div>
+                <h2 class="card-title">Merra Network Subscription</h2>
+                <p class="card-subtitle">Inter-organization key and cross-billing status</p>
+              </div>
+            </div>
+            @if (!isEditing && contact.isTenant) {
+              <span class="card-status-badge active-network">
+                <i class="pi pi-check-circle"></i> Subscribed
+              </span>
+            }
+          </div>
+
+          <div class="card-body">
+            @if (isEditing) {
+              <!-- Edit mode -->
+              <div class="tenant-toggle-field">
+                <p-checkbox
+                  formControlName="isTenant"
+                  [binary]="true"
+                  inputId="edit-is-tenant"
+                  (onChange)="onToggleTenant($event.checked)"></p-checkbox>
+                <label for="edit-is-tenant" class="toggle-label font-medium">Connect as Merra Network Organization</label>
+              </div>
+
+              @if (editForm.get('isTenant')?.value) {
+                <div class="form-field-wrapper mt-3">
+                  <label class="field-label" for="edit-counterparty-key">
+                    Counterparty Network Key <span class="required-star">*</span>
+                  </label>
+                  <div class="key-input-row">
+                    <input
+                      id="edit-counterparty-key"
+                      pInputText
+                      [pSize]="'small'"
+                      formControlName="counterpartyKey"
+                      placeholder="e.g. mrk_live_xxxxxxxxxxxxxxxxxxxxxxxx"
+                      class="font-mono key-input"
+                      (input)="onCounterpartyKeyInput($event)" />
+                    <p-button
+                      label="Verify"
+                      icon="pi pi-search"
+                      [size]="'small'"
+                      [outlined]="true"
+                      styleClass="verify-btn"
+                      (click)="verifyNetworkKey()"
+                      [loading]="isResolvingKey"
+                      [disabled]="!editForm.get('counterpartyKey')?.value"></p-button>
+                  </div>
+                  <small class="field-hint">
+                    Enter the key provided by this organization to enable cross-organization invoices.
+                  </small>
+
+                  @if (resolveKeyError) {
+                    <div class="key-resolve-error">
+                      <i class="pi pi-times-circle"></i>
+                      <span>{{ resolveKeyError }}</span>
+                    </div>
+                  }
+
+                  @if (resolvedCounterparty && resolvedCounterparty.isValid) {
+                    <div class="verified-org-card">
+                      <div class="org-badge-left">
+                        <span class="verified-icon"><i class="pi pi-verified"></i></span>
+                        <div class="org-meta">
+                          <span class="org-name-text">{{ resolvedCounterparty.organizationName }}</span>
+                          <span class="org-subtext">
+                            {{ resolvedCounterparty.legalName || resolvedCounterparty.organizationName }}
+                            @if (resolvedCounterparty.country) { • {{ resolvedCounterparty.country }} }
+                            @if (resolvedCounterparty.currency) { • {{ resolvedCounterparty.currency }} }
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        class="use-name-btn"
+                        pTooltip="Update contact name to match this organization"
+                        tooltipPosition="top"
+                        (click)="applyResolvedName()">
+                        <i class="pi pi-copy"></i>
+                        <span>Use Name</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            } @else {
+              <!-- View mode -->
+              <div class="info-row">
+                <span class="info-label">Network Status</span>
+                <span class="info-value">
+                  @if (contact.isTenant) {
+                    <span class="network-active-text">
+                      <i class="pi pi-bolt"></i> Connected Merra Tenant
+                    </span>
+                  } @else {
+                    <span class="text-muted">Standard Contact (No Network Key)</span>
+                  }
+                </span>
+              </div>
+
+              @if (contact.isTenant) {
+                <div class="info-row">
+                  <span class="info-label">Counterparty Organization</span>
+                  <span class="info-value font-medium">{{ contact.counterPartyName || 'Linked Tenant' }}</span>
+                </div>
+
+                <div class="info-row">
+                  <span class="info-label">Counterparty Key</span>
+                  <span class="info-value font-mono">
+                    @if (contact.counterpartyKey) {
+                      {{ contact.counterpartyKey.slice(0, 9) }}••••••••••••{{ contact.counterpartyKey.slice(-4) }}
+                      <button
+                        type="button"
+                        class="copy-btn"
+                        (click)="copyCounterpartyKey(contact.counterpartyKey)"
+                        pTooltip="Copy Counterparty Key"
+                        tooltipPosition="top">
+                        <i class="pi pi-copy"></i>
+                      </button>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </span>
+                </div>
+              }
+            }
           </div>
         </div>
       </div>

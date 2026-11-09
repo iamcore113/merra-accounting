@@ -57,6 +57,7 @@ public class InvoiceService {
 	private final LineAmountTypeRepository lineAmountTypeRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final NetworkKeyService networkKeyService;
 
 	public InvoiceService(
 			InvoiceRepository invoiceRepository,
@@ -68,7 +69,8 @@ public class InvoiceService {
 			InvoiceTypeRepository invoiceTypeRepository,
 			InvoiceStatusCodeRepository invoiceStatusCodeRepository,
 			LineAmountTypeRepository lineAmountTypeRepository,
-			RedisTemplate<String, Object> redisTemplate) {
+			RedisTemplate<String, Object> redisTemplate,
+			NetworkKeyService networkKeyService) {
 		this.redisTemplate = redisTemplate;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 		this.invoiceRepository = invoiceRepository;
@@ -79,6 +81,7 @@ public class InvoiceService {
 		this.invoiceTypeRepository = invoiceTypeRepository;
 		this.invoiceStatusCodeRepository = invoiceStatusCodeRepository;
 		this.lineAmountTypeRepository = lineAmountTypeRepository;
+		this.networkKeyService = networkKeyService;
 	}
 
 	/**
@@ -120,6 +123,9 @@ public class InvoiceService {
 		Contact getContact = contactRepository.findById(request.contact())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
 		invoice.setContact(getContact);
+
+		// Validate Merra Network subscription key if contact is a network tenant
+		networkKeyService.validateSubscription(getContact);
 
 		// Validate contact type constraint with invoice type
 		boolean isCustomerInvoice = invoiceType.getType().equalsIgnoreCase(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE)
