@@ -339,9 +339,13 @@ export class InvoicePreview implements OnInit {
   }
 
   editInvoice(): void {
-    this.router.navigate(['/main/invoice/new'], {
-      state: { editInvoiceData: this.invoice }
-    });
+    if (this.invoice?.id) {
+      this.router.navigate(['/main/invoice', this.invoice.id]);
+    } else {
+      this.router.navigate(['/main/invoice/new'], {
+        state: { editInvoiceData: this.invoice }
+      });
+    }
   }
 
   formatDate(val: string | Date | undefined): string {

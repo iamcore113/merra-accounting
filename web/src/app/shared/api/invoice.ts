@@ -6,3 +6,6 @@ export const CREATE_INVOICE_URL: string = `${INVOICE_ENDPOINT}new`;
 export const CHECK_INVOICE_NUMBER_URL: string = `${INVOICE_ENDPOINT}check-invoice-number`;
 export const ALL_INVOICES_URL: string = `${INVOICE_ENDPOINT}all`;
 export const GET_INVOICE_BY_ID_URL = (id: string): string => `${INVOICE_ENDPOINT}${id}`;
+export const UPDATE_INVOICE_URL = (id: string): string => `${INVOICE_ENDPOINT}${id}`;
+export const UPDATE_INVOICE_STATUS_URL = (id: string): string => `${INVOICE_ENDPOINT}${id}/status`;
+export const DELETE_INVOICE_URL = (id: string): string => `${INVOICE_ENDPOINT}${id}`;

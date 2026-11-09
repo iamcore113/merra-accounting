@@ -1,0 +1,652 @@
+<div class="invoice-detail-page">
+  <!-- Top Breadcrumb & Navigation -->
+  <div class="header-breadcrumb">
+    <a routerLink="/main/invoice" class="breadcrumb-link">
+      <i class="pi pi-arrow-left"></i> All Invoices
+    </a>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-active">{{ invoice?.invoiceNumber || 'Invoice Details' }}</span>
+  </div>
+
+  <!-- Loading State with Skeletons -->
+  @if (isLoading) {
+    <div class="detail-card skeleton-card">
+      <div class="header-skeleton">
+        <div class="skeleton-left">
+          <p-skeleton width="14rem" height="2rem" borderRadius="4px"></p-skeleton>
+          <div class="flex gap-2 mt-2">
+            <p-skeleton width="5rem" height="1.5rem" borderRadius="3px"></p-skeleton>
+            <p-skeleton width="5rem" height="1.5rem" borderRadius="3px"></p-skeleton>
+          </div>
+        </div>
+        <div class="skeleton-right">
+          <p-skeleton width="6rem" height="2rem" borderRadius="4px"></p-skeleton>
+          <p-skeleton width="6rem" height="2rem" borderRadius="4px"></p-skeleton>
+        </div>
+      </div>
+      <div class="grid-skeleton mt-4">
+        <p-skeleton width="100%" height="8rem" borderRadius="4px"></p-skeleton>
+        <p-skeleton width="100%" height="8rem" borderRadius="4px"></p-skeleton>
+      </div>
+      <div class="table-skeleton mt-4">
+        <p-skeleton width="100%" height="12rem" borderRadius="4px"></p-skeleton>
+      </div>
+    </div>
+  } @else if (loadError) {
+    <!-- Error State -->
+    <div class="detail-card error-card">
+      <div class="error-content">
+        <i class="pi pi-exclamation-circle error-icon"></i>
+        <h3 class="error-title">Unable to Load Invoice</h3>
+        <p class="error-msg">{{ loadError }}</p>
+        <a routerLink="/main/invoice">
+          <p-button label="Return to Invoices" icon="pi pi-arrow-left" [size]="'small'"></p-button>
+        </a>
+      </div>
+    </div>
+  } @else {
+    <!-- Invoice Header Bar -->
+    <div class="detail-page-header">
+      <div class="header-title-group">
+        <div class="title-row">
+          <h1 class="invoice-heading">{{ invoice?.invoiceNumber }}</h1>
+          <p-tag
+            [value]="invoice?.type === 'CUSTOMER' ? 'Customer Invoice' : 'Supplier Invoice'"
+            [severity]="getTypeTagSeverity(invoice?.type)"
+            [rounded]="false"
+            class="type-pill">
+          </p-tag>
+          <p-tag
+            [value]="invoice?.status || 'DRAFT'"
+            [severity]="getStatusSeverity(invoice?.status)"
+            [rounded]="false"
+            class="status-pill">
+          </p-tag>
+        </div>
+        <p class="invoice-subtitle">
+          Issued to <strong>{{ invoice?.contactName }}</strong> on {{ invoice?.date }} • Due on {{ invoice?.dueDate }}
+        </p>
+      </div>
+
+      <div class="header-action-buttons">
+        @if (!isEditing) {
+          <p-button
+            label="Preview"
+            icon="pi pi-eye"
+            [outlined]="true"
+            [size]="'small'"
+            (onClick)="goToPreview()"
+            pTooltip="Open standard A4 document preview">
+          </p-button>
+
+          <p-button
+            label="Change Status"
+            icon="pi pi-sync"
+            [outlined]="true"
+            [size]="'small'"
+            (onClick)="openChangeStatusDialog()"
+            pTooltip="Quickly transition invoice status">
+          </p-button>
+
+          <p-button
+            label="Edit"
+            icon="pi pi-pencil"
+            [size]="'small'"
+            (onClick)="startEditing()"
+            pTooltip="Edit invoice details, dates, and line items">
+          </p-button>
+
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [size]="'small'"
+            (onClick)="confirmDelete()"
+            pTooltip="Delete invoice">
+          </p-button>
+        } @else {
+          <p-button
+            label="Cancel"
+            icon="pi pi-times"
+            [text]="true"
+            [size]="'small'"
+            [disabled]="isSaving"
+            (onClick)="cancelEditing()">
+          </p-button>
+
+          <p-button
+            label="Save Changes"
+            icon="pi pi-check"
+            [size]="'small'"
+            [loading]="isSaving"
+            (onClick)="saveInvoice()">
+          </p-button>
+        }
+      </div>
+    </div>
+
+    <!-- Quick Status Action Bar (View Mode) -->
+    @if (!isEditing) {
+      <div class="status-quick-bar">
+        <div class="status-indicator">
+          <span class="label">Current Status:</span>
+          <span class="val font-semibold">{{ invoice?.status }}</span>
+        </div>
+        <div class="status-buttons">
+          @if (invoice?.status === 'DRAFT') {
+            <p-button
+              label="Submit Invoice"
+              icon="pi pi-send"
+              [size]="'small'"
+              [outlined]="true"
+              (onClick)="applyStatusChange('SUBMITTED')">
+            </p-button>
+            <p-button
+              label="Approve & Authorise"
+              icon="pi pi-check-circle"
+              [size]="'small'"
+              (onClick)="applyStatusChange('AUTHORISED')">
+            </p-button>
+          } @else if (invoice?.status === 'SUBMITTED') {
+            <p-button
+              label="Revert to Draft"
+              icon="pi pi-undo"
+              [size]="'small'"
+              [text]="true"
+              (onClick)="applyStatusChange('DRAFT')">
+            </p-button>
+            <p-button
+              label="Approve & Authorise"
+              icon="pi pi-check-circle"
+              [size]="'small'"
+              (onClick)="applyStatusChange('AUTHORISED')">
+            </p-button>
+          } @else if (invoice?.status === 'AUTHORISED' || invoice?.status === 'APPROVED') {
+            <p-button
+              label="Mark as Paid"
+              icon="pi pi-wallet"
+              severity="success"
+              [size]="'small'"
+              (onClick)="applyStatusChange('PAID')">
+            </p-button>
+            <p-button
+              label="Void Invoice"
+              icon="pi pi-ban"
+              severity="danger"
+              [outlined]="true"
+              [size]="'small'"
+              (onClick)="applyStatusChange('VOIDED')">
+            </p-button>
+          } @else if (invoice?.status === 'PAID') {
+            <span class="paid-badge"><i class="pi pi-check"></i> Paid in full</span>
+            <p-button
+              label="Void"
+              icon="pi pi-ban"
+              severity="danger"
+              [text]="true"
+              [size]="'small'"
+              (onClick)="applyStatusChange('VOIDED')">
+            </p-button>
+          } @else if (invoice?.status === 'VOIDED') {
+            <span class="voided-badge"><i class="pi pi-ban"></i> Voided transaction</span>
+            <p-button
+              label="Reopen as Draft"
+              icon="pi pi-refresh"
+              [text]="true"
+              [size]="'small'"
+              (onClick)="applyStatusChange('DRAFT')">
+            </p-button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Content Card -->
+    <div class="detail-card">
+      @if (!isEditing) {
+        <!-- VIEW MODE -->
+        <!-- Two Column Overview Grid -->
+        <div class="info-grid">
+          <!-- Card 1: Invoice Terms & Metadata -->
+          <div class="info-block">
+            <h3 class="block-title">Invoice Details</h3>
+            <div class="block-row">
+              <span class="k">Invoice Number</span>
+              <span class="v font-semibold">{{ invoice?.invoiceNumber }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Reference</span>
+              <span class="v">{{ invoice?.reference || '—' }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Issue Date</span>
+              <span class="v">{{ invoice?.date }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Due Date</span>
+              <span class="v">{{ invoice?.dueDate }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Tax Mode</span>
+              <span class="v">{{ invoice?.lineAmountTypes || 'EXCLUSIVE' }}</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Contact Details -->
+          <div class="info-block">
+            <h3 class="block-title">Contact & Organization</h3>
+            <div class="block-row">
+              <span class="k">Contact</span>
+              <span class="v font-semibold contact-val">
+                <a [routerLink]="['/main/contacts', invoice?.contactId]" class="contact-link">{{ invoice?.contactName }}</a>
+                @if (invoice?.contactTypeInitials) {
+                  <span class="initials-tag" [class.badge-both]="invoice?.contactTypeInitials === 'BT'">
+                    {{ invoice?.contactTypeInitials }}
+                  </span>
+                }
+              </span>
+            </div>
+            <div class="block-row">
+              <span class="k">Account No.</span>
+              <span class="v">{{ invoice?.contactAccountNumber || '—' }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Email</span>
+              <span class="v">{{ invoice?.contactEmail || '—' }}</span>
+            </div>
+            <div class="block-row">
+              <span class="k">Issuer Org</span>
+              <span class="v">{{ invoice?.organizationName }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Line Items Table (View Mode) -->
+        <div class="line-items-section">
+          <h3 class="section-title">Line Items</h3>
+          <p-table
+            [value]="invoice?.lineItems || []"
+            [size]="'small'"
+            styleClass="p-datatable-sm detail-line-table"
+            responsiveLayout="scroll">
+            <ng-template #header>
+              <tr>
+                <th>Description</th>
+                <th style="width: 8rem">Account</th>
+                <th class="text-right" style="width: 5rem">Qty</th>
+                <th class="text-right" style="width: 7rem">Unit Price</th>
+                <th class="text-right" style="width: 5rem">Disc %</th>
+                <th class="text-center" style="width: 6rem">Tax Type</th>
+                <th class="text-right" style="width: 6rem">Tax</th>
+                <th class="text-right" style="width: 7rem">Amount</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-item>
+              <tr>
+                <td class="font-medium">{{ item.description }}</td>
+                <td><span class="acc-badge">{{ item.accountCode }}</span></td>
+                <td class="text-right">{{ item.quantity }}</td>
+                <td class="text-right">${{ item.unitAmount | number:'1.2-2' }}</td>
+                <td class="text-right">{{ item.discountRate ? (item.discountRate + '%') : '0%' }}</td>
+                <td class="text-center"><span class="tax-pill">{{ item.taxType }}</span></td>
+                <td class="text-right text-secondary">${{ item.taxAmount | number:'1.2-2' }}</td>
+                <td class="text-right font-semibold">${{ item.total | number:'1.2-2' }}</td>
+              </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+              <tr>
+                <td colspan="8" class="text-center p-3 text-secondary">No line items recorded on this invoice.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="financial-summary-wrap">
+          <div class="totals-box">
+            <div class="total-row">
+              <span class="t-label">Subtotal:</span>
+              <span class="t-value">${{ invoice?.subTotal | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row">
+              <span class="t-label">Total Tax:</span>
+              <span class="t-value">${{ invoice?.totalTax | number:'1.2-2' }}</span>
+            </div>
+            <div class="total-row grand-total">
+              <span class="t-label">Grand Total:</span>
+              <span class="t-value">${{ invoice?.grandTotal | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+      } @else {
+        <!-- EDIT MODE FORM -->
+        <form [formGroup]="editForm" class="edit-invoice-form">
+          <div class="edit-form-header">
+            <h2 class="edit-title">Edit Invoice Details</h2>
+            <p class="edit-subtitle">Modify contact, terms, tax calculations, status, and line item amounts.</p>
+          </div>
+
+          <div class="form-grid">
+            <!-- Contact Field -->
+            <div class="form-group">
+              <label class="form-label">Contact <span class="required">*</span></label>
+              <p-select
+                [options]="contacts"
+                formControlName="contact"
+                optionLabel="displayName"
+                optionValue="id"
+                [filter]="true"
+                filterBy="name"
+                placeholder="Select Contact"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-select>
+            </div>
+
+            <!-- Invoice Type Field -->
+            <div class="form-group">
+              <label class="form-label">Invoice Type <span class="required">*</span></label>
+              <p-select
+                [options]="invoiceTypes"
+                formControlName="invoiceType"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Select Type"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-select>
+            </div>
+
+            <!-- Tax Mode Field -->
+            <div class="form-group">
+              <label class="form-label">Line Amount Tax Mode <span class="required">*</span></label>
+              <p-select
+                [options]="lineAmountTypeOptions"
+                formControlName="lineAmountType"
+                optionLabel="label"
+                optionValue="value"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-select>
+            </div>
+
+            <!-- Status Field -->
+            <div class="form-group">
+              <label class="form-label">Status <span class="required">*</span></label>
+              <p-select
+                [options]="statusOptions"
+                formControlName="status"
+                optionLabel="label"
+                optionValue="value"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-select>
+            </div>
+
+            <!-- Issue Date Field -->
+            <div class="form-group">
+              <label class="form-label">Issue Date <span class="required">*</span></label>
+              <p-datepicker
+                formControlName="date"
+                dateFormat="mm/dd/yy"
+                [showIcon]="true"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-datepicker>
+            </div>
+
+            <!-- Due Date Field -->
+            <div class="form-group">
+              <label class="form-label">Due Date <span class="required">*</span></label>
+              <p-datepicker
+                formControlName="dueDate"
+                [minDate]="minDueDate"
+                dateFormat="mm/dd/yy"
+                [showIcon]="true"
+                [size]="'small'"
+                styleClass="w-full">
+              </p-datepicker>
+              @if (editForm.get('dueDate')?.hasError('dueDateBeforeIssueDate')) {
+                <small class="error-text">Due date cannot be earlier than issue date.</small>
+              }
+            </div>
+
+            <!-- Reference Field -->
+            <div class="form-group col-span-2">
+              <label class="form-label">Reference / PO #</label>
+              <input
+                pInputText
+                formControlName="reference"
+                placeholder="e.g. PO-98402"
+                [pSize]="'small'"
+                class="w-full" />
+            </div>
+          </div>
+
+          <!-- Line Items Editor Table -->
+          <div class="edit-lines-section mt-4">
+            <div class="lines-header-row">
+              <h3 class="section-title">Invoice Line Items</h3>
+              <p-button
+                label="Add Line"
+                icon="pi pi-plus"
+                [size]="'small'"
+                [outlined]="true"
+                (onClick)="addLineItem()">
+              </p-button>
+            </div>
+
+            <p-table
+              [value]="editableLineItems"
+              [size]="'small'"
+              styleClass="p-datatable-sm edit-line-table"
+              responsiveLayout="scroll">
+              <ng-template #header>
+                <tr>
+                  <th style="min-width: 14rem">Description</th>
+                  <th style="width: 11rem">Account</th>
+                  <th style="width: 6rem" class="text-right">Qty</th>
+                  <th style="width: 7rem" class="text-right">Unit Price</th>
+                  <th style="width: 5rem" class="text-right">Disc %</th>
+                  <th style="width: 7rem" class="text-right">Tax (15%)</th>
+                  <th style="width: 7.5rem" class="text-right">Total</th>
+                  <th style="width: 3.5rem" class="text-center">Action</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-item let-i="rowIndex">
+                <tr>
+                  <td>
+                    <input
+                      pInputText
+                      [(ngModel)]="item.description"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Item description"
+                      [pSize]="'small'"
+                      class="w-full" />
+                  </td>
+                  <td>
+                    <p-select
+                      [options]="accountOptions"
+                      [(ngModel)]="item.accountCode"
+                      [ngModelOptions]="{standalone: true}"
+                      optionLabel="label"
+                      optionValue="value"
+                      [size]="'small'"
+                      styleClass="w-full"
+                      appendTo="body">
+                    </p-select>
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      type="number"
+                      min="1"
+                      [(ngModel)]="item.quantity"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onItemChange(item)"
+                      [pSize]="'small'"
+                      class="w-full text-right" />
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      [(ngModel)]="item.unitAmount"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onItemChange(item)"
+                      [pSize]="'small'"
+                      class="w-full text-right" />
+                  </td>
+                  <td>
+                    <input
+                      pInputText
+                      type="number"
+                      min="0"
+                      max="100"
+                      [(ngModel)]="item.discountRate"
+                      [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="onItemChange(item)"
+                      [pSize]="'small'"
+                      class="w-full text-right" />
+                  </td>
+                  <td class="text-right text-secondary">${{ item.taxAmount | number:'1.2-2' }}</td>
+                  <td class="text-right font-semibold">${{ item.total | number:'1.2-2' }}</td>
+                  <td class="text-center">
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [text]="true"
+                      [rounded]="true"
+                      [size]="'small'"
+                      (onClick)="deleteLineItem(i)"
+                      pTooltip="Remove row">
+                    </p-button>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+
+            <!-- Editable Totals Box -->
+            <div class="financial-summary-wrap mt-3">
+              <div class="totals-box">
+                <div class="total-row">
+                  <span class="t-label">Subtotal:</span>
+                  <span class="t-value">${{ editSubTotal | number:'1.2-2' }}</span>
+                </div>
+                <div class="total-row">
+                  <span class="t-label">Tax:</span>
+                  <span class="t-value">${{ editTotalTax | number:'1.2-2' }}</span>
+                </div>
+                <div class="total-row grand-total">
+                  <span class="t-label">Grand Total:</span>
+                  <span class="t-value">${{ editGrandTotal | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Save / Cancel actions -->
+          <div class="edit-footer-actions mt-4">
+            <p-button
+              label="Cancel"
+              icon="pi pi-times"
+              [text]="true"
+              [size]="'small'"
+              [disabled]="isSaving"
+              (onClick)="cancelEditing()">
+            </p-button>
+            <p-button
+              label="Save Invoice Changes"
+              icon="pi pi-check"
+              [size]="'small'"
+              [loading]="isSaving"
+              (onClick)="saveInvoice()">
+            </p-button>
+          </div>
+        </form>
+      }
+    </div>
+  }
+
+  <!-- Delete Confirmation Dialog -->
+  <p-dialog
+    header="Delete Invoice"
+    [(visible)]="showDeleteDialog"
+    [modal]="true"
+    [style]="{ width: '420px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="delete-dialog-body">
+      <i class="pi pi-exclamation-triangle warning-icon"></i>
+      <div class="dialog-text">
+        <p class="font-semibold text-gray-800">
+          Are you sure you want to delete invoice <strong>{{ invoice?.invoiceNumber }}</strong>?
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          This operation will permanently remove the invoice and its line items. This action cannot be reversed.
+        </p>
+      </div>
+    </div>
+    <ng-template #footer>
+      <div class="flex justify-end gap-2">
+        <p-button
+          label="Cancel"
+          [text]="true"
+          [size]="'small'"
+          [disabled]="isDeleting"
+          (onClick)="showDeleteDialog = false">
+        </p-button>
+        <p-button
+          label="Delete Invoice"
+          severity="danger"
+          icon="pi pi-trash"
+          [size]="'small'"
+          [loading]="isDeleting"
+          (onClick)="executeDelete()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Quick Status Transition Dialog -->
+  <p-dialog
+    header="Change Invoice Status"
+    [(visible)]="showStatusDialog"
+    [modal]="true"
+    [style]="{ width: '380px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="status-dialog-body py-2">
+      <label class="form-label mb-2 block">Select New Status</label>
+      <p-select
+        [options]="statusOptions"
+        [(ngModel)]="selectedNewStatus"
+        optionLabel="label"
+        optionValue="value"
+        [size]="'small'"
+        styleClass="w-full">
+      </p-select>
+    </div>
+    <ng-template #footer>
+      <div class="flex justify-end gap-2">
+        <p-button
+          label="Cancel"
+          [text]="true"
+          [size]="'small'"
+          [disabled]="isUpdatingStatus"
+          (onClick)="showStatusDialog = false">
+        </p-button>
+        <p-button
+          label="Update Status"
+          icon="pi pi-check"
+          [size]="'small'"
+          [loading]="isUpdatingStatus"
+          (onClick)="applyStatusChange()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

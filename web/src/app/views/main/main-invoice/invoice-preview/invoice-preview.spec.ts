@@ -70,9 +70,7 @@ describe('InvoicePreview', () => {
   it('should navigate to edit on editInvoice()', () => {
     spyOn(router, 'navigate');
     component.editInvoice();
-    expect(router.navigate).toHaveBeenCalledWith(['/main/invoice/new'], {
-      state: { editInvoiceData: component.invoice }
-    });
+    expect(router.navigate).toHaveBeenCalledWith(['/main/invoice', component.invoice?.id]);
   });
 });
 

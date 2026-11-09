@@ -417,11 +417,15 @@ public class InvoiceService {
 	public UpdateInvoiceResponse updateInvoiceStatus(
 			@NotNull UUID invoiceId,
 			@NotNull String status) {
-		Invoice findInvoiceById = invoiceRepository.findById(invoiceId)
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		Invoice findInvoiceById = invoiceRepository.findByInvoiceIdAndOrganizationId(invoiceId, currentOrganization.getId())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE));
 		final String formerStatus = findInvoiceById.getStatus();
 
 		findInvoiceById.setStatus(status);
+		setInvoiceActions(findInvoiceById, status);
 		invoiceRepository.save(findInvoiceById);
 
 		/**
@@ -441,6 +445,101 @@ public class InvoiceService {
 				findInvoiceById.getInvoiceId(),
 				formerStatus,
 				currentStatus);
+	}
+
+	/**
+	 * Updates an existing invoice with new header, contact, dates, status, and line items.
+	 *
+	 * @param invoiceId The invoice UUID
+	 * @param request   The update data
+	 * @return The updated InvoiceDetailResponse
+	 */
+	@Transactional
+	public InvoiceDetailResponse updateInvoice(@NotNull UUID invoiceId, @NotNull CreateInvoiceRequest request) {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		Invoice invoice = invoiceRepository.findByInvoiceIdAndOrganizationId(invoiceId, currentOrganization.getId())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE));
+
+		// Set the invoice type
+		final InvoiceType invoiceType = invoiceTypeRepository.findById(request.invoiceType())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE_TYPE));
+		invoice.setType(invoiceType);
+
+		// Set invoice contact
+		Contact getContact = contactRepository.findById(request.contact())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
+		invoice.setContact(getContact);
+
+		// Validate Merra Network subscription key if contact is a network tenant
+		networkKeyService.validateSubscription(getContact);
+
+		// Validate contact type constraint with invoice type
+		boolean isCustomerInvoice = invoiceType.getType().equalsIgnoreCase(InvoiceConstants.INVOICE_TYPE_CUSTOMER_INVOICE)
+				|| invoiceType.getType().toUpperCase().contains("RECEIVABLE");
+		boolean isSupplierInvoice = invoiceType.getType().equalsIgnoreCase(InvoiceConstants.INVOICE_TYPE_SUPPLIER_INVOICE)
+				|| invoiceType.getType().toUpperCase().contains("PAYABLE");
+
+		boolean contactIsCustomer = Boolean.TRUE.equals(getContact.getIsCustomer());
+		boolean contactIsSupplier = Boolean.TRUE.equals(getContact.getIsSupplier());
+
+		if (isCustomerInvoice && !contactIsCustomer) {
+			throw new IllegalArgumentException("Cannot create a customer invoice for a contact that is not a customer");
+		}
+		if (isSupplierInvoice && !contactIsSupplier) {
+			throw new IllegalArgumentException("Cannot create a supplier invoice for a contact that is not a supplier");
+		}
+
+		final Integer contactDefaultDiscount = getContact.getDefaultDiscount();
+
+		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount,
+				currentOrganization.getId());
+		calculateInvoice(invoice);
+
+		invoice.setDate(request.date());
+		invoice.setDueDate(request.dueDate());
+
+		final String formerStatus = invoice.getStatus();
+		final String status = request.status();
+		invoice.setStatus(status);
+		setInvoiceActions(invoice, status);
+
+		if (request.reference() != null) {
+			invoice.setReference(request.reference());
+		}
+
+		// If transitioning to AUTHORISED, create journal entry
+		if (!formerStatus.equalsIgnoreCase(InvoiceConstants.INVOICE_STATUS_AUTHORISED)
+				&& status.equalsIgnoreCase(InvoiceConstants.INVOICE_STATUS_AUTHORISED)) {
+			journalService.entry(
+					invoice.getLineItems(),
+					invoice.getOrganization(),
+					invoice);
+		}
+
+		invoiceRepository.save(invoice);
+		return getInvoiceDetail(invoiceId);
+	}
+
+	/**
+	 * Deletes an invoice from the current organization.
+	 *
+	 * @param invoiceId The invoice UUID
+	 */
+	@Transactional
+	public void deleteInvoice(@NotNull UUID invoiceId) {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		Invoice invoice = invoiceRepository.findByInvoiceIdAndOrganizationId(invoiceId, currentOrganization.getId())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE));
+
+		if (InvoiceConstants.INVOICE_STATUS_PAID.equalsIgnoreCase(invoice.getStatus())) {
+			throw new IllegalStateException("Paid invoices cannot be deleted. You can mark it as voided instead.");
+		}
+
+		invoiceRepository.delete(invoice);
 	}
 
 	/**

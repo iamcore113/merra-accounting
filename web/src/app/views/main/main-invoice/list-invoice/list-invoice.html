@@ -157,7 +157,7 @@
               <p-tableCheckbox [value]="inv"></p-tableCheckbox>
             </td>
             <td class="inv-number-cell">
-              <a [routerLink]="['/main/invoice/preview', inv.id]" class="inv-link" pTooltip="Click to preview invoice">{{ inv.invoiceNumber }}</a>
+              <a [routerLink]="['/main/invoice', inv.id]" class="inv-link" pTooltip="Click to view/edit invoice details">{{ inv.invoiceNumber }}</a>
             </td>
             <td>
               <p-tag

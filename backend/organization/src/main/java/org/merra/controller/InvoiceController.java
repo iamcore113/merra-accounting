@@ -8,12 +8,16 @@ import org.merra.dto.CreateInvoiceRequest;
 import org.merra.dto.InvoiceDetailResponse;
 import org.merra.dto.InvoiceListResponse;
 import org.merra.dto.InvoiceMetaDataResponse;
+import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.services.InvoiceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -83,6 +87,42 @@ public class InvoiceController {
 		invoicesService.createNewInvoiceObject(request);
 		ApiResponse<Void> response = new ApiResponse<>();
 		response.setMessage("Invoice created successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("{invoiceId}")
+	public ResponseEntity<ApiResponse<InvoiceDetailResponse>> updateInvoice(
+			@PathVariable("invoiceId") UUID invoiceId,
+			@Valid @RequestBody CreateInvoiceRequest request) {
+		InvoiceDetailResponse updated = invoicesService.updateInvoice(invoiceId, request);
+		ApiResponse<InvoiceDetailResponse> response = new ApiResponse<>();
+		response.setMessage("Invoice updated successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		response.setData(updated);
+		return ResponseEntity.ok(response);
+	}
+
+	@PatchMapping("{invoiceId}/status")
+	public ResponseEntity<ApiResponse<UpdateInvoiceResponse>> updateInvoiceStatus(
+			@PathVariable("invoiceId") UUID invoiceId,
+			@RequestParam("status") String status) {
+		UpdateInvoiceResponse updated = invoicesService.updateInvoiceStatus(invoiceId, status);
+		ApiResponse<UpdateInvoiceResponse> response = new ApiResponse<>();
+		response.setMessage("Invoice status updated successfully");
+		response.setSuccess(true);
+		response.setResponse(HttpStatus.OK);
+		response.setData(updated);
+		return ResponseEntity.ok(response);
+	}
+
+	@DeleteMapping("{invoiceId}")
+	public ResponseEntity<ApiResponse<Void>> deleteInvoice(@PathVariable("invoiceId") UUID invoiceId) {
+		invoicesService.deleteInvoice(invoiceId);
+		ApiResponse<Void> response = new ApiResponse<>();
+		response.setMessage("Invoice deleted successfully");
 		response.setSuccess(true);
 		response.setResponse(HttpStatus.OK);
 		return ResponseEntity.ok(response);

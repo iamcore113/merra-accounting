@@ -7,6 +7,9 @@ import {
   CREATE_INVOICE_URL,
   ALL_INVOICES_URL,
   GET_INVOICE_BY_ID_URL,
+  UPDATE_INVOICE_URL,
+  UPDATE_INVOICE_STATUS_URL,
+  DELETE_INVOICE_URL,
 } from '../api/invoice';
 import { IS_AUTHENTICATED } from '../context/auth.token';
 import { Config, SuccessResponse } from '../models/api_response';
@@ -49,6 +52,25 @@ export class InvoiceService {
 
   getInvoiceById(id: string): Observable<SuccessResponse<InvoiceDetailResponse>> {
     return this.http.get<SuccessResponse<InvoiceDetailResponse>>(GET_INVOICE_BY_ID_URL(id), {
+      context: new HttpContext().set(IS_AUTHENTICATED, true),
+    });
+  }
+
+  updateInvoice(id: string, payload: any): Observable<SuccessResponse<InvoiceDetailResponse>> {
+    return this.http.put<SuccessResponse<InvoiceDetailResponse>>(UPDATE_INVOICE_URL(id), payload, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true),
+    });
+  }
+
+  updateInvoiceStatus(id: string, status: string): Observable<SuccessResponse<any>> {
+    return this.http.patch<SuccessResponse<any>>(UPDATE_INVOICE_STATUS_URL(id), null, {
+      params: { status },
+      context: new HttpContext().set(IS_AUTHENTICATED, true),
+    });
+  }
+
+  deleteInvoice(id: string): Observable<SuccessResponse<void>> {
+    return this.http.delete<SuccessResponse<void>>(DELETE_INVOICE_URL(id), {
       context: new HttpContext().set(IS_AUTHENTICATED, true),
     });
   }
