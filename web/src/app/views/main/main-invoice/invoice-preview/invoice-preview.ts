@@ -5,6 +5,8 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+import { InvoiceService } from '../../../../shared/services/invoice-service';
+import { InvoiceDetailResponse } from '../../../../shared/models/invoice';
 
 export interface InvoicePreviewLineItem {
   item?: string;
@@ -72,6 +74,7 @@ export class InvoicePreview implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly location = inject(Location);
+  private readonly invoiceService = inject(InvoiceService);
 
   @Input() invoice?: InvoicePreviewData;
   @Input() isModal = false;
@@ -159,7 +162,55 @@ export class InvoicePreview implements OnInit {
     // Check route parameter :id
     const invoiceId = this.route.snapshot.paramMap.get('id');
     if (invoiceId) {
-      this.invoice = this.findMockInvoiceById(invoiceId);
+      this.invoiceService.getInvoiceById(invoiceId).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            const d = res.data;
+            this.invoice = {
+              id: d.id,
+              invoiceNumber: d.invoiceNumber,
+              organizationName: d.organizationName || 'Current Organization',
+              organizationEmail: d.organizationEmail,
+              organizationPhone: d.organizationPhone,
+              organizationAddress: d.organizationAddress,
+              organizationTaxNumber: d.organizationTaxNumber,
+              type: d.type === 'CUSTOMER' ? 'CUSTOMER_INVOICE' : 'SUPPLIER_INVOICE',
+              typeName: d.typeName,
+              contactName: d.contactName,
+              contactEmail: d.contactEmail,
+              contactPhone: d.contactPhone,
+              contactAddress: d.contactAddress,
+              contactAccountNumber: d.contactAccountNumber,
+              contactTypeInitials: d.contactTypeInitials,
+              date: d.date,
+              dueDate: d.dueDate,
+              lineAmountTypes: (d.lineAmountTypes as any) || 'EXCLUSIVE',
+              status: d.status,
+              reference: d.reference,
+              currencySymbol: '$',
+              lineItems: (d.lineItems || []).map((li: any) => ({
+                item: li.description,
+                description: li.description,
+                account: li.accountCode,
+                quantity: li.quantity,
+                price: li.unitAmount,
+                discount: li.discountRate || 0,
+                taxRate: 15,
+                amount: li.total || li.lineAmount
+              })),
+              subTotal: d.subTotal || 0,
+              totalTax: Number(d.totalTax) || 0,
+              grandTotal: Number(d.grandTotal) || 0,
+              notes: 'Payment is due within agreed terms. Please quote invoice number upon remittance.'
+            };
+          } else {
+            this.invoice = this.findMockInvoiceById(invoiceId);
+          }
+        },
+        error: () => {
+          this.invoice = this.findMockInvoiceById(invoiceId);
+        }
+      });
       return;
     }
 

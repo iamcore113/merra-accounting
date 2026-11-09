@@ -252,6 +252,18 @@
     text-align: right;
   }
 
+  .flex-center {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flex-right {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
   .empty-state-cell {
     padding: 3rem 1rem !important;
     text-align: center;

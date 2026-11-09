@@ -69,6 +69,9 @@ export class NewInvoice implements OnInit {
   customerInvoiceExistsError: string | null = null;
   isCheckingInvoiceNumber = false;
 
+  // Form submission state
+  isSubmitting = false;
+
   // Dropdown list options
   organizations = [
     { id: 'oscorp', name: 'Oscorp Industries' },
@@ -96,10 +99,12 @@ export class NewInvoice implements OnInit {
   ];
 
   accounts = [
-    { code: '200', name: 'Sales (200)' },
-    { code: '300', name: 'Purchases (300)' },
-    { code: '400', name: 'Advertising (400)' },
-    { code: '420', name: 'Office Expenses (420)' }
+    { code: '400', name: 'Sales Revenue (400)' },
+    { code: '410', name: 'Service Income (410)' },
+    { code: '500', name: 'Office Expenses (500)' },
+    { code: '510', name: 'Marketing & Advertising (510)' },
+    { code: '530', name: 'Cost of Goods Sold (530)' },
+    { code: '200', name: 'Accounts Payable (200)' }
   ];
 
   taxRates = [
@@ -666,7 +671,7 @@ export class NewInvoice implements OnInit {
         description: '',
         quantity: 1,
         price: 0,
-        account: '200',
+        account: '400',
         taxRate: 15,
         amount: 0
       }
@@ -809,27 +814,61 @@ export class NewInvoice implements OnInit {
       return;
     }
 
-    const payload = {
-      ...this.invoiceForm.value,
-      invoiceNumber: invoiceNumberVal,
-      status: status,
-      subTotal: this.subTotal,
-      grandTotal: this.grandTotal,
-      totalTax: this.totalTax,
-      lineItems: this.lineItems
+    const formatDate = (d: any): string => {
+      if (!d) return '';
+      const dateObj = d instanceof Date ? d : new Date(d);
+      if (isNaN(dateObj.getTime())) return '';
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     };
-    delete payload.customerInvoiceSuffix;
 
-    console.log('Saving Invoice Payload:', payload);
-    const successDetail = invoiceNumberVal
-      ? `Invoice ${invoiceNumberVal} successfully saved as ${status}!`
-      : `Customer invoice successfully saved as ${status}! (Invoice number will be auto-generated)`;
+    const requestPayload = {
+      invoiceType: this.invoiceForm.get('type')?.value,
+      contact: this.invoiceForm.get('contact')?.value,
+      lineAmountType: this.invoiceForm.get('lineAmountTypes')?.value || 'EXCLUSIVE',
+      date: formatDate(this.invoiceForm.get('date')?.value),
+      dueDate: formatDate(this.invoiceForm.get('dueDate')?.value),
+      status: status,
+      taxEligible: true,
+      reference: this.invoiceForm.get('reference')?.value?.trim() || '',
+      invoiceNumber: invoiceNumberVal || null,
+      lineItems: this.lineItems.map(item => ({
+        description: (item.description || item.itemCode || 'Invoice Item').trim(),
+        quantity: Math.max(1, Number(item.quantity) || 1),
+        unitAmount: Number(item.price) || 0,
+        accountCode: item.account || '400',
+        overrideTaxType: null,
+        discountRate: 0
+      }))
+    };
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: successDetail,
-      life: 3000
+    this.isSubmitting = true;
+    this.invoiceService.createInvoice(requestPayload).subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: res.message || 'Invoice created successfully',
+          life: 3000
+        });
+        setTimeout(() => {
+          this.router.navigate(['/main/invoice']);
+        }, 800);
+      },
+      error: (err: any) => {
+        this.isSubmitting = false;
+        const msg = err.error?.message || err.message || 'Failed to create invoice';
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: msg,
+          life: 4000
+        });
+        this.cdr.markForCheck();
+      }
     });
   }
 

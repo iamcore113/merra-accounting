@@ -1,5 +1,7 @@
 package org.merra.repositories;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.merra.entities.Invoice;
@@ -62,5 +64,13 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
 	@Query("SELECT COUNT(i) > 0 FROM Invoice i WHERE i.invoiceNumber = :invoiceNumber AND i.organization.id = :organizationId")
 	boolean existsByInvoiceNumberAndOrganizationId(
 			@Param("invoiceNumber") String invoiceNumber,
+			@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT i FROM Invoice i WHERE i.organization.id = :organizationId ORDER BY i.createdAt DESC")
+	List<Invoice> findAllByOrganizationId(@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT i FROM Invoice i WHERE i.invoiceId = :invoiceId AND i.organization.id = :organizationId")
+	Optional<Invoice> findByInvoiceIdAndOrganizationId(
+			@Param("invoiceId") UUID invoiceId,
 			@Param("organizationId") UUID organizationId);
 }

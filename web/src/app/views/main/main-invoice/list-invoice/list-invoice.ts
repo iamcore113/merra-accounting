@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,9 @@ import { TagModule } from 'primeng/tag';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TooltipModule } from 'primeng/tooltip';
+import { SkeletonModule } from 'primeng/skeleton';
+import { InvoiceService } from '../../../../shared/services/invoice-service';
+import { InvoiceListItem } from '../../../../shared/models/invoice';
 
 export type InvoiceTypeFilter = 'ALL' | 'CUSTOMER' | 'SUPPLIER';
 
@@ -20,93 +23,52 @@ export interface InvoiceItem {
   contactType?: 'CT' | 'SP' | 'BT';
   issueDate: string;
   dueDate: string;
-  status: 'DRAFT' | 'APPROVED' | 'PAID' | 'VOIDED';
+  status: 'DRAFT' | 'APPROVED' | 'PAID' | 'VOIDED' | 'SUBMITTED' | 'AUTHORISED';
   totalAmount: number;
 }
 
 @Component({
   selector: 'app-list-invoice',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, TableModule, ButtonModule, InputTextModule, TagModule, IconFieldModule, InputIconModule, TooltipModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    TagModule,
+    IconFieldModule,
+    InputIconModule,
+    TooltipModule,
+    SkeletonModule,
+  ],
   templateUrl: './list-invoice.html',
   styleUrl: './list-invoice.scss',
 })
 export class ListInvoice implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly invoiceService = inject(InvoiceService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   selectedType: InvoiceTypeFilter = 'ALL';
   selectedStatus = 'ALL';
   searchQuery = '';
   selectedInvoices: InvoiceItem[] = [];
+  isLoading = true;
 
-  readonly allInvoices: InvoiceItem[] = [
-    {
-      id: 'inv-001',
-      invoiceNumber: 'INV-00101',
-      type: 'CUSTOMER',
-      contactName: 'Acme Corporation',
-      contactType: 'CT',
-      issueDate: '2026-10-15',
-      dueDate: '2026-11-15',
-      status: 'APPROVED',
-      totalAmount: 1850.00,
-    },
-    {
-      id: 'inv-002',
-      invoiceNumber: 'INV-00102',
-      type: 'CUSTOMER',
-      contactName: 'Globex Industries',
-      contactType: 'CT',
-      issueDate: '2026-10-20',
-      dueDate: '2026-11-20',
-      status: 'DRAFT',
-      totalAmount: 420.50,
-    },
-    {
-      id: 'inv-003',
-      invoiceNumber: 'INV-00103',
-      type: 'CUSTOMER',
-      contactName: 'Initech LLC',
-      contactType: 'BT',
-      issueDate: '2026-09-01',
-      dueDate: '2026-10-01',
-      status: 'PAID',
-      totalAmount: 3200.00,
-    },
-    {
-      id: 'inv-004',
-      invoiceNumber: 'SUP-2026-01',
-      type: 'SUPPLIER',
-      contactName: 'Umbrella Trading Co.',
-      contactType: 'SP',
-      issueDate: '2026-10-28',
-      dueDate: '2026-11-28',
-      status: 'DRAFT',
-      totalAmount: 950.00,
-    },
-    {
-      id: 'inv-005',
-      invoiceNumber: 'BILL-8891',
-      type: 'SUPPLIER',
-      contactName: 'Cyberdyne Systems',
-      contactType: 'SP',
-      issueDate: '2026-10-12',
-      dueDate: '2026-11-12',
-      status: 'APPROVED',
-      totalAmount: 2450.00,
-    },
-    {
-      id: 'inv-006',
-      invoiceNumber: 'BILL-9042',
-      type: 'SUPPLIER',
-      contactName: 'Stark Logistics',
-      contactType: 'BT',
-      issueDate: '2026-10-05',
-      dueDate: '2026-11-05',
-      status: 'PAID',
-      totalAmount: 5120.00,
-    },
-  ];
+  allInvoices: InvoiceItem[] = [];
+
+  readonly skeletonRows: InvoiceItem[] = Array.from({ length: 5 }, (_, i) => ({
+    id: `skeleton-${i}`,
+    invoiceNumber: '',
+    type: 'CUSTOMER',
+    contactName: '',
+    issueDate: '',
+    dueDate: '',
+    status: 'DRAFT',
+    totalAmount: 0,
+  }));
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -121,6 +83,39 @@ export class ListInvoice implements OnInit {
         if (['DRAFT', 'APPROVED', 'PAID', 'ALL'].includes(s)) {
           this.selectedStatus = s;
         }
+      }
+    });
+
+    this.loadInvoices();
+  }
+
+  loadInvoices(): void {
+    this.isLoading = true;
+    this.invoiceService.getAllInvoices().subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res.success && res.data) {
+          this.allInvoices = res.data.map((item: InvoiceListItem) => ({
+            id: item.id,
+            invoiceNumber: item.invoiceNumber,
+            type: item.type,
+            contactName: item.contactName,
+            contactType: item.contactType,
+            issueDate: item.issueDate,
+            dueDate: item.dueDate,
+            status: item.status,
+            totalAmount: Number(item.totalAmount) || 0,
+          }));
+        } else {
+          this.allInvoices = [];
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Failed to load invoices:', err);
+        this.allInvoices = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -141,14 +136,26 @@ export class ListInvoice implements OnInit {
     return this.allInvoices.filter((inv) => {
       const matchType =
         this.selectedType === 'ALL' || inv.type === this.selectedType;
-      const matchStatus =
-        this.selectedStatus === 'ALL' || inv.status === this.selectedStatus;
+
+      let matchStatus = true;
+      if (this.selectedStatus !== 'ALL') {
+        if (this.selectedStatus === 'APPROVED') {
+          matchStatus = inv.status === 'APPROVED' || inv.status === 'AUTHORISED';
+        } else {
+          matchStatus = inv.status === this.selectedStatus;
+        }
+      }
+
       const matchSearch =
         !this.searchQuery.trim() ||
         inv.invoiceNumber.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         inv.contactName.toLowerCase().includes(this.searchQuery.toLowerCase());
       return matchType && matchStatus && matchSearch;
     });
+  }
+
+  get tableData(): InvoiceItem[] {
+    return this.isLoading ? this.skeletonRows : this.filteredInvoices;
   }
 
   setType(type: InvoiceTypeFilter): void {
@@ -171,10 +178,15 @@ export class ListInvoice implements OnInit {
     switch (status) {
       case 'DRAFT':
         return 'secondary';
+      case 'SUBMITTED':
+        return 'warn';
       case 'APPROVED':
+      case 'AUTHORISED':
         return 'info';
       case 'PAID':
         return 'success';
+      case 'VOIDED':
+        return 'danger';
       default:
         return 'secondary';
     }

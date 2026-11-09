@@ -15,10 +15,10 @@
     </div>
     <div class="header-right">
       <!-- Approve & Email split button -->
-      <p-splitbutton label="Approve" (onClick)="saveInvoice('AUTHORISED')" [model]="approveItems" [size]="'small'" styleClass="primary-split-btn"></p-splitbutton>
+      <p-splitbutton label="Approve" (onClick)="saveInvoice('AUTHORISED')" [model]="approveItems" [disabled]="isSubmitting" [size]="'small'" styleClass="primary-split-btn"></p-splitbutton>
 
       <!-- Save & Close split button -->
-      <p-splitbutton label="Save & close" (onClick)="saveInvoice('DRAFT')" [model]="saveItems" [outlined]="true" [size]="'small'"></p-splitbutton>
+      <p-splitbutton label="Save & close" (onClick)="saveInvoice('DRAFT')" [model]="saveItems" [disabled]="isSubmitting" [outlined]="true" [size]="'small'"></p-splitbutton>
 
       <p-button label="Preview" icon="pi pi-eye" [outlined]="true" [size]="'small'" (onClick)="onPreview()"></p-button>
     </div>

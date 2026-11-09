@@ -17,9 +17,9 @@ public class InvoiceConditionalValidator implements ConstraintValidator<Validate
 		 * return false if tax type is found while taxEligible is
 		 * set to false.
 		 */
-		if (!value.taxEligible()) {
+		if (Boolean.FALSE.equals(value.taxEligible()) && value.lineItems() != null) {
 			boolean presentTaxType = value.lineItems()
-					.stream().anyMatch(el -> el.overrideTaxType() != null);
+					.stream().anyMatch(el -> el.overrideTaxType() != null && !el.overrideTaxType().isBlank());
 			if (presentTaxType) {
 				return false;
 			}

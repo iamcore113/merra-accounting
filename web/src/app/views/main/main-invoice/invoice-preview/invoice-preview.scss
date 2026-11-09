@@ -121,7 +121,15 @@
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.85rem;
+
+        .merra-preview-logo {
+          height: 34px;
+          width: auto;
+          max-width: 160px;
+          display: block;
+          object-fit: contain;
+        }
 
         .brand-icon {
           width: 26px;
@@ -564,6 +572,19 @@
     padding-top: 1.25rem;
     font-size: 0.75rem;
     color: #94a3b8;
+
+    .footer-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .footer-merra-logo {
+        height: 14px;
+        width: auto;
+        opacity: 0.75;
+        vertical-align: middle;
+      }
+    }
   }
 }
 

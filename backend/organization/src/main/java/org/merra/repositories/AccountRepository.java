@@ -25,7 +25,7 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 	 * @return an {@link Optional} containing the {@link AccountLookup} projection if found, 
 	 *         or empty if no matching account exists for the organization
 	 */
-	@Query("SELECT ac.code FROM Account ac WHERE ac.code = :code " +
+	@Query("SELECT ac.code AS code, ac.code AS accountCode, ac.taxType AS taxType FROM Account ac WHERE ac.code = :code " +
 			"AND ac.organization.id = :organizationId")
 	Optional<AccountLookup> findAccountByCodeAndOrganization(
 			@Param("code") String code,

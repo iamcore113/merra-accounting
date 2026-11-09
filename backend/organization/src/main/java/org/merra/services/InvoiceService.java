@@ -3,12 +3,17 @@ package org.merra.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.merra.dto.CreateInvoiceRequest;
+import org.merra.dto.InvoiceDetailResponse;
+import org.merra.dto.InvoiceListResponse;
 import org.merra.dto.InvoiceMetaDataResponse;
 import org.merra.dto.UpdateInvoiceResponse;
 import org.merra.entities.Contact;
@@ -274,6 +279,8 @@ public class InvoiceService {
 				.stream()
 				.map(lineItem -> {
 					LineItem createLineItem = new LineItem();
+					createLineItem.setLineItemId(UUID.randomUUID().toString());
+					createLineItem.setInvoice(invoice);
 
 					/**
 					 * Resolve the tax type for the line item.
@@ -281,35 +288,35 @@ public class InvoiceService {
 					 * 1) Use overrideTaxType when explicitly provided in the request.
 					 * 2) Otherwise, derive the tax type from the selected account code within
 					 * the current organization.
-					 *
-					 * If no account mapping exists, fail fast because tax calculation depends on
-					 * a valid tax type.
+					 * 3) If not found, default to "NONE".
 					 */
 					String taxType = null;
-					if (lineItem.overrideTaxType().isBlank()) {
+					if (lineItem.overrideTaxType() == null || lineItem.overrideTaxType().isBlank()) {
 						Optional<AccountLookup> accountLookupOpt = accountRepository
 								.findAccountByCodeAndOrganization(lineItem.accountCode(), organizationId);
-						if (accountLookupOpt.isEmpty()) {
-							throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT_LOOKUP);
+						if (accountLookupOpt.isPresent() && accountLookupOpt.get().getTaxType() != null
+								&& !accountLookupOpt.get().getTaxType().isBlank()) {
+							taxType = accountLookupOpt.get().getTaxType();
+						} else {
+							taxType = "NONE";
 						}
-						taxType = accountLookupOpt.get().getAccountCode();
 					} else {
 						taxType = lineItem.overrideTaxType();
 					}
 
 					// Check if line item discount rate is specified.
 					// If not, check if customer's default discount rate is specified.
-					Integer discountRate = lineItem.discountRate() != null
-							|| lineItem.discountRate() != 0 ? lineItem.discountRate()
-									: customerDefaultDiscount != null ? customerDefaultDiscount : null;
+					Integer discountRate = lineItem.discountRate() != null && lineItem.discountRate() > 0
+							? lineItem.discountRate()
+							: (customerDefaultDiscount != null && customerDefaultDiscount > 0 ? customerDefaultDiscount : null);
 
 					// Calculate the line amount
 					Double calculateLineAmount = null;
 					calculateLineAmount = discountRate != null
-							? lineItem.quantity() * lineItem.unitAmount() * ((100 - discountRate) / 100)
+							? lineItem.quantity() * lineItem.unitAmount() * ((100.0 - discountRate) / 100.0)
 							: lineItem.quantity() * lineItem.unitAmount();
 
-					if (calculateLineAmount != null) {
+					if (discountRate != null) {
 						createLineItem.setDiscountRate(discountRate);
 					}
 
@@ -318,44 +325,44 @@ public class InvoiceService {
 					 * - calculate net line amount
 					 * - get the tax type rate
 					 */
-					BigDecimal netLineAmount = new BigDecimal(lineItem.quantity() * lineItem.unitAmount());
-					BigDecimal effectiveRate = taxRateRepository.findEffectiveRateByOrganziationId(
-							organizationId, taxType).get();
+					BigDecimal netLineAmount = BigDecimal.valueOf(calculateLineAmount != null ? calculateLineAmount : (lineItem.quantity() * lineItem.unitAmount()));
 
+					BigDecimal effectiveRate = BigDecimal.ZERO;
+					if (taxType != null && !taxType.isBlank() && !taxType.equalsIgnoreCase("NONE")) {
+						effectiveRate = taxRateRepository.findEffectiveRateByOrganziationId(
+								organizationId, taxType).orElse(BigDecimal.ZERO);
+					}
+
+					BigDecimal taxRate = effectiveRate.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP);
 					BigDecimal calculateTaxAmount = BigDecimal.ZERO;
 					BigDecimal lineItemTotal = BigDecimal.ZERO;
 
 					if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_EXCLUSIVE) == 0) {
 						// Exclusive mode: line amounts are net, so tax is added on top.
-						calculateTaxAmount = netLineAmount.multiply(effectiveRate);
-						lineItemTotal = new BigDecimal(lineItem.unitAmount()).add(effectiveRate);
+						calculateTaxAmount = netLineAmount.multiply(taxRate).setScale(2, RoundingMode.HALF_UP);
+						lineItemTotal = netLineAmount.add(calculateTaxAmount).setScale(2, RoundingMode.HALF_UP);
 
 					} else if (getLineAmountType
 							.compareToIgnoreCase(InvoiceConstants.INVOICE_LINE_AMOUNT_TYPE_INCLUSIVE) == 0) {
 						// Inclusive mode: unit amount already includes tax, so extract the tax portion.
-						BigDecimal grossPrice = new BigDecimal(lineItem.unitAmount());
-						BigDecimal taxRate = effectiveRate.divide(new BigDecimal("100"), 2, RoundingMode.HALF_DOWN);
-
-						// Use gross / (1 + taxRate) to derive net, then tax = gross - net.
-						BigDecimal one = new BigDecimal("1");
-						BigDecimal onePlusTaxRate = one.add(taxRate);
-						BigDecimal netPrice = grossPrice.divide(onePlusTaxRate);
-						calculateTaxAmount = grossPrice.subtract(netPrice);
-						lineItemTotal = new BigDecimal(lineItem.unitAmount());
+						BigDecimal onePlusTaxRate = BigDecimal.ONE.add(taxRate);
+						BigDecimal netPrice = netLineAmount.divide(onePlusTaxRate, 4, RoundingMode.HALF_UP);
+						calculateTaxAmount = netLineAmount.subtract(netPrice).setScale(2, RoundingMode.HALF_UP);
+						lineItemTotal = netLineAmount.setScale(2, RoundingMode.HALF_UP);
 
 					} else { // NoTax mode: tax is explicitly zero and total equals unit amount.
-						calculateTaxAmount = new BigDecimal("0.00");
-						lineItemTotal = new BigDecimal(lineItem.unitAmount());
+						calculateTaxAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+						lineItemTotal = netLineAmount.setScale(2, RoundingMode.HALF_UP);
 					}
 
 					createLineItem.setDescription(lineItem.description());
 					createLineItem.setQuantity(lineItem.quantity());
 					createLineItem.setUnitAmount(lineItem.unitAmount());
-					createLineItem.setLineAmount(calculateLineAmount);
+					createLineItem.setLineAmount(calculateLineAmount != null ? calculateLineAmount : netLineAmount.doubleValue());
 					createLineItem.setAccountCode(lineItem.accountCode());
 					createLineItem.setTaxAmount(calculateTaxAmount);
-					createLineItem.setTaxType(taxType);
+					createLineItem.setTaxType(taxType != null && !taxType.isBlank() ? taxType : "NONE");
 					createLineItem.setTotal(lineItemTotal);
 
 					return createLineItem;
@@ -517,4 +524,111 @@ public class InvoiceService {
 		return metaDataCache;
 	}
 
+	/**
+	 * Retrieves all invoices for the current organization.
+	 *
+	 * @return A list of {@link InvoiceListResponse}
+	 */
+	public List<InvoiceListResponse> getAllInvoicesByCurrentOrganization() {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		List<Invoice> invoices = invoiceRepository.findAllByOrganizationId(currentOrganization.getId());
+
+		return invoices.stream().map(inv -> {
+			Contact c = inv.getContact();
+			boolean isCust = c != null && Boolean.TRUE.equals(c.getIsCustomer());
+			boolean isSupp = c != null && Boolean.TRUE.equals(c.getIsSupplier());
+			String contactType = isCust && isSupp ? "BT" : isCust ? "CT" : isSupp ? "SP" : null;
+
+			String typeRaw = inv.getType() != null ? inv.getType().getType().toUpperCase() : "";
+			String type = (typeRaw.contains("SUPPLIER") || typeRaw.contains("PAYABLE") || typeRaw.contains("BILL"))
+					? "SUPPLIER"
+					: "CUSTOMER";
+			String typeName = type.equals("SUPPLIER") ? "Supplier Invoice" : "Customer Invoice";
+
+			return new InvoiceListResponse(
+					inv.getInvoiceId(),
+					inv.getInvoiceNumber(),
+					type,
+					typeName,
+					c != null ? c.getName() : "Unknown Contact",
+					contactType,
+					inv.getDate(),
+					inv.getDueDate(),
+					inv.getStatus(),
+					inv.getGrandTotal(),
+					inv.getReference());
+		}).collect(Collectors.toList());
+	}
+
+	/**
+	 * Retrieves detailed information for a single invoice belonging to the current organization.
+	 *
+	 * @param invoiceId The invoice UUID
+	 * @return The detailed {@link InvoiceDetailResponse}
+	 */
+	public InvoiceDetailResponse getInvoiceDetail(UUID invoiceId) {
+		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		Invoice invoice = invoiceRepository.findByInvoiceIdAndOrganizationId(invoiceId, currentOrganization.getId())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE));
+
+		Contact c = invoice.getContact();
+		boolean isCust = c != null && Boolean.TRUE.equals(c.getIsCustomer());
+		boolean isSupp = c != null && Boolean.TRUE.equals(c.getIsSupplier());
+		String contactType = isCust && isSupp ? "BT" : isCust ? "CT" : isSupp ? "SP" : null;
+
+		String typeRaw = invoice.getType() != null ? invoice.getType().getType().toUpperCase() : "";
+		String type = (typeRaw.contains("SUPPLIER") || typeRaw.contains("PAYABLE") || typeRaw.contains("BILL"))
+				? "SUPPLIER"
+				: "CUSTOMER";
+		String typeName = type.equals("SUPPLIER") ? "Supplier Invoice" : "Customer Invoice";
+
+		List<InvoiceDetailResponse.LineItemDetail> lineItems = new ArrayList<>();
+		if (invoice.getLineItems() != null) {
+			lineItems = invoice.getLineItems().stream().map(li -> new InvoiceDetailResponse.LineItemDetail(
+					li.getId(),
+					li.getLineItemId(),
+					li.getDescription(),
+					li.getQuantity(),
+					li.getUnitAmount(),
+					li.getLineAmount(),
+					li.getAccountCode(),
+					li.getTaxType(),
+					li.getTaxAmount(),
+					li.getDiscountRate(),
+					li.getTotal())).collect(Collectors.toList());
+		}
+
+		String orgName = currentOrganization.getDisplayName() != null ? currentOrganization.getDisplayName() : currentOrganization.getLegalName();
+
+		return new InvoiceDetailResponse(
+				invoice.getInvoiceId(),
+				invoice.getInvoiceNumber(),
+				type,
+				typeName,
+				orgName,
+				currentOrganization.getEmail(),
+				null,
+				null,
+				null,
+				c != null ? c.getId() : null,
+				c != null ? c.getName() : "Unknown Contact",
+				c != null ? c.getEmailAddress() : null,
+				null,
+				null,
+				c != null ? c.getAccountNumber() : null,
+				contactType,
+				invoice.getDate(),
+				invoice.getDueDate(),
+				invoice.getLineAmountTypes(),
+				invoice.getStatus(),
+				invoice.getReference(),
+				invoice.getSubTotal(),
+				invoice.getTotalTax(),
+				invoice.getGrandTotal(),
+				lineItems);
+	}
 }

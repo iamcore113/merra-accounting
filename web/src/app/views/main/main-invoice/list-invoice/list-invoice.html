@@ -90,7 +90,7 @@
 
     <!-- Table -->
     <p-table
-      [value]="filteredInvoices"
+      [value]="tableData"
       [(selection)]="selectedInvoices"
       dataKey="id"
       [size]="'small'"
@@ -99,7 +99,7 @@
       <ng-template #header>
         <tr>
           <th style="width: 3.5rem">
-            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            <p-tableHeaderCheckbox [disabled]="isLoading"></p-tableHeaderCheckbox>
           </th>
           <th>Invoice #</th>
           <th style="width: 8rem">Type</th>
@@ -112,48 +112,89 @@
         </tr>
       </ng-template>
       <ng-template #body let-inv>
-        <tr [pSelectableRow]="inv">
-          <td>
-            <p-tableCheckbox [value]="inv"></p-tableCheckbox>
-          </td>
-          <td class="inv-number-cell">
-            <a [routerLink]="['/main/invoice/preview', inv.id]" class="inv-link" pTooltip="Click to preview invoice">{{ inv.invoiceNumber }}</a>
-          </td>
-          <td>
-            <p-tag
-              [value]="getTypeLabel(inv.type)"
-              [severity]="getTypeTagSeverity(inv.type)"
-              [rounded]="false"
-              class="type-tag">
-            </p-tag>
-          </td>
-          <td class="font-medium">
-            <div class="contact-name-cell">
-              <span>{{ inv.contactName }}</span>
-              @if (inv.contactType) {
-                <span class="contact-initials-badge" [class.badge-both]="inv.contactType === 'BT'">
-                  {{ inv.contactType }}
-                </span>
-              }
-            </div>
-          </td>
-          <td class="text-secondary">{{ inv.issueDate }}</td>
-          <td class="text-secondary">{{ inv.dueDate }}</td>
-          <td class="text-center">
-            <p-tag [value]="inv.status" [severity]="getStatusSeverity(inv.status)" [rounded]="false"></p-tag>
-          </td>
-          <td class="text-right font-medium">${{ inv.totalAmount | number:'1.2-2' }}</td>
-          <td class="text-center">
-            <p-button
-              icon="pi pi-eye"
-              [rounded]="true"
-              [text]="true"
-              [size]="'small'"
-              pTooltip="Preview Invoice"
-              [routerLink]="['/main/invoice/preview', inv.id]">
-            </p-button>
-          </td>
-        </tr>
+        @if (isLoading) {
+          <tr class="skeleton-row">
+            <td>
+              <p-skeleton width="1.25rem" height="1.25rem" borderRadius="3px"></p-skeleton>
+            </td>
+            <td>
+              <p-skeleton width="6rem" height="1rem" borderRadius="3px"></p-skeleton>
+            </td>
+            <td>
+              <p-skeleton width="4.5rem" height="1.25rem" borderRadius="3px"></p-skeleton>
+            </td>
+            <td>
+              <div class="contact-name-cell">
+                <p-skeleton width="8.5rem" height="1rem" borderRadius="3px"></p-skeleton>
+                <p-skeleton width="1.75rem" height="1rem" borderRadius="3px"></p-skeleton>
+              </div>
+            </td>
+            <td>
+              <p-skeleton width="5.5rem" height="1rem" borderRadius="3px"></p-skeleton>
+            </td>
+            <td>
+              <p-skeleton width="5.5rem" height="1rem" borderRadius="3px"></p-skeleton>
+            </td>
+            <td class="text-center">
+              <div class="flex-center">
+                <p-skeleton width="4.5rem" height="1.25rem" borderRadius="3px"></p-skeleton>
+              </div>
+            </td>
+            <td class="text-right">
+              <div class="flex-right">
+                <p-skeleton width="4.5rem" height="1rem" borderRadius="3px"></p-skeleton>
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="flex-center">
+                <p-skeleton shape="circle" size="24px"></p-skeleton>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          <tr [pSelectableRow]="inv">
+            <td>
+              <p-tableCheckbox [value]="inv"></p-tableCheckbox>
+            </td>
+            <td class="inv-number-cell">
+              <a [routerLink]="['/main/invoice/preview', inv.id]" class="inv-link" pTooltip="Click to preview invoice">{{ inv.invoiceNumber }}</a>
+            </td>
+            <td>
+              <p-tag
+                [value]="getTypeLabel(inv.type)"
+                [severity]="getTypeTagSeverity(inv.type)"
+                [rounded]="false"
+                class="type-tag">
+              </p-tag>
+            </td>
+            <td class="font-medium">
+              <div class="contact-name-cell">
+                <span>{{ inv.contactName }}</span>
+                @if (inv.contactType) {
+                  <span class="contact-initials-badge" [class.badge-both]="inv.contactType === 'BT'">
+                    {{ inv.contactType }}
+                  </span>
+                }
+              </div>
+            </td>
+            <td class="text-secondary">{{ inv.issueDate }}</td>
+            <td class="text-secondary">{{ inv.dueDate }}</td>
+            <td class="text-center">
+              <p-tag [value]="inv.status" [severity]="getStatusSeverity(inv.status)" [rounded]="false"></p-tag>
+            </td>
+            <td class="text-right font-medium">${{ inv.totalAmount | number:'1.2-2' }}</td>
+            <td class="text-center">
+              <p-button
+                icon="pi pi-eye"
+                [rounded]="true"
+                [text]="true"
+                [size]="'small'"
+                pTooltip="Preview Invoice"
+                [routerLink]="['/main/invoice/preview', inv.id]">
+              </p-button>
+            </td>
+          </tr>
+        }
       </ng-template>
       <ng-template #emptymessage>
         <tr>

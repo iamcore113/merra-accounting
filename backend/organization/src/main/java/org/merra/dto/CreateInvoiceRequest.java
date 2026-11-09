@@ -10,7 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
@@ -21,7 +21,7 @@ public record CreateInvoiceRequest(
 		@Pattern(regexp = "^[A-Z](?:[A-Z]|_[A-Z])*$", message = "Invalid value for lineAmountType component.") String lineAmountType,
 		Set<LineItems> lineItems,
 		LocalDate date,
-		@Future(message = "Invalid value for dueDate component.") @DateTimeFormat(iso = ISO.DATE) LocalDate dueDate,
+		@FutureOrPresent(message = "Invalid value for dueDate component.") @DateTimeFormat(iso = ISO.DATE) LocalDate dueDate,
 		String status,
 		Boolean taxEligible,
 		String reference,
@@ -49,7 +49,7 @@ public record CreateInvoiceRequest(
 			throw new IllegalArgumentException("status component cannot be null or blank.");
 		}
 		if (taxEligible == null) {
-			throw new IllegalArgumentException("taxEligible component cannot be null.");
+			taxEligible = true;
 		}
 	}
 
@@ -63,7 +63,7 @@ public record CreateInvoiceRequest(
 
 		public LineItems {
 			if (discountRate == null) {
-				throw new IllegalArgumentException("discountRate component cannot be null.");
+				discountRate = 0;
 			}
 			if (accountCode == null || accountCode.isBlank()) {
 				throw new IllegalArgumentException("accountCode component cannot be null or blank.");

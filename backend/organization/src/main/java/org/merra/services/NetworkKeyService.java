@@ -101,7 +101,7 @@ public class NetworkKeyService {
             return new ResolveNetworkKeyResponse(false, null, null, null, null, null, "Cannot connect to your own organization's Network Key");
         }
 
-        String currencyCode = ownerOrg.getDefaultCurrency() != null ? ownerOrg.getDefaultCurrency().getCode() : null;
+        String currencyCode = ownerOrg.getDefaultCurrency();
         return new ResolveNetworkKeyResponse(
                 true,
                 ownerOrg.getId(),

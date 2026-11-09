@@ -78,7 +78,6 @@ public class Invoice extends TenantAuditableEntity {
 	private String status = "DRAFT";
 
 	@Column(name = "reference")
-	@NotBlank(message = "Reference cannot be blank")
 	private String reference;
 
 	@Column(name = "sub_total", nullable = false)
