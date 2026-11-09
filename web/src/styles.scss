@@ -209,26 +209,59 @@ p-autocomplete.full-width,
   border-radius: 0 !important;
 }
 
+.p-iconfield.p-iconfield-left,
+.p-iconfield:has(.p-inputicon:first-child),
+.p-iconfield:has(p-inputicon:first-child) {
+  .p-inputicon:first-child,
+  p-inputicon:first-child {
+    left: 0.75rem;
+    right: auto;
+  }
+
+  input,
+  .p-inputtext,
+  .p-inputtext-sm,
+  .p-size-small,
+  .p-input-sm,
+  .p-autocomplete-input {
+    padding-left: 2.35rem !important;
+  }
+}
+
 // Global button border-radius reset (no curves / bends)
 button,
 .p-button {
   border-radius: 0 !important;
 }
 
-// Global card border-radius reset (no curves / bends)
+// Global card & container border-radius reset (no curves / bends)
 .p-card,
 .p-card .p-card-body,
 .p-card .p-card-content,
+[class*="-card"],
 .auth-card,
 .action-card,
 .organization-card,
 .invoice-card,
+.accounts-card,
+.metric-card,
+.toolbar-card,
+.journal-card,
+.empty-state-card,
+.detail-card,
+.status-quick-bar,
+.info-block,
+.totals-box,
+.invoice-journal-box,
+.journal-pending-notice,
 .organization-address-card,
 .contact-table-container,
 .error-card,
 .offline-card,
 .personal-details-card,
-.verify-email-card {
+.verify-email-card,
+.p-datatable,
+.p-datatable-table-container {
   border-radius: 0 !important;
 }
 

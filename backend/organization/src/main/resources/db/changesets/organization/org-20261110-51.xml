@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changesets/organization/org-20261110-51.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 1. Add organization, invoice_id, and narration columns to app.journal -->
+    <changeSet id="20261110-add-journal-organization-invoice-columns" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists schemaName="app" tableName="journal"/>
+            <not>
+                <columnExists schemaName="app" tableName="journal" columnName="organization"/>
+            </not>
+        </preConditions>
+        <addColumn schemaName="app" tableName="journal">
+            <column name="organization" type="uuid">
+                <constraints
+                    nullable="true"
+                    foreignKeyName="fk_journal__organization"
+                    referencedTableSchemaName="app"
+                    referencedTableName="organization"
+                    referencedColumnNames="id"
+                    deleteCascade="true"/>
+            </column>
+            <column name="invoice_id" type="uuid">
+                <constraints
+                    nullable="true"
+                    foreignKeyName="fk_journal__invoice"
+                    referencedTableSchemaName="app"
+                    referencedTableName="invoice"
+                    referencedColumnNames="invoice_id"
+                    deleteCascade="true"/>
+            </column>
+            <column name="narration" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <createIndex schemaName="app" tableName="journal" indexName="idx_journal_organization">
+            <column name="organization"/>
+        </createIndex>
+        <createIndex schemaName="app" tableName="journal" indexName="idx_journal_invoice_id">
+            <column name="invoice_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 2. Widen numeric precision on app.journal_line and app.line_item -->
+    <changeSet id="20261110-widen-journal-and-line-item-numeric-precision" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql>
+            ALTER TABLE app.journal_line
+                ALTER COLUMN debit TYPE numeric(19,2),
+                ALTER COLUMN credit TYPE numeric(19,2);
+
+            ALTER TABLE app.line_item
+                ALTER COLUMN tax_amount TYPE numeric(19,2),
+                ALTER COLUMN total TYPE numeric(19,2);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

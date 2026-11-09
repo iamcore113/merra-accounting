@@ -319,6 +319,81 @@
           </div>
         </div>
 
+        <!-- Associated Journal Entry (Read-Only Ledger Effect) -->
+        <div class="journal-entry-section">
+          <div class="journal-section-header">
+            <div class="journal-title-group">
+              <h3 class="section-title mb-0">
+                <i class="pi pi-book mr-1"></i> Associated Journal Entry
+              </h3>
+              <span class="journal-sub">Double-entry accounting impact on the Chart of Accounts</span>
+            </div>
+            <a routerLink="/main/journals" class="view-all-journals-link">
+              Open Journals Ledger <i class="pi pi-arrow-right"></i>
+            </a>
+          </div>
+
+          @if (invoiceJournals.length > 0) {
+            @for (journal of invoiceJournals; track journal.journalId) {
+              <div class="invoice-journal-box">
+                <div class="invoice-journal-meta">
+                  <span class="j-num">JRN-{{ journal.journalNumber }}</span>
+                  <span class="j-date">Posted on {{ journal.journalDate }}</span>
+                  @if (journal.narration) {
+                    <span class="j-narration">• {{ journal.narration }}</span>
+                  }
+                  <span class="j-balanced"><i class="pi pi-check-circle"></i> Balanced</span>
+                </div>
+
+                <p-table
+                  [value]="journal.journalLines"
+                  [size]="'small'"
+                  styleClass="p-datatable-sm detail-line-table"
+                  responsiveLayout="scroll">
+                  <ng-template #header>
+                    <tr>
+                      <th style="width: 8rem">Code</th>
+                      <th style="width: 15rem">Account</th>
+                      <th style="width: 10rem">Account Type</th>
+                      <th>Description</th>
+                      <th class="text-right" style="width: 8rem">Debit (DR)</th>
+                      <th class="text-right" style="width: 8rem">Credit (CR)</th>
+                    </tr>
+                  </ng-template>
+                  <ng-template #body let-jline>
+                    <tr>
+                      <td><span class="acc-badge">{{ jline.accountCode }}</span></td>
+                      <td class="font-medium">{{ jline.accountName }}</td>
+                      <td><span class="tax-pill">{{ jline.accountType || '—' }}</span></td>
+                      <td>{{ jline.description || '—' }}</td>
+                      <td class="text-right font-semibold">
+                        {{ jline.debit && jline.debit > 0 ? ('$' + (jline.debit | number:'1.2-2')) : '—' }}
+                      </td>
+                      <td class="text-right font-semibold">
+                        {{ jline.credit && jline.credit > 0 ? ('$' + (jline.credit | number:'1.2-2')) : '—' }}
+                      </td>
+                    </tr>
+                  </ng-template>
+                  <ng-template #footer>
+                    <tr>
+                      <td colspan="4" class="text-right font-semibold">Total</td>
+                      <td class="text-right font-bold">${{ journal.totalDebit | number:'1.2-2' }}</td>
+                      <td class="text-right font-bold">${{ journal.totalCredit | number:'1.2-2' }}</td>
+                    </tr>
+                  </ng-template>
+                </p-table>
+              </div>
+            }
+          } @else {
+            <div class="journal-pending-notice">
+              <i class="pi pi-info-circle"></i>
+              <span>
+                No journal entry has been posted for this invoice yet. Approve & Authorise the invoice to record its debit and credit entries in the ledger.
+              </span>
+            </div>
+          }
+        </div>
+
       } @else {
         <!-- EDIT MODE FORM -->
         <form [formGroup]="editForm" class="edit-invoice-form">

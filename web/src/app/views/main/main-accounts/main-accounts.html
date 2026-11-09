@@ -1,0 +1,411 @@
+<section class="accounts-page">
+  <div class="page-header">
+    <div class="header-text">
+      <h1 class="page-title">Chart of Accounts</h1>
+      <p class="page-subtitle">
+        Define and manage the ledger accounts available for your organization's financial transactions and journal lines
+      </p>
+    </div>
+    <div class="header-actions">
+      <p-button
+        label="New Account"
+        icon="pi pi-plus"
+        [size]="'small'"
+        (onClick)="openCreateDialog()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Category Navigation Tabs -->
+  <div class="category-nav-tabs">
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'ALL'"
+      (click)="setCategory('ALL')">
+      <i class="pi pi-list"></i>
+      <span>All Accounts</span>
+      <span class="count-badge">{{ getCountByCategory('ALL') }}</span>
+    </button>
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'ASSET'"
+      (click)="setCategory('ASSET')">
+      <i class="pi pi-wallet"></i>
+      <span>Assets</span>
+      <span class="count-badge asset-badge">{{ getCountByCategory('ASSET') }}</span>
+    </button>
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'LIABILITY'"
+      (click)="setCategory('LIABILITY')">
+      <i class="pi pi-credit-card"></i>
+      <span>Liabilities</span>
+      <span class="count-badge liability-badge">{{ getCountByCategory('LIABILITY') }}</span>
+    </button>
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'EQUITY'"
+      (click)="setCategory('EQUITY')">
+      <i class="pi pi-briefcase"></i>
+      <span>Equity</span>
+      <span class="count-badge equity-badge">{{ getCountByCategory('EQUITY') }}</span>
+    </button>
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'REVENUE'"
+      (click)="setCategory('REVENUE')">
+      <i class="pi pi-chart-line"></i>
+      <span>Revenue</span>
+      <span class="count-badge revenue-badge">{{ getCountByCategory('REVENUE') }}</span>
+    </button>
+    <button
+      type="button"
+      class="category-tab-btn"
+      [class.active]="selectedCategory === 'EXPENSE'"
+      (click)="setCategory('EXPENSE')">
+      <i class="pi pi-shopping-bag"></i>
+      <span>Expenses</span>
+      <span class="count-badge expense-badge">{{ getCountByCategory('EXPENSE') }}</span>
+    </button>
+  </div>
+
+  <div class="accounts-card">
+    <!-- Status Filter & Search Bar -->
+    <div class="table-controls">
+      <div class="status-tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'ACTIVE'"
+          (click)="setStatusFilter('ACTIVE')">
+          Active
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'ARCHIVED'"
+          (click)="setStatusFilter('ARCHIVED')">
+          Archived
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="selectedStatus === 'ALL'"
+          (click)="setStatusFilter('ALL')">
+          All
+        </button>
+      </div>
+
+      <p-iconfield iconPosition="left" class="search-box">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          [pSize]="'small'"
+          type="text"
+          [(ngModel)]="searchQuery"
+          placeholder="Search by code, account name, or type..."
+          class="search-input" />
+      </p-iconfield>
+    </div>
+
+    <!-- Accounts Table -->
+    <p-table
+      [value]="tableData"
+      dataKey="accountID"
+      [size]="'small'"
+      styleClass="p-datatable-sm accounts-table"
+      responsiveLayout="scroll">
+      <ng-template #header>
+        <tr>
+          <th style="width: 6.5rem">Code</th>
+          <th>Account Name & Description</th>
+          <th style="width: 8.5rem">Category</th>
+          <th style="width: 10rem">Account Type</th>
+          <th class="text-center" style="width: 8rem">Normal Balance</th>
+          <th class="text-center" style="width: 7.5rem">Tax Type</th>
+          <th class="text-center" style="width: 6.5rem">Status</th>
+          <th class="text-center" style="width: 6.5rem">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-acc>
+        @if (isLoading) {
+          <tr class="skeleton-row">
+            <td><p-skeleton width="3.5rem" height="1.25rem" borderRadius="4px"></p-skeleton></td>
+            <td>
+              <p-skeleton width="10rem" height="1rem" borderRadius="3px"></p-skeleton>
+              <div class="mt-1">
+                <p-skeleton width="15rem" height="0.75rem" borderRadius="3px"></p-skeleton>
+              </div>
+            </td>
+            <td><p-skeleton width="5rem" height="1.25rem" borderRadius="4px"></p-skeleton></td>
+            <td><p-skeleton width="7rem" height="1rem" borderRadius="3px"></p-skeleton></td>
+            <td class="text-center"><p-skeleton width="4.5rem" height="1.25rem" borderRadius="4px"></p-skeleton></td>
+            <td class="text-center"><p-skeleton width="4rem" height="1rem" borderRadius="3px"></p-skeleton></td>
+            <td class="text-center"><p-skeleton width="4.5rem" height="1.25rem" borderRadius="4px"></p-skeleton></td>
+            <td class="text-center"><p-skeleton width="4rem" height="1.5rem" borderRadius="4px"></p-skeleton></td>
+          </tr>
+        } @else {
+          <tr>
+            <td>
+              <span class="account-code-pill">{{ acc.code }}</span>
+            </td>
+            <td>
+              <div class="account-name-cell">
+                <div class="name-row">
+                  <span class="account-name-text">{{ acc.accountName }}</span>
+                  @if (acc.addToWatchList) {
+                    <span class="feature-badge watchlist-badge" pTooltip="On Dashboard Watchlist">
+                      <i class="pi pi-star-fill"></i> Watchlist
+                    </span>
+                  }
+                  @if (acc.enablePaymentToAccount) {
+                    <span class="feature-badge payment-badge" pTooltip="Payments enabled for this account">
+                      <i class="pi pi-check-circle"></i> Payments
+                    </span>
+                  }
+                </div>
+                @if (acc.description) {
+                  <span class="account-desc-text">{{ acc.description }}</span>
+                }
+              </div>
+            </td>
+            <td>
+              <p-tag
+                [value]="acc.category || 'GENERAL'"
+                [severity]="getCategorySeverity(acc.category)"
+                [rounded]="false">
+              </p-tag>
+            </td>
+            <td class="text-secondary font-medium">{{ acc.accountType }}</td>
+            <td class="text-center">
+              <span
+                class="entry-type-badge"
+                [class.debit-badge]="acc.entryType === 'DEBIT'"
+                [class.credit-badge]="acc.entryType === 'CREDIT'">
+                {{ acc.entryType || 'DEBIT' }}
+              </span>
+            </td>
+            <td class="text-center">
+              <span class="tax-code-pill">{{ acc.taxType || 'NONE' }}</span>
+            </td>
+            <td class="text-center">
+              <p-tag
+                [value]="acc.status || 'ACTIVE'"
+                [severity]="acc.status === 'ARCHIVED' ? 'secondary' : 'success'"
+                [rounded]="false">
+              </p-tag>
+            </td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <p-button
+                  icon="pi pi-pencil"
+                  [rounded]="true"
+                  [text]="true"
+                  [size]="'small'"
+                  pTooltip="Edit Account"
+                  (onClick)="openEditDialog(acc)">
+                </p-button>
+                <p-button
+                  [icon]="acc.status === 'ARCHIVED' ? 'pi pi-refresh' : 'pi pi-inbox'"
+                  [rounded]="true"
+                  [text]="true"
+                  [severity]="acc.status === 'ARCHIVED' ? 'info' : 'secondary'"
+                  [size]="'small'"
+                  [pTooltip]="acc.status === 'ARCHIVED' ? 'Restore Account' : 'Archive Account'"
+                  (onClick)="toggleArchiveStatus(acc)">
+                </p-button>
+              </div>
+            </td>
+          </tr>
+        }
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="8" class="empty-state-cell">
+            <div class="empty-state">
+              <i class="pi pi-list empty-icon"></i>
+              <p class="empty-title">No ledger accounts found</p>
+              <p class="empty-desc">
+                {{ searchQuery ? 'No accounts match your search filter.' : 'No accounts found in this category.' }}
+              </p>
+              <p-button
+                label="Add Account"
+                icon="pi pi-plus"
+                [size]="'small'"
+                (onClick)="openCreateDialog()">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Create / Edit Account Dialog -->
+  <p-dialog
+    [header]="isEditing ? 'Edit Ledger Account' : 'Add New Ledger Account'"
+    [(visible)]="showAccountDialog"
+    [modal]="true"
+    [closable]="!isSaving"
+    [draggable]="false"
+    [resizable]="false"
+    appendTo="body"
+    [style]="{ width: '540px', maxWidth: '95vw' }"
+    (onHide)="closeDialog()">
+    <form [formGroup]="accountForm" class="account-dialog-form">
+      <div class="dialog-grid">
+        <!-- Code -->
+        <div class="form-field">
+          <label class="field-label" for="account-code-input">
+            Account Code <span class="required-star">*</span>
+          </label>
+          <input
+            id="account-code-input"
+            pInputText
+            [pSize]="'small'"
+            formControlName="code"
+            placeholder="e.g. 105, 420, 560"
+            maxlength="20"
+            class="w-full"
+            (blur)="onCodeBlur()"
+            [class.ng-invalid]="(accountForm.get('code')?.invalid && accountForm.get('code')?.touched) || !!codeExistsError" />
+          <small class="field-hint">Unique code within your organization (e.g. 100–599)</small>
+          @if (codeExistsError) {
+            <small class="field-error"><i class="pi pi-exclamation-circle"></i> {{ codeExistsError }}</small>
+          } @else if (accountForm.get('code')?.invalid && accountForm.get('code')?.touched) {
+            <small class="field-error"><i class="pi pi-exclamation-circle"></i> Account code is required</small>
+          }
+        </div>
+
+        <!-- Account Name -->
+        <div class="form-field">
+          <label class="field-label" for="account-name-input">
+            Account Name <span class="required-star">*</span>
+          </label>
+          <input
+            id="account-name-input"
+            pInputText
+            [pSize]="'small'"
+            formControlName="accountName"
+            placeholder="e.g. Cash on Hand, Rent Expense"
+            class="w-full"
+            [class.ng-invalid]="accountForm.get('accountName')?.invalid && accountForm.get('accountName')?.touched" />
+          @if (accountForm.get('accountName')?.invalid && accountForm.get('accountName')?.touched) {
+            <small class="field-error"><i class="pi pi-exclamation-circle"></i> Account name is required</small>
+          }
+        </div>
+
+        <!-- Category -->
+        <div class="form-field">
+          <label class="field-label">Category <span class="required-star">*</span></label>
+          <p-select
+            formControlName="category"
+            [options]="categories"
+            optionLabel="name"
+            optionValue="name"
+            [size]="'small'"
+            styleClass="w-full"
+            appendTo="body">
+          </p-select>
+        </div>
+
+        <!-- Account Type -->
+        <div class="form-field">
+          <label class="field-label">Account Type <span class="required-star">*</span></label>
+          <p-select
+            formControlName="accountType"
+            [options]="filteredAccountTypeOptions"
+            optionLabel="name"
+            optionValue="name"
+            [size]="'small'"
+            styleClass="w-full"
+            appendTo="body">
+          </p-select>
+        </div>
+
+        <!-- Default Tax Type -->
+        <div class="form-field col-span-2">
+          <label class="field-label">Default Tax Type</label>
+          <p-select
+            formControlName="taxType"
+            [options]="taxTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            [size]="'small'"
+            styleClass="w-full"
+            appendTo="body">
+          </p-select>
+        </div>
+
+        <!-- Description -->
+        <div class="form-field col-span-2">
+          <label class="field-label" for="account-desc-input">
+            Description <span class="required-star">*</span>
+          </label>
+          <input
+            id="account-desc-input"
+            pInputText
+            [pSize]="'small'"
+            formControlName="description"
+            placeholder="Describe how transactions should use this account"
+            class="w-full"
+            [class.ng-invalid]="accountForm.get('description')?.invalid && accountForm.get('description')?.touched" />
+          @if (accountForm.get('description')?.invalid && accountForm.get('description')?.touched) {
+            <small class="field-error"><i class="pi pi-exclamation-circle"></i> Description is required</small>
+          }
+        </div>
+
+        <!-- Checkboxes -->
+        <div class="checkbox-group col-span-2">
+          <div class="checkbox-item">
+            <p-checkbox
+              inputId="enablePaymentToAccount"
+              formControlName="enablePaymentToAccount"
+              [binary]="true">
+            </p-checkbox>
+            <label for="enablePaymentToAccount" class="checkbox-label">
+              Enable payments to this account
+            </label>
+          </div>
+          <div class="checkbox-item">
+            <p-checkbox
+              inputId="addToWatchList"
+              formControlName="addToWatchList"
+              [binary]="true">
+            </p-checkbox>
+            <label for="addToWatchList" class="checkbox-label">
+              Show on Dashboard Watchlist
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <ng-template #footer>
+      <div class="dialog-footer-actions">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          [disabled]="isSaving"
+          (onClick)="closeDialog()">
+        </p-button>
+        <p-button
+          [label]="isEditing ? 'Save Changes' : 'Create Account'"
+          icon="pi pi-check"
+          [size]="'small'"
+          [loading]="isSaving"
+          [disabled]="!!codeExistsError || isCheckingCode"
+          (onClick)="saveAccount()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</section>

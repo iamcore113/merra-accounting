@@ -88,6 +88,16 @@ export const routes: Routes = [
         title: 'MERRA - Contact Details'
       },
       {
+        path: 'accounts',
+        loadComponent: () => import('./views/main/main-accounts/main-accounts').then(m => m.MainAccounts),
+        title: 'MERRA - Chart of Accounts'
+      },
+      {
+        path: 'journals',
+        loadComponent: () => import('./views/main/main-journals/main-journals').then(m => m.MainJournals),
+        title: 'MERRA - Accounting Journals'
+      },
+      {
         path: 'network-key',
         redirectTo: 'organization',
         pathMatch: 'full'

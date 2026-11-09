@@ -1,5 +1,6 @@
 package org.merra.dto;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record AccountByOrganizationResponse(
@@ -8,7 +9,25 @@ public record AccountByOrganizationResponse(
 		String code,
 		String accountName,
 		String accountType,
-		String description) {
+		String category,
+		String entryType,
+		String status,
+		String description,
+		String taxType,
+		boolean enablePaymentToAccount,
+		boolean addToWatchList,
+		LocalDate updatedDate) {
+
+	public AccountByOrganizationResponse(
+			UUID organizationID,
+			UUID accountID,
+			String code,
+			String accountName,
+			String accountType,
+			String description) {
+		this(organizationID, accountID, code, accountName, accountType, null, null, "ACTIVE", description, "NONE", false, false, null);
+	}
+
 	public AccountByOrganizationResponse {
 		if (organizationID == null) {
 			throw new IllegalArgumentException("organizationID cannot be null");

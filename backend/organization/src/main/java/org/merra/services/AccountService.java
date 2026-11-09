@@ -1,26 +1,37 @@
 package org.merra.services;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.merra.dto.AccountByOrganizationResponse;
 import org.merra.dto.AccountCodeExistsResponse;
+import org.merra.dto.AccountMetadataResponse;
 import org.merra.dto.AccountResponse;
+import org.merra.dto.CreateAccountRequest;
 import org.merra.entities.Account;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.AccountType;
 import org.merra.entities.Organization;
+import org.merra.exception.ResourceAlreadyExistsException;
+import org.merra.exceptions.OrganizationExceptions;
 import org.merra.mapper.AccountMapper;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.AccountTypeRepository;
+import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.utilities.AccountConstants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 // This class will handle the chart of accounts
@@ -31,20 +42,212 @@ public class AccountService {
 	private final AccountCategoryRepository accountCategoryRepository;
 	private final AccountRepository accountRepository;
 	private final AccountTypeRepository accountTypeRepository;
+	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 
 	public AccountService(
 			AccountMapper accountMapper,
 			AccountCategoryRepository accountCategoryRepository,
 			AccountRepository accountRepository,
 			AccountTypeRepository accountTypeRepository) {
+		this(accountMapper, accountCategoryRepository, accountRepository, accountTypeRepository, null);
+	}
+
+	@Autowired
+	public AccountService(
+			AccountMapper accountMapper,
+			AccountCategoryRepository accountCategoryRepository,
+			AccountRepository accountRepository,
+			AccountTypeRepository accountTypeRepository,
+			UserWorkspaceStateRepository userWorkspaceStateRepository) {
 		this.accountMapper = accountMapper;
 		this.accountCategoryRepository = accountCategoryRepository;
 		this.accountRepository = accountRepository;
 		this.accountTypeRepository = accountTypeRepository;
+		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
 	}
 
 	public AccountResponse createAccount() {
 		return null;
+	}
+
+	/**
+	 * Creates a new ledger account in the current organization's chart of accounts.
+	 *
+	 * @param request The {@link CreateAccountRequest} containing the account details.
+	 * @return The created {@link AccountByOrganizationResponse}.
+	 */
+	@Transactional
+	public AccountByOrganizationResponse createAccount(@Valid @NotNull CreateAccountRequest request) {
+		final Organization currentOrganization = getCurrentOrganizationOrThrow();
+		final String code = request.code().trim();
+
+		if (accountRepository.existsByCodeIgnoreCaseAndOrganizationId(code, currentOrganization.getId())) {
+			throw new ResourceAlreadyExistsException(
+					"Account code '" + code + "' already exists in this organization's chart of accounts.");
+		}
+
+		AccountCategory category = getOrCreateCategory(request.category().trim().toUpperCase());
+		AccountType accountType = getOrCreateAccountType(request.accountType().trim());
+
+		Account account = new Account(
+				currentOrganization,
+				code,
+				request.accountName().trim(),
+				accountType,
+				category);
+		account.setDescription(request.description().trim());
+		account.setTaxType(request.taxType() != null && !request.taxType().isBlank() ? request.taxType().trim().toUpperCase() : "NONE");
+		account.setEnablePaymentToAccount(Boolean.TRUE.equals(request.enablePaymentToAccount()));
+		account.setAddToWatchList(Boolean.TRUE.equals(request.addToWatchList()));
+		account.setUpdatedDate(LocalDate.now());
+		if (request.status() != null && !request.status().isBlank()) {
+			account.setStatus(request.status().trim().toUpperCase());
+		} else {
+			account.setStatus(AccountConstants.ACCOUNT_STATUS_ACTIVE);
+		}
+
+		Account saved = accountRepository.save(account);
+		return toOrganizationAccountDto(saved);
+	}
+
+	/**
+	 * Updates an existing ledger account in the current organization's chart of accounts.
+	 *
+	 * @param accountId The UUID of the account to update.
+	 * @param request   The {@link CreateAccountRequest} containing updated fields.
+	 * @return The updated {@link AccountByOrganizationResponse}.
+	 */
+	@Transactional
+	public AccountByOrganizationResponse updateAccount(
+			@NotNull UUID accountId,
+			@Valid @NotNull CreateAccountRequest request) {
+		final Organization currentOrganization = getCurrentOrganizationOrThrow();
+		Account account = accountRepository.findByAccountIdAndOrganizationId(accountId, currentOrganization.getId())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
+
+		final String newCode = request.code().trim();
+		if (!account.getCode().equalsIgnoreCase(newCode)
+				&& accountRepository.existsByCodeIgnoreCaseAndOrganizationId(newCode, currentOrganization.getId())) {
+			throw new ResourceAlreadyExistsException(
+					"Account code '" + newCode + "' already exists in this organization's chart of accounts.");
+		}
+
+		AccountCategory category = getOrCreateCategory(request.category().trim().toUpperCase());
+		AccountType accountType = getOrCreateAccountType(request.accountType().trim());
+
+		account.setCode(newCode);
+		account.setAccountName(request.accountName().trim());
+		account.setCategory(category);
+		account.setAccountType(accountType);
+		account.setDescription(request.description().trim());
+		account.setTaxType(request.taxType() != null && !request.taxType().isBlank() ? request.taxType().trim().toUpperCase() : "NONE");
+		if (request.enablePaymentToAccount() != null) {
+			account.setEnablePaymentToAccount(request.enablePaymentToAccount());
+		}
+		if (request.addToWatchList() != null) {
+			account.setAddToWatchList(request.addToWatchList());
+		}
+		if (request.status() != null && !request.status().isBlank()) {
+			account.setStatus(request.status().trim().toUpperCase());
+		}
+		account.setUpdatedDate(LocalDate.now());
+
+		Account saved = accountRepository.save(account);
+		return toOrganizationAccountDto(saved);
+	}
+
+	/**
+	 * Updates the status (ACTIVE / ARCHIVED) of an account in the current organization.
+	 *
+	 * @param accountId The UUID of the account.
+	 * @param status    The new status ("ACTIVE" or "ARCHIVED").
+	 * @return The updated {@link AccountByOrganizationResponse}.
+	 */
+	@Transactional
+	public AccountByOrganizationResponse updateAccountStatus(@NotNull UUID accountId, @NotNull String status) {
+		final Organization currentOrganization = getCurrentOrganizationOrThrow();
+		Account account = accountRepository.findByAccountIdAndOrganizationId(accountId, currentOrganization.getId())
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ACCOUNT));
+
+		account.setStatus(status.trim().toUpperCase());
+		account.setUpdatedDate(LocalDate.now());
+		Account saved = accountRepository.save(account);
+		return toOrganizationAccountDto(saved);
+	}
+
+	/**
+	 * Retrieves all accounts in the current organization's Chart of Accounts.
+	 * If the organization does not yet have any accounts provisioned, provisions the default 18 accounts first.
+	 *
+	 * @return A sorted list of {@link AccountByOrganizationResponse}.
+	 */
+	@Transactional
+	public List<AccountByOrganizationResponse> getAccountsByCurrentOrganization() {
+		final Organization currentOrganization = getCurrentOrganizationOrThrow();
+		List<Account> accounts = accountRepository.findAllByOrganizationIdOrderByCodeAsc(currentOrganization.getId());
+
+		if (accounts.isEmpty()) {
+			ensureDefaultCategoriesExist();
+			createDefaultAccounts(currentOrganization);
+			accounts = accountRepository.findAllByOrganizationIdOrderByCodeAsc(currentOrganization.getId());
+		}
+
+		return accounts.stream()
+				.sorted(Comparator.comparing(Account::getCode, Comparator.nullsLast(String::compareToIgnoreCase)))
+				.map(this::toOrganizationAccountDto)
+				.toList();
+	}
+
+	/**
+	 * Retrieves metadata (categories and account types) for the Chart of Accounts.
+	 *
+	 * @return {@link AccountMetadataResponse}
+	 */
+	@Transactional
+	public AccountMetadataResponse getAccountMetadata() {
+		ensureDefaultCategoriesExist();
+		ensureDefaultAccountTypesExist();
+
+		List<AccountMetadataResponse.CategoryOption> categories = accountCategoryRepository.findAll().stream()
+				.sorted(Comparator.comparing(AccountCategory::getName))
+				.map(cat -> new AccountMetadataResponse.CategoryOption(
+						cat.getId(),
+						cat.getName(),
+						Account.checkEntryType(cat.getName())))
+				.toList();
+
+		Map<String, String> defaultTypeToCategoryMap = Map.of(
+				"Current Asset", AccountConstants.ACCOUNT_CATEGORY_ASSET,
+				"Inventory", AccountConstants.ACCOUNT_CATEGORY_ASSET,
+				"Fixed Asset", AccountConstants.ACCOUNT_CATEGORY_ASSET,
+				"Current Liability", AccountConstants.ACCOUNT_CATEGORY_LIABILITY,
+				"Liability", AccountConstants.ACCOUNT_CATEGORY_LIABILITY,
+				"Equity", AccountConstants.ACCOUNT_CATEGORY_EQUITY,
+				"Revenue", AccountConstants.ACCOUNT_CATEGORY_REVENUE,
+				"Expense", AccountConstants.ACCOUNT_CATEGORY_EXPENSE,
+				"Direct Costs", AccountConstants.ACCOUNT_CATEGORY_EXPENSE);
+
+		List<AccountMetadataResponse.AccountTypeOption> accountTypes = accountTypeRepository.findAll().stream()
+				.sorted(Comparator.comparing(AccountType::getName))
+				.map(type -> new AccountMetadataResponse.AccountTypeOption(
+						type.getId(),
+						type.getName(),
+						defaultTypeToCategoryMap.getOrDefault(type.getName(), AccountConstants.ACCOUNT_CATEGORY_EXPENSE),
+						type.getDescription()))
+				.toList();
+
+		return new AccountMetadataResponse(categories, accountTypes);
+	}
+
+	/**
+	 * Checks whether an account code already exists in the current organization.
+	 *
+	 * @param code The account code to check.
+	 * @return {@link AccountCodeExistsResponse}
+	 */
+	public AccountCodeExistsResponse checkIfCodeExistsInCurrentOrganization(String code) {
+		final Organization currentOrganization = getCurrentOrganizationOrThrow();
+		return checkIfCodeExists(code, currentOrganization.getId());
 	}
 
 	/**
@@ -300,9 +503,73 @@ public class AccountService {
 				.orElseThrow(() -> new IllegalStateException("Account category not found: " + categoryName));
 	}
 
+	private AccountCategory getOrCreateCategory(String categoryName) {
+		return accountCategoryRepository.findByNameIgnoreCase(categoryName)
+				.orElseGet(() -> accountCategoryRepository.save(new AccountCategory(categoryName)));
+	}
+
 	private AccountType getOrCreateAccountType(String typeName) {
 		return accountTypeRepository.findByNameIgnoreCase(typeName)
 				.orElseGet(() -> accountTypeRepository.save(new AccountType(typeName, "")));
+	}
+
+	private void ensureDefaultCategoriesExist() {
+		List<String> names = List.of(
+				AccountConstants.ACCOUNT_CATEGORY_ASSET,
+				AccountConstants.ACCOUNT_CATEGORY_LIABILITY,
+				AccountConstants.ACCOUNT_CATEGORY_EQUITY,
+				AccountConstants.ACCOUNT_CATEGORY_REVENUE,
+				AccountConstants.ACCOUNT_CATEGORY_EXPENSE);
+		for (String name : names) {
+			if (accountCategoryRepository.findByNameIgnoreCase(name).isEmpty()) {
+				accountCategoryRepository.save(new AccountCategory(name));
+			}
+		}
+	}
+
+	private void ensureDefaultAccountTypesExist() {
+		List<String> types = List.of(
+				"Current Asset",
+				"Inventory",
+				"Fixed Asset",
+				"Current Liability",
+				"Liability",
+				"Equity",
+				"Revenue",
+				"Expense",
+				"Direct Costs");
+		for (String type : types) {
+			getOrCreateAccountType(type);
+		}
+	}
+
+	private Organization getCurrentOrganizationOrThrow() {
+		if (userWorkspaceStateRepository == null) {
+			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION);
+		}
+		return userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+	}
+
+	private AccountByOrganizationResponse toOrganizationAccountDto(Account account) {
+		String categoryName = account.getCategory() != null ? account.getCategory().getName() : null;
+		String entryType = categoryName != null ? Account.checkEntryType(categoryName) : null;
+		String accountTypeName = account.getAccountType() != null ? account.getAccountType().getName() : "General";
+
+		return new AccountByOrganizationResponse(
+				account.getOrganization() != null ? account.getOrganization().getId() : UUID.randomUUID(),
+				account.getAccountId() != null ? account.getAccountId() : UUID.randomUUID(),
+				account.getCode(),
+				account.getAccountName(),
+				accountTypeName,
+				categoryName,
+				entryType,
+				account.getStatus() != null ? account.getStatus() : AccountConstants.ACCOUNT_STATUS_ACTIVE,
+				account.getDescription(),
+				account.getTaxType() != null && !account.getTaxType().isBlank() ? account.getTaxType() : "NONE",
+				account.isEnablePaymentToAccount(),
+				account.isAddToWatchList(),
+				account.getUpdatedDate());
 	}
 
 	/**

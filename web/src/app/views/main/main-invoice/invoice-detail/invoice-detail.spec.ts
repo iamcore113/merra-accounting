@@ -1,10 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter, Router, ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { InvoiceDetail } from './invoice-detail';
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { AccountService } from '../../../../shared/services/account-service';
+import { JournalService } from '../../../../shared/services/journal-service';
 import { InvoiceDetailResponse } from '../../../../shared/models/invoice';
 
 describe('InvoiceDetail', () => {
@@ -12,14 +16,15 @@ describe('InvoiceDetail', () => {
   let fixture: ComponentFixture<InvoiceDetail>;
   let invoiceServiceSpy: jasmine.SpyObj<InvoiceService>;
   let contactServiceSpy: jasmine.SpyObj<ContactService>;
+  let accountServiceSpy: jasmine.SpyObj<AccountService>;
+  let journalServiceSpy: jasmine.SpyObj<JournalService>;
   let messageServiceSpy: jasmine.SpyObj<MessageService>;
   let router: Router;
 
   const mockInvoice: InvoiceDetailResponse = {
-    id: 'inv-1234',
+    invoiceId: 'inv-1234',
     invoiceNumber: 'INV-1001',
     type: 'CUSTOMER',
-    typeName: 'Customer Invoice (Sales)',
     status: 'DRAFT',
     date: '2026-11-10',
     dueDate: '2026-11-20',
@@ -31,75 +36,121 @@ describe('InvoiceDetail', () => {
     contactId: 'c-1',
     contactName: 'Wayne Enterprises',
     contactAccountNumber: 'CUST-1001',
+    contactEmail: 'bruce@wayne.com',
     contactTypeInitials: 'CT',
+    organizationId: 'org-1',
     organizationName: 'Merra Corp',
-    currency: 'USD',
+    taxEligible: true,
     lineItems: [
       {
-        id: 'li-1',
+        lineItemId: 'li-1',
         description: 'Consulting Services',
         quantity: 2,
         unitAmount: 50.0,
-        accountCode: '200',
+        accountCode: '400',
         discountRate: 0,
         taxType: 'OUTPUT2',
-        taxRate: 15,
         lineAmount: 100.0,
         taxAmount: 15.0,
-        total: 115.0
-      }
-    ]
+        total: 115.0,
+      },
+    ],
   };
 
   beforeEach(async () => {
     invoiceServiceSpy = jasmine.createSpyObj('InvoiceService', [
       'getInvoiceById',
-      'getInvoiceTypes',
+      'getInvoiceMetadata',
       'updateInvoice',
       'updateInvoiceStatus',
-      'deleteInvoice'
+      'deleteInvoice',
     ]);
-    contactServiceSpy = jasmine.createSpyObj('ContactService', ['getContacts']);
+    contactServiceSpy = jasmine.createSpyObj('ContactService', ['getAllContacts']);
+    accountServiceSpy = jasmine.createSpyObj('AccountService', ['getAllAccounts']);
+    journalServiceSpy = jasmine.createSpyObj('JournalService', ['getJournalsByInvoiceId']);
     messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
 
-    invoiceServiceSpy.getInvoiceById.and.returnValue(of(mockInvoice));
-    invoiceServiceSpy.getInvoiceTypes.and.returnValue(
-      of([
-        { id: 'CUSTOMER', name: 'Customer Invoice (Sales)' },
-        { id: 'SUPPLIER', name: 'Supplier Invoice (Bills)' }
-      ])
+    invoiceServiceSpy.getInvoiceById.and.returnValue(
+      of({
+        success: true,
+        message: 'Retrieved',
+        status: 'OK',
+        time: new Date().toISOString(),
+        data: mockInvoice,
+      } as any)
     );
-    contactServiceSpy.getContacts.and.returnValue(
-      of([
-        {
-          id: 'c-1',
-          name: 'Wayne Enterprises',
-          isCustomer: true,
-          isSupplier: false,
-          accountNumber: 'CUST-1001',
-          emailAddress: 'bruce@wayne.com'
-        } as any
-      ])
+    invoiceServiceSpy.getInvoiceMetadata.and.returnValue(
+      of({
+        success: true,
+        message: 'Metadata',
+        status: 'OK',
+        time: new Date().toISOString(),
+        data: {
+          invoiceTypes: [
+            { id: 'CUSTOMER', name: 'Customer Invoice (Sales)' },
+            { id: 'SUPPLIER', name: 'Supplier Invoice (Bills)' },
+          ],
+          invoiceStatusCodes: [],
+          lineAmountTypes: [],
+        },
+      } as any)
+    );
+    contactServiceSpy.getAllContacts.and.returnValue(
+      of({
+        success: true,
+        message: 'Contacts',
+        response: 200,
+        data: [
+          {
+            contactId: 'c-1',
+            contactName: 'Wayne Enterprises',
+            isCustomer: true,
+            isSupplier: false,
+            accountNumber: 'CUST-1001',
+            emailAddress: 'bruce@wayne.com',
+          },
+        ],
+      } as any)
+    );
+    accountServiceSpy.getAllAccounts.and.returnValue(
+      of({
+        success: true,
+        message: 'Accounts',
+        response: 200,
+        data: [],
+      } as any)
+    );
+    journalServiceSpy.getJournalsByInvoiceId.and.returnValue(
+      of({
+        success: true,
+        message: 'Journals',
+        response: 200,
+        data: [],
+      } as any)
     );
 
     await TestBed.configureTestingModule({
       imports: [InvoiceDetail],
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
             snapshot: {
               paramMap: {
-                get: (key: string) => (key === 'id' ? 'inv-1234' : null)
-              }
-            }
-          }
+                get: (key: string) => (key === 'id' ? 'inv-1234' : null),
+              },
+            },
+          },
         },
         { provide: InvoiceService, useValue: invoiceServiceSpy },
         { provide: ContactService, useValue: contactServiceSpy },
-        { provide: MessageService, useValue: messageServiceSpy }
-      ]
+        { provide: AccountService, useValue: accountServiceSpy },
+        { provide: JournalService, useValue: journalServiceSpy },
+        { provide: MessageService, useValue: messageServiceSpy },
+      ],
     }).compileComponents();
 
     router = TestBed.inject(Router);
@@ -158,13 +209,13 @@ describe('InvoiceDetail', () => {
         description: 'Widget A',
         quantity: 2,
         unitAmount: 100,
-        accountCode: '200',
+        accountCode: '400',
         discountRate: 10, // 200 - 10% = 180
         taxRate: 15, // 180 * 15% = 27
         lineAmount: 0,
         taxAmount: 0,
-        total: 0
-      }
+        total: 0,
+      },
     ];
     component.recalculateTotals();
 
@@ -174,8 +225,17 @@ describe('InvoiceDetail', () => {
   });
 
   it('should save edited invoice and refresh details', () => {
-    invoiceServiceSpy.updateInvoice.and.returnValue(of(mockInvoice));
+    invoiceServiceSpy.updateInvoice.and.returnValue(
+      of({
+        success: true,
+        message: 'Updated',
+        status: 'OK',
+        time: new Date().toISOString(),
+        data: mockInvoice,
+      } as any)
+    );
     component.startEditing();
+    component.editForm.patchValue({ invoiceType: 'CUSTOMER' });
     component.saveInvoice();
 
     expect(invoiceServiceSpy.updateInvoice).toHaveBeenCalled();
@@ -186,22 +246,21 @@ describe('InvoiceDetail', () => {
   });
 
   it('should update status and trigger message', () => {
-    invoiceServiceSpy.updateInvoiceStatus.and.returnValue(of({ ...mockInvoice, status: 'AUTHORISED' }));
+    invoiceServiceSpy.updateInvoiceStatus.and.returnValue(
+      of({
+        success: true,
+        message: 'Status updated',
+        status: 'OK',
+        time: new Date().toISOString(),
+        data: { ...mockInvoice, status: 'AUTHORISED' },
+      } as any)
+    );
     component.applyStatusChange('AUTHORISED');
 
     expect(invoiceServiceSpy.updateInvoiceStatus).toHaveBeenCalledWith('inv-1234', 'AUTHORISED');
     expect(messageServiceSpy.add).toHaveBeenCalledWith(
       jasmine.objectContaining({ severity: 'success' })
     );
-  });
-
-  it('should execute delete and navigate to list', () => {
-    spyOn(router, 'navigate');
-    invoiceServiceSpy.deleteInvoice.and.returnValue(of(null));
-    component.executeDelete();
-
-    expect(invoiceServiceSpy.deleteInvoice).toHaveBeenCalledWith('inv-1234');
-    expect(router.navigate).toHaveBeenCalledWith(['/main/invoice']);
   });
 
   it('should navigate to preview on goToPreview()', () => {

@@ -1,0 +1,240 @@
+<div class="journals-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="title-row">
+        <h1 class="page-title">Accounting Journals</h1>
+        <span class="readonly-badge">
+          <i class="pi pi-lock"></i> Read-Only Ledger
+        </span>
+      </div>
+      <p class="page-subtitle">
+        Audit trail of double-entry debit and credit postings automatically recorded from authorised invoices.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <p-button
+        label="Chart of Accounts"
+        icon="pi pi-list"
+        [outlined]="true"
+        [size]="'small'"
+        (onClick)="goToAccounts()">
+      </p-button>
+      <p-button
+        label="Refresh"
+        icon="pi pi-refresh"
+        [outlined]="true"
+        [size]="'small'"
+        (onClick)="loadJournals()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Summary Metric Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-label">Journal Entries</span>
+      <span class="metric-value">{{ totalEntriesCount }}</span>
+      <span class="metric-sub">Recorded financial events</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Total Debits (DR)</span>
+      <span class="metric-value font-mono">${{ totalDebitsAmount | number:'1.2-2' }}</span>
+      <span class="metric-sub">Cumulative debit postings</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">Total Credits (CR)</span>
+      <span class="metric-value font-mono">${{ totalCreditsAmount | number:'1.2-2' }}</span>
+      <span class="metric-sub">Cumulative credit postings</span>
+    </div>
+    <div class="metric-card" [class.balanced-card]="isLedgerBalanced">
+      <span class="metric-label">Ledger Balance Status</span>
+      <span class="metric-value status-val">
+        @if (isLedgerBalanced) {
+          <i class="pi pi-check-circle text-green-600"></i> Balanced
+        } @else {
+          <i class="pi pi-exclamation-triangle text-amber-600"></i> Out of Balance
+        }
+      </span>
+      <span class="metric-sub">Debits = Credits verification</span>
+    </div>
+  </div>
+
+  <!-- Filter & Search Bar -->
+  <div class="toolbar-card">
+    <div class="filter-tabs">
+      @for (tab of filterTabs; track tab.id) {
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab === tab.id"
+          (click)="setFilterTab(tab.id)">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <p-iconfield iconPosition="left" class="search-box">
+      <p-inputicon styleClass="pi pi-search" />
+      <input
+        pInputText
+        type="text"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search by journal #, invoice #, contact, or account..."
+        [pSize]="'small'"
+        class="search-input" />
+    </p-iconfield>
+  </div>
+
+  <!-- Loading Skeletons -->
+  @if (isLoading) {
+    <div class="journals-list">
+      @for (item of [1, 2, 3]; track item) {
+        <div class="journal-card">
+          <div class="flex justify-between items-center mb-3">
+            <p-skeleton width="14rem" height="1.5rem"></p-skeleton>
+            <p-skeleton width="8rem" height="1.5rem"></p-skeleton>
+          </div>
+          <p-skeleton width="100%" height="6rem"></p-skeleton>
+        </div>
+      }
+    </div>
+  } @else if (loadError) {
+    <div class="empty-state-card error-card">
+      <i class="pi pi-exclamation-circle empty-icon text-red-500"></i>
+      <h3>Unable to Load Journal Entries</h3>
+      <p>{{ loadError }}</p>
+      <p-button label="Retry" icon="pi pi-refresh" [size]="'small'" (onClick)="loadJournals()"></p-button>
+    </div>
+  } @else if (filteredJournals.length === 0) {
+    <div class="empty-state-card">
+      <i class="pi pi-book empty-icon"></i>
+      <h3>No Journal Entries Found</h3>
+      <p>
+        Journal entries are automatically generated when a Customer Invoice or Supplier Invoice is approved/authorised.
+      </p>
+      <div class="empty-actions">
+        <p-button
+          label="Go to Invoices"
+          icon="pi pi-receipt"
+          [size]="'small'"
+          (onClick)="goToInvoices()">
+        </p-button>
+        <p-button
+          label="View Chart of Accounts"
+          icon="pi pi-list"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="goToAccounts()">
+        </p-button>
+      </div>
+    </div>
+  } @else {
+    <!-- Journal Cards List -->
+    <div class="journals-list">
+      @for (journal of filteredJournals; track journal.journalId) {
+        <div class="journal-card">
+          <!-- Journal Card Header -->
+          <div class="journal-card-header">
+            <div class="journal-meta-left">
+              <span class="journal-number">JRN-{{ journal.journalNumber }}</span>
+              <span class="journal-date">
+                <i class="pi pi-calendar"></i> {{ journal.journalDate }}
+              </span>
+              @if (journal.invoiceNumber) {
+                <a
+                  class="invoice-link-pill"
+                  (click)="goToInvoice(journal.invoiceId)"
+                  pTooltip="View source invoice">
+                  <i class="pi pi-receipt"></i> {{ journal.invoiceNumber }}
+                </a>
+              }
+              @if (journal.invoiceType) {
+                <p-tag
+                  [value]="getInvoiceTypeLabel(journal.invoiceType)"
+                  [severity]="getInvoiceTypeSeverity(journal.invoiceType)">
+                </p-tag>
+              }
+              @if (journal.contactName) {
+                <span class="contact-pill">
+                  <i class="pi pi-user"></i> {{ journal.contactName }}
+                </span>
+              }
+            </div>
+
+            <div class="journal-meta-right">
+              @if (isJournalBalanced(journal)) {
+                <span class="balance-badge balanced">
+                  <i class="pi pi-check-circle"></i> Balanced
+                </span>
+              } @else {
+                <span class="balance-badge unbalanced">
+                  <i class="pi pi-exclamation-triangle"></i> Unbalanced
+                </span>
+              }
+            </div>
+          </div>
+
+          @if (journal.narration) {
+            <div class="journal-narration">
+              {{ journal.narration }}
+            </div>
+          }
+
+          <!-- Journal Lines Table -->
+          <p-table
+            [value]="journal.journalLines"
+            [size]="'small'"
+            styleClass="p-datatable-sm journal-lines-table"
+            responsiveLayout="scroll">
+            <ng-template #header>
+              <tr>
+                <th style="width: 8rem">Account Code</th>
+                <th style="width: 16rem">Account Name</th>
+                <th style="width: 11rem">Account Type</th>
+                <th>Line Description</th>
+                <th style="width: 9rem" class="text-right">Debit (DR)</th>
+                <th style="width: 9rem" class="text-right">Credit (CR)</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-line>
+              <tr>
+                <td>
+                  <span class="account-code-badge">{{ line.accountCode }}</span>
+                </td>
+                <td class="font-medium text-slate-800">{{ line.accountName }}</td>
+                <td>
+                  <span class="account-type-chip">{{ line.accountType || '—' }}</span>
+                </td>
+                <td class="text-slate-600">{{ line.description || '—' }}</td>
+                <td class="text-right font-mono">
+                  @if (line.debit && line.debit > 0) {
+                    <span class="debit-val">${{ line.debit | number:'1.2-2' }}</span>
+                  } @else {
+                    <span class="zero-val">—</span>
+                  }
+                </td>
+                <td class="text-right font-mono">
+                  @if (line.credit && line.credit > 0) {
+                    <span class="credit-val">${{ line.credit | number:'1.2-2' }}</span>
+                  } @else {
+                    <span class="zero-val">—</span>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+            <ng-template #footer>
+              <tr class="journal-totals-row">
+                <td colspan="4" class="text-right font-semibold">Journal Totals</td>
+                <td class="text-right font-mono font-bold">${{ journal.totalDebit | number:'1.2-2' }}</td>
+                <td class="text-right font-mono font-bold">${{ journal.totalCredit | number:'1.2-2' }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      }
+    </div>
+  }
+</div>

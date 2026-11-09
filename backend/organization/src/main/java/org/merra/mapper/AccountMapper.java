@@ -16,15 +16,17 @@ public interface AccountMapper {
 	@Mapping(target = "accountID", source = "accountId")
 	@Mapping(target = "name", source = "accountName")
 	AccountResponse toAccountResponse(Account account);
-	
+
 	Set<AccountResponse> toAccountResponses(Set<Account> accounts);
-	
+
 	Set<AccountByOrganizationResponse> toAccountByOrganizationResponses(Set<Account> accounts);
-	
+
 	@Mappings({
 		@Mapping(target = "organizationID", source = "organization.id"),
 		@Mapping(target = "accountID", source = "accountId"),
-		@Mapping(target = "accountType", source = "accountType.name")
+		@Mapping(target = "accountType", source = "accountType.name"),
+		@Mapping(target = "category", source = "category.name"),
+		@Mapping(target = "entryType", expression = "java(account.getCategory() != null ? org.merra.entities.Account.checkEntryType(account.getCategory().getName()) : null)")
 	})
 	AccountByOrganizationResponse toAccountByOrganizationResponse(Account account);
 }

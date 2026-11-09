@@ -110,6 +110,7 @@ public class InvoiceService {
 	 *                type, contact, line items, dates, status, and reference
 	 * @throws EntityNotFoundException if organization or contact is not found
 	 */
+	@Transactional
 	public void createNewInvoiceObject(@NotNull CreateInvoiceRequest request) {
 		// Create new Invoice object
 		Invoice invoice = new Invoice();
@@ -203,7 +204,14 @@ public class InvoiceService {
 		invoice.setInvoiceNumber(invoiceNumber);
 		invoice.setReference(request.reference());
 
-		this.save(invoice);
+		Invoice savedInvoice = invoiceRepository.save(invoice);
+
+		if (InvoiceConstants.INVOICE_STATUS_AUTHORISED.equalsIgnoreCase(status)) {
+			journalService.entry(
+					savedInvoice.getLineItems(),
+					currentOrganization,
+					savedInvoice);
+		}
 	}
 
 	/**
@@ -350,6 +358,7 @@ public class InvoiceService {
 						BigDecimal netPrice = netLineAmount.divide(onePlusTaxRate, 4, RoundingMode.HALF_UP);
 						calculateTaxAmount = netLineAmount.subtract(netPrice).setScale(2, RoundingMode.HALF_UP);
 						lineItemTotal = netLineAmount.setScale(2, RoundingMode.HALF_UP);
+						calculateLineAmount = lineItemTotal.subtract(calculateTaxAmount).doubleValue();
 
 					} else { // NoTax mode: tax is explicitly zero and total equals unit amount.
 						calculateTaxAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);

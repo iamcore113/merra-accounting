@@ -37,10 +37,10 @@ public class JournalLine {
 
 	private String description;
 
-	@Column(columnDefinition = "numeric(7,2)")
+	@Column(precision = 19, scale = 2)
 	private BigDecimal credit;
 
-	@Column(columnDefinition = "numeric(7,2)")
+	@Column(precision = 19, scale = 2)
 	private BigDecimal debit;
 
 	public JournalLine() {

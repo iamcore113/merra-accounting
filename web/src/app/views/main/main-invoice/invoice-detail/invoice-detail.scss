@@ -485,6 +485,110 @@
   }
 }
 
+/* Associated Journal Section */
+.journal-entry-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+
+  .journal-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+
+    .journal-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0;
+      }
+
+      .journal-sub {
+        font-size: 0.8125rem;
+        color: #64748b;
+      }
+    }
+
+    .view-all-journals-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--primary-color, #689D4B);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--primary-hover, #58883e);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .invoice-journal-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fcfcfd;
+    margin-bottom: 1rem;
+
+    .invoice-journal-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+      font-size: 0.8125rem;
+
+      .j-num {
+        font-family: monospace;
+        font-weight: 700;
+        color: #0f172a;
+        background: #e2e8f0;
+        padding: 0.15rem 0.5rem;
+        border-radius: 4px;
+      }
+
+      .j-date {
+        color: #64748b;
+      }
+
+      .j-narration {
+        color: #334155;
+      }
+
+      .j-balanced {
+        margin-left: auto;
+        color: #15803d;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+    }
+  }
+
+  .journal-pending-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-size: 0.84375rem;
+    color: #64748b;
+  }
+}
+
 /* Delete Dialog */
 .delete-dialog-body {
   display: flex;

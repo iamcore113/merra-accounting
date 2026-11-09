@@ -15,7 +15,10 @@ import { MenuItem, MessageService } from 'primeng/api';
 
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { AccountService } from '../../../../shared/services/account-service';
+import { JournalService } from '../../../../shared/services/journal-service';
 import { InvoiceDetailResponse, InvoiceLineItemDetail } from '../../../../shared/models/invoice';
+import { JournalResponse } from '../../../../shared/models/journals';
 
 export interface EditableLineItem {
   id?: string;
@@ -66,11 +69,14 @@ export class InvoiceDetail implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly invoiceService = inject(InvoiceService);
   private readonly contactService = inject(ContactService);
+  private readonly accountService = inject(AccountService);
+  private readonly journalService = inject(JournalService);
   private readonly messageService = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   invoiceId: string | null = null;
   invoice: InvoiceDetailResponse | null = null;
+  invoiceJournals: JournalResponse[] = [];
   isLoading = true;
   loadError: string | null = null;
 
@@ -106,7 +112,7 @@ export class InvoiceDetail implements OnInit {
     { label: 'Voided', value: 'VOIDED' },
   ];
 
-  readonly accountOptions = [
+  accountOptions = [
     { label: 'Sales Revenue (400)', value: '400' },
     { label: 'Service Income (410)', value: '410' },
     { label: 'Office Expenses (500)', value: '500' },
@@ -130,8 +136,44 @@ export class InvoiceDetail implements OnInit {
       return;
     }
     this.loadInvoice(this.invoiceId);
+    this.loadInvoiceJournals(this.invoiceId);
     this.loadContacts();
     this.loadMetadata();
+    this.loadAccounts();
+  }
+
+  loadAccounts(): void {
+    this.accountService.getAllAccounts().subscribe({
+      next: (res) => {
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const active = res.data.filter((a) => a.status !== 'ARCHIVED');
+          if (active.length > 0) {
+            this.accountOptions = active.map((a) => ({
+              label: `${a.accountName} (${a.code})`,
+              value: a.code,
+            }));
+            this.cdr.markForCheck();
+          }
+        }
+      },
+      error: () => {
+        // Keep fallback default accountOptions
+      },
+    });
+  }
+
+  loadInvoiceJournals(invoiceId: string): void {
+    this.journalService.getJournalsByInvoiceId(invoiceId).subscribe({
+      next: (res) => {
+        if (res.success && Array.isArray(res.data)) {
+          this.invoiceJournals = res.data;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        // Non-blocking if journal endpoint returns empty/error
+      },
+    });
   }
 
   private initForm(): void {
@@ -439,6 +481,9 @@ export class InvoiceDetail implements OnInit {
         if (res.success && res.data) {
           this.invoice = res.data;
         }
+        if (this.invoiceId) {
+          this.loadInvoiceJournals(this.invoiceId);
+        }
         this.messageService.add({
           severity: 'success',
           summary: 'Invoice Updated',
@@ -482,6 +527,9 @@ export class InvoiceDetail implements OnInit {
             ...this.invoice,
             status: statusToApply,
           };
+        }
+        if (this.invoiceId) {
+          this.loadInvoiceJournals(this.invoiceId);
         }
         this.messageService.add({
           severity: 'success',

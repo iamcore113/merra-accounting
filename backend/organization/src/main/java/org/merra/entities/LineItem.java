@@ -77,27 +77,30 @@ public class LineItem {
 	private String taxType;
 
 	// auto-calculated
-	@Column(name = "tax_amount", nullable = false, precision = 7, scale = 2)
+	@Column(name = "tax_amount", nullable = false, precision = 19, scale = 2)
 	@NotNull(message = "Tax amount cannot be null")
 	private BigDecimal taxAmount;
 
 	@Column(name = "discount_rate")
 	private Integer discountRate;
 
-	@Column(nullable = false, precision = 7, scale = 2)
+	@Column(nullable = false, precision = 19, scale = 2)
 	@NotNull(message = "total attribute cannot be null.")
 	private BigDecimal total;
 
 	public static List<LineItemByAccountCodeEmb> getLineItemByAccountCode(Set<LineItem> lineItems) {
-		List<LineItemByAccountCodeEmb> response = new ArrayList<>();
-		for (LineItem lt : lineItems) {
-			int total = Collections.frequency(lineItems, lt.getAccountCode());
-			List<LineItem> getLineItems = lineItems.stream()
-					.filter(dt -> dt.getAccountCode().equals(lt.getAccountCode()))
-					.toList();
-
-			response.add(new LineItemByAccountCodeEmb(lt.getAccountCode(), total, getLineItems));
+		if (lineItems == null || lineItems.isEmpty()) {
+			return Collections.emptyList();
 		}
+		java.util.Map<String, List<LineItem>> grouped = lineItems.stream()
+				.filter(lt -> lt != null && lt.getAccountCode() != null)
+				.collect(java.util.stream.Collectors.groupingBy(
+						LineItem::getAccountCode,
+						java.util.LinkedHashMap::new,
+						java.util.stream.Collectors.toList()));
+
+		List<LineItemByAccountCodeEmb> response = new ArrayList<>(grouped.size());
+		grouped.forEach((code, items) -> response.add(new LineItemByAccountCodeEmb(code, items.size(), items)));
 		return response;
 	}
 

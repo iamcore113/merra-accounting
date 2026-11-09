@@ -13,6 +13,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MenuItem, MessageService } from 'primeng/api';
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';
+import { AccountService } from '../../../../shared/services/account-service';
 import { CreateContactRequest } from '../../../../shared/models/contacts';
 import { InvoicePreviewData } from '../invoice-preview/invoice-preview';
 
@@ -138,6 +139,7 @@ export class NewInvoice implements OnInit {
     private readonly messageService: MessageService,
     private readonly invoiceService: InvoiceService,
     private readonly contactService: ContactService,
+    private readonly accountService: AccountService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {}
@@ -333,6 +335,27 @@ export class NewInvoice implements OnInit {
     this.updateInvoiceNumberValidation();
     this.loadInvoiceMetadata();
     this.loadContacts();
+    this.loadAccounts();
+  }
+
+  loadAccounts(): void {
+    this.accountService.getAllAccounts().subscribe({
+      next: (res) => {
+        if (res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const activeAccounts = res.data.filter(a => a.status !== 'ARCHIVED');
+          if (activeAccounts.length > 0) {
+            this.accounts = activeAccounts.map(a => ({
+              code: a.code,
+              name: `${a.accountName} (${a.code})`
+            }));
+            this.cdr.markForCheck();
+          }
+        }
+      },
+      error: () => {
+        // Keep fallback default accounts if API call fails
+      }
+    });
   }
 
   loadInvoiceMetadata(): void {

@@ -22,7 +22,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.merra.dto.AccountByOrganizationResponse;
 import org.merra.dto.AccountCodeExistsResponse;
+import org.merra.dto.CreateAccountRequest;
 import org.merra.entities.Account;
 import org.merra.entities.AccountCategory;
 import org.merra.entities.AccountType;
@@ -31,6 +33,7 @@ import org.merra.mapper.AccountMapper;
 import org.merra.repositories.AccountCategoryRepository;
 import org.merra.repositories.AccountRepository;
 import org.merra.repositories.AccountTypeRepository;
+import org.merra.repositories.UserWorkspaceStateRepository;
 import org.merra.utilities.AccountConstants;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,7 +51,9 @@ class AccountServiceTest {
 	@Mock
 	private AccountTypeRepository accountTypeRepository;
 
-	@InjectMocks
+	@Mock
+	private UserWorkspaceStateRepository userWorkspaceStateRepository;
+
 	private AccountService accountService;
 
 	@Captor
@@ -63,7 +68,14 @@ class AccountServiceTest {
 
 	@BeforeEach
 	void setUp() {
+		accountService = new AccountService(
+				accountMapper,
+				accountCategoryRepository,
+				accountRepository,
+				accountTypeRepository,
+				userWorkspaceStateRepository);
 		organization = new Organization();
+		organization.setId(UUID.randomUUID());
 		organization.setDisplayName("Acme Corp");
 
 		assetCategory = new AccountCategory(AccountConstants.ACCOUNT_CATEGORY_ASSET);
@@ -159,6 +171,40 @@ class AccountServiceTest {
 		AccountCodeExistsResponse nonExisting = accountService.checkIfCodeExists("999", orgId);
 		assertThat(nonExisting.accountCode()).isEqualTo("999");
 		assertThat(nonExisting.exists()).isFalse();
+	}
+
+	@Test
+	@DisplayName("createAccount persists new custom account in organization chart of accounts")
+	void createAccount_success() {
+		when(userWorkspaceStateRepository.findCurrentOrganizationByPrincipal())
+				.thenReturn(Optional.of(organization));
+		when(accountRepository.existsByCodeIgnoreCaseAndOrganizationId("105", organization.getId()))
+				.thenReturn(false);
+		when(accountCategoryRepository.findByNameIgnoreCase(AccountConstants.ACCOUNT_CATEGORY_ASSET))
+				.thenReturn(Optional.of(assetCategory));
+		when(accountTypeRepository.findByNameIgnoreCase("Current Asset"))
+				.thenReturn(Optional.of(new AccountType("Current Asset", "")));
+		when(accountRepository.save(any(Account.class)))
+				.thenAnswer(inv -> inv.getArgument(0));
+
+		CreateAccountRequest req = new CreateAccountRequest(
+				"105",
+				"Cash on Hand",
+				"Current Asset",
+				"ASSET",
+				"Petty cash and register funds",
+				"NONE",
+				true,
+				true,
+				"ACTIVE");
+
+		AccountByOrganizationResponse created = accountService.createAccount(req);
+		assertThat(created.code()).isEqualTo("105");
+		assertThat(created.accountName()).isEqualTo("Cash on Hand");
+		assertThat(created.category()).isEqualTo("ASSET");
+		assertThat(created.entryType()).isEqualTo("DEBIT");
+		assertThat(created.enablePaymentToAccount()).isTrue();
+		assertThat(created.addToWatchList()).isTrue();
 	}
 }
 

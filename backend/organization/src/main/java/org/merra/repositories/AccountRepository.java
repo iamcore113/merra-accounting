@@ -1,5 +1,6 @@
 package org.merra.repositories;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -37,9 +38,14 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 			@Param("code") String code,
 			@Param("organizationId") UUID organizationId);
 
-	@Query("SELECT ac FROM Account ac WHERE ac.code = :code AND ac.organization.id = :organizationId")
+	@Query("SELECT ac FROM Account ac LEFT JOIN FETCH ac.category LEFT JOIN FETCH ac.accountType WHERE ac.code = :code AND ac.organization.id = :organizationId")
 	Optional<Account> findByAccountCodeAndOrganizationId(
 			@Param("code") String code,
+			@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT ac FROM Account ac LEFT JOIN FETCH ac.category LEFT JOIN FETCH ac.accountType WHERE ac.accountId = :accountId AND ac.organization.id = :organizationId")
+	Optional<Account> findByAccountIdAndOrganizationId(
+			@Param("accountId") UUID accountId,
 			@Param("organizationId") UUID organizationId);
 
 	boolean existsByCodeIgnoreCase(String code);
@@ -52,6 +58,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 	@Query("SELECT ac FROM Account ac WHERE ac.archived = false")
 	Set<Account> findAllNotArchived();
 
-	@Query("SELECT ac FROM Account ac WHERE ac.organization.id = :organizationId")
+	@Query("SELECT ac FROM Account ac LEFT JOIN FETCH ac.category LEFT JOIN FETCH ac.accountType WHERE ac.organization.id = :organizationId")
 	Set<Account> findAccountByOrganizationId(@Param("organizationId") UUID organizationId);
+
+	@Query("SELECT ac FROM Account ac LEFT JOIN FETCH ac.category LEFT JOIN FETCH ac.accountType WHERE ac.organization.id = :organizationId ORDER BY ac.code ASC")
+	List<Account> findAllByOrganizationIdOrderByCodeAsc(@Param("organizationId") UUID organizationId);
 }
