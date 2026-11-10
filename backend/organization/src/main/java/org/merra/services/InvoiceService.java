@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,7 +57,7 @@ public class InvoiceService {
 	private final AccountRepository accountRepository;
 	private final TaxRateRepository taxRateRepository;
 	private final InvoiceTypeRepository invoiceTypeRepository;
-	public final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
+	private final InvoiceStatusCodeRepository invoiceStatusCodeRepository;
 	private final LineAmountTypeRepository lineAmountTypeRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -239,15 +238,6 @@ public class InvoiceService {
 		}
 
 		invoice.setActions(invoiceActions);
-	}
-
-	/**
-	 * This method will persist the invoice object to the database.
-	 * 
-	 * @param invoice - accepts {@linkplain Invoice} object type.
-	 */
-	private void save(@NotNull Invoice invoice) {
-		invoiceRepository.save(invoice);
 	}
 
 	/**

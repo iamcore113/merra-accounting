@@ -11,7 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { MenuItem, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 import { InvoiceService } from '../../../../shared/services/invoice-service';
 import { ContactService } from '../../../../shared/services/contact-service';

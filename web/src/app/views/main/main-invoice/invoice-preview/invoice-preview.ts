@@ -204,11 +204,11 @@ export class InvoicePreview implements OnInit {
               notes: 'Payment is due within agreed terms. Please quote invoice number upon remittance.'
             };
           } else {
-            this.invoice = this.findMockInvoiceById(invoiceId);
+            this.invoice = this.findFallbackInvoiceById(invoiceId);
           }
         },
         error: () => {
-          this.invoice = this.findMockInvoiceById(invoiceId);
+          this.invoice = this.findFallbackInvoiceById(invoiceId);
         }
       });
       return;
@@ -218,86 +218,7 @@ export class InvoicePreview implements OnInit {
     this.invoice = { ...this.defaultSampleInvoice };
   }
 
-  private findMockInvoiceById(id: string): InvoicePreviewData {
-    const mockMap: Record<string, Partial<InvoicePreviewData>> = {
-      'inv-001': {
-        invoiceNumber: 'INV-00101',
-        contactName: 'Acme Corporation',
-        contactAccountNumber: 'CUST-1001',
-        contactTypeInitials: 'CT',
-        status: 'APPROVED',
-        subTotal: 1608.7,
-        totalTax: 241.3,
-        grandTotal: 1850.0
-      },
-      'inv-002': {
-        invoiceNumber: 'INV-00102',
-        contactName: 'Globex Industries',
-        contactAccountNumber: 'CUST-1002',
-        contactTypeInitials: 'CT',
-        status: 'DRAFT',
-        subTotal: 365.65,
-        totalTax: 54.85,
-        grandTotal: 420.5
-      },
-      'inv-003': {
-        invoiceNumber: 'INV-00103',
-        contactName: 'Initech LLC',
-        contactAccountNumber: 'BOTH-1003',
-        contactTypeInitials: 'BT',
-        status: 'PAID',
-        subTotal: 2782.6,
-        totalTax: 417.4,
-        grandTotal: 3200.0
-      },
-      'inv-004': {
-        invoiceNumber: 'INV-00104',
-        contactName: 'Umbrella Trading Co.',
-        contactAccountNumber: 'SUPP-1004',
-        contactTypeInitials: 'SP',
-        type: 'SUPPLIER_INVOICE',
-        typeName: 'Supplier Invoice (Bills)',
-        status: 'DRAFT',
-        subTotal: 826.09,
-        totalTax: 123.91,
-        grandTotal: 950.0
-      },
-      'inv-005': {
-        invoiceNumber: 'BILL-8891',
-        contactName: 'Cyberdyne Systems',
-        contactAccountNumber: 'SUPP-1005',
-        contactTypeInitials: 'SP',
-        type: 'SUPPLIER_INVOICE',
-        typeName: 'Supplier Invoice (Bills)',
-        status: 'APPROVED',
-        subTotal: 2130.43,
-        totalTax: 319.57,
-        grandTotal: 2450.0
-      },
-      'inv-006': {
-        invoiceNumber: 'BILL-9042',
-        contactName: 'Stark Logistics',
-        contactAccountNumber: 'BOTH-1006',
-        contactTypeInitials: 'BT',
-        type: 'SUPPLIER_INVOICE',
-        typeName: 'Supplier Invoice (Bills)',
-        status: 'PAID',
-        subTotal: 4452.17,
-        totalTax: 667.83,
-        grandTotal: 5120.0
-      }
-    };
-
-    const found = mockMap[id];
-    if (found) {
-      return {
-        ...this.defaultSampleInvoice,
-        id,
-        ...found,
-        lineItems: this.defaultSampleInvoice.lineItems
-      };
-    }
-
+  private findFallbackInvoiceById(id: string): InvoicePreviewData {
     return {
       ...this.defaultSampleInvoice,
       id,

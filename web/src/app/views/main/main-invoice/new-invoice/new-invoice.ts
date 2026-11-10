@@ -74,12 +74,6 @@ export class NewInvoice implements OnInit {
   isSubmitting = false;
 
   // Dropdown list options
-  organizations = [
-    { id: 'oscorp', name: 'Oscorp Industries' },
-    { id: 'stark', name: 'Stark Industries' },
-    { id: 'wayne', name: 'Wayne Enterprises' }
-  ];
-
   types = [
     { code: 'CUSTOMER_INVOICE', name: 'Customer Invoice (Sales)' },
     { code: 'SUPPLIER_INVOICE', name: 'Supplier Invoice (Bills)' }
@@ -270,7 +264,6 @@ export class NewInvoice implements OnInit {
     this.invoiceForm = this.fb.group({
       invoiceNumber: [''],
       customerInvoiceSuffix: [''],
-      organization: ['oscorp', Validators.required],
       type: ['', Validators.required],
       contact: ['', Validators.required],
       lineAmountTypes: ['EXCLUSIVE', Validators.required],
@@ -898,8 +891,6 @@ export class NewInvoice implements OnInit {
   buildPreviewData(): InvoicePreviewData {
     const contact = this.getSelectedContact();
     const invType = this.getSelectedInvoiceType();
-    const orgId = this.invoiceForm.get('organization')?.value;
-    const org = this.organizations.find(o => o.id === orgId);
 
     let invoiceNumberVal = this.invoiceForm.get('invoiceNumber')?.value?.trim();
     if (this.isCurrentTypeCustomerInvoice) {
@@ -917,7 +908,7 @@ export class NewInvoice implements OnInit {
 
     return {
       invoiceNumber: invoiceNumberVal,
-      organizationName: org?.name || 'Oscorp Industries',
+      organizationName: 'Merra Organization',
       organizationEmail: 'billing@merra.io',
       organizationPhone: '+1 (555) 019-2834',
       organizationAddress: '100 Innovation Way, Suite 400, New York, NY 10001',
@@ -948,7 +939,7 @@ export class NewInvoice implements OnInit {
       notes: 'Payment is due according to agreed terms. Please quote invoice number upon remittance.',
       bankDetails: {
         bankName: 'Silicon Valley Commercial Bank',
-        accountName: org?.name || 'Oscorp Industries Global LLC',
+        accountName: 'Merra Organization',
         accountNumber: '4829-1029-4481',
         routingNumber: '021000021',
         swiftBic: 'SVCBUS33'
