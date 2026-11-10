@@ -56,7 +56,7 @@
 - **👥 Contact & Entity Directory**: Unified contact tracking identifying suppliers, customers, account numbers, and transaction logs.
 - **🔐 Secure Authentication**: Stateless JWT architecture with access, visitor, and refresh tokens, accompanied by cryptographic email verification flows.
 - **⚡ High-Throughput Caching**: Redis Stack (secured with TLS) alongside Ehcache second-level JPA caching for sub-second responses.
-- **📁 Document & Attachment Storage**: S3-compatible MinIO object storage for invoice attachments and receipts.
+- **📁 Document & Attachment Storage**: S3-compatible object storage (MinIO locally, SeaweedFS also supported) for invoice attachments and receipts.
 
 ---
 
@@ -71,7 +71,7 @@
 | **Database** | PostgreSQL 17 | Relational persistence with transactional integrity |
 | **Migrations** | Liquibase | Declarative, version-controlled database changesets |
 | **Caching** | Redis Stack & Ehcache 3 | Distributed and in-process caching |
-| **Object Store** | MinIO | S3-compliant distributed document storage |
+| **Object Store** | MinIO / SeaweedFS | S3-compliant document storage |
 | **Docs** | SpringDoc OpenAPI | Automated Swagger/OpenAPI documentation |
 
 ### Frontend Client
@@ -95,18 +95,20 @@ merra-accounting/
 │   ├── user/                 # User personal profiles, settings, and credentials
 │   ├── organization/         # Core accounting domains (Invoices, Accounts, Tenancy, Contacts)
 │   ├── commons/              # Shared models, DTOs, utilities, and exception handlers
-│   ├── certs/                # Redis TLS certificates
-│   ├── compose.yaml          # Local infrastructure (PostgreSQL, Redis Stack, MinIO)
+│   ├── certs/                # Redis TLS certificates (via generate-certs.sh)
+│   ├── compose.yaml          # Local infrastructure (Redis Stack, MinIO)
 │   └── run-main-jar.sh       # Script for running extracted AOT-optimized application JAR
 ├── web/                      # Angular 20 Frontend Application
 │   ├── public/               # Static assets & SVG icons (merra-logo.svg)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── views/        # Page components (landing, auth, dashboard, profile, org, invoices)
-│   │   │   ├── shared/       # Common components (headers, sidenav, dialogs), guards, services
+│   │   │   ├── features/     # Specialized workflows (create-invoice)
+│   │   │   ├── views/        # Page components (landing, auth, org selection, main workspace)
+│   │   │   ├── shared/       # API endpoints, components, guards, interceptors, models, services
 │   │   │   ├── app.routes.ts # Centralized router configuration
 │   │   │   └── app.config.ts # PrimeNG theme & dependency injection configuration
 │   │   └── styles.scss       # Global CSS variables, resets & shared expansion panel themes
+├── set-env.js (in web/)      # Generates web/src/app/shared/api/base.ts from web/.env
 └── README.md                 # Primary project documentation
 ```
 
@@ -128,7 +130,7 @@ Ensure you have the following installed before running the project:
 
 ### 1. Infrastructure Services (Docker)
 
-Start the backing database, cache, and object storage containers:
+Start the cache and object storage containers. PostgreSQL is not part of `compose.yaml` (its `db` service is commented out), so run PostgreSQL 17 separately on port `5071` and create the `merra_accounting` database (or uncomment the `db` service and run `docker compose up -d db`).
 
 ```bash
 cd backend
@@ -136,13 +138,13 @@ cd backend
 # Generate Redis TLS certificates if not yet created
 ./generate-certs.sh
 
-# Spin up infrastructure in the background
-docker compose up -d db redis minio
+# Spin up Redis Stack and MinIO in the background
+docker compose up -d redis minio
 ```
 
 | Service | Host Port | Internal Port | URL / Notes |
 | :--- | :--- | :--- | :--- |
-| **PostgreSQL** | `5071` | `5432` | `jdbc:postgresql://localhost:5071/merra_accounting` |
+| **PostgreSQL** (not in compose by default) | `5071` | `5432` | `jdbc:postgresql://localhost:5071/merra_accounting` |
 | **Redis Stack (TLS)** | `6379` | `6379` | TLS-secured cache |
 | **Redis Insight** | `8001` | `8001` | `http://localhost:8001` |
 | **MinIO API** | `9000` | `9000` | `http://localhost:9000` |
@@ -156,10 +158,11 @@ docker compose up -d db redis minio
    ```bash
    cp backend/.env.example backend/main/.env
    ```
+   Then edit it: set `DB_URL` to `jdbc:postgresql://localhost:5071/merra_accounting`, `REDIS_SSL_ENABLED=true` and `S3_ENDPOINT=http://localhost:9000` (the example defaults assume PostgreSQL on `5432`, plain Redis and SeaweedFS on `8333`).
 2. Build and launch the Spring Boot service:
    ```bash
    cd backend
-   ./mvnw clean spring-boot:run -pl main
+   ./mvnw spring-boot:run -pl main -am
    ```
    The backend API will listen on **`http://localhost:8080`**.
 
@@ -172,7 +175,7 @@ docker compose up -d db redis minio
    cd web
    npm install
    ```
-2. Verify `web/.env` endpoints point to your backend:
+2. Create `web/.env` (`cp .env.example .env`) and verify the endpoints point to your backend:
    ```env
    NG_APP_BASE_URL=http://localhost:8080/api/
    NG_APP_HEALTH_URL=http://localhost:8080/actuator/health/
@@ -180,7 +183,7 @@ docker compose up -d db redis minio
    ```
 3. Start the Angular dev server:
    ```bash
-   ng serve
+   npm start
    ```
 4. Access the web app at **`http://localhost:4200`**.
 
@@ -193,7 +196,7 @@ docker compose up -d db redis minio
 ```env
 # Database Configuration
 DB_URL=jdbc:postgresql://localhost:5071/merra_accounting
-DB_USER=brian
+DB_USER=postgres
 DB_PASSWORD=password
 
 # Mail Configuration
@@ -217,12 +220,13 @@ FRONTEND_REDIRECT_URL=http://localhost:4200
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=merra_account_rds
+REDIS_SSL_ENABLED=true
 
-# MinIO Object Storage
-MINIO_ENDPOINT=http://localhost:9000
-MINIO_REGION_STATIC=us-east-1
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
+# S3-compatible Object Storage (MinIO from compose.yaml)
+S3_ENDPOINT=http://localhost:9000
+S3_REGION_STATIC=us-east-1
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
 ```
 
 ---
@@ -253,7 +257,7 @@ cd backend
 cd web
 
 # Run Angular unit tests
-ng test
+npm test
 
 # Compile production bundle
 npm run build

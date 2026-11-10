@@ -1,6 +1,6 @@
 # Merra Accounting - Backend
 
-Multi-module Java 25 Spring Boot 4.0.5 application using Maven with AOT caching support.
+Multi-module Java 25 Spring Boot 4.0.5 application using Maven with AOT caching support. PostgreSQL is the database, Redis Stack the cache, and an S3-compatible store (MinIO or SeaweedFS) holds attachments.
 
 ## Table of Contents
 
@@ -25,7 +25,10 @@ backend/
 ├── auth/              # Authentication domain module
 ├── user/              # User management domain module
 ├── organization/      # Organization management domain module
-└── commons/           # Shared utilities and common code
+├── commons/           # Shared utilities and common code
+├── certs/             # Redis TLS certificates (generated, see generate-certs.sh)
+├── compose.yaml       # Redis Stack and MinIO (PostgreSQL service commented out)
+└── run-main-jar.sh    # Extract JAR, build AOT cache and start the app
 ```
 
 **Module dependencies:** `main` depends on `auth`, `user`, `organization`, and `commons`, and serves as the runtime application.
@@ -33,7 +36,9 @@ backend/
 ## Prerequisites
 
 - **Java 25** or higher (required for AOT caching)
-- **Docker** and **Docker Compose** (for local PostgreSQL and Redis Stack services)
+- **PostgreSQL 17** running locally on port `5071` (or any instance you point `DB_URL` at). The `db` service in `compose.yaml` is currently commented out.
+- **Docker** and **Docker Compose** (for Redis Stack and MinIO)
+- **OpenSSL** (for `generate-certs.sh`, Redis TLS certificates)
 - **Maven** (wrapper included: `mvnw` on macOS/Linux, `mvnw.cmd` on Windows)
 
 For Maven usage:
@@ -47,7 +52,7 @@ If you are developing on macOS or Linux, it is recommended to use SDKMAN to mana
 
 ```bash
 # Install JDK 25 (example distribution)
-sdk install java 25.0.1.fx-librca
+sdk install java 25.0.4.r25-nik
 
 # Install Maven
 sdk install maven
@@ -76,8 +81,10 @@ Copy `.env.example` to `backend/main/.env` and configure your environment:
 ```env
 # Database Configuration (REQUIRED)
 DB_URL=jdbc:postgresql://localhost:5071/merra_accounting
+DB_USER=postgres
+DB_PASSWORD=password
 
-# Mail Configuration (REQUIRED for AOT cache generation)
+# Mail Configuration (REQUIRED, also for AOT cache generation)
 MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your-email@example.com
@@ -86,60 +93,69 @@ MAIL_PASSWORD=your-app-password
 # Token/Session Durations (in milliseconds)
 MAIL_DURATION=86400000                    # 24 hours
 JWT_TOKEN_SECRET=your-256-bit-secret-key
-JWT_ACCESS_TOKEN_DURATION=86400000        # 24 hours
+JWT_ACCESS_TOKEN_DURATION=3600000         # 1 hour
+JWT_VISITOR_ACCESS_TOKEN_DURATION=28800000 # 8 hours
 JWT_REFRESH_TOKEN_EXPIRATION=604800000    # 7 days
 
 # Redis Configuration (REQUIRED for caching)
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=merra_account_rds
+REDIS_SSL_ENABLED=true                    # compose.yaml's Redis only accepts TLS
+
+# S3-compatible object storage (defaults point at SeaweedFS on :8333;
+# use http://localhost:9000 for the MinIO container in compose.yaml)
+S3_ENDPOINT=http://localhost:9000
+S3_REGION_STATIC=us-east-1
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
 
 # Frontend Configuration
 FRONTEND_URL=http://localhost:4200
 FRONTEND_REDIRECT_URL=http://localhost:4200
 ```
 
+`.env.example` also contains `MINIO_*` backward-compatibility aliases for the `S3_*` variables; the application itself reads `S3_*`. Optionally set `APP_COUNTRIES_CODE` to override the default countries API key.
+
 **Important:** The `.env` file contains sensitive information and is **git-ignored**. Never commit this to version control.
 
 ## Database and Caching Setup
 
-### Start PostgreSQL and Redis Stack with Docker Compose
+`compose.yaml` (backend root) defines **Redis Stack (TLS)** and **MinIO**. The PostgreSQL service is commented out, so run PostgreSQL yourself (local install on port `5071`, or uncomment the `db` service in `compose.yaml`) and create the `merra_accounting` database. The app creates the `app` schema on startup and Liquibase applies the migrations.
 
-The project includes a `compose.yaml` at the backend root that sets up database, caching, and application services.
-
-#### Option 1: Full Stack (Database, Redis Stack, + Application)
+### 1. Generate Redis TLS certificates (first time only)
 
 ```bash
 cd backend
-docker compose up
+./generate-certs.sh
 ```
 
-This starts:
+Certificates are written to `backend/certs/` and mounted into the Redis container.
 
-- **PostgreSQL** (`merra-accounting-db`) on port `5071`
-- **Redis Stack** (`merra-accounting-redis`) on port `6379` (Redis) and `8001` (Redis Insight UI)
-- **Spring Boot App** (`merra-app`) on port `8080`
-
-#### Option 2: Database and Redis Stack Only (For Local Development)
+### 2. Start Redis Stack and MinIO
 
 ```bash
-cd backend
-docker compose up db redis -d
+docker compose up -d redis minio
 ```
 
-This starts only the database and Redis Stack in the background:
+- **Redis Stack** (`merra-accounting-redis`): `localhost:6379` (TLS only, password `merra_account_rds`), Redis Insight at http://localhost:8001
+- **MinIO** (`merra-accounting-local-chainguard-minio`): S3 API http://localhost:9000, console http://localhost:9001 (`minioadmin` / `minioadmin`)
 
-- **PostgreSQL**: `jdbc:postgresql://localhost:5071/merra_accounting`
-- **Redis Stack**: `localhost:6379` (with password `merra_account_rds`)
-- **Redis Insight UI**: http://localhost:8001 (Web GUI to inspect Redis cache/data)
+If you uncomment the `db` service: `docker compose up -d db` (PostgreSQL 17 on `5071`, user `brian`, password `password`).
 
-#### Stop Services
+There is no application service in `compose.yaml`; run the app as described below. The `Dockerfile` builds an image from the extracted `application/` folder produced by `run-main-jar.sh`.
+
+### Alternative: `start-containers.sh`
+
+`./start-containers.sh` is a helper for WSL (it uses `wslc.exe`) that starts Redis Stack (no TLS) and SeaweedFS (S3 on `8333`) and checks a local PostgreSQL on `5432`. If you use it, set `REDIS_SSL_ENABLED=false`, `DB_URL=jdbc:postgresql://localhost:5432/merra_accounting` and `S3_ENDPOINT=http://localhost:8333`.
+
+### Stop Services
 
 ```bash
 docker compose down
 ```
 
-**Note:** Data persists in the volumes (`db_data` and `redis_data`). To reset the services and clear data, use:
+**Note:** Data persists in the volumes (`redis_data`, `minio_data`, and `db_data`). To reset and clear data:
 
 ```bash
 docker compose down -v
@@ -193,16 +209,7 @@ cd backend
 - First run: Extracts the JAR and generates the AOT cache (takes ~2-3 seconds)
 - Subsequent runs: Uses cached data for faster startup
 
-**macOS/Linux equivalent for Windows PowerShell:**
-
-```powershell
-# Build first
-.\mvnw.cmd clean package -pl main -am
-
-# Then run with AOT cache
-cd backend\main\application
-java -XX:AOTCache=app.aot -jar main-1.0-SNAPSHOT.jar
-```
+The script requires `backend/main/.env` and a built JAR (`./mvnw -pl main -am clean package`). On Windows, use WSL/Git Bash for the script, or run the plain JAR below.
 
 ### Option 2: Run Without AOT Cache (Development)
 
@@ -217,16 +224,6 @@ java -XX:AOTCache=app.aot -jar main-1.0-SNAPSHOT.jar
 ```bash
 ./mvnw clean package -pl main -am
 java -jar main/target/main-1.0-SNAPSHOT.jar
-```
-
-**With convenience scripts:**
-
-```bash
-# macOS/Linux
-./run-dev-mac.sh
-
-# Windows PowerShell
-.\run-dev-win.ps1
 ```
 
 ### Application Access
@@ -244,7 +241,8 @@ Database schema and migrations are managed by **Liquibase**.
 ### Configuration
 
 - **Master changelog**: `backend/main/src/main/resources/db/changelog/db.changelog-master.xml`
-- **Change sets**: `backend/main/src/main/resources/db/changesets/`
+- **Tenant changelog**: `backend/main/src/main/resources/db/changelog/db.changelog-tenant.xml`
+- **Change sets**: live in each module, e.g. `backend/user/src/main/resources/db/changesets/user/` and `backend/organization/src/main/resources/db/changesets/organization/`
 - **Default schema**: `app`
 - **Schema initialization**: Handled by `SchemaInitializer.java` on application startup
 
@@ -252,18 +250,18 @@ Database schema and migrations are managed by **Liquibase**.
 
 Before creating a new Liquibase XML file, use this naming convention:
 
-- `<sub-module>-<YYYYMMDD>-<NN>-<description>.xml`
+- `<sub-module>-<YYYYMMDD>-<NN>[-<description>].xml` (the `user` module uses no description)
 - `sub-module`: short module prefix (for example: `org` for organization, `user` for user)
 - `YYYYMMDD`: current date with leading zeros for month/day
-- `NN`: next sequence number with leading zero when needed (`01`, `02`, ..., `27`)
+- `NN`: next sequence number with leading zero when needed (`01`, `02`, ..., `51`)
 - `description`: short kebab-case summary of the change
 
 Example for organization module sequence:
 
-- Last file: `org-20260405-26-add-organization_members-table.xml`
-- Next file on 2026-04-18: `org-20260418-27-what-is-this-file.xml`
+- Last file: `org-20261110-51.xml`
+- Next file on 2026-11-12: `org-20261112-52-add-example-table.xml`
 
-1. Create a new changeset file in `db/changesets/`:
+1. Create a new changeset file in the owning module's `src/main/resources/db/changesets/<module>/` folder:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -280,11 +278,7 @@ Use this `changeSet` id format: `<current-year>-<what-this-migration-is-about>`
 
 Example: `2026-add-organization-members-table`
 
-2. Include it in `db.changelog-master.xml`:
-
-```xml
-<includeAll path="db/changesets/your-module" relativeToChangelogFile="false" />
-```
+2. Files in a module folder are picked up by the `includeAll` entries in `db.changelog-master.xml` (`db/changesets/user`, `db/changesets/organization`). Only add a new `includeAll` line if you create a new module folder.
 
 3. Liquibase will automatically apply it on next application startup
 
@@ -295,7 +289,7 @@ When the application is running, OpenAPI documentation is available via:
 - **Swagger UI** (interactive): http://localhost:8080/swagger-ui.html
 - **OpenAPI JSON** (raw): http://localhost:8080/api-docs
 
-This is configured in `application.yaml` at `/api-docs` path.
+This is configured in `application.properties` (`springdoc.api-docs.path=/api-docs`).
 
 ## Development Notes
 
@@ -317,22 +311,20 @@ The `run-main-jar.sh` script handles cache generation automatically.
 
 ### Spring Boot Configuration
 
+- **Profiles**: `application.properties` activates the `dev` profile by default; `application-dev.properties` enables SQL logging and Hibernate statistics, and `application-prod.properties` holds production settings
 - **Live Reload**: Enabled via Spring DevTools for automatic restarts on code changes
-- **SQL Logging**: `show-sql: true` shows generated SQL queries (useful for debugging)
 - **Hibernate DDL**: Set to `none` - all schema changes go through Liquibase
 
 ### Environment Variables in Spring Boot
 
-All environment variables are injected into `application.yaml` using:
+All environment variables are injected into `application.properties` using:
 
-```yaml
-spring:
-  datasource:
-    url: ${DB_URL}
-    password: ${DB_PASSWORD}
+```properties
+spring.datasource.url=${DB_URL}
+spring.datasource.password=${DB_PASSWORD}
 ```
 
-Sensitive values are loaded from `.env` at runtime, **never** embedded in the build.
+Sensitive values are loaded from `backend/main/.env` at runtime, **never** embedded in the build.
 
 ## Troubleshooting
 
@@ -340,27 +332,28 @@ Sensitive values are loaded from `.env` at runtime, **never** embedded in the bu
 
 **Check:**
 
-1. Are PostgreSQL and Redis running? `docker ps`
+1. Are PostgreSQL and Redis running? `docker ps` (and check PostgreSQL separately)
 2. Are port 5071 (PostgreSQL) and 6379 (Redis) accessible?
 3. Verify `DB_URL` in `.env` matches: `jdbc:postgresql://localhost:5071/merra_accounting`
-4. Verify Redis variables in `.env` match:
+4. Verify Redis variables in `.env` match (`REDIS_SSL_ENABLED=true` when using `compose.yaml`; the Redis container only accepts TLS and needs `./generate-certs.sh` to have been run):
    ```env
    REDIS_HOST=localhost
    REDIS_PORT=6379
    REDIS_PASSWORD=merra_account_rds
+   REDIS_SSL_ENABLED=true
    ```
 
 **Fix:**
 
 ```bash
-docker compose up db redis -d
+docker compose up redis minio -d
 ```
 
 ### AOT cache generation fails with missing environment variables
 
 **Problem:** `java.util.PlaceholderResolutionException: Could not resolve placeholder 'MAIL_HOST'`
 
-**Solution:** Ensure `.env` file exists at `backend/main/.env` before running `./run-main-jar.sh`
+**Solution:** Ensure the `.env` file exists at `backend/main/.env` (copy from `backend/.env.example`) before running `./run-main-jar.sh`
 
 ### Application runs slowly on first startup
 
@@ -370,10 +363,9 @@ This is normal with AOT cache generation. First run takes 2-3 seconds as the cac
 
 **Solution:** Tests need the database running:
 
-```bash
-docker compose up db -d
+Make sure PostgreSQL (and Redis, if the test touches caching) is running and reachable via your `.env`, then run:
 
-# Then run tests
+```bash
 ./mvnw test
 ```
 
@@ -397,12 +389,12 @@ docker compose up db -d
 | Build main module    | `./mvnw clean package -pl main -am`   |
 | Run with AOT cache   | `./run-main-jar.sh`                   |
 | Run with Maven       | `./mvnw spring-boot:run -pl main -am` |
-| Start DB & Redis     | `docker compose up db redis -d`       |
-| Start full stack     | `docker compose up`                   |
+| Start Redis & MinIO  | `docker compose up redis minio -d`    |
+| Generate Redis certs | `./generate-certs.sh`                 |
 | Run tests            | `./mvnw test`                         |
 | Test specific module | `./mvnw test -pl auth`                |
 | View Redis UI        | http://localhost:8001 (Redis Insight) |
-| View database        | http://localhost:7777 (Adminer)       |
+| View MinIO console   | http://localhost:9001                 |
 | View API docs        | http://localhost:8080/swagger-ui.html |
 
 ### Build Errors
@@ -413,8 +405,8 @@ docker compose up db -d
 
 ### Environment Variables Not Loading
 
-- Verify `.env` file exists in the `backend/` directory
-- Check that `spring-dotenv` dependency is included (configured in parent POM)
+- Verify `.env` file exists in the `backend/main/` directory
+- Check that the `springboot4-dotenv` dependency is included (declared in `main/pom.xml`)
 - Ensure environment variables are properly set in your shell/IDE
 
 ## Module Dependencies

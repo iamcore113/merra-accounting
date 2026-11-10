@@ -48,17 +48,19 @@ web/
 │   ├── app/
 │   │   ├── features/         # Specialized workflows (e.g. create-invoice)
 │   │   ├── shared/
-│   │   │   ├── api/          # Environment-driven endpoints (base.ts, auth.ts, org.ts)
-│   │   │   ├── components/   # MainHeader, MainSidenav, MainLayout, Dialogs
-│   │   │   ├── guards/       # AuthGuard, OfflineGuard
+│   │   │   ├── api/          # Endpoint constants (base.ts is generated; auth.ts, organization.ts, invoice.ts, ...)
+│   │   │   ├── components/   # MainHeader, MainSidenav, MainLayout, Dialogs, SessionExpiredDialog
+│   │   │   ├── context/      # Auth token context
+│   │   │   ├── guards/       # AuthGuard, OfflineGuard, VerifyEmailGuard
 │   │   │   ├── interceptors/ # AuthInterceptor, InitInterceptor
 │   │   │   ├── models/       # TypeScript API models and responses
-│   │   │   └── services/     # UserService, OrganizationService, InvoiceService, etc.
+│   │   │   └── services/     # UserService, OrganizationService, InvoiceService, AccountService, etc.
 │   │   ├── views/            # Top-level view routes
 │   │   │   ├── landing-page/ # SaaS landing page
-│   │   │   ├── signin/       # Authentication sign-in
-│   │   │   ├── signup/       # Account registration
-│   │   │   ├── main/         # Main workspace views (home, profile, org, invoices, contacts)
+│   │   │   ├── signin/, signup/              # Authentication
+│   │   │   ├── verify-email/, verify-account/, confirm-account/  # Verification flows
+│   │   │   ├── create-organization/, select-organization/, complete-organization-details-form/, personal-details/  # Onboarding
+│   │   │   ├── main/         # Workspace views (home, profile, organization, invoice, contact, accounts, journals, network-key)
 │   │   │   └── offline-page/ # Connection lost & system health fallback
 │   │   ├── app.routes.ts     # Route mapping
 │   │   └── app.config.ts     # PrimeNG & HTTP Client providers
@@ -81,7 +83,7 @@ npm install
 
 ### 2. Environment Configuration
 
-The environment file `.env` controls API endpoints:
+Copy `.env.example` to `.env` (git-ignored). It controls API endpoints:
 
 ```env
 NG_APP_BASE_URL=http://localhost:8080/api/
@@ -89,12 +91,12 @@ NG_APP_HEALTH_URL=http://localhost:8080/actuator/health/
 NG_APP_API_VERSION=1.1
 ```
 
-Running `npm start` or `npm run build` executes `set-env.js` which generates `src/app/shared/api/base.ts`.
+Running `npm start`, `npm run build`, `npm run watch` or `npm test` first executes `set-env.js` which generates `src/app/shared/api/base.ts`.
 
 ### 3. Run Development Server
 
 ```bash
-ng serve
+npm start
 ```
 
 Access the frontend at **`http://localhost:4200`**.
