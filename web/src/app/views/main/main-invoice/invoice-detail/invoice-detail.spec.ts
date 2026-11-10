@@ -22,7 +22,8 @@ describe('InvoiceDetail', () => {
   let router: Router;
 
   const mockInvoice: InvoiceDetailResponse = {
-    invoiceId: 'inv-1234',
+    id: 'inv-1234',
+    typeName: 'Customer Invoice',
     invoiceNumber: 'INV-1001',
     type: 'CUSTOMER',
     status: 'DRAFT',
@@ -38,11 +39,10 @@ describe('InvoiceDetail', () => {
     contactAccountNumber: 'CUST-1001',
     contactEmail: 'bruce@wayne.com',
     contactTypeInitials: 'CT',
-    organizationId: 'org-1',
     organizationName: 'Merra Corp',
-    taxEligible: true,
     lineItems: [
       {
+        id: 'li-1',
         lineItemId: 'li-1',
         description: 'Consulting Services',
         quantity: 2,

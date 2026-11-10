@@ -193,6 +193,15 @@ export class Signup {
             error?.error?.error ||
             error?.message ||
             'Signup failed. Please try again.';
+
+          if (this.isEmailAlreadyExistsError(error, errorMessage)) {
+            void this.router.navigate(['account/confirm-account'], {
+              queryParams: { email: req.email },
+              state: { email: req.email },
+            });
+            return;
+          }
+
           pendingErrorMessage = errorMessage;
         },
         complete: () => {
@@ -206,5 +215,21 @@ export class Signup {
     } else {
       this.signupForm.markAllAsTouched();
     }
+  }
+
+  isEmailAlreadyExistsError(error: any, errorMessage: string): boolean {
+    const rawMsg = (
+      errorMessage ||
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+
+    return (
+      rawMsg.includes('already exist') ||
+      rawMsg.includes('already registered') ||
+      error?.status === 409
+    );
   }
 }

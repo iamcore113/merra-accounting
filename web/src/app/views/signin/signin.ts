@@ -55,7 +55,28 @@ export class Signin implements OnInit, OnDestroy {
       if (message) {
         this.showError(message);
       }
+      const email = params['email'] || history.state?.email;
+      if (email) {
+        this.signinForm.patchValue({ email });
+        this.signinForm.get('email')?.markAsTouched();
+        this.focusPassword();
+      }
     });
+
+    const stateEmail = history.state?.email;
+    if (stateEmail && !this.signinForm.get('email')?.value) {
+      this.signinForm.patchValue({ email: stateEmail });
+      this.signinForm.get('email')?.markAsTouched();
+      this.focusPassword();
+    }
+  }
+
+  private focusPassword(): void {
+    setTimeout(() => {
+      const pwdInput = (document.querySelector('#password input') ||
+        document.querySelector('input[type="password"]')) as HTMLElement | null;
+      pwdInput?.focus();
+    }, 150);
   }
 
   ngOnDestroy(): void {

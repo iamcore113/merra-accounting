@@ -1,0 +1,61 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="auth-title">Account Already Exists</h2>
+    </div>
+
+    <div class="confirm-icon-wrapper">
+      <div class="confirm-icon-badge">
+        <i class="pi pi-user-check"></i>
+      </div>
+    </div>
+
+    <div class="message-container">
+      <p class="message-text">
+        An account with this email address already exists:
+        @if (email) {
+          <span class="email-highlight">{{ email }}</span>
+        } @else {
+          <span class="email-highlight">your email address</span>
+        }
+      </p>
+      <p class="confirm-question">
+        Are you the owner of this account?
+      </p>
+      <p class="message-subtext">
+        If you are the owner of this account, confirm below to proceed to sign in with your email pre-filled. You will only need to enter your password.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <button
+        pButton
+        type="button"
+        (click)="confirmOwnership()"
+        class="confirm-button"
+        icon="pi pi-check"
+        label="Yes, I am the owner"
+        [size]="'small'">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        (click)="useDifferentEmail()"
+        class="secondary-button"
+        [outlined]="true"
+        icon="pi pi-arrow-left"
+        label="No, use a different email"
+        [size]="'small'">
+      </button>
+    </div>
+
+    <div class="auth-footer">
+      <div class="signin-prompt">
+        <span>Already know your password? </span>
+        <a routerLink="/account/signin" [queryParams]="email ? { email: email } : null" class="signin-link">Sign in directly</a>
+      </div>
+    </div>
+  </div>
+</div>

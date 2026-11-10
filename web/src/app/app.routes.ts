@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Signup } from './views/signup/signup';
 import { Signin } from './views/signin/signin';
+import { ConfirmAccount } from './views/confirm-account/confirm-account';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
@@ -23,6 +24,10 @@ export const routes: Routes = [
   { path: 'login', redirectTo: 'account/signin', pathMatch: 'full' },
   { path: 'offline', component: OfflinePage, canActivate: [offlineGuard], title: 'MERRA - Offline' },
   { path: 'account/signup', component: Signup, title: 'Signup for free | MERRA' },
+  { path: 'account/confirm-account', component: ConfirmAccount, title: 'MERRA - Confirm Account Ownership' },
+  { path: 'account/confirm-account/:email', component: ConfirmAccount, title: 'MERRA - Confirm Account Ownership' },
+  { path: 'account/confirm-ownership', redirectTo: 'account/confirm-account', pathMatch: 'full' },
+  { path: 'account/confirm-ownership/:email', redirectTo: 'account/confirm-account/:email', pathMatch: 'full' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
   { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'MERRA - Verify Email' },
   { path: 'account/verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
