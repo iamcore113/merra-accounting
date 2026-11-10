@@ -111,20 +111,20 @@ public class InvoiceService {
 	 */
 	@Transactional
 	public void createNewInvoiceObject(@NotNull CreateInvoiceRequest request) {
-		// Create new Invoice object
+		// Initialize a new Invoice entity
 		Invoice invoice = new Invoice();
 
-		// Get current organization
+		// Retrieve and associate the current organization from user context
 		final Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 		invoice.setOrganization(currentOrganization);
 
-		// Set the invoice type
+		// Retrieve and set the invoice type
 		final InvoiceType invoiceType = invoiceTypeRepository.findById(request.invoiceType())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_INVOICE_TYPE));
 		invoice.setType(invoiceType);
 
-		// Set invoice contact
+		// Retrieve and associate the contact entity
 		Contact getContact = contactRepository.findById(request.contact())
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CONTACT_OBJ));
 		invoice.setContact(getContact);
@@ -141,71 +141,95 @@ public class InvoiceService {
 		boolean contactIsCustomer = Boolean.TRUE.equals(getContact.getIsCustomer());
 		boolean contactIsSupplier = Boolean.TRUE.equals(getContact.getIsSupplier());
 
+		// Validate customer invoice constraints
 		if (isCustomerInvoice && !contactIsCustomer) {
+			// Disallow customer invoice for a contact that is not marked as a customer
 			throw new IllegalArgumentException("Cannot create a customer invoice for a contact that is not a customer");
 		}
+		// Validate supplier invoice constraints
 		if (isSupplierInvoice && !contactIsSupplier) {
+			// Disallow supplier invoice for a contact that is not marked as a supplier
 			throw new IllegalArgumentException("Cannot create a supplier invoice for a contact that is not a supplier");
 		}
 
 		final Integer contactDefaultDiscount = getContact.getDefaultDiscount();
 
+		// Process and set line items with calculations and discounts
 		setLineItems(invoice, request.lineItems(), request.lineAmountType(), contactDefaultDiscount,
 				currentOrganization.getId());
+		// Calculate invoice totals, subtotals, and tax amounts
 		calculateInvoice(invoice);
 
+		// Set invoice issue and due dates
 		invoice.setDate(request.date());
 		invoice.setDueDate(request.dueDate());
 
+		// Set invoice status
 		final String status = request.status();
 		invoice.setStatus(status);
 
-		// set invoice actions
+		// Configure allowed invoice actions based on status
 		setInvoiceActions(invoice, status);
 
 		// Resolve invoice number according to invoice type constraints
 		String invoiceNumber = request.invoiceNumber();
 		if (invoiceNumber != null) {
+			// Trim leading and trailing whitespace from the provided invoice number
 			invoiceNumber = invoiceNumber.trim();
 		}
 
+		// Handle customer invoice number generation and validation rules
 		if (isCustomerInvoice) {
+			// Generate auto-incremented invoice number if not explicitly provided
 			if (invoiceNumber == null || invoiceNumber.isBlank()) {
 				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
 			} else {
+				// Validate that customer invoice number starts with the required 'INV-' prefix
 				if (!invoiceNumber.toUpperCase().startsWith("INV-")) {
 					throw new IllegalArgumentException("Customer invoice number must be prefixed with 'INV-'");
 				}
+				// Ensure customer invoice number does not exceed character limit
 				if (invoiceNumber.length() > 13) {
 					throw new IllegalArgumentException("Customer invoice number cannot exceed 13 characters");
 				}
+				// Ensure customer invoice number is unique within the organization
 				if (invoiceRepository.existsByInvoiceNumberAndOrganizationId(invoiceNumber, currentOrganization.getId())) {
 					throw new ResourceAlreadyExistsException(
 							"Customer invoice number '" + invoiceNumber + "' already exists for this organization");
 				}
 			}
+		// Handle supplier invoice number validation rules
 		} else if (isSupplierInvoice) {
+			// Supplier invoices require an invoice number from the supplier
 			if (invoiceNumber == null || invoiceNumber.isBlank()) {
 				throw new IllegalArgumentException("Invoice number is required for supplier invoices");
 			}
+			// Ensure supplier invoice number does not exceed character limit
 			if (invoiceNumber.length() > 13) {
 				throw new IllegalArgumentException("Supplier invoice number cannot exceed 13 characters");
 			}
 			// Supplier invoice numbers are non-unique and not forced to be prefixed with "INV-"
+		// Fallback handling for any other invoice types
 		} else {
+			// Auto-generate invoice number if missing for generic invoice types
 			if (invoiceNumber == null || invoiceNumber.isBlank()) {
 				invoiceNumber = generateUniqueCustomerInvoiceNumber(currentOrganization.getId());
+			// Ensure generic invoice number does not exceed character limit
 			} else if (invoiceNumber.length() > 13) {
 				throw new IllegalArgumentException("Invoice number cannot exceed 13 characters");
 			}
 		}
 
+		// Set resolved invoice number and optional reference
 		invoice.setInvoiceNumber(invoiceNumber);
 		invoice.setReference(request.reference());
 
+		// Persist the invoice entity to the database
 		Invoice savedInvoice = invoiceRepository.save(invoice);
 
+		// Automatically create double-entry journal records if the invoice is immediately authorised
 		if (InvoiceConstants.INVOICE_STATUS_AUTHORISED.equalsIgnoreCase(status)) {
+			// Post journal entries for the line items of the authorised invoice
 			journalService.entry(
 					savedInvoice.getLineItems(),
 					currentOrganization,

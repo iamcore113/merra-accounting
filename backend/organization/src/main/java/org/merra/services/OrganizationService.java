@@ -376,8 +376,8 @@ public class OrganizationService {
 	public NewOrganizationResponse newOrganization(CreateOrganizationRequest req) {
 
 		// 1. Check if an organization with the given display name or legal name already exists
-		boolean checkNameExist = organizationRepository.existsByDisplayNameOrLegalNameIgnoreCase(req.displayName());
-		if (checkNameExist) {
+		boolean checkNameDuplicate = organizationRepository.existsByDisplayNameOrLegalNameIgnoreCase(req.displayName());
+		if (checkNameDuplicate) {
 			throw new ResourceAlreadyExistsException("Organization name already exists: " + req.displayName());
 		}
 
