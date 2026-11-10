@@ -1,0 +1,109 @@
+<div class="select-org-container">
+  <div class="select-org-card">
+    <div class="select-org-header">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h1 class="greeting-title">
+        Welcome{{ userName() ? ', ' + userName() : '' }}!
+      </h1>
+      <p class="greeting-subtitle">
+        Select an organization workspace below to proceed, or create a new organization.
+      </p>
+    </div>
+
+    <div class="select-org-body">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <p-progressSpinner
+            strokeWidth="4"
+            styleClass="org-spinner"
+            ariaLabel="Loading organizations">
+          </p-progressSpinner>
+          <span class="loading-text">Loading your organizations...</span>
+        </div>
+      } @else if (organizations().length === 0) {
+        <div class="empty-org-state">
+          <div class="empty-icon-wrap">
+            <i class="pi pi-building"></i>
+          </div>
+          <h2 class="empty-title">No Organizations Yet</h2>
+          <p class="empty-desc">
+            You haven't created or joined any organization yet. Create your first organization to get started.
+          </p>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="Create Organization"
+            [size]="'small'"
+            (click)="onCreateOrganization()">
+          </button>
+        </div>
+      } @else {
+        <div class="org-list-header">
+          <span class="org-count-label">
+            Your Organizations ({{ organizations().length }})
+          </span>
+          <button
+            pButton
+            type="button"
+            icon="pi pi-plus"
+            label="New Organization"
+            [outlined]="true"
+            [size]="'small'"
+            (click)="onCreateOrganization()">
+          </button>
+        </div>
+
+        <div class="org-list">
+          @for (org of organizations(); track org.organizationId) {
+            <div
+              class="org-item-card"
+              [class.is-selecting]="selectingOrgId() === org.organizationId"
+              [class.is-disabled]="selectingOrgId() !== null && selectingOrgId() !== org.organizationId"
+              (click)="onSelectOrganization(org)"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="onSelectOrganization(org)">
+              <div class="org-avatar">
+                {{ getOrgInitial(org.organizationName) }}
+              </div>
+              <div class="org-details">
+                <span class="org-name">{{ org.organizationName }}</span>
+                <span class="org-role-badge">{{ org.role }}</span>
+              </div>
+              <div class="org-action">
+                <button
+                  pButton
+                  type="button"
+                  label="Proceed"
+                  icon="pi pi-arrow-right"
+                  iconPos="right"
+                  [size]="'small'"
+                  [loading]="selectingOrgId() === org.organizationId"
+                  [disabled]="selectingOrgId() !== null"
+                  (click)="$event.stopPropagation(); onSelectOrganization(org)">
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="select-org-footer">
+      @if (userEmail()) {
+        <span class="signed-in-as">Signed in as <strong>{{ userEmail() }}</strong></span>
+      }
+      <button
+        pButton
+        type="button"
+        label="Sign out"
+        icon="pi pi-sign-out"
+        [text]="true"
+        [size]="'small'"
+        class="signout-btn"
+        (click)="onSignOut()">
+      </button>
+    </div>
+  </div>
+</div>

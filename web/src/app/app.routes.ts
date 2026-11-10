@@ -11,6 +11,7 @@ import { MainLayout } from './shared/components/main-layout/main-layout';
 import { MainHome } from './views/main/main-home/main-home';
 import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
 import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
+import { SelectOrganization } from './views/select-organization/select-organization';
 import { LandingPage } from './views/landing-page/landing-page';
 import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
 import { MainContact } from './views/main/main-contact/main-contact';
@@ -108,6 +109,11 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },
+  {
+    path: 'select-organization',
+    component: SelectOrganization,
+    title: 'MERRA - Select Organization'
   },
   {
     path: 'no-organization',

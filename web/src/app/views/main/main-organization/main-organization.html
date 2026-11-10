@@ -8,16 +8,25 @@
 			</div>
 			<p class="organization-subtitle">Configure organization profile, network keys, physical addresses, contact channels, and financial preferences</p>
 		</div>
-		<button
-			class="organization-image-button"
-			type="button"
-			pTooltip="View Organization Profile"
-			tooltipPosition="left"
-			aria-label="Organization profile"
-			(click)="openOrganizationImageDialog()">
-			<i class="pi pi-building organization-image-icon"></i>
-			<span class="profile-badge-dot"></span>
-		</button>
+		<div class="organization-header-actions">
+			<p-button
+				label="Create Another Organization"
+				icon="pi pi-plus"
+				[outlined]="true"
+				[size]="'small'"
+				(click)="onCreateAnotherOrganization()">
+			</p-button>
+			<button
+				class="organization-image-button"
+				type="button"
+				pTooltip="View Organization Profile"
+				tooltipPosition="left"
+				aria-label="Organization profile"
+				(click)="openOrganizationImageDialog()">
+				<i class="pi pi-building organization-image-icon"></i>
+				<span class="profile-badge-dot"></span>
+			</button>
+		</div>
 	</div>
 	
 	<p-accordion [value]="['0', 'network-keys']" [multiple]="true">

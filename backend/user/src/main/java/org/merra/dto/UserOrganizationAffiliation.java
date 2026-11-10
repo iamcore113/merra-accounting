@@ -9,13 +9,21 @@ public record UserOrganizationAffiliation(
     public record Organizations(
             UUID organizationId,
             String organizationName,
+            String legalName,
             String role) {
+        public Organizations(UUID organizationId, String organizationName, String role) {
+            this(organizationId, organizationName, organizationName, role);
+        }
+
         public Organizations {
             if (organizationId == null) {
                 throw new IllegalArgumentException("Organization ID cannot be null");
             }
             if (organizationName == null || organizationName.isBlank()) {
                 throw new IllegalArgumentException("Organization name cannot be null or blank");
+            }
+            if (legalName == null || legalName.isBlank()) {
+                legalName = organizationName;
             }
             if (role == null || role.isBlank()) {
                 throw new IllegalArgumentException("Role cannot be null or blank");

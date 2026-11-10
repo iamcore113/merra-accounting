@@ -61,6 +61,7 @@ export interface OrganizationAddress {
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CreateOrganizationRequest.java
 export interface CreateOrganizationRequest {
   displayName: string;
+  legalName?: string;
   type: string;
   email: string;
   country: string;
@@ -288,6 +289,7 @@ export interface CurrentOrganizationResponse {
 export interface OrganizationAffiliation {
   organizationId: string;
   organizationName: string;
+  legalName?: string;
   role: string;
 }
 

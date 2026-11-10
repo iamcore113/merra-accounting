@@ -3,7 +3,6 @@ package org.merra.entities;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +27,7 @@ public class UserWorkspaceState {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", unique = true, nullable = false)
     private UserAccount user;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "current_organization", referencedColumnName = "id")
     private Organization currentOrganization;
 

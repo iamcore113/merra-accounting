@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Email;
 
 public record CreateOrganizationRequest(
 		String displayName,
+		String legalName,
 		UUID type,
 		@Email(message = "Email component must be valid") String email,
 		String country,
@@ -14,9 +15,23 @@ public record CreateOrganizationRequest(
 		String currency,
 		List<Addresses> addresses) {
 
+	public CreateOrganizationRequest(
+			String displayName,
+			UUID type,
+			String email,
+			String country,
+			FinancialYear financialYear,
+			String currency,
+			List<Addresses> addresses) {
+		this(displayName, displayName, type, email, country, financialYear, currency, addresses);
+	}
+
 	public CreateOrganizationRequest {
 		if (displayName == null || displayName.isBlank()) {
 			throw new IllegalArgumentException("displayName cannot be null or blank");
+		}
+		if (legalName == null || legalName.isBlank()) {
+			legalName = displayName;
 		}
 		if (type == null) {
 			throw new IllegalArgumentException("type cannot be null");

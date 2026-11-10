@@ -9,12 +9,14 @@ import org.merra.services.OrganizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,6 +54,27 @@ public class OrganizationController {
 				true,
 				HttpStatus.OK,
 				currentOrganization);
+
+		return ResponseEntity.ok(response);
+	}
+
+	/**
+	 * Sets the active organization in {@code user_workspace_state} for the
+	 * currently authenticated user and refreshes {@code last_active_at}.
+	 *
+	 * @param organizationId the UUID of the organization to select
+	 * @return a {@link ResponseEntity} containing an {@link ApiResponse} with the
+	 *         selected {@link CurrentOrganizationResponse}
+	 */
+	@PostMapping("select/{organizationId}")
+	public ResponseEntity<ApiResponse<CurrentOrganizationResponse>> selectOrganization(
+			@PathVariable("organizationId") UUID organizationId) {
+		CurrentOrganizationResponse selectedOrganization = organizationService.selectOrganization(organizationId);
+		ApiResponse<CurrentOrganizationResponse> response = new ApiResponse<>(
+				"Organization selected successfully.",
+				true,
+				HttpStatus.OK,
+				selectedOrganization);
 
 		return ResponseEntity.ok(response);
 	}

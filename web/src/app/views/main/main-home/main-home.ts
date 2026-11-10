@@ -1,10 +1,11 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { UserService } from '../../../shared/services/user-service';
+import { LocalStorageService } from '../../../shared/services/local-storage-service';
 import { CurrentOrganizationResponse, PrincipalDetailsResponse } from '../../../shared/models/organization';
 import { Config } from '../../../shared/models/api_response';
 
@@ -18,8 +19,11 @@ import { Config } from '../../../shared/models/api_response';
 export class MainHome implements OnInit {
   private readonly organizationService = inject(OrganizationService);
   private readonly userService = inject(UserService);
+  private readonly localStorage = inject(LocalStorageService);
+  private readonly router = inject(Router);
 
   userName = '';
+  userEmail = '';
   orgName = 'Your Organization';
   orgStatus = 'ACTIVE';
   orgCurrency = 'USD';
@@ -29,6 +33,7 @@ export class MainHome implements OnInit {
   private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   ngOnInit(): void {
+    this.userEmail = this.localStorage.getItem('user_email') || '';
     this.loadUserData();
     this.loadOrganizationData();
   }
@@ -38,6 +43,10 @@ export class MainHome implements OnInit {
       next: (res: Config) => {
         if (res.success && 'data' in res) {
           const user = res.data as PrincipalDetailsResponse;
+          if (user.email) {
+            this.userEmail = user.email;
+            this.localStorage.setItem('user_email', user.email);
+          }
           this.userName = user.fullName || user.email?.split('@')[0] || '';
         }
       },
@@ -45,6 +54,15 @@ export class MainHome implements OnInit {
         // Fallback remains empty
       }
     });
+  }
+
+  onCreateAnotherOrganization(): void {
+    const email = this.userEmail || this.localStorage.getItem('user_email') || '';
+    if (email) {
+      this.router.navigate(['/create/organization', email]);
+    } else {
+      this.router.navigate(['/select-organization']);
+    }
   }
 
   private loadOrganizationData(): void {

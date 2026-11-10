@@ -40,6 +40,70 @@
                 </div>
 
                 <div class="field-group">
+                  <div class="legal-name-header">
+                    <label for="legalName" class="field-label">Legal / Trading Name *</label>
+                    @if (existingLegalNames.length > 0) {
+                      <div class="mode-toggle-group">
+                        <button
+                          type="button"
+                          class="mode-toggle-btn"
+                          [class.active]="legalNameMode === 'existing'"
+                          (click)="setLegalNameMode('existing')">
+                          <i class="pi pi-list"></i>
+                          <span>Select Existing</span>
+                        </button>
+                        <button
+                          type="button"
+                          class="mode-toggle-btn"
+                          [class.active]="legalNameMode === 'new'"
+                          (click)="setLegalNameMode('new')">
+                          <i class="pi pi-plus"></i>
+                          <span>Create New</span>
+                        </button>
+                      </div>
+                    } @else if (nameStep.get('displayName')?.value) {
+                      <button
+                        type="button"
+                        class="copy-display-btn"
+                        (click)="copyDisplayNameToLegalName()">
+                        Use Display Name
+                      </button>
+                    }
+                  </div>
+
+                  @if (existingLegalNames.length > 0 && legalNameMode === 'existing') {
+                    <p-select
+                      id="existingLegalName"
+                      formControlName="legalName"
+                      [options]="existingLegalNames"
+                      optionLabel="label"
+                      optionValue="value"
+                      placeholder="Select an existing legal name"
+                      [size]="'small'"
+                      styleClass="full-width">
+                    </p-select>
+                    <small class="field-hint">Multiple organizations can share the same registered legal name.</small>
+                  } @else {
+                    <p-iconfield iconPosition="left" class="full-width">
+                      <p-inputicon styleClass="pi pi-briefcase"></p-inputicon>
+                      <input
+                        id="legalName"
+                        pInputText
+                        [pSize]="'small'"
+                        placeholder="Enter legal or trading name"
+                        formControlName="legalName"
+                        class="full-width" />
+                    </p-iconfield>
+                  }
+                  @if (nameStep.get('legalName')?.hasError('required') && nameStep.get('legalName')?.touched) {
+                    <small class="field-error">Legal name is required</small>
+                  }
+                  @if (nameStep.get('legalName')?.hasError('minlength') && nameStep.get('legalName')?.touched) {
+                    <small class="field-error">Legal name must be at least 3 characters long</small>
+                  }
+                </div>
+
+                <div class="field-group">
                   <label for="orgType" class="field-label">Organization Type *</label>
                   <p-select
                     id="orgType"

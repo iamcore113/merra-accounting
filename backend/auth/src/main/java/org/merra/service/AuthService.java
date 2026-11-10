@@ -24,11 +24,13 @@ import org.merra.dto.VisitorAccessToken;
 import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
+import org.merra.multitenancy.UserWorkspaceManager;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.merra.utilities.RedisKeys;
 import org.merra.utilities.SecurityUtils;
 import org.merra.utils.AuthConstantResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
@@ -87,6 +89,7 @@ public class AuthService {
   private final UserAccountRepository userRepository;
   private final UserAccountService userAccountService;
   private final TokenBlacklistService tokenBlacklistService;
+  private final UserWorkspaceManager userWorkspaceManager;
 
   public AuthService(
       RedisTemplate<String, Object> redisTemplate,
@@ -98,6 +101,22 @@ public class AuthService {
       UserAccountRepository userAccountRepository,
       UserAccountService userAccountService,
       TokenBlacklistService tokenBlacklistService) {
+    this(redisTemplate, mailSender, userDetailsService, jwtUtils, authenticationManager,
+        passwordEncoder, userAccountRepository, userAccountService, tokenBlacklistService, null);
+  }
+
+  @Autowired
+  public AuthService(
+      RedisTemplate<String, Object> redisTemplate,
+      JavaMailSender mailSender,
+      UserDetailsService userDetailsService,
+      JwtUtils jwtUtils,
+      AuthenticationManager authenticationManager,
+      PasswordEncoder passwordEncoder,
+      UserAccountRepository userAccountRepository,
+      UserAccountService userAccountService,
+      TokenBlacklistService tokenBlacklistService,
+      @Autowired(required = false) UserWorkspaceManager userWorkspaceManager) {
     this.redisTemplate = redisTemplate;
     this.mailSender = mailSender;
     this.userDetailsService = userDetailsService;
@@ -107,6 +126,7 @@ public class AuthService {
     this.userRepository = userAccountRepository;
     this.userAccountService = userAccountService;
     this.tokenBlacklistService = tokenBlacklistService;
+    this.userWorkspaceManager = userWorkspaceManager;
   }
 
   public VisitorAccessToken generateVisitorAccessToken() {
@@ -348,8 +368,11 @@ public class AuthService {
     }
 
     boolean isPartOfOrganization = getUser.isPartOfOrganization() ? getUser.isPartOfOrganization() : false;
+    boolean hasActiveWorkspace = userWorkspaceManager != null
+        && userWorkspaceManager.checkAndRefreshWorkspace(getUser.getUserId());
 
-    response.setAccountStatus(response.new AccountStatus(isProfileComplete, getUser.isEnabled(), isPartOfOrganization));
+    response.setAccountStatus(
+        response.new AccountStatus(isProfileComplete, getUser.isEnabled(), isPartOfOrganization, hasActiveWorkspace));
 
     final Map<String, Object> claims = Map.of("role", getUser.getRoles());
     final String accessToken = jwtUtils.generateToken(getUser.getEmail(), claims, forAccessToken, false);

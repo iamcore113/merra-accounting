@@ -14,6 +14,13 @@
       <a routerLink="/main/contacts">
         <p-button label="Contacts" icon="pi pi-users" [outlined]="true" [size]="'small'"></p-button>
       </a>
+      <p-button
+        label="Create Another Organization"
+        icon="pi pi-building"
+        [outlined]="true"
+        [size]="'small'"
+        (click)="onCreateAnotherOrganization()">
+      </p-button>
     </div>
   </header>
 

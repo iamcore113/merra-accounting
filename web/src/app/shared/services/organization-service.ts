@@ -1,6 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { CREATE_ORGANIZATION, ORGANIZATION_METADATA_URL, CURRENT_ORGANIZATION, CURRENT_ORGANIZATION_UPDATE } from '../api/organization';
+import {
+  CREATE_ORGANIZATION,
+  ORGANIZATION_METADATA_URL,
+  CURRENT_ORGANIZATION,
+  CURRENT_ORGANIZATION_UPDATE,
+  SELECT_ORGANIZATION,
+  ORGANIZATION_AFFILIATIONS_URL,
+} from '../api/organization';
 import { Observable } from 'rxjs';
 import { Config } from '../models/api_response';
 import { CreateOrganizationRequest, CurrentOrganizationResponse } from '../models/organization';
@@ -35,6 +42,18 @@ export class OrganizationService {
 
   updateCurrentOrganization(req: CurrentOrganizationResponse): Observable<Config> {
     return this.http.put<Config>(CURRENT_ORGANIZATION_UPDATE, req, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getUserOrganizationAffiliations(): Observable<Config> {
+    return this.http.get<Config>(ORGANIZATION_AFFILIATIONS_URL, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  selectOrganization(organizationId: string): Observable<Config> {
+    return this.http.post<Config>(`${SELECT_ORGANIZATION}${organizationId}`, {}, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

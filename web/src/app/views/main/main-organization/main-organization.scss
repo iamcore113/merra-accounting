@@ -53,6 +53,13 @@
 			color: #64748b;
 		}
 
+		.organization-header-actions {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			flex-shrink: 0;
+		}
+
 		.organization-image-button {
 			position: relative;
 			width: 44px;

@@ -129,6 +129,69 @@
     color: #dc2626;
     margin-top: 0.2rem;
   }
+
+  .field-hint {
+    font-size: 0.775rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+  }
+}
+
+.legal-name-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mode-toggle-group {
+  display: inline-flex;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+
+  .mode-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #475569;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    i {
+      font-size: 0.7rem;
+    }
+
+    &:hover:not(.active) {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    &.active {
+      background: #689D4B;
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
+}
+
+.copy-display-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #689D4B;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .readonly-field {

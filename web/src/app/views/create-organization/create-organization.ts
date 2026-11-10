@@ -11,7 +11,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { MessageService } from 'primeng/api';
 import { OrganizationService } from '../../shared/services/organization-service';
-import { CreateOrganizationRequest, FinancialYear, OrganizationAddress, OrganizationMetaDataResponse } from '../../shared/models/organization';
+import { CreateOrganizationRequest, FinancialYear, OrganizationAddress, OrganizationMetaDataResponse, UserOrganizationAffiliation } from '../../shared/models/organization';
 import { Config, RestCountriesSelection } from '../../shared/models/api_response';
 import { UtilityService } from '../../shared/services/utility-service';
 
@@ -45,6 +45,8 @@ export class CreateOrganization implements OnInit {
   public organizationMetadata: OrganizationMetaDataResponse | null = null;
   public countries: RestCountriesSelection = [];
   public filteredCountries: RestCountriesSelection = [];
+  public existingLegalNames: { label: string; value: string }[] = [];
+  public legalNameMode: 'existing' | 'new' = 'new';
   organizationForm!: FormGroup;
   isSubmitting = false;
 
@@ -83,7 +85,66 @@ export class CreateOrganization implements OnInit {
     const email = this.activatedRoute.snapshot.paramMap.get('email');
     this.initializeForm(email);
     this.loadOrganizationMetadata();
+    this.loadExistingLegalNames();
     this.loadCountries();
+  }
+
+  private loadExistingLegalNames(): void {
+    this.organizationService.getUserOrganizationAffiliations().subscribe({
+      next: (response: Config) => {
+        if (response.success && 'data' in response && response.data) {
+          const affiliationData = response.data as UserOrganizationAffiliation;
+          const orgs = affiliationData.organizations || [];
+          const uniqueLegalNames = Array.from(
+            new Set(
+              orgs
+                .map(org => (org.legalName || org.organizationName || '').trim())
+                .filter(name => name.length > 0)
+            )
+          );
+          this.existingLegalNames = uniqueLegalNames.map(name => ({
+            label: name,
+            value: name,
+          }));
+          if (this.existingLegalNames.length > 0) {
+            this.legalNameMode = 'existing';
+            const legalCtrl = this.nameStep.get('legalName');
+            if (legalCtrl && !legalCtrl.value) {
+              legalCtrl.setValue(this.existingLegalNames[0].value);
+            }
+          } else {
+            this.legalNameMode = 'new';
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load existing legal names:', error);
+      },
+    });
+  }
+
+  setLegalNameMode(mode: 'existing' | 'new'): void {
+    this.legalNameMode = mode;
+    const legalCtrl = this.nameStep.get('legalName');
+    if (!legalCtrl) return;
+    if (mode === 'existing' && this.existingLegalNames.length > 0) {
+      legalCtrl.setValue(this.existingLegalNames[0].value);
+    } else {
+      const displayName = (this.nameStep.get('displayName')?.value || '').trim();
+      legalCtrl.setValue(displayName);
+    }
+    legalCtrl.markAsUntouched();
+    this.cdr.detectChanges();
+  }
+
+  copyDisplayNameToLegalName(): void {
+    const displayName = (this.nameStep.get('displayName')?.value || '').trim();
+    if (displayName) {
+      this.nameStep.get('legalName')?.setValue(displayName);
+      this.nameStep.get('legalName')?.markAsDirty();
+      this.cdr.detectChanges();
+    }
   }
 
   private loadOrganizationMetadata(): void {
@@ -133,6 +194,7 @@ export class CreateOrganization implements OnInit {
     this.organizationForm = this.fb.group({
       nameStep: this.fb.group({
         displayName: ['', [Validators.required, Validators.minLength(2)]],
+        legalName: ['', [Validators.required, Validators.minLength(3)]],
         type: ['', Validators.required],
         email: [email || '', [Validators.required, Validators.email]],
         country: ['', Validators.required],
@@ -148,6 +210,13 @@ export class CreateOrganization implements OnInit {
     });
 
     this.addresses.push(this.createAddressGroup());
+
+    this.nameStep.get('displayName')?.valueChanges.subscribe((val: string) => {
+      const legalCtrl = this.nameStep.get('legalName');
+      if (this.legalNameMode === 'new' && legalCtrl && !legalCtrl.dirty) {
+        legalCtrl.setValue(val || '', { emitEvent: false });
+      }
+    });
   }
 
   private loadCountries(): void {
@@ -246,6 +315,7 @@ export class CreateOrganization implements OnInit {
 
     const organizationRequest: CreateOrganizationRequest = {
       displayName: nameVal.displayName,
+      legalName: (nameVal.legalName || nameVal.displayName || '').trim(),
       type: nameVal.type,
       email: nameVal.email,
       country: countryVal,
@@ -283,7 +353,7 @@ export class CreateOrganization implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/no-organization']);
+    this.router.navigate(['/main']);
   }
 
   addAddress(): void {

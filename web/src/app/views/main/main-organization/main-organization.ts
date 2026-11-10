@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, DatePipe, TitleCasePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { SelectModule } from 'primeng/select';
@@ -19,6 +20,7 @@ import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { NetworkKeyService } from '../../../shared/services/network-key-service';
 import { UtilityService } from '../../../shared/services/utility-service';
+import { LocalStorageService } from '../../../shared/services/local-storage-service';
 import {
   CurrentOrganizationResponse,
   OrganizationMetaDataResponse,
@@ -64,10 +66,25 @@ export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
   private readonly networkKeyService = inject(NetworkKeyService);
   private readonly utilityService = inject(UtilityService);
+  private readonly localStorage = inject(LocalStorageService);
+  private readonly router = inject(Router);
   private readonly dialogService = inject(DialogService);
   private readonly messageService = inject(MessageService);
   private readonly fb = inject(FormBuilder);
   private readonly cdr = inject(ChangeDetectorRef);
+
+  onCreateAnotherOrganization(): void {
+    const email =
+      this.localStorage.getItem('user_email') ||
+      this.currentOrganization?.address?.email ||
+      this.organizationForm.get('address.email')?.value ||
+      '';
+    if (email) {
+      this.router.navigate(['/create/organization', email]);
+    } else {
+      this.router.navigate(['/select-organization']);
+    }
+  }
 
   private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

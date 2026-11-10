@@ -11,5 +11,7 @@ public interface UserOrganizationAffiliations {
         UUID getId();
 
         String getDisplayName();
+
+        String getLegalName();
     }
 }

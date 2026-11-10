@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, HostListener, Output, OnInit, Chan
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { OrganizationService } from '../../services/organization-service';
 
 @Component({
@@ -14,6 +14,7 @@ import { OrganizationService } from '../../services/organization-service';
 })
 export class MainHeader implements OnInit {
   private readonly organizationService = inject(OrganizationService);
+  private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
   isMenuOpen = false;
   currentOrgName = 'Loading...';
@@ -39,7 +40,11 @@ export class MainHeader implements OnInit {
           }
         }
       },
-      error: () => {
+      error: (err) => {
+        if (err?.status === 404) {
+          this.router.navigate(['/select-organization']);
+          return;
+        }
         queueMicrotask(() => {
           this.currentOrgName = 'My Organization';
           this.orgInitial = 'M';

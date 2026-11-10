@@ -375,8 +375,8 @@ public class OrganizationService {
 	@Transactional
 	public NewOrganizationResponse newOrganization(CreateOrganizationRequest req) {
 
-		// 1. Check if an organization with the given display name or legal name already exists
-		boolean checkNameDuplicate = organizationRepository.existsByDisplayNameOrLegalNameIgnoreCase(req.displayName());
+		// 1. Check if an organization with the given display name already exists
+		boolean checkNameDuplicate = organizationRepository.existsByDisplayNameIgnoreCase(req.displayName());
 		if (checkNameDuplicate) {
 			throw new ResourceAlreadyExistsException("Organization name already exists: " + req.displayName());
 		}
@@ -402,6 +402,9 @@ public class OrganizationService {
 				req.country(),
 				financialYearEmb,
 				req.currency());
+		if (req.legalName() != null && !req.legalName().isBlank()) {
+			org.setLegalName(req.legalName().trim());
+		}
 
 		// 6. Set organization default configurations
 		org.setTimeZone("UTC");
@@ -453,6 +456,13 @@ public class OrganizationService {
 		workspace.setCurrentOrganization(newOrganization);
 		workspace.setLastActiveAt(OffsetDateTime.now());
 		userWorkspaceStateRepository.save(workspace);
+
+		// Evict cached principal details so newly created organization appears in affiliations
+		try {
+			redisTemplate.delete(RedisKeys.PRINCIPAL);
+		} catch (Exception e) {
+			logger.warn("Failed to evict principal cache after creating organization: {}", e.getMessage());
+		}
 
 		// 13. Check if user full name is present and map the response DTO
 		String userFullName = user.getFullName().orElse(null);
@@ -583,6 +593,42 @@ public class OrganizationService {
 		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
+	}
+
+	/**
+	 * Selects and activates the specified organization as the current workspace for
+	 * the authenticated user, creating or updating their {@link UserWorkspaceState}
+	 * record and refreshing {@code last_active_at}.
+	 *
+	 * @param organizationId the UUID of the organization to select
+	 * @return a {@link CurrentOrganizationResponse} for the selected organization
+	 * @throws EntityNotFoundException if the user or organization is not found
+	 * @throws IllegalArgumentException if the user is not a member of the organization
+	 */
+	@Transactional
+	public CurrentOrganizationResponse selectOrganization(UUID organizationId) {
+		if (organizationId == null) {
+			throw new IllegalArgumentException("Organization ID cannot be null.");
+		}
+
+		UserAccount user = SecurityUtils.getPrincipal(UserAccount.class)
+				.orElseThrow(() -> new EntityNotFoundException("No authenticated user found."));
+
+		Organization organization = organizationRepository.findById(organizationId)
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		boolean isMember = organizationMembersRepository.isUserMemberOfOrganization(organizationId, user.getUserId());
+		if (!isMember) {
+			throw new IllegalArgumentException("Access denied: User is not a member of the specified organization.");
+		}
+
+		UserWorkspaceState workspace = userWorkspaceStateRepository.findByUser(user)
+				.orElseGet(() -> new UserWorkspaceState(user, organization));
+		workspace.setCurrentOrganization(organization);
+		workspace.setLastActiveAt(OffsetDateTime.now());
+		userWorkspaceStateRepository.save(workspace);
+
+		return organizationMapper.toCurrentOrganizationResponse(organization);
 	}
 
 	public CurrentOrganizationResponse updateCurrentOrganization(CurrentOrganizationResponse req) {

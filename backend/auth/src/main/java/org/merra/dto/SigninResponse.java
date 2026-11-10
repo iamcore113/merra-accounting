@@ -44,11 +44,17 @@ public class SigninResponse {
 		private boolean isComplete;
 		private boolean partOfOrganization;
 		private boolean isEnabled;
+		private boolean hasActiveWorkspace;
 
 		public AccountStatus(boolean isComplete, boolean isEnabled, boolean partOfOrganization) {
+			this(isComplete, isEnabled, partOfOrganization, false);
+		}
+
+		public AccountStatus(boolean isComplete, boolean isEnabled, boolean partOfOrganization, boolean hasActiveWorkspace) {
 			this.isComplete = isComplete;
 			this.isEnabled = isEnabled;
 			this.partOfOrganization = partOfOrganization;
+			this.hasActiveWorkspace = hasActiveWorkspace;
 		}
 
 		public boolean isComplete() {
@@ -73,6 +79,14 @@ public class SigninResponse {
 
 		public void setPartOfOrganization(boolean partOfOrganization) {
 			this.partOfOrganization = partOfOrganization;
+		}
+
+		public boolean isHasActiveWorkspace() {
+			return hasActiveWorkspace;
+		}
+
+		public void setHasActiveWorkspace(boolean hasActiveWorkspace) {
+			this.hasActiveWorkspace = hasActiveWorkspace;
 		}
 	}
 

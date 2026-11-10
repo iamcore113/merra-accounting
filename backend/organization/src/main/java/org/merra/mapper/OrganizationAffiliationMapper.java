@@ -49,6 +49,7 @@ public interface OrganizationAffiliationMapper {
                 .map(affiliation -> new UserOrganizationAffiliation.Organizations(
                         affiliation.getOrganization().getId(),
                         affiliation.getOrganization().getDisplayName(),
+                        affiliation.getOrganization().getLegalName(),
                         affiliation.getRole()))
                 .toList();
     }
