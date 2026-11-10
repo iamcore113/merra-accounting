@@ -1,32 +1,34 @@
-name: Angular v20.2.14 & Material v20 Frontend Conventions
+name: Angular v20+ & PrimeNG v20 Frontend Conventions
 
 description: |
-Enforces Angular frontend code to strictly use Angular v20.2.14 syntax and features. Outdated syntax, deprecated directives, or patterns from older Angular versions must be avoided. For UI, always use Angular Material v20 components (see https://v20.material.angular.dev/) instead of custom HTML elements where possible. For styling, use `.scss` files exclusively—do not use plain CSS files, as `.scss` is the default for this project.
+  Enforces Angular frontend code to strictly use Angular v20+ modern syntax (zoneless change detection, standalone components, Signals, modern control flow). Outdated syntax, deprecated directives, or legacy patterns must be avoided. For UI, always use PrimeNG v20 components (see https://primeng.org/) styled with the Aura-based preset and PrimeIcons (see https://primeng.org/icons). For styling, use `.scss` files exclusively—do not use plain CSS files.
 
 applyTo:
 
-- web/src/app/\*_/_.ts
-- web/src/app/\*_/_.html
-- web/src/app/\*_/_.scss
-- web/src/app/\*_/_.spec.ts
-- web/tsconfig\*.json
+- web/src/app/**/*.ts
+- web/src/app/**/*.html
+- web/src/app/**/*.scss
+- web/src/app/**/*.spec.ts
+- web/tsconfig*.json
 - web/angular.json
-- web/\*_/_.md
-- web/\*_/_.scss
-- web/\*_/_.html
+- web/**/*.md
+- web/**/*.scss
+- web/**/*.html
 
 rules:
 
-- Only use syntax and APIs available in Angular v20.2.14. Do not use deprecated or removed features from earlier versions.
-- For UI, always prefer Angular Material v20 components over custom HTML elements. Reference: https://v20.material.angular.dev/
+- Only use syntax and APIs available in Angular v20+. Do not use deprecated or removed features from earlier versions.
+- For UI, always prefer PrimeNG v20 components (e.g. `<p-button>`, `<p-table>`, `<p-select>`, `<p-dialog>`, `<p-card>`, etc.) over custom HTML elements or other UI libraries. Reference: https://primeng.org/
+- For icons, always use PrimeIcons (`primeicons` with `pi pi-<icon-name>`). Do not use Material Icons.
 - All component and global styles must be written in `.scss` files. Do not use `.css` files for styling.
-- Avoid using legacy Angular directives (e.g., `ng-deep`, `ngIf` with old syntax, etc.) and ensure all code follows the latest Angular best practices.
-- When in doubt, consult the official Angular v20 and Angular Material v20 documentation.
-- When using icons (e.g., Material Icons), always use the **outlined** style (e.g., `material-icons-outlined` CSS class or `fontSet="material-icons-outlined"`). Never use filled, rounded, sharp, or two-tone variants unless explicitly requested.
+- Avoid using legacy Angular directives (e.g., `ng-deep`, `ngIf` / `ngFor` structural directives) and use modern control flow (`@if`, `@for`, `@switch`).
+- Use Angular Signals and zoneless change detection best practices.
+- Use `MessageService` for notifications and `DialogService` for dynamic dialogs.
+- When in doubt, consult the official Angular and PrimeNG v20 documentation.
 
 examples:
 
-- "Create a new button using Angular Material v20, styled with SCSS, and add matButton=\"filled\" as the default attribute. For <a> tags, also use matButton=\"filled\" unless a different attribute is explicitly requested."
-- "Refactor this form to use Angular Material v20 form fields and controls."
-- "Update this component to remove deprecated Angular syntax and use v20.2.14 features."
+- "Create a new button using PrimeNG v20 with <p-button> and appropriate severity/variant."
+- "Refactor this form to use PrimeNG form controls (pInputText, <p-select>, <p-datepicker>, <p-iconfield>, etc.)."
+- "Update this component to use modern Angular v20+ control flow and Signals."
 - "Convert all CSS styles in this feature to SCSS."
