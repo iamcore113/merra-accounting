@@ -2,7 +2,14 @@ package org.merra.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +26,8 @@ import org.merra.dto.FillPersonalInformation;
 import org.merra.dto.JwtTokens;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
+import org.merra.dto.PasswordResetTokenStatusResponse;
+import org.merra.dto.ResetPasswordRequest;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
 import org.merra.dto.VerifyPinRequest;
@@ -77,6 +86,10 @@ public class AuthService {
   private String emailFrom;
   @Value("${app.frontend.url}")
   private String webUrl;
+  @Value("${app.password-reset.token-minutes:1440}")
+  private long passwordResetTokenMinutes;
+  @Value("${app.password-reset.cooldown-days:14}")
+  private long passwordResetCooldownDays;
 
   private final static String ROLE_ADVISOR = UserAccountStatusEn.ADVISOR.toString();
   private final static String ROLE_VISITOR = UserAccountStatusEn.VISITOR.toString();
@@ -301,9 +314,34 @@ public class AuthService {
    */
   public void sendForgotPasswordEmail(String email, String resetToken) {
     final String subject = "Password Reset Request";
-    final String path = "auth/req/reset-password/";
-    final String msg = "Click the button below to reset your password.";
-    sendEmail(email, resetToken, subject, path, msg);
+    final String path = "account/reset-password";
+    final String msg = "We received a request to reset your MERRA password. Click the button below to choose a new one.";
+    final String validFor = passwordResetTokenMinutes % 60 == 0
+        ? (passwordResetTokenMinutes / 60) + (passwordResetTokenMinutes == 60 ? " hour" : " hours")
+        : passwordResetTokenMinutes + " minutes";
+    final String note = "This link is valid for <strong style=\"color:#374151;\">" + validFor
+        + "</strong> and can only be used once. If you didn't request a password reset, you can safely ignore this email.";
+    sendEmail(email, resetToken, subject, path, msg, note, "Reset Password");
+  }
+
+  /**
+   * Sends an informational email when a password reset was requested before the
+   * restriction window elapsed.
+   */
+  private void sendPasswordResetCooldownEmail(String email, OffsetDateTime nextAllowedAt) {
+    final String subject = "Password Reset Unavailable";
+    final String msg = "A password reset was requested for your account, but your password was already reset recently. "
+        + "For your security, passwords can only be reset once every " + passwordResetCooldownDays + " days.";
+    final String note = "You can request another reset on or after <strong style=\"color:#374151;\">"
+        + nextAllowedAt.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")) + "</strong>. "
+        + "If this wasn't you, please contact support.";
+    sendEmail(email, null, subject, null, msg, note, null);
+  }
+
+  private void sendEmail(String email, String token, String subject, String path, String msg) {
+    sendEmail(email, token, subject, path, msg,
+        "This PIN code is valid for <strong style=\"color:#374151;\">24 hours</strong> and will expire after that. If you didn't create an account with MERRA, you can safely ignore this email.",
+        "Continue");
   }
 
   /**
@@ -312,16 +350,22 @@ public class AuthService {
    * typography, and slate text hierarchy).
    *
    * @param email   The recipient's email address
-   * @param token   The 4-digit PIN code (or action token) to include in the email
+   * @param token   The 4-digit PIN code (or action token) to include in the email;
+   *                {@code null} for informational emails without an action
    * @param subject The subject of the email
    * @param path    The path to append to the frontend URL for the page link
    * @param msg     The message to display in the email body
+   * @param note    The (HTML) footnote shown under the action
+   * @param buttonLabel The label of the action button for link emails
    */
-  private void sendEmail(String email, String token, String subject, String path, String msg) {
+  private void sendEmail(String email, String token, String subject, String path, String msg, String note,
+      String buttonLabel) {
     try {
       boolean isPinCode = token != null && token.matches("^\\d{4}$");
       final String actionSection;
-      if (isPinCode) {
+      if (token == null) {
+        actionSection = "";
+      } else if (isPinCode) {
         actionSection = """
             <div style="text-align:center;margin:28px 0;">
               <div style="display:inline-block;background-color:#f4f8f1;border:1px solid #689D4B;border-radius:0;padding:18px 36px;">
@@ -337,9 +381,9 @@ public class AuthService {
         final URL actionUrl = uriBuilder.toUri().toURL();
         actionSection = """
             <div style="text-align:center;margin:28px 0;">
-              <a href="%s" style="background-color:#689D4B;border:1px solid #689D4B;color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:0;font-weight:600;font-size:15px;display:inline-block;">Continue</a>
+              <a href="%s" style="background-color:#689D4B;border:1px solid #689D4B;color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:0;font-weight:600;font-size:15px;display:inline-block;">%s</a>
             </div>
-            """.formatted(actionUrl);
+            """.formatted(actionUrl, buttonLabel);
       }
 
       final String content = """
@@ -358,7 +402,7 @@ public class AuthService {
               %s
 
               <p style="font-size:13px;color:#6b7280;line-height:1.5;text-align:center;margin:16px 0 0 0;">
-                This PIN code is valid for <strong style="color:#374151;">24 hours</strong> and will expire after that. If you didn't create an account with MERRA, you can safely ignore this email.
+                %s
               </p>
 
               <hr style="border:none;height:1px;background:#e2e8f0;margin:28px 0;">
@@ -374,7 +418,7 @@ public class AuthService {
             </div>
           </div>
           """
-          .formatted(subject, msg, actionSection);
+          .formatted(subject, msg, actionSection, note);
 
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -548,6 +592,144 @@ public class AuthService {
     sendVerificationEmail(user.getEmail(), pinCode);
     return new VerificationResponse(true, new VerificationResponse.VerificationToken(newVerificationToken),
         new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
+  }
+
+  /**
+   * Starts the "forgot password" flow. A single-use reset link is emailed when the
+   * account exists, is activated, and has not reset its password within the last
+   * {@code app.password-reset.cooldown-days} (default 14) days.
+   *
+   * <p>
+   * To avoid leaking which emails are registered, this method never reveals
+   * whether the account exists; callers always receive the same response. Accounts
+   * inside the restriction window instead get an informational email with the
+   * next available date.
+   * </p>
+   */
+  public void requestPasswordReset(String email) {
+    if (email == null || email.isBlank()) {
+      return;
+    }
+    Optional<UserAccount> found = userRepository.findUserByEmailIgnoreCase(email.trim());
+    if (found.isEmpty() || !found.get().isEnabled()) {
+      return;
+    }
+
+    UserAccount user = found.get();
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime nextAllowed = nextPasswordResetAllowedAt(user);
+    if (nextAllowed != null && now.isBefore(nextAllowed)) {
+      sendPasswordResetCooldownEmail(user.getEmail(), nextAllowed);
+      return;
+    }
+
+    final byte[] raw = new byte[32];
+    SECURE_RANDOM.nextBytes(raw);
+    final String rawToken = Base64.getUrlEncoder().withoutPadding().encodeToString(raw);
+
+    user.setPasswordResetTokenHash(hashResetToken(rawToken));
+    user.setPasswordResetExpiresAt(now.plusMinutes(passwordResetTokenMinutes));
+    userRepository.save(user);
+    sendForgotPasswordEmail(user.getEmail(), rawToken);
+  }
+
+  /**
+   * @return {@code true} when the token matches an outstanding, unexpired reset
+   *         request.
+   */
+  public boolean isPasswordResetTokenValid(String token) {
+    return findAccountByValidResetToken(token).isPresent();
+  }
+
+  /**
+   * Describes the state of a reset token so the UI can show a dedicated
+   * "link expired" page: valid, expired (known token past its deadline) or
+   * invalid (unknown/already used).
+   */
+  public PasswordResetTokenStatusResponse getPasswordResetTokenStatus(String token) {
+    if (findAccountByValidResetToken(token).isPresent()) {
+      return new PasswordResetTokenStatusResponse(true, false);
+    }
+    return new PasswordResetTokenStatusResponse(false, isResetTokenExpired(token));
+  }
+
+  private boolean isResetTokenExpired(String token) {
+    if (token == null || token.isBlank()) {
+      return false;
+    }
+    return userRepository.findByPasswordResetTokenHash(hashResetToken(token.trim()))
+        .map(u -> u.getPasswordResetExpiresAt() != null
+            && !OffsetDateTime.now().isBefore(u.getPasswordResetExpiresAt()))
+        .orElse(false);
+  }
+
+  /**
+   * Completes the "forgot password" flow: validates the emailed token, enforces
+   * the 14-day restriction, stores the new password and invalidates the token.
+   *
+   * @throws BadCredentialsException  if the token is invalid or expired
+   * @throws IllegalArgumentException if the passwords don't match / are too weak,
+   *                                  the new password equals the current one, or
+   *                                  the account reset its password too recently
+   */
+  public void resetPassword(ResetPasswordRequest request) {
+    if (!Objects.equals(request.newPassword(), request.confirmPassword())) {
+      throw new IllegalArgumentException("Passwords do not match.");
+    }
+
+    UserAccount user = findAccountByValidResetToken(request.token())
+        .orElseThrow(() -> new BadCredentialsException(
+            isResetTokenExpired(request.token())
+                ? "This password reset link has expired. Please request a new one."
+                : "This password reset link is invalid. Please request a new one."));
+
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime nextAllowed = nextPasswordResetAllowedAt(user);
+    if (nextAllowed != null && now.isBefore(nextAllowed)) {
+      throw new IllegalArgumentException(passwordResetCooldownMessage(nextAllowed));
+    }
+
+    if (user.getPassword() != null && passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+      throw new IllegalArgumentException("New password must be different from your current password.");
+    }
+
+    user.setAccountPassword(passwordEncoder.encode(request.newPassword()));
+    user.setPasswordResetTokenHash(null);
+    user.setPasswordResetExpiresAt(null);
+    user.setPasswordResetAt(now);
+    userRepository.save(user);
+    logger.info("Password reset completed for user {}", user.getUserId());
+  }
+
+  private Optional<UserAccount> findAccountByValidResetToken(String token) {
+    if (token == null || token.isBlank()) {
+      return Optional.empty();
+    }
+    return userRepository.findByPasswordResetTokenHash(hashResetToken(token.trim()))
+        .filter(u -> u.getPasswordResetExpiresAt() != null
+            && OffsetDateTime.now().isBefore(u.getPasswordResetExpiresAt()));
+  }
+
+  /** @return when the account may reset again, or {@code null} if it has never reset. */
+  private OffsetDateTime nextPasswordResetAllowedAt(UserAccount user) {
+    return user.getPasswordResetAt() == null
+        ? null
+        : user.getPasswordResetAt().plusDays(passwordResetCooldownDays);
+  }
+
+  private String passwordResetCooldownMessage(OffsetDateTime nextAllowed) {
+    return "Your password was reset recently. Passwords can only be reset once every "
+        + passwordResetCooldownDays + " days. You can reset it again on "
+        + nextAllowed.format(DateTimeFormatter.ofPattern("MMMM d, yyyy")) + ".";
+  }
+
+  private static String hashResetToken(String rawToken) {
+    try {
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      return HexFormat.of().formatHex(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 is not available", e);
+    }
   }
 
   public void fillPersonalInformation(FillPersonalInformation req, UUID id) {

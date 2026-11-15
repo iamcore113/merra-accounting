@@ -1,14 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { CreateAccountRequest, LoginRequest, ResendEmailVerification, VerifyPinRequest } from '../models/auth';
+import { CreateAccountRequest, ForgotPasswordRequest, LoginRequest, ResendEmailVerification, ResetPasswordRequest, VerifyPinRequest } from '../models/auth';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable, catchError, finalize, of } from 'rxjs';
 import { Config } from '../models/api_response';
 import {
+  FORGOT_PASSWORD_URL,
   LOGOUT_URL,
   REQUEST_SIGNUP_VERIFICATION_EMAIL_URL,
   RESEND_VERIFICATION_EMAIL_URL,
+  RESET_PASSWORD_URL,
   SIGNIN_URL,
   SIGNUP_URL,
+  VALIDATE_RESET_TOKEN_URL,
   VERIFICATION_STATUS_URL,
 } from '../api/auth';
 import { LocalStorageService } from './local-storage-service';
@@ -47,6 +50,19 @@ export class AuthService {
   checkVerificationStatus(email: string): Observable<Config> {
     const params = new HttpParams().set('email', email);
     return this.http.get<Config>(VERIFICATION_STATUS_URL, { params });
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<Config> {
+    return this.http.post<Config>(FORGOT_PASSWORD_URL, request);
+  }
+
+  validateResetToken(token: string): Observable<Config> {
+    const params = new HttpParams().set('token', token);
+    return this.http.get<Config>(VALIDATE_RESET_TOKEN_URL, { params });
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<Config> {
+    return this.http.post<Config>(RESET_PASSWORD_URL, request);
   }
 
   logout(): Observable<Config | null> {

@@ -4,6 +4,9 @@ import org.merra.api.ApiResponse;
 import org.merra.dto.SigninResponse;
 import org.merra.dto.CreateAccountRequest;
 import org.merra.dto.EmailVerificationStatusResponse;
+import org.merra.dto.ForgotPasswordRequest;
+import org.merra.dto.PasswordResetTokenStatusResponse;
+import org.merra.dto.ResetPasswordRequest;
 import org.merra.dto.LoginRequest;
 import org.merra.dto.LogoutRequest;
 import org.merra.dto.ResendEmailVerification;
@@ -165,6 +168,47 @@ public class AuthController {
         response.setResponse(HttpStatus.OK);
         response.setData(resentToken);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Emails a password reset link. Always responds with the same message so the
+     * endpoint can't be used to discover which emails are registered.
+     */
+    @PostMapping("forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        authService.requestPasswordReset(req.email());
+        return ResponseEntity.ok(new ApiResponse<>(
+                "If an account exists for that email, a password reset link has been sent.",
+                true,
+                HttpStatus.OK,
+                null));
+    }
+
+    /**
+     * Checks whether a password reset token is still valid so the reset page can
+     * fail fast on bad or expired links.
+     */
+    @GetMapping("reset-password/validate")
+    public ResponseEntity<ApiResponse<PasswordResetTokenStatusResponse>> validateResetToken(
+            @RequestParam("token") String token) {
+        return ResponseEntity.ok(new ApiResponse<>(
+                "Password reset token checked",
+                true,
+                HttpStatus.OK,
+                authService.getPasswordResetTokenStatus(token)));
+    }
+
+    /**
+     * Sets a new password using the emailed token. Limited to one reset per 14 days.
+     */
+    @PostMapping("reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(new ApiResponse<>(
+                "Your password has been reset. You can now sign in.",
+                true,
+                HttpStatus.OK,
+                null));
     }
 
     /**

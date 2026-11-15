@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import { Signup } from './views/signup/signup';
 import { Signin } from './views/signin/signin';
+import { ForgotPassword } from './views/forgot-password/forgot-password';
+import { ResetPassword } from './views/reset-password/reset-password';
+import { LinkExpired } from './views/link-expired/link-expired';
 import { ConfirmAccount } from './views/confirm-account/confirm-account';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { VerifyAccount } from './views/verify-account/verify-account';
@@ -34,6 +37,9 @@ export const routes: Routes = [
   { path: 'account/confirm-ownership', redirectTo: 'account/confirm-account', pathMatch: 'full' },
   { path: 'account/confirm-ownership/:email', redirectTo: 'account/confirm-account/:email', pathMatch: 'full' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
+  { path: 'account/forgot-password', component: ForgotPassword, title: 'MERRA - Forgot Password' },
+  { path: 'account/reset-password', component: ResetPassword, title: 'MERRA - Reset Password' },
+  { path: 'account/link-expired', component: LinkExpired, title: 'MERRA - Link Expired' },
   { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'Enter PIN code to activate your account | MERRA' },
   { path: 'account/verify', component: VerifyAccount, title: 'Enter PIN code to activate your account | MERRA' },
   { path: 'account/personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },

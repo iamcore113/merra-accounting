@@ -62,6 +62,12 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
     Optional<UserAccount> findUserByEmailIgnoreCase(String email);
 
     /**
+     * Finds the account owning an outstanding password reset token (looked up by
+     * the SHA-256 hash of the emailed token).
+     */
+    Optional<UserAccount> findByPasswordResetTokenHash(String passwordResetTokenHash);
+
+    /**
      * Counts how many user accounts exist for the provided email.
      *
      * @param email The email address to check.

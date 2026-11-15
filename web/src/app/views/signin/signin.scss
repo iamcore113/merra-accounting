@@ -95,6 +95,19 @@ form {
       color: #dc2626;
       margin-top: 0.2rem;
     }
+
+    .forgot-link {
+      align-self: flex-end;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #0284c7;
+      text-decoration: underline;
+      cursor: pointer;
+
+      &:hover {
+        color: #0369a1;
+      }
+    }
   }
 
   .full-width {

@@ -1,5 +1,6 @@
 package org.merra.entities;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -96,6 +97,41 @@ public class UserAccount implements UserDetails {
 
 	public void setVerificationToken(String verificationToken) {
 		this.verificationToken = verificationToken;
+	}
+
+	/** SHA-256 hash (hex) of the outstanding password reset token; the raw token is only ever emailed. */
+	@Column(name = "password_reset_token_hash", length = 64)
+	private String passwordResetTokenHash;
+
+	@Column(name = "password_reset_expires_at")
+	private OffsetDateTime passwordResetExpiresAt;
+
+	/** When the password was last changed through the "forgot password" flow (drives the 14-day restriction). */
+	@Column(name = "password_reset_at")
+	private OffsetDateTime passwordResetAt;
+
+	public String getPasswordResetTokenHash() {
+		return passwordResetTokenHash;
+	}
+
+	public void setPasswordResetTokenHash(String passwordResetTokenHash) {
+		this.passwordResetTokenHash = passwordResetTokenHash;
+	}
+
+	public OffsetDateTime getPasswordResetExpiresAt() {
+		return passwordResetExpiresAt;
+	}
+
+	public void setPasswordResetExpiresAt(OffsetDateTime passwordResetExpiresAt) {
+		this.passwordResetExpiresAt = passwordResetExpiresAt;
+	}
+
+	public OffsetDateTime getPasswordResetAt() {
+		return passwordResetAt;
+	}
+
+	public void setPasswordResetAt(OffsetDateTime passwordResetAt) {
+		this.passwordResetAt = passwordResetAt;
 	}
 
 	/**

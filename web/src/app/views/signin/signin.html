@@ -47,6 +47,7 @@
           @if (signinForm.get('password')?.hasError('required') && signinForm.get('password')?.touched) {
             <small class="field-error">Password is required</small>
           }
+          <a href="javascript:void(0)" class="forgot-link" (click)="goToForgotPassword()">Forgot password?</a>
         </div>
 
         <div class="button-container">

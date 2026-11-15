@@ -89,6 +89,11 @@ export class Signin implements OnInit, OnDestroy {
     this.errorTimeout = setTimeout(() => this.errorMessage = null, 5000);
   }
 
+  goToForgotPassword(): void {
+    const email = this.signinForm.get('email')?.value;
+    void this.router.navigate(['/account/forgot-password'], { state: { email: email || '' } });
+  }
+
   onSubmit(): void {
     if (this.signinForm.valid) {
       this.isSubmitting.set(true);

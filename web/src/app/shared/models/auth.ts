@@ -104,6 +104,24 @@ interface Userdetails {
   roles: string[];
 }
 
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/ForgotPasswordRequest.java
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/ResetPasswordRequest.java
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/PasswordResetTokenStatusResponse.java
+export interface PasswordResetTokenStatus {
+  valid: boolean;
+  expired: boolean;
+}
+
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/EmailVerificationStatusResponse.java
 export interface EmailVerificationStatusResponse {
   exists: boolean;

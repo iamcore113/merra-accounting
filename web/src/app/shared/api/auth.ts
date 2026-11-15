@@ -8,6 +8,9 @@ export const REQUEST_SIGNUP_VERIFICATION_EMAIL_URL = `${AUTH_URL}/req/signup/ver
 export const RESEND_VERIFICATION_EMAIL_URL = `${AUTH_URL}/resend/verification/email`;
 export const VERIFICATION_STATUS_URL = `${AUTH_URL}/verification-status`;
 export const LOGOUT_URL = `${AUTH_URL}/logout`;
+export const FORGOT_PASSWORD_URL = `${AUTH_URL}/forgot-password`;
+export const RESET_PASSWORD_URL = `${AUTH_URL}/reset-password`;
+export const VALIDATE_RESET_TOKEN_URL = `${AUTH_URL}/reset-password/validate`;
 // Token endpoints
 const TOKEN_URL = `${BASE_URL}tokens`;
 export const REQUEST_USER = `${TOKEN_URL}/request/user/`;
