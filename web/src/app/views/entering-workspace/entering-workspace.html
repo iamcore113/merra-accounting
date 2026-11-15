@@ -1,0 +1,24 @@
+<div class="entering-container" [class.leaving]="isLeaving()">
+  <div class="entering-card">
+    <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+
+    <div class="loader" aria-hidden="true">
+      <span class="ring"></span>
+      <span class="dot"></span>
+    </div>
+
+    <p class="entering-label">Entering workspace</p>
+
+    @if (organizationName()) {
+      <h2 class="organization-name">{{ organizationName() }}</h2>
+    } @else {
+      <div class="name-skeleton"></div>
+    }
+
+    <p class="entering-hint">Preparing your books and dashboard&hellip;</p>
+
+    <div class="progress-track">
+      <div class="progress-bar"></div>
+    </div>
+  </div>
+</div>

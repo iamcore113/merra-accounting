@@ -130,7 +130,7 @@ export class Signin implements OnInit, OnDestroy {
               userEmail ? ['/account/organization-choice', userEmail] : ['/account/organization-choice']
             );
           } else if (status?.hasActiveWorkspace) {
-            this.router.navigate(['/main']);
+            this.router.navigate(['/entering-workspace']);
           } else {
             this.router.navigate(['/select-organization']);
           }

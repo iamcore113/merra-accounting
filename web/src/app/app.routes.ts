@@ -14,6 +14,7 @@ import { MainHome } from './views/main/main-home/main-home';
 import { CompleteOrganizationDetailsForm } from './views/complete-organization-details-form/complete-organization-details-form';
 import { NoOrganizationPage } from './views/no-organization-page/no-organization-page';
 import { SelectOrganization } from './views/select-organization/select-organization';
+import { EnteringWorkspace } from './views/entering-workspace/entering-workspace';
 import { LandingPage } from './views/landing-page/landing-page';
 import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
 import { organizationMemberGuard } from './shared/guards/organization-member-guard';
@@ -122,6 +123,11 @@ export const routes: Routes = [
         pathMatch: 'full'
       }
     ]
+  },
+  {
+    path: 'entering-workspace',
+    component: EnteringWorkspace,
+    title: 'MERRA - Entering Workspace'
   },
   {
     path: 'select-organization',
