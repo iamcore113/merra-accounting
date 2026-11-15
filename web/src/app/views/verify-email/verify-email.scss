@@ -47,6 +47,7 @@
       color: #64748b;
       margin: 0;
       letter-spacing: 0.025em;
+      text-align: center;
     }
   }
 
@@ -74,7 +75,7 @@
 
   .message-container {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 
     .message-text {
       font-size: 0.9375rem;
@@ -95,24 +96,78 @@
       font-size: 0.875rem;
       line-height: 1.5;
       color: #4b5563;
-      margin: 0 0 0.75rem 0;
-    }
-
-    .spam-notice {
-      font-size: 0.8125rem;
-      line-height: 1.45;
-      color: #6b7280;
       margin: 0;
     }
   }
 
-  .button-container {
+  .pin-section {
     display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 0.5rem;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
 
-    .verification-button {
+    .pin-input-group {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .pin-digit-input {
+      width: 3.25rem !important;
+      height: 3.5rem !important;
+      padding: 0 !important;
+      text-align: center;
+      font-size: 1.5rem !important;
+      font-weight: 700;
+      color: #1e293b;
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 0 !important;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+
+      &.filled {
+        border-color: #689D4B;
+        background-color: #f4f8f1;
+      }
+
+      &:enabled:focus,
+      &:enabled:focus-visible {
+        border-color: #689D4B !important;
+        box-shadow: 0 0 0 1px #689D4B !important;
+        background-color: #ffffff;
+        outline: none !important;
+      }
+
+      &.invalid {
+        border-color: #dc2626 !important;
+        background-color: #fef2f2 !important;
+
+        &:enabled:focus,
+        &:enabled:focus-visible {
+          border-color: #dc2626 !important;
+          box-shadow: 0 0 0 1px #dc2626 !important;
+        }
+      }
+    }
+
+    .pin-error {
+      margin-top: 0.625rem;
+      font-size: 0.8125rem;
+      color: #dc2626;
+      text-align: center;
+    }
+  }
+
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.875rem;
+    width: 100%;
+
+    .verification-button,
+    .resend-button {
       width: 100%;
       padding: 0.625rem 1.5rem;
       font-size: 0.9375rem;
@@ -121,6 +176,14 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
+    }
+
+    .spam-notice {
+      font-size: 0.8125rem;
+      line-height: 1.45;
+      color: #6b7280;
+      text-align: center;
+      margin: 0.25rem 0 0 0;
     }
   }
 

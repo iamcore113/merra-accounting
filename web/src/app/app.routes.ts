@@ -30,8 +30,8 @@ export const routes: Routes = [
   { path: 'account/confirm-ownership', redirectTo: 'account/confirm-account', pathMatch: 'full' },
   { path: 'account/confirm-ownership/:email', redirectTo: 'account/confirm-account/:email', pathMatch: 'full' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
-  { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'MERRA - Verify Email' },
-  { path: 'account/verify', component: VerifyAccount, title: 'MERRA - Verify Account' },
+  { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'Enter PIN code to activate your account | MERRA' },
+  { path: 'account/verify', component: VerifyAccount, title: 'Enter PIN code to activate your account | MERRA' },
   { path: 'account/personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
   {
     path: 'main',

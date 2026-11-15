@@ -2,18 +2,18 @@
   <div class="auth-card">
     <div class="auth-card-header">
       <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
-      <h2 class="auth-title">Verify Your Email</h2>
+      <h2 class="auth-title">Enter PIN code to activate your account</h2>
     </div>
 
     <div class="email-icon-wrapper">
       <div class="email-icon-badge">
-        <i class="pi pi-envelope-open"></i>
+        <i class="pi pi-key"></i>
       </div>
     </div>
 
     <div class="message-container">
       <p class="message-text">
-        We've sent a verification email to your inbox:
+        We've sent a 4-digit PIN code to your email:
         @if (email) {
           <span class="email-highlight">{{ email }}</span>
         } @else {
@@ -21,23 +21,63 @@
         }
       </p>
       <p class="message-subtext">
-        Please check your email and click the verification link to activate your account.
-      </p>
-      <p class="spam-notice">
-        Didn't receive the email? Check your spam folder or click the button below to resend.
+        Enter the 4-digit PIN code below to activate your account. This code is valid for 24 hours.
       </p>
     </div>
 
-    <div class="button-container">
+    <div class="pin-section" (paste)="onPaste($event)">
+      <div class="pin-input-group">
+        @for (digit of [0, 1, 2, 3]; track digit; let idx = $index) {
+          <input
+            #pinInput
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            maxlength="1"
+            autocomplete="one-time-code"
+            class="pin-digit-input"
+            [class.filled]="pinDigits()[idx] !== ''"
+            [class.invalid]="!!pinError()"
+            [value]="pinDigits()[idx]"
+            [disabled]="isVerifying()"
+            (input)="onDigitInput($event, idx)"
+            (keydown)="onKeyDown($event, idx)"
+            [attr.aria-label]="'PIN digit ' + (idx + 1)" />
+        }
+      </div>
+
+      @if (pinError()) {
+        <small class="pin-error">{{ pinError() }}</small>
+      }
+    </div>
+
+    <div class="button-group">
+      <button
+        pButton
+        type="button"
+        (click)="onSubmitPin()"
+        class="verification-button"
+        [loading]="isVerifying()"
+        [disabled]="isVerifying() || !isPinComplete()"
+        icon="pi pi-check-circle"
+        label="Activate Account"
+        [size]="'small'">
+      </button>
+
+      <p class="spam-notice">
+        Didn't receive the code? Check your spam folder or request a new PIN code below.
+      </p>
+
       <button
         pButton
         type="button"
         (click)="onResend()"
-        class="verification-button"
+        class="resend-button"
+        [outlined]="true"
         [loading]="isResending()"
-        [disabled]="isResending() || cooldownSeconds() > 0"
+        [disabled]="isResending() || isVerifying() || cooldownSeconds() > 0"
         icon="pi pi-refresh"
-        [label]="cooldownSeconds() > 0 ? ('Resend in ' + cooldownSeconds() + 's') : 'Resend Verification Email'"
+        [label]="cooldownSeconds() > 0 ? ('Resend in ' + cooldownSeconds() + 's') : 'Resend PIN Code'"
         [size]="'small'">
       </button>
     </div>

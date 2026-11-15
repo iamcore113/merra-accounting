@@ -33,6 +33,7 @@ export class VerifyAccount implements OnInit {
   ngOnInit(): void {
     this.route.queryParamMap.subscribe(params => {
       const token = params.get('token');
+      const email = params.get('email');
       if (token) {
         this.token = token;
         this.isLoading = true;
@@ -54,7 +55,7 @@ export class VerifyAccount implements OnInit {
           error: (error: any) => {
             console.error('Error verifying account', error);
             const errorStatus = error.status;
-            const errorDescription = error?.error?.message || error?.message || 'Please check your email for a new verification link or contact support if the problem persists.';
+            const errorDescription = error?.error?.message || error?.message || 'Please check your email for a new PIN code or contact support if the problem persists.';
             this.router.navigate(['/error'], {
               queryParams: {
                 code: errorStatus ? errorStatus.toString() : '500',
@@ -82,6 +83,10 @@ export class VerifyAccount implements OnInit {
             }
           },
         });
+      } else if (email) {
+        void this.router.navigate(['account/verify-email', email]);
+      } else {
+        void this.router.navigate(['/account/signup']);
       }
     });
   }

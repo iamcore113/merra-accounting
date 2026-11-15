@@ -2,6 +2,7 @@ package org.merra.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -20,7 +21,11 @@ import org.merra.dto.LoginRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
+import org.merra.dto.VerifyPinRequest;
 import org.merra.dto.VisitorAccessToken;
+
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
 import org.merra.exception.EmailAlreadyEnabledException;
@@ -80,6 +85,10 @@ public class AuthService {
   private final static String ROLE_INVOICE_ONLY = UserAccountStatusEn.INVOICE_ONLY.toString();
   private final static String ROLE_IDLE = UserAccountStatusEn.IDLE.toString();
 
+  /** 24 hours duration (in milliseconds) for the 4-digit activation PIN code. */
+  public static final long PIN_VERIFICATION_DURATION_MS = 24L * 60 * 60 * 1000L;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private final RedisTemplate<String, Object> redisTemplate;
   private final JavaMailSender mailSender;
   private final UserDetailsService userDetailsService;
@@ -135,6 +144,76 @@ public class AuthService {
   }
 
   /**
+   * Generates a random 4-digit numeric PIN code (e.g. "0482").
+   */
+  public String generatePinCode() {
+    return String.format("%04d", SECURE_RANDOM.nextInt(10000));
+  }
+
+  /**
+   * Generates a signed JWT containing the 4-digit PIN code with a 24-hour
+   * expiration duration.
+   */
+  public String generatePinVerificationToken(String email, String pinCode) {
+    return jwtUtils.generateToken(
+        email,
+        Map.of("pin", pinCode, "role", ROLE_IDLE),
+        PIN_VERIFICATION_DURATION_MS,
+        false);
+  }
+
+  /**
+   * Verifies the 4-digit PIN code submitted by the user, checks the 24-hour
+   * expiration window, enables the user account, assigns the default role, and
+   * issues a limited-access JWT token.
+   *
+   * @param request The VerifyPinRequest containing the user's email and 4-digit PIN
+   * @return VerifiedAccountResponse containing verification status, user ID,
+   *         email, and a limited-access token
+   * @throws BadCredentialsException     if the PIN is invalid or expired
+   * @throws EntityNotFoundException     if the user account does not exist
+   * @throws EmailAlreadyEnabledException if the account is already enabled
+   */
+  public VerifiedAccountResponse verifyAccountPin(@NotNull VerifyPinRequest request) {
+    if (request.email() == null || request.email().isBlank()) {
+      throw new BadCredentialsException("Email is required.");
+    }
+    if (request.pin() == null || !request.pin().trim().matches("^\\d{4}$")) {
+      throw new BadCredentialsException("PIN code must be a 4-digit number.");
+    }
+
+    final String email = request.email().trim();
+    final String submittedPin = request.pin().trim();
+
+    UserAccount findAccount = userRepository.findUserByEmailIgnoreCase(email)
+        .orElseThrow(() -> new EntityNotFoundException("User account not found."));
+
+    if (findAccount.isEnabled()) {
+      throw new EmailAlreadyEnabledException("Account is already activated.");
+    }
+
+    final String accountVerificationToken = findAccount.getVerificationToken();
+    if (accountVerificationToken == null || accountVerificationToken.isBlank()) {
+      throw new BadCredentialsException("No active PIN code found for this account. Please request a new PIN.");
+    }
+
+    final String storedPin;
+    try {
+      storedPin = jwtUtils.extractClaim(accountVerificationToken, claims -> claims.get("pin", String.class));
+    } catch (ExpiredJwtException e) {
+      throw new BadCredentialsException("PIN code has expired. Please request a new PIN code.");
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new BadCredentialsException("Invalid or expired PIN code.");
+    }
+
+    if (storedPin == null || !Objects.equals(storedPin, submittedPin)) {
+      throw new BadCredentialsException("Invalid PIN code. Please check the code and try again.");
+    }
+
+    return activateUserAccount(findAccount);
+  }
+
+  /**
    * Verifies the provided account verification token, enables the user account,
    * assigns the default role, and issues a limited access JWT token.
    *
@@ -146,8 +225,15 @@ public class AuthService {
    * @throws EntityNotFoundException if the user account does not exist
    */
   public VerifiedAccountResponse verifyAccountToken(@NotNull String tokenParam) {
-    // Extract email from the JWT token
-    final String email = jwtUtils.extractUsername(tokenParam);
+    final String email;
+    try {
+      email = jwtUtils.extractUsername(tokenParam);
+    } catch (ExpiredJwtException e) {
+      throw new BadCredentialsException("Verification token has expired.");
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new BadCredentialsException("Invalid token.");
+    }
+
     if (email == null) {
       throw new BadCredentialsException("Token email not found.");
     }
@@ -165,6 +251,10 @@ public class AuthService {
       throw new BadCredentialsException("Invalid token.");
     }
 
+    return activateUserAccount(findAccount);
+  }
+
+  private VerifiedAccountResponse activateUserAccount(UserAccount findAccount) {
     // Enable the account, clear the verification token, and assign the default role
     findAccount.setVerificationToken(null);
     findAccount.setIsEnabled(true);
@@ -174,7 +264,7 @@ public class AuthService {
     final String getAccountEmail = findAccount.getEmail();
     final UUID getUserId = findAccount.getUserId();
 
-    // Generate a access JWT token.
+    // Generate an access JWT token.
     final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
         forAccessToken,
         false);
@@ -192,18 +282,15 @@ public class AuthService {
   }
 
   /**
-   * Sends a verification email to the specified user with a verification token
-   * link.
+   * Sends a verification email to the specified user with a 4-digit activation PIN code.
    *
-   * @param email    The recipient's email address
-   * @param verToken The verification token to include in the email link
+   * @param email   The recipient's email address
+   * @param pinCode The 4-digit PIN code to include in the email
    */
-  public void sendVerificationEmail(String email, String verToken) {
-    final String subject = "Email Verification";
-    final String path = "account/verify";
-    final String msg = "Click the button below to verify your email address";
-    sendEmail(email, verToken, subject, path, msg);
-
+  public void sendVerificationEmail(String email, String pinCode) {
+    final String subject = "Enter PIN Code to Activate Your Account";
+    final String msg = "Enter the 4-digit PIN code below on the account activation page to activate your account.";
+    sendEmail(email, pinCode, subject, null, msg);
   }
 
   /**
@@ -220,68 +307,74 @@ public class AuthService {
   }
 
   /**
-   * Sends an HTML email to the specified recipient with a verification or reset
-   * link.
+   * Sends an HTML email to the specified recipient styled to match the MERRA
+   * frontend UI design (#689D4B primary green, sharp 0px border-radius, Inter
+   * typography, and slate text hierarchy).
    *
    * @param email   The recipient's email address
-   * @param token   The token to be included in the link
+   * @param token   The 4-digit PIN code (or action token) to include in the email
    * @param subject The subject of the email
-   * @param path    The path to append to the frontend URL for the action link
+   * @param path    The path to append to the frontend URL for the page link
    * @param msg     The message to display in the email body
-   *
-   *                This method builds a styled HTML email containing an action
-   *                link (e.g., for verification or password reset)
-   *                and sends it using the configured mail sender. If sending
-   *                fails, the error is logged to standard error.
    */
   private void sendEmail(String email, String token, String subject, String path, String msg) {
     try {
-      UriComponents uriBuilder = UriComponentsBuilder.fromUriString(webUrl)
-          .path(path)
-          .queryParam("token", token)
-          .build();
+      boolean isPinCode = token != null && token.matches("^\\d{4}$");
+      final String actionSection;
+      if (isPinCode) {
+        actionSection = """
+            <div style="text-align:center;margin:28px 0;">
+              <div style="display:inline-block;background-color:#f4f8f1;border:1px solid #689D4B;border-radius:0;padding:18px 36px;">
+                <span style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,monospace;font-size:32px;font-weight:700;letter-spacing:12px;color:#689D4B;margin-right:-12px;display:inline-block;">%s</span>
+              </div>
+            </div>
+            """.formatted(token);
+      } else {
+        UriComponents uriBuilder = UriComponentsBuilder.fromUriString(webUrl)
+            .path(path)
+            .queryParam("token", token)
+            .build();
+        final URL actionUrl = uriBuilder.toUri().toURL();
+        actionSection = """
+            <div style="text-align:center;margin:28px 0;">
+              <a href="%s" style="background-color:#689D4B;border:1px solid #689D4B;color:#ffffff;padding:12px 28px;text-decoration:none;border-radius:0;font-weight:600;font-size:15px;display:inline-block;">Continue</a>
+            </div>
+            """.formatted(actionUrl);
+      }
 
-      final URL actionUrl = uriBuilder.toUri().toURL();
       final String content = """
-          <div style="max-width:600px;margin:40px auto;background:#fff;border-radius:10px;padding:30px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-            <div style="text-align:center;margin-bottom:20px;align-items:center;">
-              <h1 style="margin:0;font-size:24px;color:#0b5cff;">MERRA</h1>
-              <p style="margin:5px 0 0 0;font-size:13px;color:#7a8596;">Accounting & Bookkeeping</p>
-            </div>
+          <div style="background-color:#f8fafc;padding:48px 16px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#333333;">
+            <div style="max-width:480px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-top:4px solid #689D4B;border-radius:0;padding:40px 32px;box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+              <div style="text-align:center;margin-bottom:28px;">
+                <h1 style="margin:0;font-size:28px;font-weight:800;letter-spacing:0.12em;color:#689D4B;">MERRA</h1>
+                <p style="margin:6px 0 0 0;font-size:13px;font-weight:500;color:#64748b;letter-spacing:0.025em;">Accounting &amp; Bookkeeping</p>
+              </div>
 
-            <h2 style="font-size:20px;color:#111;margin-top:10px;">%s</h2>
-            <p style="font-size:15px;color:#555;line-height:1.6;margin:10px 0 20px 0;">
+              <h2 style="font-size:18px;font-weight:600;color:#1e293b;text-align:center;margin:0 0 12px 0;">%s</h2>
+              <p style="font-size:15px;color:#374151;line-height:1.55;text-align:center;margin:0 0 24px 0;">
+                %s
+              </p>
+
               %s
-            </p>
 
-            <div style="text-align:center;margin:25px 0;">
-              <a href="%s" style="background-color:#0b5cff;color:#fff;padding:12px 28px;text-decoration:none;border-radius:6px;font-weight:600;font-size:16px;display:inline-block;">Verify Email</a>
+              <p style="font-size:13px;color:#6b7280;line-height:1.5;text-align:center;margin:16px 0 0 0;">
+                This PIN code is valid for <strong style="color:#374151;">24 hours</strong> and will expire after that. If you didn't create an account with MERRA, you can safely ignore this email.
+              </p>
+
+              <hr style="border:none;height:1px;background:#e2e8f0;margin:28px 0;">
+
+              <div style="text-align:center;font-size:12px;color:#64748b;line-height:1.6;">
+                <p style="margin:0 0 4px 0;">Need help? <a href="mailto:support@merra.example" style="color:#0284c7;text-decoration:underline;font-weight:500;">Contact Support</a></p>
+                <p style="margin:0;color:#94a3b8;">MERRA &bull; 123 Business St, Suite 100 &bull; Manila, Philippines</p>
+              </div>
             </div>
 
-            <p style="font-size:13px;color:#7a8596;line-height:1.5;">
-              If the button above doesn't work, copy and paste this link into your browser:
-            </p>
-            <p style="font-size:13px;word-break:break-all;color:#0b5cff;margin-top:6px;">
-              <a href="%s" style="color:#0b5cff;text-decoration:underline;">%s</a>
-            </p>
-
-            <p style="font-size:12px;color:#999;margin-top:16px;">
-              This link will expire in 24 hours. If you didn't create an account with us, you can safely ignore this email.
-            </p>
-
-            <hr style="border:none;height:1px;background:#eee;margin:25px 0;">
-
-            <div style="text-align:center;font-size:12px;color:#8c96a6;">
-              <p style="margin:0 0 4px 0;">Need help? <a href="mailto:support@merra.example" style="color:#0b5cff;text-decoration:underline;">Contact Support</a></p>
-              <p style="margin:0;color:#b3bac6;">MERRA • 123 Business St, Suite 100 • Manila, Philippines</p>
+            <div style="text-align:center;font-size:12px;color:#94a3b8;margin-top:20px;">
+              If you didn&rsquo;t expect this email, you can ignore it.
             </div>
           </div>
-
-          <div style="text-align:center;font-size:12px;color:#9aa3b3;margin-top:20px;">
-            If you didn’t expect this email, you can ignore it.
-          </div>
-                          """
-          .formatted(subject, msg, actionUrl, actionUrl, actionUrl);
+          """
+          .formatted(subject, msg, actionSection);
 
       MimeMessage mimeMessage = mailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
@@ -397,12 +490,11 @@ public class AuthService {
         throw new EmailAlreadyEnabledException("Email already exists.");
       } else {
         var user = userEmail.get();
-        var userTokens = user.getVerificationToken();
-        final String resetToken = jwtUtils.generateToken(user.getEmail(), Map.of(),
-            verificationTokenDuration, false);
-        user.setVerificationToken(userTokens);
-        sendVerificationEmail(user.getEmail(), resetToken);
+        final String pinCode = generatePinCode();
+        final String resetToken = generatePinVerificationToken(user.getEmail(), pinCode);
+        user.setVerificationToken(resetToken);
         userRepository.save(user);
+        sendVerificationEmail(user.getEmail(), pinCode);
 
         return new VerificationResponse(true, new VerificationResponse.VerificationToken(resetToken),
             new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
@@ -413,11 +505,11 @@ public class AuthService {
     UserAccount userBuilder = new UserAccount(emailReq, encodedPassword);
     userBuilder.setGender(genderReq);
 
-    final String verificationEmailToken = jwtUtils.generateToken(userBuilder.getEmail(), Map.of(),
-        verificationTokenDuration, false);
+    final String pinCode = generatePinCode();
+    final String verificationEmailToken = generatePinVerificationToken(userBuilder.getEmail(), pinCode);
     userBuilder.setVerificationToken(verificationEmailToken);
     final UserAccount newUser = userRepository.save(userBuilder);
-    sendVerificationEmail(request.email(), verificationEmailToken);
+    sendVerificationEmail(request.email(), pinCode);
 
     /**
      * Once the new user is created,
@@ -449,11 +541,11 @@ public class AuthService {
       throw new EmailAlreadyEnabledException("Email is already verified.");
     }
 
-    final String newVerificationToken = jwtUtils.generateToken(user.getEmail(), Map.of("role", ROLE_IDLE),
-        verificationTokenDuration, false);
+    final String pinCode = generatePinCode();
+    final String newVerificationToken = generatePinVerificationToken(user.getEmail(), pinCode);
     user.setVerificationToken(newVerificationToken);
     userRepository.save(user);
-    sendVerificationEmail(user.getEmail(), newVerificationToken);
+    sendVerificationEmail(user.getEmail(), pinCode);
     return new VerificationResponse(true, new VerificationResponse.VerificationToken(newVerificationToken),
         new VerificationResponse.UserDetail(user.getUserId(), user.getEmail()));
   }

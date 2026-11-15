@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 
 import { AuthService } from './auth-service';
 import { LocalStorageService } from './local-storage-service';
-import { LOGOUT_URL } from '../api/auth';
+import { LOGOUT_URL, REQUEST_SIGNUP_VERIFICATION_EMAIL_URL } from '../api/auth';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -77,5 +77,28 @@ describe('AuthService', () => {
     expect(localStorageServiceSpy.removeItem).toHaveBeenCalledWith('access_token');
     expect(localStorageServiceSpy.removeItem).toHaveBeenCalledWith('refresh_token');
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/account/signin']);
+  });
+
+  it('should send POST request with email and 4-digit pin on verifyPin', () => {
+    const payload = { email: 'test@merra.example', pin: '4829' };
+
+    service.verifyPin(payload).subscribe((res) => {
+      expect(res.success).toBeTrue();
+    });
+
+    const req = httpMock.expectOne(REQUEST_SIGNUP_VERIFICATION_EMAIL_URL);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(payload);
+
+    req.flush({
+      success: true,
+      message: 'Account successfully activated',
+      data: {
+        isVerified: true,
+        userId: '1234',
+        email: 'test@merra.example',
+        accessToken: 'jwt-access-token',
+      },
+    });
   });
 });

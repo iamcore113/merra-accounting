@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { CreateAccountRequest, LoginRequest, ResendEmailVerification } from '../models/auth';
+import { CreateAccountRequest, LoginRequest, ResendEmailVerification, VerifyPinRequest } from '../models/auth';
 import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable, catchError, finalize, of } from 'rxjs';
 import { Config } from '../models/api_response';
@@ -34,6 +34,10 @@ export class AuthService {
   verifyAccount(token: string): Observable<Config> {
     const url = `${REQUEST_SIGNUP_VERIFICATION_EMAIL_URL}?token=${token}`;
     return this.http.get<Config>(url);
+  }
+
+  verifyPin(request: VerifyPinRequest): Observable<Config> {
+    return this.http.post<Config>(REQUEST_SIGNUP_VERIFICATION_EMAIL_URL, request);
   }
 
   resendVerificationEmail(request: ResendEmailVerification): Observable<Config> {

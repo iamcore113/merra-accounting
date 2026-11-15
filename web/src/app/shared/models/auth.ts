@@ -57,6 +57,12 @@ export interface ResendEmailVerification {
   email?: string;
 }
 
+// Corresponds to: backend/auth/src/main/java/org/merra/dto/VerifyPinRequest.java
+export interface VerifyPinRequest {
+  email: string;
+  pin: string;
+}
+
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/FillPersonalInformation.java
 export interface FillPersonalInformation {
   firstName: string;

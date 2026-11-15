@@ -181,6 +181,8 @@ export class Signup {
       ).subscribe({
         next: (response: any) => {
           console.log('Signup successful:', response);
+          this.localStorage.removeItem('access_token');
+          this.localStorage.removeItem('refresh_token');
           const userId = response?.data?.userDetail?.userId;
           if (userId) {
             this.localStorage.setItem('pendingVerificationUserId', userId);

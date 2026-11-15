@@ -27,9 +27,15 @@ export const verifyEmailGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =
   return authService.checkVerificationStatus(email.trim()).pipe(
     map((response: Config) => {
       if (response.success && 'data' in response) {
-        const status = response.data as EmailVerificationStatusResponse;
+        const status = response.data as EmailVerificationStatusResponse & {
+          verified?: boolean;
+          pendingVerification?: boolean;
+        };
+        const isVerified = status.isVerified ?? status.verified ?? false;
+        const isPendingVerification =
+          status.isPendingVerification ?? status.pendingVerification ?? false;
         // Allow access ONLY if the account exists, is NOT verified, and is pending verification
-        if (status.exists && !status.isVerified && status.isPendingVerification) {
+        if (status.exists && !isVerified && isPendingVerification) {
           return true;
         }
       }

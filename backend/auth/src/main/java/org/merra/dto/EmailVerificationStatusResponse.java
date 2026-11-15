@@ -1,8 +1,10 @@
 package org.merra.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record EmailVerificationStatusResponse(
         boolean exists,
-        boolean isVerified,
-        boolean isPendingVerification) {
+        @JsonProperty("isVerified") boolean isVerified,
+        @JsonProperty("isPendingVerification") boolean isPendingVerification) {
 }
 

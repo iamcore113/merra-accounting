@@ -9,6 +9,7 @@ import org.merra.dto.LogoutRequest;
 import org.merra.dto.ResendEmailVerification;
 import org.merra.dto.VerificationResponse;
 import org.merra.dto.VerifiedAccountResponse;
+import org.merra.dto.VerifyPinRequest;
 import org.merra.service.AuthService;
 import org.merra.utils.AuthConstantResponses;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,25 @@ public class AuthController {
     @GetMapping(value = "visitor")
     public void enterAsVisitor() {
 
+    }
+
+    /**
+     * Verifies a user's account using the 4-digit PIN code sent via email.
+     *
+     * @param req the VerifyPinRequest containing the user's email and 4-digit PIN
+     * @return ResponseEntity containing the verification result and verified
+     *         account details
+     */
+    @PostMapping(value = {"req/signup/verify", "verify-pin"})
+    public ResponseEntity<ApiResponse<VerifiedAccountResponse>> verifyPin(@Valid @RequestBody VerifyPinRequest req) {
+        final VerifiedAccountResponse res = authService.verifyAccountPin(req);
+        final ApiResponse<VerifiedAccountResponse> apiRes = new ApiResponse<>(
+                "Account successfully activated",
+                true,
+                HttpStatus.CREATED,
+                res);
+
+        return ResponseEntity.ok(apiRes);
     }
 
     /**
