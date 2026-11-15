@@ -2,9 +2,16 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { HEALTH_URL } from '../api/base';
 
 export const initInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+
+  // Health checks are handled by their callers (landing page, offline guard/page).
+  // Redirecting here would re-trigger navigation to /offline and cancel the guard's own navigation.
+  if (req.url.startsWith(HEALTH_URL)) {
+    return next(req);
+  }
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {

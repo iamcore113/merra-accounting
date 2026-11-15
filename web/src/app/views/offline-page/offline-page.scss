@@ -53,18 +53,14 @@
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
   padding: 1rem 1.5rem;
 
-  .offline-brand {
-    font-size: 1.5rem;
-    font-weight: 400;
-  }
-
-  .offline-subbrand {
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
+  .offline-logo {
+    height: 36px;
+    width: auto;
+    display: block;
   }
 }
 
