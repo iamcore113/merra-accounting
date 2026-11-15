@@ -1,0 +1,1316 @@
+<section class="org-settings-page">
+  <!-- Settings Breadcrumb & Top Bar -->
+  <header class="settings-top-bar">
+    <div class="top-nav-left">
+      <button type="button" class="back-profile-btn" (click)="backToProfile()">
+        <i class="pi pi-arrow-left"></i>
+        <span>Organization Profile</span>
+      </button>
+
+      <div class="settings-title-group">
+        <h1 class="settings-title">Organization Settings</h1>
+        <p class="settings-subtitle">
+          Manage business entity details, accounting fiscal periods, external web channels, and B2B network keys
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category Navigation Segment Tabs -->
+  <nav class="settings-categories-nav" aria-label="Settings Categories">
+    <button
+      type="button"
+      class="category-nav-tab"
+      [class.active]="activeCategory() === 'details'"
+      (click)="selectCategory('details')">
+      <div class="tab-icon-wrap">
+        <i class="pi pi-id-card"></i>
+      </div>
+      <div class="tab-text">
+        <span class="tab-label">Manage details</span>
+        <span class="tab-sub">Names, description, status, addresses &amp; contacts</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      class="category-nav-tab"
+      [class.active]="activeCategory() === 'finances'"
+      (click)="selectCategory('finances')">
+      <div class="tab-icon-wrap">
+        <i class="pi pi-dollar"></i>
+      </div>
+      <div class="tab-text">
+        <span class="tab-label">Manage finances</span>
+        <span class="tab-sub">Financial year, currencies, countries &amp; payment terms</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      class="category-nav-tab"
+      [class.active]="activeCategory() === 'connected-sites'"
+      (click)="selectCategory('connected-sites')">
+      <div class="tab-icon-wrap">
+        <i class="pi pi-globe"></i>
+      </div>
+      <div class="tab-text">
+        <span class="tab-label">Connected sites</span>
+        <span class="tab-sub">Official website &amp; external links</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      class="category-nav-tab"
+      [class.active]="activeCategory() === 'network-keys'"
+      (click)="selectCategory('network-keys')">
+      <div class="tab-icon-wrap">
+        <i class="pi pi-key"></i>
+      </div>
+      <div class="tab-text">
+        <span class="tab-label">Organization network keys</span>
+        <span class="tab-sub">B2B network keys, invitation tokens &amp; links</span>
+      </div>
+    </button>
+  </nav>
+
+  <!-- ======================================================== -->
+  <!-- CATEGORY 1: MANAGE DETAILS -->
+  <!-- ======================================================== -->
+  @if (activeCategory() === 'details') {
+    <div class="category-pane">
+      <!-- Section 1.1: Names & Organization Type -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-building section-icon"></i>
+            <div>
+              <h3 class="section-title">Organization Identity &amp; Legal Structure</h3>
+              <p class="section-desc">Configure public branding display names, registered corporate legal titles, and entity classification</p>
+            </div>
+          </div>
+          <button type="button" class="explain-name-btn" (click)="openNameDifferenceDialog()">
+            <i class="pi pi-question-circle"></i>
+            <span>Display vs Legal Name</span>
+          </button>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-row-two-col" formGroupName="names">
+            <div class="form-field flex-1">
+              <label class="field-label" for="displayNameInput">
+                Display Name <span class="required-star">*</span>
+              </label>
+              <input
+                id="displayNameInput"
+                pInputText
+                [pSize]="'small'"
+                type="text"
+                formControlName="displayName"
+                placeholder="e.g. Acme Corporation"
+                class="full-width" />
+              <small class="field-hint">Public brand name shown in header navigation and member screens.</small>
+            </div>
+
+            <div class="copy-names-action-col">
+              <p-button
+                icon="pi pi-arrow-right"
+                [outlined]="true"
+                [size]="'small'"
+                pTooltip="Copy display name to legal name"
+                tooltipPosition="top"
+                (click)="copyDisplayNameToLegalName()">
+              </p-button>
+            </div>
+
+            <div class="form-field flex-1">
+              <label class="field-label" for="legalNameInput">
+                Legal Entity Name <span class="required-star">*</span>
+              </label>
+              <input
+                id="legalNameInput"
+                pInputText
+                [pSize]="'small'"
+                type="text"
+                formControlName="legalName"
+                placeholder="e.g. Acme Corporation, LLC"
+                class="full-width" />
+              <small class="field-hint">Formal business name registered with government agencies.</small>
+            </div>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Update Names"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingNames() || !hasNamesChanged()"
+              [loading]="isUpdatingNames()"
+              (click)="updateOrganizationNames()">
+            </p-button>
+          </div>
+
+          <div class="card-inner-divider"></div>
+
+          <!-- Organization Type -->
+          <div class="organization-type-subrow">
+            <div class="form-field flex-1" formGroupName="organizationType">
+              <label class="field-label" for="orgTypeSelect">
+                Organization Entity Type <span class="required-star">*</span>
+              </label>
+              @if (isLoadingOrganizationTypes) {
+                <p-skeleton width="100%" height="2.25rem"></p-skeleton>
+              } @else {
+                <p-select
+                  inputId="orgTypeSelect"
+                  formControlName="typeId"
+                  [options]="organizationTypesMetadata"
+                  optionLabel="name"
+                  optionValue="id"
+                  [size]="'small'"
+                  styleClass="full-width">
+                </p-select>
+              }
+              <small class="field-hint">Defines standard company structure (e.g. Sole Proprietorship, LLC, Corporation).</small>
+            </div>
+
+            <div class="subrow-action-col">
+              <p-button
+                label="Update Type"
+                icon="pi pi-check"
+                [outlined]="true"
+                [size]="'small'"
+                [disabled]="isUpdatingOrganizationType() || !hasOrganizationTypeChanged()"
+                [loading]="isUpdatingOrganizationType()"
+                (click)="updateOrganizationType()">
+              </p-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1.2: Description -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-align-left section-icon"></i>
+            <div>
+              <h3 class="section-title">Organization Description</h3>
+              <p class="section-desc">Short summary of this organization's industry, mission, and activities</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body" formGroupName="names">
+          <div class="form-field">
+            <label class="field-label" for="orgDescTextarea">Description</label>
+            <textarea
+              id="orgDescTextarea"
+              pTextarea
+              rows="3"
+              formControlName="description"
+              placeholder="Provide a concise description of your organization..."
+              class="full-width">
+            </textarea>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Save Description"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingDescription() || !hasDescriptionChanged()"
+              [loading]="isUpdatingDescription()"
+              (click)="updateDescription()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1.3: Status -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-shield section-icon"></i>
+            <div>
+              <h3 class="section-title">Organization Operational Status</h3>
+              <p class="section-desc">Enable or suspend organization operations and active billing privileges</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="status-toggle-card">
+            <p-toggleswitch
+              [(ngModel)]="isOrganizationActive"
+              (ngModelChange)="confirmDisableOrganization($event)"
+              ariaLabel="Organization status toggle">
+            </p-toggleswitch>
+            <div class="status-toggle-info">
+              <span class="status-toggle-title">
+                {{ isOrganizationActive ? 'Organization is Active' : 'Organization is Inactive' }}
+              </span>
+              <p class="status-toggle-desc">
+                {{ isOrganizationActive
+                  ? 'Active members can access accounting dashboards, record transactions, and process invoices normally.'
+                  : 'Organization is paused. Member access and automated invoice sync are suspended until reactivated.' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1.4: Primary Contact Email -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-envelope section-icon"></i>
+            <div>
+              <h3 class="section-title">Primary Contact Channel</h3>
+              <p class="section-desc">Official email address designated for receiving administrative alerts, invoices, and audit statements</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body" formGroupName="address">
+          <div class="form-field full-width">
+            <label class="field-label" for="primaryEmailInput">
+              Official Email Address <span class="required-star">*</span>
+            </label>
+            <input
+              id="primaryEmailInput"
+              pInputText
+              [pSize]="'small'"
+              type="email"
+              formControlName="email"
+              placeholder="e.g. accounts@yourcompany.com"
+              class="full-width" />
+            @if (organizationForm.get('address.email')?.invalid && organizationForm.get('address.email')?.touched) {
+              <small class="field-error-text">Please enter a valid email address.</small>
+            }
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Update Email"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingContact() || !hasContactChanged() || organizationForm.get('address.email')?.invalid"
+              [loading]="isUpdatingContact()"
+              (click)="updateContactEmail()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1.5: Organization Addresses -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-map-marker section-icon"></i>
+            <div>
+              <h3 class="section-title">Physical &amp; Mailing Addresses</h3>
+              <p class="section-desc">Registered headquarters, postal delivery boxes, and billing addresses printed on invoices</p>
+            </div>
+          </div>
+          <p-button
+            label="Add Address"
+            icon="pi pi-plus"
+            [size]="'small'"
+            [outlined]="true"
+            (click)="openAddAddressDialog()">
+          </p-button>
+        </div>
+
+        <div class="settings-card-body">
+          @if (addresses.length > 0) {
+            <div class="addresses-grid">
+              @for (addr of addresses; track $index) {
+                <div class="address-tile">
+                  <div class="address-tile-header">
+                    <span class="addr-type-chip">
+                      <i class="pi" [ngClass]="getAddressTypeIcon(addr.type)"></i>
+                      {{ addr.type | titlecase }} Address
+                    </span>
+                    <div class="addr-tile-actions">
+                      <button
+                        type="button"
+                        class="tile-btn edit-btn"
+                        pTooltip="Edit Address"
+                        tooltipPosition="top"
+                        (click)="openEditAddressDialog($index)">
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="tile-btn delete-btn"
+                        pTooltip="Remove Address"
+                        tooltipPosition="top"
+                        (click)="openDeleteAddressDialog($index)">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="address-tile-content">
+                    @for (line of addr.addresses; track line) {
+                      <p class="tile-line">{{ line }}</p>
+                    }
+                    <p class="tile-line bold">{{ addr.city }}, {{ addr.postalCode }}</p>
+                    <p class="tile-line country-line">
+                      <i class="pi pi-globe"></i> {{ getAddressCountryName(addr.country) }} ({{ addr.country }})
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state-block">
+              <i class="pi pi-map-marker empty-state-icon"></i>
+              <h4 class="empty-title">No Physical Addresses Configured</h4>
+              <p class="empty-desc">
+                Add your registered headquarters or billing office to ensure tax reports and customer invoices display compliant address headers.
+              </p>
+              <p-button
+                label="Add First Address"
+                icon="pi pi-plus"
+                [size]="'small'"
+                [outlined]="true"
+                (click)="openAddAddressDialog()">
+              </p-button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- CATEGORY 2: MANAGE FINANCES -->
+  <!-- ======================================================== -->
+  @if (activeCategory() === 'finances') {
+    <div class="category-pane">
+      <!-- Section 2.1: Accounting Fiscal Year -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-calendar section-icon"></i>
+            <div>
+              <h3 class="section-title">Accounting Period &amp; Financial Year</h3>
+              <p class="section-desc">Define the annual accounting cycle closing date for financial statements, period-end closings, and profit &amp; loss balances</p>
+            </div>
+          </div>
+          <span class="active-fiscal-tag">
+            Closing: <strong>{{ getFinancialYearEndDisplay() }}</strong>
+          </span>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-row-two-col" formGroupName="financialYear">
+            <div class="form-field flex-1">
+              <label class="field-label" for="fyMonthInput">
+                Financial Year End Month <span class="required-star">*</span>
+              </label>
+              <input
+                id="fyMonthInput"
+                pInputText
+                [pSize]="'small'"
+                type="number"
+                min="1"
+                max="12"
+                formControlName="yearEndMonth"
+                placeholder="Month (1-12)"
+                class="full-width" />
+              <small class="field-hint">e.g. 12 for December, 6 for June fiscal cycle.</small>
+            </div>
+
+            <div class="form-field flex-1">
+              <label class="field-label" for="fyDayInput">
+                Financial Year End Day <span class="required-star">*</span>
+              </label>
+              <input
+                id="fyDayInput"
+                pInputText
+                [pSize]="'small'"
+                type="number"
+                min="1"
+                max="31"
+                formControlName="yearEndDay"
+                placeholder="Day (1-31)"
+                class="full-width" />
+              <small class="field-hint">e.g. 31 for calendar year-end boundary.</small>
+            </div>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Save Financial Year"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingFinancialYear() || !hasFinancialYearChanged() || organizationForm.get('financialYear')?.invalid"
+              [loading]="isUpdatingFinancialYear()"
+              (click)="updateFinancialYear()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2.2: Currencies & Regional Countries -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-money-bill section-icon"></i>
+            <div>
+              <h3 class="section-title">Base Currency &amp; Regional Country</h3>
+              <p class="section-desc">Primary accounting ledger currency, default country jurisdiction, and system clock timezone</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-row-two-col">
+            <div class="form-field flex-1" formGroupName="address">
+              <label class="field-label" for="countrySelect">
+                Operating Country <span class="required-star">*</span>
+              </label>
+              @if (isLoadingCountries) {
+                <p-skeleton width="100%" height="2.25rem"></p-skeleton>
+              } @else {
+                <p-select
+                  inputId="countrySelect"
+                  formControlName="country"
+                  [options]="countries"
+                  optionLabel="name"
+                  optionValue="cca2"
+                  [filter]="true"
+                  filterBy="name"
+                  [size]="'small'"
+                  styleClass="full-width">
+                </p-select>
+              }
+              <small class="field-hint">Defines tax jurisdiction and default compliance guidelines.</small>
+            </div>
+
+            <div class="form-field flex-1" formGroupName="address">
+              <label class="field-label" for="timeZoneInput">
+                System Timezone <span class="required-star">*</span>
+              </label>
+              <input
+                id="timeZoneInput"
+                pInputText
+                [pSize]="'small'"
+                type="text"
+                formControlName="timeZone"
+                placeholder="e.g. UTC, America/New_York, Asia/Manila"
+                class="full-width" />
+              <small class="field-hint">Used for timestamping invoice audit logs and reports.</small>
+            </div>
+          </div>
+
+          <div class="base-currency-display-box">
+            <div class="currency-box-left">
+              <span class="currency-box-label">Base Ledger Currency</span>
+              <span class="currency-box-value">{{ organizationForm.get('address.currency')?.value || 'USD' }}</span>
+            </div>
+            <p class="currency-box-desc">
+              All journal balances, accounts charts, and consolidated ledger totals are calculated in this primary currency.
+            </p>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Update Regional Settings"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingRegional() || !hasRegionalChanged()"
+              [loading]="isUpdatingRegional()"
+              (click)="updateRegionalSettings()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2.3: Payment Terms -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-receipt section-icon"></i>
+            <div>
+              <h3 class="section-title">Default Payment Terms</h3>
+              <p class="section-desc">Default payment schedule, due date offsets, and standard remittance notes populated when creating invoices and bills</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-row-two-col">
+            <div class="form-field flex-1">
+              <label class="field-label" for="paymentTermPresetSelect">
+                Standard Payment Terms Preset
+              </label>
+              <p-select
+                inputId="paymentTermPresetSelect"
+                [(ngModel)]="selectedPaymentTermPreset"
+                [options]="paymentTermPresets"
+                optionLabel="label"
+                optionValue="value"
+                [size]="'small'"
+                styleClass="full-width"
+                (ngModelChange)="onPaymentTermPresetChange($event)">
+              </p-select>
+              <small class="field-hint">Automatically calculates invoice due date based on invoice creation date.</small>
+            </div>
+
+            @if (selectedPaymentTermPreset === 'CUSTOM' || selectedPaymentTermPreset.startsWith('NET_')) {
+              <div class="form-field flex-1">
+                <label class="field-label" for="paymentTermDaysInput">
+                  Days After Invoice Date
+                </label>
+                <input
+                  id="paymentTermDaysInput"
+                  pInputText
+                  [pSize]="'small'"
+                  type="number"
+                  min="0"
+                  max="365"
+                  [(ngModel)]="paymentTermDays"
+                  class="full-width" />
+                <small class="field-hint">Number of days customers have to pay before marked overdue.</small>
+              </div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="paymentInstructionsInput">
+              Default Invoice Payment Instructions &amp; Terms Note
+            </label>
+            <textarea
+              id="paymentInstructionsInput"
+              pTextarea
+              rows="3"
+              [(ngModel)]="paymentInstructions"
+              placeholder="e.g. Please wire funds to Account #... within agreed terms."
+              class="full-width">
+            </textarea>
+            <small class="field-hint">Appears in the footer of all standard PDF invoices sent to customers.</small>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Save Payment Terms"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingPaymentTerms() || !hasPaymentTermsChanged()"
+              [loading]="isUpdatingPaymentTerms()"
+              (click)="updatePaymentTerms()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- CATEGORY 3: CONNECTED SITES -->
+  <!-- ======================================================== -->
+  @if (activeCategory() === 'connected-sites') {
+    <div class="category-pane">
+      <!-- Section 3.1: Official Website -->
+      <div class="settings-card" [formGroup]="organizationForm">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-globe section-icon"></i>
+            <div>
+              <h3 class="section-title">Official Corporate Website</h3>
+              <p class="section-desc">Public website domain displayed on invoices, network profiles, and email templates</p>
+            </div>
+          </div>
+          @if (organizationForm.get('website')?.value) {
+            <a
+              [href]="getSafeUrl(organizationForm.get('website')?.value)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="visit-link-btn">
+              <span>Open Website</span> <i class="pi pi-external-link"></i>
+            </a>
+          }
+        </div>
+
+        <div class="settings-card-body">
+          <div class="form-field full-width">
+            <label class="field-label" for="orgWebsiteInput">
+              Website URL
+            </label>
+            <input
+              id="orgWebsiteInput"
+              pInputText
+              [pSize]="'small'"
+              type="text"
+              formControlName="website"
+              placeholder="e.g. https://www.yourcompany.com"
+              class="full-width" />
+            <small class="field-hint">Enter full URL including protocol (https://).</small>
+          </div>
+
+          <div class="form-actions-row">
+            <p-button
+              label="Update Website"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingWebsite() || !hasWebsiteChanged()"
+              [loading]="isUpdatingWebsite()"
+              (click)="updateWebsite()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3.2: Social Profile Links (Facebook, X (Twitter), Instagram, LinkedIn) -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-share-alt section-icon"></i>
+            <div>
+              <h3 class="section-title">External Social Profile Links</h3>
+              <p class="section-desc">Provide official organization profile links for Facebook, X (Twitter), Instagram, and LinkedIn</p>
+            </div>
+          </div>
+          <span class="active-fiscal-tag">
+            Connected: <strong>{{ getConnectedPlatformsCount() }} / 4</strong>
+          </span>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="social-profiles-list">
+            @for (platform of externalLinkPlatforms; track platform.value) {
+              <div class="social-profile-row" [class.is-connected]="isPlatformConnected(platform.value)">
+                <div class="social-brand-header">
+                  <div class="social-logo-badge" [attr.data-platform]="platform.value">
+                    @switch (platform.value) {
+                      @case ('FACEBOOK') {
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                      }
+                      @case ('X') {
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                      }
+                      @case ('INSTAGRAM') {
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                      }
+                      @case ('LINKEDIN') {
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      }
+                    }
+                  </div>
+
+                  <div class="social-platform-meta">
+                    <div class="social-platform-title-row">
+                      <label class="social-platform-name" [for]="'socialInput_' + platform.value">
+                        {{ platform.label }}
+                      </label>
+                      @if (isPlatformConnected(platform.value)) {
+                        <span class="social-connected-pill">Connected</span>
+                      }
+                    </div>
+                    <span class="social-platform-hint">{{ platform.handleHint }}</span>
+                  </div>
+                </div>
+
+                <div class="social-input-actions">
+                  <input
+                    [id]="'socialInput_' + platform.value"
+                    pInputText
+                    [pSize]="'small'"
+                    type="url"
+                    [(ngModel)]="socialLinksForm[platform.value]"
+                    [placeholder]="platform.placeholder"
+                    class="social-url-input" />
+
+                  @if (socialLinksForm[platform.value]?.trim()) {
+                    <a
+                      [href]="getSafeUrl(socialLinksForm[platform.value])"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="social-icon-btn visit"
+                      pTooltip="Open profile link"
+                      tooltipPosition="top">
+                      <i class="pi pi-external-link"></i>
+                    </a>
+                    <button
+                      type="button"
+                      class="social-icon-btn clear"
+                      pTooltip="Remove link"
+                      tooltipPosition="top"
+                      [disabled]="isUpdatingExternalLinks()"
+                      (click)="clearPlatformLink(platform.value)">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="form-actions-row mt-social-actions">
+            <p-button
+              label="Save External Links"
+              icon="pi pi-check"
+              [size]="'small'"
+              [disabled]="isUpdatingExternalLinks() || !hasExternalLinksChanged()"
+              [loading]="isUpdatingExternalLinks()"
+              (click)="saveExternalLinks()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- CATEGORY 4: ORGANIZATION NETWORK KEYS -->
+  <!-- ======================================================== -->
+  @if (activeCategory() === 'network-keys') {
+    <div class="category-pane">
+      <!-- Section 4.1: Merra Network Keys -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-key section-icon"></i>
+            <div>
+              <h3 class="section-title">Merra Network Keys</h3>
+              <p class="section-desc">Generate secure organization-to-organization tokens enabling direct B2B invoice dispatch between Merra accounting tenants</p>
+            </div>
+          </div>
+          <p-button
+            label="Generate Network Key"
+            icon="pi pi-plus"
+            [size]="'small'"
+            [outlined]="true"
+            (click)="openCreateNetworkKeyDialog()">
+          </p-button>
+        </div>
+
+        <div class="settings-card-body">
+          @if (isLoadingNetworkKeys) {
+            <p-skeleton width="100%" height="5rem"></p-skeleton>
+          } @else if (networkKeys.length === 0) {
+            <div class="empty-state-block">
+              <i class="pi pi-key empty-state-icon"></i>
+              <h4 class="empty-title">No Network Key Generated Yet</h4>
+              <p class="empty-desc">
+                Generate your primary Merra Network Key to authorize partner companies, suppliers, and buyers to connect directly with your organization.
+              </p>
+              <p-button
+                label="Generate Network Key"
+                icon="pi pi-plus"
+                [size]="'small'"
+                [outlined]="true"
+                (click)="openCreateNetworkKeyDialog()">
+              </p-button>
+            </div>
+          } @else {
+            <div class="keys-list">
+              @for (k of networkKeys; track k.id) {
+                <div class="key-card-item">
+                  <div class="key-item-header">
+                    <div class="key-title-group">
+                      <span class="key-title">{{ k.name || 'Primary Network Key' }}</span>
+                      <span class="key-active-badge">
+                        <span class="dot"></span> Active Subscription
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="revoke-key-action"
+                      pTooltip="Revoke this key"
+                      tooltipPosition="left"
+                      (click)="openDeleteNetworkKeyDialog(k)">
+                      <i class="pi pi-trash"></i>
+                      <span>Revoke</span>
+                    </button>
+                  </div>
+
+                  <div class="key-box-display">
+                    <span class="key-token-text" [class.unmasked]="isNetworkKeyVisible(k.id)">
+                      {{ getMaskedNetworkKey(k.networkKey, isNetworkKeyVisible(k.id)) }}
+                    </span>
+                    <div class="key-box-actions">
+                      <button
+                        type="button"
+                        class="key-action-btn"
+                        [pTooltip]="isNetworkKeyVisible(k.id) ? 'Hide Key' : 'Reveal Key'"
+                        tooltipPosition="top"
+                        (click)="toggleNetworkKeyVisibility(k.id)">
+                        <i class="pi" [ngClass]="isNetworkKeyVisible(k.id) ? 'pi-eye-slash' : 'pi-eye'"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="key-action-btn copy"
+                        pTooltip="Copy Key to Clipboard"
+                        tooltipPosition="top"
+                        (click)="copyNetworkKeyToClipboard(k.networkKey)">
+                        <i class="pi pi-copy"></i>
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="key-item-footer">
+                    <span class="footer-meta">
+                      <i class="pi pi-calendar"></i>
+                      Created: {{ k.createdAt ? (k.createdAt | date: 'mediumDate') : 'Recently' }}
+                    </span>
+                    <span class="footer-meta">
+                      <i class="pi pi-shield"></i> Merra Verified Token
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Workflow explainer card -->
+          <div class="network-workflow-guide">
+            <h4 class="guide-title"><i class="pi pi-bolt"></i> How Merra B2B Network Keys Work</h4>
+            <div class="steps-grid">
+              <div class="step-card">
+                <span class="step-num">1</span>
+                <strong class="step-heading">Generate Key</strong>
+                <p class="step-text">Generate a dedicated network token for your organization.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-num">2</span>
+                <strong class="step-heading">Share with Partners</strong>
+                <p class="step-text">Provide your key to suppliers or clients using Merra Accounting.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-num">3</span>
+                <strong class="step-heading">Automatic Sync</strong>
+                <p class="step-text">Issued invoices appear instantly in your ledger for review and reconciliation.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-num">4</span>
+                <strong class="step-heading">Instant Revocation</strong>
+                <p class="step-text">Revoke keys at any time to immediately block unauthorized transactions.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4.2: User Invitations -->
+      <div class="settings-card">
+        <div class="settings-card-header">
+          <div class="card-header-left">
+            <i class="pi pi-user-plus section-icon"></i>
+            <div>
+              <h3 class="section-title">Invite Team Members &amp; Generate Tokens</h3>
+              <p class="section-desc">Issue time-limited member invitations with role assignments or generate manual share tokens</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body">
+          <div class="invitation-form-container">
+            <div class="form-row-two-col">
+              <div class="form-field flex-1">
+                <label class="field-label" for="inviteeEmailField">Invitee Email Address</label>
+                <input
+                  id="inviteeEmailField"
+                  pInputText
+                  [pSize]="'small'"
+                  type="email"
+                  [(ngModel)]="inviteeEmail"
+                  placeholder="colleague@yourcompany.com"
+                  class="full-width" />
+              </div>
+
+              <div class="form-field role-field">
+                <label class="field-label" for="inviteeRoleField">Role Assignment</label>
+                <p-select
+                  inputId="inviteeRoleField"
+                  [(ngModel)]="selectedInvitationRole"
+                  [options]="invitationRoles"
+                  optionLabel="label"
+                  optionValue="value"
+                  [size]="'small'"
+                  styleClass="full-width">
+                </p-select>
+              </div>
+            </div>
+
+            <div class="invitation-btn-row">
+              <p-button
+                label="Generate &amp; Send Email Link"
+                icon="pi pi-envelope"
+                [size]="'small'"
+                [loading]="isCreatingInvitation"
+                [disabled]="isCreatingInvitation"
+                (onClick)="createInvitation(true)">
+              </p-button>
+
+              <p-button
+                label="Generate Token Only"
+                icon="pi pi-key"
+                [outlined]="true"
+                [size]="'small'"
+                [loading]="isCreatingInvitation"
+                [disabled]="isCreatingInvitation"
+                (onClick)="createInvitation(false)">
+              </p-button>
+            </div>
+          </div>
+
+          <!-- Latest Generated Invitation Box -->
+          @if (lastCreatedInvitation; as created) {
+            <div class="latest-invitation-banner">
+              <div class="latest-banner-header">
+                <strong>New Invitation Generated for {{ created.inviteeEmail }} ({{ created.role }})</strong>
+                @if (created.emailSent) {
+                  <p-tag value="Email Sent" severity="success"></p-tag>
+                } @else {
+                  <p-tag value="Manual Token" severity="info"></p-tag>
+                }
+              </div>
+
+              <div class="copy-field-row">
+                <span class="field-tag">Invitation Token:</span>
+                <code class="token-code">{{ created.invitationToken }}</code>
+                <p-button
+                  icon="pi pi-copy"
+                  label="Copy Token"
+                  [outlined]="true"
+                  [size]="'small'"
+                  (onClick)="copyInvitationText(created.invitationToken, 'Invitation token')">
+                </p-button>
+              </div>
+
+              <div class="copy-field-row">
+                <span class="field-tag">Invitation Link:</span>
+                <code class="token-code">{{ created.invitationLink }}</code>
+                <p-button
+                  icon="pi pi-link"
+                  label="Copy Link"
+                  [outlined]="true"
+                  [size]="'small'"
+                  (onClick)="copyInvitationText(created.invitationLink, 'Invitation link')">
+                </p-button>
+              </div>
+            </div>
+          }
+
+          <!-- Active Pending Invitations List -->
+          <div class="active-invitations-block">
+            <h4 class="active-invitations-heading">Active Pending Invitations</h4>
+            @if (isLoadingInvitations) {
+              <p-skeleton width="100%" height="3rem"></p-skeleton>
+            } @else if (invitations.length === 0) {
+              <p class="empty-invitations-msg">No active pending team invitations.</p>
+            } @else {
+              <div class="invitations-list">
+                @for (inv of invitations; track inv.id) {
+                  <div class="invitation-item-row">
+                    <div class="inv-item-info">
+                      <span class="inv-item-email">{{ inv.inviteeEmail }}</span>
+                      <div class="inv-item-tags">
+                        <p-tag [value]="inv.role" severity="secondary"></p-tag>
+                        @if (inv.expiresAt) {
+                          <span class="inv-expires">Expires: {{ inv.expiresAt | date: 'short' }}</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="inv-item-actions">
+                      <p-button
+                        icon="pi pi-copy"
+                        pTooltip="Copy invitation token"
+                        [outlined]="true"
+                        [size]="'small'"
+                        (onClick)="copyInvitationText(inv.invitationToken, 'Invitation token')">
+                      </p-button>
+                      <p-button
+                        icon="pi pi-link"
+                        pTooltip="Copy invitation link"
+                        [outlined]="true"
+                        [size]="'small'"
+                        (onClick)="copyInvitationText(inv.invitationLink, 'Invitation link')">
+                      </p-button>
+                      <p-button
+                        icon="pi pi-trash"
+                        pTooltip="Revoke invitation"
+                        severity="danger"
+                        [outlined]="true"
+                        [size]="'small'"
+                        (onClick)="revokeInvitation(inv)">
+                      </p-button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ======================================================== -->
+  <!-- MODAL DIALOGS -->
+  <!-- ======================================================== -->
+
+  <!-- Add / Edit Address Dialog -->
+  <p-dialog
+    [header]="editingAddressIndex !== null ? 'Edit Address' : 'Add Organization Address'"
+    [(visible)]="showAddressDialog"
+    [modal]="true"
+    [closable]="!isSavingAddress()"
+    [style]="{ width: '520px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="address-modal-form">
+      <p class="dialog-desc">
+        Specify physical address attributes for this location. Used for invoice dispatch, billing profiles, and tax reporting.
+      </p>
+
+      <div class="form-field">
+        <label class="field-label" for="dialogAddressType">Address Type <span class="required-star">*</span></label>
+        <p-select
+          inputId="dialogAddressType"
+          formControlName="type"
+          [options]="availableAddressTypes"
+          optionLabel="name"
+          optionValue="name"
+          [size]="'small'"
+          styleClass="full-width">
+        </p-select>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="dialogAddressLine1">Address Line 1 <span class="required-star">*</span></label>
+        <input
+          id="dialogAddressLine1"
+          pInputText
+          [pSize]="'small'"
+          formControlName="addressLine1"
+          placeholder="Street address, building, suite"
+          class="full-width" />
+        @if (addressForm.get('addressLine1')?.invalid && addressForm.get('addressLine1')?.touched) {
+          <small class="field-error-text">Address line 1 is required.</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="dialogAddressLine2">Address Line 2 <span class="optional-label">(Optional)</span></label>
+        <input
+          id="dialogAddressLine2"
+          pInputText
+          [pSize]="'small'"
+          formControlName="addressLine2"
+          placeholder="Apartment, unit, floor"
+          class="full-width" />
+      </div>
+
+      <div class="form-row-two-col">
+        <div class="form-field flex-1">
+          <label class="field-label" for="dialogCity">City / Municipality <span class="required-star">*</span></label>
+          <input
+            id="dialogCity"
+            pInputText
+            [pSize]="'small'"
+            formControlName="city"
+            placeholder="City"
+            class="full-width" />
+          @if (addressForm.get('city')?.invalid && addressForm.get('city')?.touched) {
+            <small class="field-error-text">City is required.</small>
+          }
+        </div>
+
+        <div class="form-field flex-1">
+          <label class="field-label" for="dialogPostalCode">Postal / Zip Code <span class="required-star">*</span></label>
+          <input
+            id="dialogPostalCode"
+            pInputText
+            [pSize]="'small'"
+            formControlName="postalCode"
+            placeholder="Postal code"
+            class="full-width" />
+          @if (addressForm.get('postalCode')?.invalid && addressForm.get('postalCode')?.touched) {
+            <small class="field-error-text">Postal code is required.</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="dialogCountry">Country <span class="required-star">*</span></label>
+        <p-select
+          inputId="dialogCountry"
+          formControlName="country"
+          [options]="countries"
+          optionLabel="name"
+          optionValue="cca2"
+          [filter]="true"
+          filterBy="name"
+          [size]="'small'"
+          styleClass="full-width">
+        </p-select>
+        @if (addressForm.get('country')?.invalid && addressForm.get('country')?.touched) {
+          <small class="field-error-text">Country is required.</small>
+        }
+      </div>
+    </form>
+
+    <ng-template #footer>
+      <div class="dialog-actions-row">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="closeAddressDialog()"
+          [disabled]="isSavingAddress()">
+        </p-button>
+        <p-button
+          [label]="editingAddressIndex !== null ? 'Save Changes' : 'Add Address'"
+          icon="pi pi-check"
+          [size]="'small'"
+          (click)="saveAddress()"
+          [loading]="isSavingAddress()"
+          [disabled]="addressForm.invalid">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Delete Address Confirmation Dialog -->
+  <p-dialog
+    header="Remove Address"
+    [(visible)]="showDeleteAddressDialog"
+    [modal]="true"
+    [closable]="!isDeletingAddress()"
+    [style]="{ width: '440px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="delete-confirm-box">
+      <i class="pi pi-exclamation-triangle delete-icon"></i>
+      <div class="delete-msg-group">
+        <p class="delete-main-text">Are you sure you want to remove this address?</p>
+        <p class="delete-sub-text">Invoices previously issued will preserve their historical location record.</p>
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <div class="dialog-actions-row">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="closeDeleteAddressDialog()"
+          [disabled]="isDeletingAddress()">
+        </p-button>
+        <p-button
+          label="Yes, Remove"
+          icon="pi pi-trash"
+          severity="danger"
+          [size]="'small'"
+          (click)="confirmDeleteAddress()"
+          [loading]="isDeletingAddress()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Generate Network Key Dialog -->
+  <p-dialog
+    header="Generate Merra Network Key"
+    [(visible)]="showCreateNetworkKeyDialog"
+    [modal]="true"
+    [closable]="!isGeneratingNetworkKey"
+    [style]="{ width: '460px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="dialog-body-box">
+      <p class="dialog-desc">
+        Assign a recognizable label (e.g. "Primary Network Key" or "Vendor Exchange") to track which partners use this key.
+      </p>
+      <div class="form-field">
+        <label class="field-label" for="networkKeyLabelInput">Key Label</label>
+        <input
+          id="networkKeyLabelInput"
+          pInputText
+          [pSize]="'small'"
+          [(ngModel)]="newNetworkKeyName"
+          placeholder="e.g. Primary Network Key"
+          class="full-width" />
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <div class="dialog-actions-row">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="showCreateNetworkKeyDialog = false"
+          [disabled]="isGeneratingNetworkKey">
+        </p-button>
+        <p-button
+          label="Generate Key"
+          icon="pi pi-check"
+          [size]="'small'"
+          (click)="generateNetworkKey()"
+          [loading]="isGeneratingNetworkKey">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Revoke Network Key Dialog -->
+  <p-dialog
+    header="Revoke Network Key"
+    [(visible)]="showDeleteNetworkKeyDialog"
+    [modal]="true"
+    [closable]="!isDeletingNetworkKey"
+    [style]="{ width: '480px' }"
+    [draggable]="false"
+    [resizable]="false">
+    <div class="delete-confirm-box">
+      <i class="pi pi-exclamation-triangle delete-icon"></i>
+      <div class="delete-msg-group">
+        <p class="delete-main-text">
+          Revoke key <strong>{{ selectedNetworkKeyToDelete?.name || 'Primary Key' }}</strong>?
+        </p>
+        <p class="delete-sub-text">
+          Connected business partners using this token will no longer be able to transmit invoices until issued a new active key.
+        </p>
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <div class="dialog-actions-row">
+        <p-button
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (click)="closeDeleteNetworkKeyDialog()"
+          [disabled]="isDeletingNetworkKey">
+        </p-button>
+        <p-button
+          label="Yes, Revoke Key"
+          icon="pi pi-trash"
+          severity="danger"
+          [size]="'small'"
+          (click)="confirmDeleteNetworkKey()"
+          [loading]="isDeletingNetworkKey">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</section>

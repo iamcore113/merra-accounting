@@ -30,6 +30,7 @@ import org.merra.entities.OrganizationMembers;
 import org.merra.entities.OrganizationType;
 import org.merra.entities.UserAccount;
 import org.merra.entities.UserWorkspaceState;
+import org.merra.entities.embedded.ExternalLinksEmb;
 import org.merra.entities.embedded.FinancialYearEmb;
 import org.merra.entities.embedded.PaymentTermsEmb;
 import org.merra.enums.AddressEn;
@@ -706,6 +707,17 @@ public class OrganizationService {
 				currentOrganization.setFinancialYear(new FinancialYearEmb(day, month));
 			} catch (NumberFormatException ignored) {
 			}
+		}
+
+		if (req.externalLinks() != null) {
+			Set<ExternalLinksEmb> updatedLinks = new java.util.LinkedHashSet<>();
+			for (CurrentOrganizationResponse.ExternalLink link : req.externalLinks()) {
+				if (link != null && link.linkType() != null && !link.linkType().isBlank()
+						&& link.url() != null && !link.url().isBlank()) {
+					updatedLinks.add(new ExternalLinksEmb(link.linkType().trim().toUpperCase(), link.url().trim()));
+				}
+			}
+			currentOrganization.setExternalLinks(updatedLinks);
 		}
 
 		organizationRepository.save(currentOrganization);

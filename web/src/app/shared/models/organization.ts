@@ -273,6 +273,12 @@ export interface CurrentOrganizationResponseFinancialYear {
   yearEndMonth: string;
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.ExternalLink
+export interface CurrentOrganizationResponseExternalLink {
+  linkType: string;
+  url: string;
+}
+
 // Corresponds to: backend/organization/src/main/java/org/merra/dto/CurrentOrganizationResponse.java
 export interface CurrentOrganizationResponse {
   organizationId: string;
@@ -283,6 +289,7 @@ export interface CurrentOrganizationResponse {
   createdDate: string;
   status: string;
   financialYear: CurrentOrganizationResponseFinancialYear;
+  externalLinks?: CurrentOrganizationResponseExternalLink[];
 }
 
 // Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations

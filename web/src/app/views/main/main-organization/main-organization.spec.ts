@@ -2,12 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { DialogService } from 'primeng/dynamicdialog';
 
 import { MainOrganization } from './main-organization';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { NetworkKeyService } from '../../../shared/services/network-key-service';
+import { InvitationService } from '../../../shared/services/invitation-service';
 import { UtilityService } from '../../../shared/services/utility-service';
 
 describe('MainOrganization', () => {
@@ -15,6 +16,7 @@ describe('MainOrganization', () => {
   let fixture: ComponentFixture<MainOrganization>;
   let organizationServiceSpy: jasmine.SpyObj<OrganizationService>;
   let networkKeyServiceSpy: jasmine.SpyObj<NetworkKeyService>;
+  let invitationServiceSpy: jasmine.SpyObj<InvitationService>;
   let utilityServiceSpy: jasmine.SpyObj<UtilityService>;
 
   const mockOrgResponse = {
@@ -59,28 +61,29 @@ describe('MainOrganization', () => {
     }
   };
 
-  const mockKeysResponse = {
-    message: 'Success',
-    success: true,
-    response: 200,
-    data: []
-  };
-
   beforeEach(async () => {
     organizationServiceSpy = jasmine.createSpyObj('OrganizationService', [
       'getCurrentOrganization',
-      'getOrganizationMetadata',
-      'updateCurrentOrganization'
+      'getOrganizationMetadata'
     ]);
     organizationServiceSpy.getCurrentOrganization.and.returnValue(of(mockOrgResponse));
     organizationServiceSpy.getOrganizationMetadata.and.returnValue(of(mockMetadataResponse));
 
-    networkKeyServiceSpy = jasmine.createSpyObj('NetworkKeyService', [
-      'getActiveKeys',
-      'generateNetworkKey',
-      'deleteNetworkKey'
-    ]);
-    networkKeyServiceSpy.getActiveKeys.and.returnValue(of(mockKeysResponse));
+    networkKeyServiceSpy = jasmine.createSpyObj('NetworkKeyService', ['getActiveKeys']);
+    networkKeyServiceSpy.getActiveKeys.and.returnValue(of({
+      message: 'Success',
+      success: true,
+      response: 200,
+      data: []
+    }));
+
+    invitationServiceSpy = jasmine.createSpyObj('InvitationService', ['getInvitations']);
+    invitationServiceSpy.getInvitations.and.returnValue(of({
+      message: 'Success',
+      success: true,
+      response: 200,
+      data: []
+    }));
 
     utilityServiceSpy = jasmine.createSpyObj('UtilityService', ['getCountries']);
     utilityServiceSpy.getCountries.and.returnValue(of({
@@ -95,10 +98,11 @@ describe('MainOrganization', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         MessageService,
-        DialogService,
         { provide: OrganizationService, useValue: organizationServiceSpy },
         { provide: NetworkKeyService, useValue: networkKeyServiceSpy },
+        { provide: InvitationService, useValue: invitationServiceSpy },
         { provide: UtilityService, useValue: utilityServiceSpy }
       ]
     }).compileComponents();
@@ -115,19 +119,7 @@ describe('MainOrganization', () => {
     expect(component.addresses[0].city).toBe('New York');
   });
 
-  it('should open and close address dialog', () => {
-    component.openAddAddressDialog();
-    expect(component.showAddressDialog).toBeTrue();
-    expect(component.editingAddressIndex).toBeNull();
-
-    component.closeAddressDialog();
-    expect(component.showAddressDialog).toBeFalse();
-  });
-
-  it('should populate addressForm when opening edit address dialog', () => {
-    component.openEditAddressDialog(0);
-    expect(component.showAddressDialog).toBeTrue();
-    expect(component.editingAddressIndex).toBe(0);
-    expect(component.addressForm.get('city')?.value).toBe('New York');
+  it('should compute financial year end display', () => {
+    expect(component.getFinancialYearEndDisplay()).toBe('Dec. 31');
   });
 });

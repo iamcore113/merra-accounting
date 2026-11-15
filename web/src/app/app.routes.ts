@@ -58,8 +58,13 @@ export const routes: Routes = [
       },
       {
         path: 'organization',
-        loadComponent: () => import('./views/main/main-organization/main-organization').then(m => m.MainOrganization),
+        loadComponent: () => import('./views/main/main-organization/organization-profile/organization-profile').then(m => m.OrganizationProfile),
         title: 'MERRA - Organization'
+      },
+      {
+        path: 'organization/settings',
+        loadComponent: () => import('./views/main/main-organization/organization-settings/organization-settings').then(m => m.OrganizationSettings),
+        title: 'MERRA - Organization Settings'
       },
       {
         path: 'invoice',
@@ -113,7 +118,7 @@ export const routes: Routes = [
       },
       {
         path: 'network-key',
-        redirectTo: 'organization',
+        redirectTo: 'organization/settings',
         pathMatch: 'full'
       }
     ]

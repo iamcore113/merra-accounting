@@ -12,9 +12,23 @@ public record CurrentOrganizationResponse(
         String website,
         LocalDate createdDate,
         String status,
-        FinancialYearEmb financialYear
+        FinancialYearEmb financialYear,
+        List<ExternalLink> externalLinks
 
 ) {
+
+    public CurrentOrganizationResponse(
+            UUID organizationId,
+            Type organizationType,
+            Names names,
+            Contact address,
+            String website,
+            LocalDate createdDate,
+            String status,
+            FinancialYearEmb financialYear
+    ) {
+        this(organizationId, organizationType, names, address, website, createdDate, status, financialYear, List.of());
+    }
 
     public CurrentOrganizationResponse {
         if (organizationId == null) {
@@ -22,6 +36,17 @@ public record CurrentOrganizationResponse(
         }
         if (status == null || status.isBlank()) {
             throw new IllegalArgumentException("status cannot be null or blank");
+        }
+    }
+
+    public record ExternalLink(String linkType, String url) {
+        public ExternalLink {
+            if (linkType == null || linkType.isBlank()) {
+                throw new IllegalArgumentException("linkType cannot be null or blank");
+            }
+            if (url == null || url.isBlank()) {
+                throw new IllegalArgumentException("url cannot be null or blank");
+            }
         }
     }
 

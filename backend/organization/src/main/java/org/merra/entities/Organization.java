@@ -103,6 +103,7 @@ public class Organization {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER, orphanRemoval = true)
 	private List<OrganizationAddresses> addresses;
 
+	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "external_links", columnDefinition = "jsonb", nullable = true)
 	private Set<ExternalLinksEmb> externalLinks;
 

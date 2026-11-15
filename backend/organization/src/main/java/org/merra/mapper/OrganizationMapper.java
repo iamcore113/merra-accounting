@@ -83,7 +83,8 @@ public interface OrganizationMapper {
 			@Mapping(target = "website", source = "website"),
 			@Mapping(target = "status", source = "status", qualifiedByName = "mapStatusToString"),
 			@Mapping(target = "createdDate", source = "createdDate"),
-			@Mapping(target = "financialYear", source = "organization", qualifiedByName = "mapFinancialYearResponse")
+			@Mapping(target = "financialYear", source = "organization", qualifiedByName = "mapFinancialYearResponse"),
+			@Mapping(target = "externalLinks", source = "organization", qualifiedByName = "mapExternalLinksResponse")
 	})
 	CurrentOrganizationResponse toCurrentOrganizationResponse(Organization organization);
 
@@ -144,6 +145,17 @@ public interface OrganizationMapper {
 		return new CurrentOrganizationResponse.FinancialYearEmb(
 				String.valueOf(organization.getFinancialYear().getYearEndDay()),
 				String.valueOf(organization.getFinancialYear().getYearEndMonth()));
+	}
+
+	@Named("mapExternalLinksResponse")
+	default List<CurrentOrganizationResponse.ExternalLink> mapExternalLinksResponse(Organization organization) {
+		if (organization.getExternalLinks() == null || organization.getExternalLinks().isEmpty()) {
+			return List.of();
+		}
+		return organization.getExternalLinks().stream()
+				.filter(link -> link != null && link.getLinkType() != null && link.getUrl() != null && !link.getUrl().isBlank())
+				.map(link -> new CurrentOrganizationResponse.ExternalLink(link.getLinkType(), link.getUrl()))
+				.toList();
 	}
 
 	/**

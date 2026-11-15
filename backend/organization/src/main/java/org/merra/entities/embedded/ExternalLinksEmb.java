@@ -1,6 +1,7 @@
 package org.merra.entities.embedded;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.validation.constraints.NotNull;
@@ -12,9 +13,10 @@ public class ExternalLinksEmb implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Set<String> linkTypes = Set.of(
 			"FACEBOOK",
+			"X",
+			"TWITTER",
 			"INSTAGRAM",
-			"WEBSITE",
-			"TIKTOK");
+			"LINKEDIN");
 
 	@NotNull(message = "linkType attribute cannot be null.")
 	private String linkType;
@@ -22,7 +24,7 @@ public class ExternalLinksEmb implements Serializable {
 	private String url;
 
 	public void setLinkType(String linkType) {
-		if (!linkTypes.contains(linkType.toUpperCase())) {
+		if (linkType == null || !linkTypes.contains(linkType.toUpperCase())) {
 			throw new IllegalArgumentException("Invalid key found: '" + linkType + "'. Allowed keys are: " + linkTypes);
 		} else {
 			this.linkType = linkType.toUpperCase();
@@ -43,11 +45,24 @@ public class ExternalLinksEmb implements Serializable {
 
 	public ExternalLinksEmb(@NotNull(message = "linkType attribute cannot be null.") String linkType,
 			@NotNull(message = "url attribute cannot be null.") String url) {
-		this.linkType = linkType;
+		this.setLinkType(linkType);
 		this.url = url;
 	}
 
 	public ExternalLinksEmb() {
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ExternalLinksEmb that = (ExternalLinksEmb) o;
+		return Objects.equals(linkType, that.linkType) && Objects.equals(url, that.url);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(linkType, url);
 	}
 
 }
