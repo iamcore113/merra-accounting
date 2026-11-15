@@ -17,6 +17,7 @@ public interface OrganizationNetworkKeyRepository extends JpaRepository<Organiza
             FROM OrganizationNetworkKey k
             WHERE k.organization.id = :organizationId
               AND k.isActive = true
+              AND k.keyType = 'NETWORK_KEY'
             ORDER BY k.createdAt DESC
             """)
     List<OrganizationNetworkKey> findActiveKeysByOrganizationId(UUID organizationId);
@@ -27,6 +28,7 @@ public interface OrganizationNetworkKeyRepository extends JpaRepository<Organiza
             JOIN FETCH k.organization o
             WHERE k.networkKey = :networkKey
               AND k.isActive = true
+              AND k.keyType = 'NETWORK_KEY'
             """)
     Optional<OrganizationNetworkKey> findByNetworkKeyAndIsActiveTrue(String networkKey);
 
@@ -46,6 +48,30 @@ public interface OrganizationNetworkKeyRepository extends JpaRepository<Organiza
             WHERE k.organization.id = :organizationId
               AND k.networkKey = :networkKey
               AND k.isActive = true
+              AND k.keyType = 'NETWORK_KEY'
             """)
     boolean existsActiveKeyForOrganization(UUID organizationId, String networkKey);
+
+    @Query("""
+            SELECT k
+            FROM OrganizationNetworkKey k
+            JOIN FETCH k.organization o
+            LEFT JOIN FETCH k.organizationMember m
+            WHERE k.organization.id = :organizationId
+              AND k.keyType = 'INVITATION'
+              AND k.isActive = true
+            ORDER BY k.createdAt DESC
+            """)
+    List<OrganizationNetworkKey> findActiveInvitationsByOrganizationId(UUID organizationId);
+
+    @Query("""
+            SELECT k
+            FROM OrganizationNetworkKey k
+            JOIN FETCH k.organization o
+            LEFT JOIN FETCH k.organizationMember m
+            WHERE k.networkKey = :invitationToken
+              AND k.keyType = 'INVITATION'
+              AND k.isActive = true
+            """)
+    Optional<OrganizationNetworkKey> findByInvitationTokenAndIsActiveTrue(String invitationToken);
 }

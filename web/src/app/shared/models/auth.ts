@@ -89,9 +89,11 @@ export interface SigninResponse {
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/SigninResponse.AccountStatus
 export interface AccountStatus {
-  isComplete: boolean;
+  isComplete?: boolean;
+  complete?: boolean;
   partOfOrganization: boolean;
-  isEnabled: boolean;
+  isEnabled?: boolean;
+  enabled?: boolean;
   hasActiveWorkspace?: boolean;
 }
 

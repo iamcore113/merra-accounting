@@ -115,10 +115,21 @@ export class Signin implements OnInit, OnDestroy {
           const refreshToken = verifiedData.tokens.refreshToken;
           this.localStorage.setItem('access_token', accessToken);
           this.localStorage.setItem('refresh_token', refreshToken);
-          if (verifiedData.userdetails?.email) {
-            this.localStorage.setItem('user_email', verifiedData.userdetails.email);
+          const userEmail = verifiedData.userdetails?.email || req.email || '';
+          if (userEmail) {
+            this.localStorage.setItem('user_email', userEmail);
           }
-          if (verifiedData.accountStatus?.hasActiveWorkspace) {
+
+          const status = verifiedData.accountStatus;
+          const isProfileComplete = status?.complete ?? status?.isComplete ?? true;
+
+          if (!isProfileComplete) {
+            this.router.navigate(userEmail ? ['/account/personal-details', userEmail] : ['/account/personal-details']);
+          } else if (!status?.partOfOrganization) {
+            this.router.navigate(
+              userEmail ? ['/account/organization-choice', userEmail] : ['/account/organization-choice']
+            );
+          } else if (status?.hasActiveWorkspace) {
             this.router.navigate(['/main']);
           } else {
             this.router.navigate(['/select-organization']);

@@ -158,6 +158,7 @@ public class SecurityConfig {
                                 "/actuator/**",
                                 "/api/auth/**",
                                 "/api/tokens/**",
+                                "/api/business/organization/invitation/verify",
                                 "/swagger-ui/**",
                                 "/api-docs/**",
                                 "/v3/api-docs/**")

@@ -121,7 +121,7 @@ export class PersonalDetails implements OnInit {
       },
       complete: () => {
         if (getEmail === this.emailFromResponse) {
-          this.router.navigate(['/create/organization', getEmail]);
+          this.router.navigate(['/account/organization-choice', getEmail]);
         } else {
           console.error('Email does not match');
         }

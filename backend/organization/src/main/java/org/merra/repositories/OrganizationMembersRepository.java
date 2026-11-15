@@ -19,7 +19,8 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	 */
 	@Query("SELECT om.organization AS organization, om.role AS role " +
 			"FROM OrganizationMembers om " +
-			"WHERE om.user.userId = ?#{ principal?.userId }")
+			"WHERE om.user.userId = ?#{ principal?.userId } " +
+			"AND om.status = 'ACTIVE'")
 	List<UserOrganizationAffiliations> findUserOrganizationAffiliations();
 
 	/**
@@ -28,7 +29,7 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	 *
 	 * @return the count of organization memberships for the authenticated user.
 	 */
-	@Query("SELECT COUNT(om) FROM OrganizationMembers om WHERE om.user.userId = ?#{ principal?.userId }")
+	@Query("SELECT COUNT(om) FROM OrganizationMembers om WHERE om.user.userId = ?#{ principal?.userId } AND om.status = 'ACTIVE'")
 	Long countByUserOrganizationAffiliation();
 
 	/**
@@ -38,7 +39,7 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	 * @param userId the UUID of the user
 	 * @return true if the membership exists, false otherwise
 	 */
-	@Query("SELECT COUNT(om) > 0 FROM OrganizationMembers om WHERE om.organization.id = :orgId AND om.user.userId = :userId")
+	@Query("SELECT COUNT(om) > 0 FROM OrganizationMembers om WHERE om.organization.id = :orgId AND om.user.userId = :userId AND om.status = 'ACTIVE'")
 	boolean isUserMemberOfOrganization(
 			@org.springframework.data.repository.query.Param("orgId") UUID orgId,
 			@org.springframework.data.repository.query.Param("userId") UUID userId);

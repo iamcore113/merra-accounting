@@ -81,7 +81,15 @@ export class SelectOrganization implements OnInit {
       next: (res: Config) => {
         if (res.success && 'data' in res && res.data) {
           const affiliationData = res.data as UserOrganizationAffiliation;
-          this.organizations.set(affiliationData.organizations || []);
+          const orgs = affiliationData.organizations || [];
+          this.organizations.set(orgs);
+          if (orgs.length === 0) {
+            const email = this.userEmail() || this.localStorage.getItem('user_email') || '';
+            void this.router.navigate(
+              email ? ['/account/organization-choice', email] : ['/account/organization-choice']
+            );
+            return;
+          }
         }
         this.isLoading.set(false);
         this.cdr.markForCheck();

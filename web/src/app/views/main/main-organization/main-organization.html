@@ -341,6 +341,164 @@
 			</p-accordion-content>
 		</p-accordion-panel>
 
+		<!-- Panel 2b: User Invitations -->
+		<p-accordion-panel value="invitations">
+			<p-accordion-header>
+				<div class="detail-title">
+					<span class="row-lead-icon">
+						<i class="pi pi-user-plus"></i>
+					</span>
+					<div class="detail-text">
+						<span class="detail-label">User Invitations:</span>
+						<span class="detail-value">
+							{{ invitations.length }} active invitation{{ invitations.length === 1 ? '' : 's' }}
+						</span>
+					</div>
+				</div>
+			</p-accordion-header>
+			<p-accordion-content>
+				<div class="section-container invitations-section">
+					<div class="section-sub-header">
+						<div class="section-sub-info">
+							<h3 class="section-inner-title">Invite Users to Organization</h3>
+							<p class="section-inner-desc">
+								Generate a 24-hour invitation link to email directly to an invitee, or generate a token to share manually.
+							</p>
+						</div>
+					</div>
+
+					<div class="invitation-creator-form">
+						<div class="invitation-form-row">
+							<div class="form-field flex-1">
+								<label class="field-label" for="inviteeEmailInput">Invitee Email</label>
+								<input
+									id="inviteeEmailInput"
+									pInputText
+									[pSize]="'small'"
+									type="email"
+									[(ngModel)]="inviteeEmail"
+									placeholder="colleague@company.com"
+									class="full-width" />
+							</div>
+							<div class="form-field role-select-field">
+								<label class="field-label" for="inviteeRoleSelect">Role</label>
+								<p-select
+									inputId="inviteeRoleSelect"
+									[(ngModel)]="selectedInvitationRole"
+									[options]="invitationRoles"
+									optionLabel="label"
+									optionValue="value"
+									[size]="'small'"
+									styleClass="full-width">
+								</p-select>
+							</div>
+						</div>
+
+						<div class="invitation-form-actions">
+							<p-button
+								label="Generate & Send Email Link"
+								icon="pi pi-envelope"
+								[size]="'small'"
+								[loading]="isCreatingInvitation"
+								[disabled]="isCreatingInvitation"
+								(onClick)="createInvitation(true)">
+							</p-button>
+							<p-button
+								label="Generate Token Only"
+								icon="pi pi-key"
+								[outlined]="true"
+								[size]="'small'"
+								[loading]="isCreatingInvitation"
+								[disabled]="isCreatingInvitation"
+								(onClick)="createInvitation(false)">
+							</p-button>
+						</div>
+					</div>
+
+					@if (lastCreatedInvitation; as created) {
+						<div class="generated-invitation-box">
+							<div class="generated-invitation-header">
+								<strong>Latest Invitation ({{ created.inviteeEmail }} &bull; {{ created.role }})</strong>
+								@if (created.emailSent) {
+									<p-tag value="Email Sent" severity="success"></p-tag>
+								} @else {
+									<p-tag value="Manual Share" severity="info"></p-tag>
+								}
+							</div>
+							<div class="generated-copy-row">
+								<span class="copy-label">Invitation Token:</span>
+								<code class="copy-value">{{ created.invitationToken }}</code>
+								<p-button
+									icon="pi pi-copy"
+									label="Copy Token"
+									[outlined]="true"
+									[size]="'small'"
+									(onClick)="copyInvitationText(created.invitationToken, 'Invitation token')">
+								</p-button>
+							</div>
+							<div class="generated-copy-row">
+								<span class="copy-label">Invitation Link:</span>
+								<code class="copy-value">{{ created.invitationLink }}</code>
+								<p-button
+									icon="pi pi-link"
+									label="Copy Link"
+									[outlined]="true"
+									[size]="'small'"
+									(onClick)="copyInvitationText(created.invitationLink, 'Invitation link')">
+								</p-button>
+							</div>
+						</div>
+					}
+
+					<div class="active-invitations-list">
+						@if (isLoadingInvitations) {
+							<p-skeleton width="100%" height="3rem"></p-skeleton>
+						} @else if (invitations.length === 0) {
+							<p class="empty-invitations-text">No active pending invitations.</p>
+						} @else {
+							@for (inv of invitations; track inv.id) {
+								<div class="invitation-list-item">
+									<div class="invitation-item-info">
+										<span class="invitation-item-email">{{ inv.inviteeEmail }}</span>
+										<div class="invitation-item-meta">
+											<p-tag [value]="inv.role" severity="secondary"></p-tag>
+											@if (inv.expiresAt) {
+												<span class="invitation-expires">Expires {{ inv.expiresAt | date:'short' }}</span>
+											}
+										</div>
+									</div>
+									<div class="invitation-item-actions">
+										<p-button
+											icon="pi pi-copy"
+											pTooltip="Copy invitation token"
+											[outlined]="true"
+											[size]="'small'"
+											(onClick)="copyInvitationText(inv.invitationToken, 'Invitation token')">
+										</p-button>
+										<p-button
+											icon="pi pi-link"
+											pTooltip="Copy invitation link"
+											[outlined]="true"
+											[size]="'small'"
+											(onClick)="copyInvitationText(inv.invitationLink, 'Invitation link')">
+										</p-button>
+										<p-button
+											icon="pi pi-trash"
+											pTooltip="Revoke invitation"
+											severity="danger"
+											[outlined]="true"
+											[size]="'small'"
+											(onClick)="revokeInvitation(inv)">
+										</p-button>
+									</div>
+								</div>
+							}
+						}
+					</div>
+				</div>
+			</p-accordion-content>
+		</p-accordion-panel>
+
 		<!-- Panel 3: Addresses (With Full Update, Add, and Delete Capabilities) -->
 		<p-accordion-panel value="addresses">
 			<p-accordion-header>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    logicalFilePath="db/changesets/organization/org-20261115-52.xml"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- 1. Update organization_members to support pending invitees and store member email -->
+    <changeSet id="20261115-update-organization-members-for-invitations" author="merra">
+        <validCheckSum>ANY</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists tableName="organization_members"/>
+            <not>
+                <columnExists tableName="organization_members" columnName="email"/>
+            </not>
+            <not>
+                <columnExists tableName="organization_members" columnName="invitee_email"/>
+            </not>
+        </preConditions>
+
+        <dropNotNullConstraint
+            tableName="organization_members"
+            columnName="user_id"
+            columnDataType="uuid"/>
+
+        <addColumn tableName="organization_members">
+            <column name="email" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- 2. Update organization_network_keys to use network_key (text) for both network keys and invitation tokens -->
+    <changeSet id="20261115-add-invitation-token-columns-to-organization-network-keys" author="merra">
+        <validCheckSum>ANY</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <tableExists schemaName="app" tableName="organization_network_keys"/>
+            <not>
+                <columnExists schemaName="app" tableName="organization_network_keys" columnName="key_type"/>
+            </not>
+        </preConditions>
+
+        <modifyDataType
+            schemaName="app"
+            tableName="organization_network_keys"
+            columnName="network_key"
+            newDataType="text"/>
+
+        <addColumn schemaName="app" tableName="organization_network_keys">
+            <column name="key_type" type="varchar(30)" defaultValue="NETWORK_KEY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="timestamp">
+                <constraints nullable="true"/>
+            </column>
+            <column name="organization_member_id" type="uuid">
+                <constraints
+                    nullable="true"
+                    foreignKeyName="fk_org_network_keys__org_member"
+                    referencedTableName="organization_members"
+                    referencedColumnNames="id"
+                    deleteCascade="true"/>
+            </column>
+        </addColumn>
+
+        <createIndex schemaName="app" tableName="organization_network_keys" indexName="idx_org_network_keys_org_type">
+            <column name="organization_id"/>
+            <column name="key_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- 3. Reconcile if earlier draft of 20261115 changesets already ran -->
+    <changeSet id="20261115-reconcile-email-and-single-network-key-column" author="merra">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <sql splitStatements="false">
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_name = 'organization_members' AND column_name = 'invitee_email'
+                ) THEN
+                    ALTER TABLE organization_members RENAME COLUMN invitee_email TO email;
+                END IF;
+
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.columns
+                    WHERE table_schema = 'app' AND table_name = 'organization_network_keys' AND column_name = 'invitation_token'
+                ) THEN
+                    UPDATE app.organization_network_keys
+                    SET network_key = invitation_token
+                    WHERE network_key IS NULL AND invitation_token IS NOT NULL;
+
+                    ALTER TABLE app.organization_network_keys DROP COLUMN invitation_token;
+                END IF;
+
+                ALTER TABLE app.organization_network_keys
+                    ALTER COLUMN network_key TYPE text,
+                    ALTER COLUMN network_key SET NOT NULL;
+            END $$;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

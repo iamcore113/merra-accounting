@@ -1,0 +1,49 @@
+<div class="choice-wrapper">
+  <div class="choice-header">
+    <h1 class="choice-title">Set up your workspace</h1>
+    <p class="sub-text">
+      Choose how you would like to get started with MERRA{{ email ? ' for ' + email : '' }}.
+    </p>
+  </div>
+
+  <div class="choice-cards">
+    <div class="choice-card" (click)="onCreateOrganization()">
+      <div class="choice-card-icon create-icon">
+        <i class="pi pi-building"></i>
+      </div>
+      <div class="choice-card-body">
+        <h2>Create an Organization</h2>
+        <p>Set up a new business or accounting organization that you own and manage.</p>
+      </div>
+      <div class="choice-card-action">
+        <p-button
+          label="Create Organization"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          [size]="'small'"
+          (onClick)="$event.stopPropagation(); onCreateOrganization()">
+        </p-button>
+      </div>
+    </div>
+
+    <div class="choice-card" (click)="onEnterInvitationToken()">
+      <div class="choice-card-icon invite-icon">
+        <i class="pi pi-ticket"></i>
+      </div>
+      <div class="choice-card-body">
+        <h2>Enter Invitation Token</h2>
+        <p>Join an existing organization using an invitation token or link sent by your administrator.</p>
+      </div>
+      <div class="choice-card-action">
+        <p-button
+          label="Enter Invitation Token"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="$event.stopPropagation(); onEnterInvitationToken()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+</div>

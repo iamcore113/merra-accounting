@@ -29,8 +29,11 @@ public class OrganizationMembers {
 	private Organization organization;
 
 	@ManyToOne
-	@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "user_id")
+	@JoinColumn(name = "user_id", nullable = true, referencedColumnName = "user_id")
 	private UserAccount user;
+
+	@Column(name = "email")
+	private String email;
 
 	@Column(name = "role", nullable = false)
 	@NotBlank(message = "Role cannot be blank.")
@@ -71,6 +74,7 @@ public class OrganizationMembers {
 	public OrganizationMembers(Organization organization, UserAccount user) {
 		this.organization = organization;
 		this.user = user;
+		this.email = user != null ? user.getEmail() : null;
 		this.isCreator = true;
 		this.isInvited = false;
 		this.role = UserAccountStatusEn.CREATOR.name();
@@ -155,6 +159,22 @@ public class OrganizationMembers {
 
 	public void setDateUpdated(LocalDate dateUpdated) {
 		this.dateUpdated = dateUpdated;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public UserAccount getInvitationBy() {
+		return invitationBy;
+	}
+
+	public void setInvitationBy(UserAccount invitationBy) {
+		this.invitationBy = invitationBy;
 	}
 
 	@Override

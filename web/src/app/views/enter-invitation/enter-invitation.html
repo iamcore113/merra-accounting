@@ -1,0 +1,100 @@
+<div class="invitation-wrapper">
+  <div class="invitation-header">
+    <h1 class="invitation-title">Join an Organization</h1>
+    <p class="sub-text">
+      Paste your invitation token below to verify your invitation details and join the organization.
+    </p>
+  </div>
+
+  <form [formGroup]="invitationForm" (ngSubmit)="verifyToken()" class="invitation-form">
+    <div class="field-group">
+      <label class="field-label" for="invitationToken">Invitation Token</label>
+      <textarea
+        id="invitationToken"
+        pTextarea
+        formControlName="token"
+        rows="4"
+        placeholder="Paste your invitation token here..."
+        class="full-width token-input"></textarea>
+      @if (invitationForm.get('token')?.invalid && invitationForm.get('token')?.touched) {
+        <small class="field-error">Invitation token is required.</small>
+      }
+    </div>
+
+    <div class="form-actions">
+      <p-button
+        type="button"
+        label="Back"
+        [outlined]="true"
+        [size]="'small'"
+        (onClick)="goBack()">
+      </p-button>
+      <p-button
+        type="submit"
+        label="Verify Token"
+        icon="pi pi-check-circle"
+        [size]="'small'"
+        [loading]="isVerifying()"
+        [disabled]="isVerifying() || invitationForm.invalid">
+      </p-button>
+    </div>
+  </form>
+
+  @if (verificationError()) {
+    <div class="error-banner">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ verificationError() }}</span>
+    </div>
+  }
+
+  @if (verifiedInvitation(); as info) {
+    <div class="verified-card">
+      <div class="verified-card-header">
+        <span class="verified-badge"><i class="pi pi-verified"></i> Verified Invitation</span>
+        @if (info.expiresAt) {
+          <span class="expires-text">Expires: {{ info.expiresAt | date:'medium' }}</span>
+        }
+      </div>
+
+      <div class="verified-details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Invited Email</span>
+          <span class="detail-value">{{ info.inviteeEmail }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Role</span>
+          <span class="detail-value">
+            <p-tag [value]="info.role || 'MEMBER'" severity="info"></p-tag>
+          </span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Organization Display Name</span>
+          <span class="detail-value">{{ info.organizationDisplayName }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Organization Legal Name</span>
+          <span class="detail-value">{{ info.organizationLegalName }}</span>
+        </div>
+      </div>
+
+      <div class="verified-actions">
+        @if (isAuthenticated) {
+          <p-button
+            label="Accept & Join Organization"
+            icon="pi pi-check"
+            [size]="'small'"
+            [loading]="isAccepting()"
+            [disabled]="isAccepting()"
+            (onClick)="acceptInvitation()">
+          </p-button>
+        } @else {
+          <p class="auth-prompt">Sign in or create an account with <strong>{{ info.inviteeEmail }}</strong> to accept this invitation.</p>
+          <div class="auth-buttons">
+            <p-button label="Sign In" icon="pi pi-sign-in" [size]="'small'" (onClick)="goToSignin()"></p-button>
+            <p-button label="Create Account" [outlined]="true" [size]="'small'" (onClick)="goToSignup()"></p-button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

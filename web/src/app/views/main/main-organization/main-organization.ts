@@ -19,6 +19,7 @@ import { MessageService } from 'primeng/api';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { NetworkKeyService } from '../../../shared/services/network-key-service';
+import { InvitationService } from '../../../shared/services/invitation-service';
 import { UtilityService } from '../../../shared/services/utility-service';
 import { LocalStorageService } from '../../../shared/services/local-storage-service';
 import {
@@ -32,6 +33,7 @@ import {
   CurrentOrganizationResponseContactAddress
 } from '../../../shared/models/organization';
 import { NetworkKeyResponse } from '../../../shared/models/network-key';
+import { InvitationResponse, ORGANIZATION_INVITATION_ROLES } from '../../../shared/models/invitation';
 import { Config } from '../../../shared/models/api_response';
 import { OrganizationProfileDialog, OrganizationImageDialog } from './organization-profile-dialog';
 
@@ -65,6 +67,7 @@ export { OrganizationProfileDialog, OrganizationImageDialog };
 export class MainOrganization implements OnInit {
   public organizationService = inject(OrganizationService);
   private readonly networkKeyService = inject(NetworkKeyService);
+  private readonly invitationService = inject(InvitationService);
   private readonly utilityService = inject(UtilityService);
   private readonly localStorage = inject(LocalStorageService);
   private readonly router = inject(Router);
@@ -261,6 +264,7 @@ export class MainOrganization implements OnInit {
     this.loadCountries();
     this.loadOrganizationTypesMetadata();
     this.loadNetworkKeys();
+    this.loadInvitations();
     this.organizationService.getCurrentOrganization().subscribe({
       next: (response: Config) => {
         if (response.success && 'data' in response) {
@@ -1181,6 +1185,116 @@ export class MainOrganization implements OnInit {
           detail: msg,
         });
         this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // ==========================================
+  // USER INVITATIONS MANAGEMENT
+  // ==========================================
+
+  invitations: InvitationResponse[] = [];
+  isLoadingInvitations = false;
+  isCreatingInvitation = false;
+  inviteeEmail = '';
+  selectedInvitationRole = 'STANDARD';
+  readonly invitationRoles = ORGANIZATION_INVITATION_ROLES;
+  lastCreatedInvitation: InvitationResponse | null = null;
+
+  loadInvitations(): void {
+    this.isLoadingInvitations = true;
+    this.invitationService.getInvitations().subscribe({
+      next: (res) => {
+        this.isLoadingInvitations = false;
+        this.invitations = res.success && res.data ? res.data : [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingInvitations = false;
+        this.invitations = [];
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  createInvitation(sendEmail: boolean): void {
+    const email = this.inviteeEmail.trim();
+    if (!email) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Email Required',
+        detail: 'Please enter the invitee email address.',
+      });
+      return;
+    }
+
+    this.isCreatingInvitation = true;
+    this.invitationService
+      .createInvitation({
+        inviteeEmail: email,
+        role: this.selectedInvitationRole,
+        sendEmail,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isCreatingInvitation = false;
+          if (res.success && res.data) {
+            this.lastCreatedInvitation = res.data;
+            this.invitations = [res.data, ...this.invitations];
+            this.inviteeEmail = '';
+            this.messageService.add({
+              severity: 'success',
+              summary: sendEmail ? 'Invitation Link Sent' : 'Invitation Token Generated',
+              detail: res.message || (sendEmail ? 'Invitation email sent.' : 'Token ready to share.'),
+            });
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.isCreatingInvitation = false;
+          const msg = err.error?.message || err.message || 'Failed to create invitation.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Invitation Failed',
+            detail: msg,
+          });
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  copyInvitationText(text: string, label: string): void {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Copied',
+        detail: `${label} copied to clipboard.`,
+      });
+    });
+  }
+
+  revokeInvitation(invitation: InvitationResponse): void {
+    this.invitationService.revokeInvitation(invitation.id).subscribe({
+      next: () => {
+        this.invitations = this.invitations.filter((i) => i.id !== invitation.id);
+        if (this.lastCreatedInvitation?.id === invitation.id) {
+          this.lastCreatedInvitation = null;
+        }
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Invitation Revoked',
+          detail: `Invitation for ${invitation.inviteeEmail} has been revoked.`,
+        });
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        const msg = err.error?.message || err.message || 'Failed to revoke invitation.';
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Revocation Failed',
+          detail: msg,
+        });
       },
     });
   }

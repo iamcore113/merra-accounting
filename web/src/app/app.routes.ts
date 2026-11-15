@@ -5,6 +5,8 @@ import { ConfirmAccount } from './views/confirm-account/confirm-account';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
+import { OrganizationChoice } from './views/organization-choice/organization-choice';
+import { EnterInvitation } from './views/enter-invitation/enter-invitation';
 import { CreateOrganization } from './views/create-organization/create-organization';
 import { ErrorPage } from './views/error-page/error-page';
 import { MainLayout } from './shared/components/main-layout/main-layout';
@@ -14,6 +16,7 @@ import { NoOrganizationPage } from './views/no-organization-page/no-organization
 import { SelectOrganization } from './views/select-organization/select-organization';
 import { LandingPage } from './views/landing-page/landing-page';
 import { aUTHGUARDGuard } from './shared/guards/auth-guard-guard';
+import { organizationMemberGuard } from './shared/guards/organization-member-guard';
 import { MainContact } from './views/main/main-contact/main-contact';
 import { OfflinePage } from './views/offline-page/offline-page';
 import { offlineGuard } from './shared/guards/offline-guard';
@@ -33,10 +36,15 @@ export const routes: Routes = [
   { path: 'account/verify-email/:email', component: VerifyEmail, canActivate: [verifyEmailGuard], title: 'Enter PIN code to activate your account | MERRA' },
   { path: 'account/verify', component: VerifyAccount, title: 'Enter PIN code to activate your account | MERRA' },
   { path: 'account/personal-details/:email', component: PersonalDetails, title: 'MERRA - Personal Details' },
+  { path: 'account/organization-choice', component: OrganizationChoice, title: 'MERRA - Choose Organization Setup' },
+  { path: 'account/organization-choice/:email', component: OrganizationChoice, title: 'MERRA - Choose Organization Setup' },
+  { path: 'account/enter-invitation', component: EnterInvitation, title: 'MERRA - Enter Invitation Token' },
+  { path: 'account/enter-invitation/:email', component: EnterInvitation, title: 'MERRA - Enter Invitation Token' },
+  { path: 'join-organization', component: EnterInvitation, title: 'MERRA - Join Organization' },
   {
     path: 'main',
     component: MainLayout,
-    // canActivate: [aUTHGUARDGuard],
+    canActivate: [organizationMemberGuard],
     children: [
       {
         path: '',
