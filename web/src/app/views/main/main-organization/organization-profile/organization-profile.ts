@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -43,7 +43,7 @@ export interface ProfileSocialLink {
   styleUrl: './organization-profile.scss',
   encapsulation: ViewEncapsulation.None
 })
-export class OrganizationProfile implements OnInit {
+export class OrganizationProfile implements OnInit, OnDestroy {
   public organizationService = inject(OrganizationService);
   private readonly networkKeyService = inject(NetworkKeyService);
   private readonly invitationService = inject(InvitationService);
@@ -67,6 +67,12 @@ export class OrganizationProfile implements OnInit {
   invitationsCount = 0;
   copiedId = false;
   customLogoUrl: string | null = null;
+  isUploadingLogo = false;
+  isRemovingLogo = false;
+  isLoadingLogo = false;
+  isLogoLoaded = false;
+  isDraggingLogo = false;
+  private previousLogoUrl: string | null = null;
 
   addresses: CurrentOrganizationResponseContactAddress[] = [];
   externalLinks: ProfileSocialLink[] = [];
@@ -184,14 +190,37 @@ export class OrganizationProfile implements OnInit {
   }
 
   private loadStoredLogo(): void {
-    try {
-      const stored = this.localStorage.getItem('organization_logo_preview');
-      if (stored) {
-        this.customLogoUrl = stored;
+    this.isLoadingLogo = true;
+    this.organizationService.getProfileImage().subscribe({
+      next: (blob: Blob) => {
+        this.setLogoFromBlob(blob);
+        this.isLoadingLogo = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // 404 means no profile image has been uploaded yet
+        this.customLogoUrl = null;
+        this.isLoadingLogo = false;
+        this.cdr.markForCheck();
       }
-    } catch {
-      // Ignore storage errors
+    });
+  }
+
+  private setLogoFromBlob(blob: Blob): void {
+    this.revokeLogoUrl();
+    this.isLogoLoaded = false;
+    this.customLogoUrl = URL.createObjectURL(blob);
+    this.cdr.markForCheck();
+  }
+
+  private revokeLogoUrl(): void {
+    if (this.customLogoUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.customLogoUrl);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.revokeLogoUrl();
   }
 
   getInitials(): string {
@@ -282,26 +311,64 @@ export class OrganizationProfile implements OnInit {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      if (file.size > 2 * 1024 * 1024) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'File Too Large',
-          detail: 'Logo image must be smaller than 2MB'
-        });
-        return;
-      }
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) this.uploadLogo(file);
+  }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        this.customLogoUrl = result;
-        try {
-          this.localStorage.setItem('organization_logo_preview', result);
-        } catch {
-          // Ignore
-        }
+  openLogoPicker(input: HTMLInputElement): void {
+    if (this.isUploadingLogo || this.isRemovingLogo || this.isLoadingLogo) return;
+    input.click();
+  }
+
+  onLogoDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (!this.isUploadingLogo) this.isDraggingLogo = true;
+  }
+
+  onLogoDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDraggingLogo = false;
+  }
+
+  onLogoDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDraggingLogo = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file && !this.isUploadingLogo) this.uploadLogo(file);
+  }
+
+  private uploadLogo(file: File): void {
+    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Unsupported File',
+        detail: 'Logo must be a PNG, JPEG or WEBP image'
+      });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'File Too Large',
+        detail: `Logo image must be smaller than 5MB (selected: ${(file.size / 1024 / 1024).toFixed(1)}MB)`
+      });
+      return;
+    }
+
+    // Optimistic preview: show the chosen image immediately (dimmed with a spinner)
+    this.previousLogoUrl = this.customLogoUrl;
+    this.customLogoUrl = URL.createObjectURL(file);
+    this.isLogoLoaded = true;
+    this.isUploadingLogo = true;
+    this.cdr.markForCheck();
+
+    this.organizationService.uploadProfileImage(file).subscribe({
+      next: () => {
+        if (this.previousLogoUrl?.startsWith('blob:')) URL.revokeObjectURL(this.previousLogoUrl);
+        this.previousLogoUrl = null;
+        this.isUploadingLogo = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Logo Updated',
@@ -309,25 +376,54 @@ export class OrganizationProfile implements OnInit {
           life: 2500
         });
         this.cdr.markForCheck();
-      };
-      reader.readAsDataURL(file);
-    }
+      },
+      error: () => {
+        // Revert to the previous logo
+        this.revokeLogoUrl();
+        this.customLogoUrl = this.previousLogoUrl;
+        this.previousLogoUrl = null;
+        this.isUploadingLogo = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Upload Failed',
+          detail: 'Could not upload the organization logo. Please try again.'
+        });
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onLogoImageLoaded(): void {
+    this.isLogoLoaded = true;
+    this.cdr.markForCheck();
   }
 
   removeLogo(): void {
-    this.customLogoUrl = null;
-    try {
-      this.localStorage.removeItem('organization_logo_preview');
-    } catch {
-      // Ignore
-    }
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Logo Removed',
-      detail: 'Reverted to default monogram avatar',
-      life: 2000
+    if (this.isRemovingLogo || this.isUploadingLogo) return;
+    this.isRemovingLogo = true;
+    this.organizationService.deleteProfileImage().subscribe({
+      next: () => {
+        this.isRemovingLogo = false;
+        this.revokeLogoUrl();
+        this.customLogoUrl = null;
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Logo Removed',
+          detail: 'Reverted to default monogram avatar',
+          life: 2000
+        });
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isRemovingLogo = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Remove Failed',
+          detail: 'Could not remove the organization logo'
+        });
+        this.cdr.markForCheck();
+      }
     });
-    this.cdr.markForCheck();
   }
 
   getAddressTypeIcon(type: string): string {

@@ -35,13 +35,13 @@ fi
 echo -n "Checking SeaweedFS container... "
 if "$WSLC_CMD" ps < /dev/null 2>&1 | grep -q "seaweedfs"; then
     echo "already running."
-elif "$WSLC_CMD" ps -a < /dev/null 2>&1 | grep -q "seaweedfs"; then
+elif "$WSLC_CMD" ps -a < /dev/null 2>&1 | grep -q "seaweedfs" \
+    && "$WSLC_CMD" start seaweedfs < /dev/null >/dev/null 2>&1; then
     echo "starting stopped container..."
-    "$WSLC_CMD" start seaweedfs < /dev/null >/dev/null
     echo "✓ seaweedfs started."
 else
     echo "creating new container..."
-    "$WSLC_CMD" run -d --name seaweedfs -p 8333:8333 -p 8888:8888 chrislusf/seaweedfs mini -dir=/data < /dev/null >/dev/null
+    "$WSLC_CMD" run -d --name seaweedfs -p 8333:8333 -p 8888:8888 -e AWS_ACCESS_KEY_ID="${S3_ACCESS_KEY:-minioadmin}" -e AWS_SECRET_ACCESS_KEY="${S3_SECRET_KEY:-minioadmin}" -e S3_BUCKET="${S3_ORGANIZATION_BUCKET:-merra-organization}" chrislusf/seaweedfs mini -dir=/data < /dev/null >/dev/null
     echo "✓ seaweedfs created and started."
 fi
 

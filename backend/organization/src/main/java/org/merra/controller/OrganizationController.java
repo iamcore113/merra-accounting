@@ -5,7 +5,13 @@ import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationNameCheckResponse;
+import org.merra.dto.OrganizationProfileImageResponse;
+import org.merra.services.OrganizationProfileImageService;
 import org.merra.services.OrganizationService;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,9 +35,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("api/business/organization/")
 public class OrganizationController {
 	private final OrganizationService organizationService;
+	private final OrganizationProfileImageService profileImageService;
 
-	public OrganizationController(OrganizationService organizationService) {
+	public OrganizationController(OrganizationService organizationService,
+			OrganizationProfileImageService profileImageService) {
 		this.organizationService = organizationService;
+		this.profileImageService = profileImageService;
 	}
 
 	@GetMapping("dashboard")
@@ -120,6 +129,42 @@ public class OrganizationController {
 				organizationService.newOrganization(data));
 
 		return ResponseEntity.ok(response);
+	}
+
+	/**
+	 * Uploads (or replaces) the current organization's profile image.
+	 */
+	@Operation(summary = "upload organization profile image")
+	@PostMapping(value = "profile-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ApiResponse<OrganizationProfileImageResponse>> uploadProfileImage(
+			@RequestParam("file") MultipartFile file) {
+		return ResponseEntity.ok(new ApiResponse<>(
+				"Profile image uploaded successfully.",
+				true,
+				HttpStatus.OK,
+				profileImageService.upload(file)));
+	}
+
+	/**
+	 * Returns the current organization's profile image bytes.
+	 */
+	@Operation(summary = "get organization profile image")
+	@GetMapping("profile-image")
+	public ResponseEntity<byte[]> getProfileImage() {
+		var image = profileImageService.download();
+		MediaType type = image.contentType() == null ? MediaType.APPLICATION_OCTET_STREAM
+				: MediaType.parseMediaType(image.contentType());
+		return ResponseEntity.ok().contentType(type).cacheControl(CacheControl.noCache()).body(image.content());
+	}
+
+	/**
+	 * Removes the current organization's profile image.
+	 */
+	@Operation(summary = "delete organization profile image")
+	@DeleteMapping("profile-image")
+	public ResponseEntity<ApiResponse<Void>> deleteProfileImage() {
+		profileImageService.delete();
+		return ResponseEntity.ok(new ApiResponse<>("Profile image removed successfully.", true, HttpStatus.OK, null));
 	}
 
 	/**

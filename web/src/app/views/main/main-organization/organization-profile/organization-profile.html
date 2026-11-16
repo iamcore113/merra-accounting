@@ -47,9 +47,25 @@
   <div class="profile-hero-card">
     <div class="hero-identity-layout">
       <!-- Logo / Avatar Block -->
-      <div class="avatar-container">
-        @if (customLogoUrl) {
-          <img [src]="customLogoUrl" alt="Organization Logo" class="org-avatar-image" />
+      <div
+        class="avatar-container"
+        [class.is-dragging]="isDraggingLogo"
+        [class.is-busy]="isUploadingLogo || isRemovingLogo"
+        (dragover)="onLogoDragOver($event)"
+        (dragleave)="onLogoDragLeave($event)"
+        (drop)="onLogoDrop($event)">
+        @if (isLoadingLogo) {
+          <p-skeleton width="100%" height="100%" borderRadius="12px"></p-skeleton>
+        } @else if (customLogoUrl) {
+          @if (!isLogoLoaded) {
+            <p-skeleton width="100%" height="100%" borderRadius="12px" styleClass="avatar-skeleton-abs"></p-skeleton>
+          }
+          <img
+            [src]="customLogoUrl"
+            alt="Organization Logo"
+            class="org-avatar-image"
+            [class.loaded]="isLogoLoaded"
+            (load)="onLogoImageLoaded()" />
         } @else {
           <div class="org-avatar-fallback">
             <span class="fallback-initials">{{ getInitials() }}</span>
@@ -62,12 +78,32 @@
         <input
           #logoFileInput
           type="file"
-          accept="image/png, image/jpeg, image/svg+xml, image/webp"
+          accept="image/png, image/jpeg, image/webp"
           (change)="onFileSelected($event)"
           style="display: none" />
-        <div class="avatar-overlay" (click)="logoFileInput.click()" title="Upload organization logo">
-          <i class="pi pi-camera"></i>
-        </div>
+
+        @if (!isLoadingLogo) {
+          <button
+            type="button"
+            class="avatar-overlay"
+            (click)="openLogoPicker(logoFileInput)"
+            [disabled]="isUploadingLogo || isRemovingLogo"
+            aria-label="Upload organization logo"
+            title="Upload organization logo (PNG, JPEG or WEBP, max 5MB). You can also drop an image here.">
+            <i class="pi pi-camera"></i>
+          </button>
+          <span class="avatar-camera-badge" aria-hidden="true"><i class="pi pi-camera"></i></span>
+        }
+
+        @if (isUploadingLogo || isRemovingLogo) {
+          <div class="avatar-busy-layer" role="status" [attr.aria-label]="isUploadingLogo ? 'Uploading logo' : 'Removing logo'">
+            <i class="pi pi-spin pi-spinner"></i>
+          </div>
+        }
+
+        @if (isDraggingLogo) {
+          <div class="avatar-drop-hint"><i class="pi pi-upload"></i></div>
+        }
       </div>
 
       <!-- Hero Identity Meta -->
@@ -115,8 +151,14 @@
           }
 
           @if (customLogoUrl) {
-            <button type="button" class="remove-logo-inline-btn" (click)="removeLogo()" title="Reset avatar">
-              <i class="pi pi-times"></i> Remove logo
+            <button
+              type="button"
+              class="remove-logo-inline-btn"
+              (click)="removeLogo()"
+              [disabled]="isRemovingLogo || isUploadingLogo"
+              title="Reset avatar">
+              <i class="pi" [ngClass]="isRemovingLogo ? 'pi-spin pi-spinner' : 'pi-times'"></i>
+              {{ isRemovingLogo ? 'Removing…' : 'Remove logo' }}
             </button>
           }
         </div>

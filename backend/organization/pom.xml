@@ -77,6 +77,10 @@
 			<artifactId>ehcache</artifactId>
 			<classifier>jakarta</classifier>
 		</dependency>
+		<dependency>
+			<groupId>io.awspring.cloud</groupId>
+			<artifactId>spring-cloud-aws-starter-s3</artifactId>
+		</dependency>
 		<!-- other sub-modules -->
 		<dependency>
 			<groupId>org.merra</groupId>

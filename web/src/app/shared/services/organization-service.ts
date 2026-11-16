@@ -7,6 +7,7 @@ import {
   CURRENT_ORGANIZATION_UPDATE,
   SELECT_ORGANIZATION,
   ORGANIZATION_AFFILIATIONS_URL,
+  ORGANIZATION_PROFILE_IMAGE,
 } from '../api/organization';
 import { Observable } from 'rxjs';
 import { Config } from '../models/api_response';
@@ -42,6 +43,27 @@ export class OrganizationService {
 
   updateCurrentOrganization(req: CurrentOrganizationResponse): Observable<Config> {
     return this.http.put<Config>(CURRENT_ORGANIZATION_UPDATE, req, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  uploadProfileImage(file: File): Observable<Config> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Config>(ORGANIZATION_PROFILE_IMAGE, formData, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getProfileImage(): Observable<Blob> {
+    return this.http.get(ORGANIZATION_PROFILE_IMAGE, {
+      responseType: 'blob',
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  deleteProfileImage(): Observable<Config> {
+    return this.http.delete<Config>(ORGANIZATION_PROFILE_IMAGE, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

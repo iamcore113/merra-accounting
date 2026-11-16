@@ -7,6 +7,7 @@ export const GET_ORGANIZATION_USER_BY_ID: string = `${ORGANIZATION_URL}users/`
 export const CREATE_ORGANIZATION: string = `${ORGANIZATION_URL}new`
 export const CURRENT_ORGANIZATION: string = `${ORGANIZATION_URL}current`
 export const CURRENT_ORGANIZATION_UPDATE: string = `${ORGANIZATION_URL}update`
+export const ORGANIZATION_PROFILE_IMAGE: string = `${ORGANIZATION_URL}profile-image`
 export const SELECT_ORGANIZATION: string = `${ORGANIZATION_URL}select/`
 export const ORGANIZATION_AFFILIATIONS_URL: string = `${BASE_URL}organization/affiliations/`
 export const ORGANIZATION_METADATA_URL: string = ORGANIZATION_METADATA
