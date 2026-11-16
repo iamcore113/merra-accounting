@@ -116,6 +116,63 @@
         object-fit: cover;
         border: 2px solid #ffffff;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+
+        &.loaded {
+          opacity: 1;
+        }
+      }
+
+      .avatar-skeleton-abs {
+        position: absolute;
+        inset: 0;
+      }
+
+      &.is-busy .org-avatar-image {
+        filter: grayscale(0.4) brightness(0.8);
+      }
+
+      &.is-dragging {
+        outline: 2px dashed #22c55e;
+        outline-offset: 3px;
+        border-radius: 12px;
+      }
+
+      .avatar-busy-layer,
+      .avatar-drop-hint {
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 1.4rem;
+        background-color: rgba(15, 23, 42, 0.45);
+        pointer-events: none;
+      }
+
+      .avatar-drop-hint {
+        background-color: rgba(34, 197, 94, 0.55);
+      }
+
+      .avatar-camera-badge {
+        position: absolute;
+        bottom: -4px;
+        left: -4px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        pointer-events: none;
       }
 
       .org-avatar-fallback {
@@ -169,9 +226,17 @@
         font-size: 1.25rem;
         opacity: 0;
         transition: opacity 0.2s ease;
+        border: none;
+        padding: 0;
+        cursor: pointer;
 
-        &:hover {
+        &:hover:not(:disabled),
+        &:focus-visible {
           opacity: 1;
+        }
+
+        &:disabled {
+          cursor: progress;
         }
       }
     }
@@ -274,8 +339,13 @@
           align-items: center;
           gap: 0.25rem;
 
-          &:hover {
+          &:hover:not(:disabled) {
             background-color: #fee2e2;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: progress;
           }
         }
       }
