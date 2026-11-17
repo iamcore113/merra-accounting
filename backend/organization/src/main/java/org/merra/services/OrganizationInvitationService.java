@@ -1,5 +1,6 @@
 package org.merra.services;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -14,6 +15,7 @@ import javax.crypto.SecretKey;
 import org.merra.dto.AcceptInvitationResponse;
 import org.merra.dto.CreateInvitationRequest;
 import org.merra.dto.InvitationResponse;
+import org.merra.dto.RegisterAndAcceptInvitationRequest;
 import org.merra.dto.VerifyInvitationResponse;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
@@ -36,6 +38,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -55,6 +58,7 @@ public class OrganizationInvitationService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrganizationInvitationService.class);
     public static final long INVITATION_DURATION_MS = 24L * 60 * 60 * 1000L;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final String INVITATION_TOKEN_TYPE = "ORGANIZATION_INVITATION";
     private static final Set<String> ALLOWED_ROLES = Set.of(
             UserAccountStatusEn.ADVISOR.name(),
@@ -66,6 +70,12 @@ public class OrganizationInvitationService {
 
     @Value("${token.secret}")
     private String jwtSecret;
+
+    @Value("${token.access-token-duration:3600000}")
+    private long accessTokenDuration = 3600000L;
+
+    @Value("${token.refresh-token-duration:604800000}")
+    private long refreshTokenDuration = 604800000L;
 
     @Value("${app.frontend.url:http://localhost:4200}")
     private String frontendUrl;
@@ -79,6 +89,8 @@ public class OrganizationInvitationService {
     private final UserAccountRepository userAccountRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final JavaMailSender mailSender;
+    private final PasswordEncoder passwordEncoder;
+    private final UserAccountService userAccountService;
 
     public OrganizationInvitationService(
             OrganizationNetworkKeyRepository networkKeyRepository,
@@ -86,13 +98,29 @@ public class OrganizationInvitationService {
             OrganizationMembersRepository organizationMembersRepository,
             UserAccountRepository userAccountRepository,
             RedisTemplate<String, Object> redisTemplate,
-            @Autowired(required = false) JavaMailSender mailSender) {
+            JavaMailSender mailSender) {
+        this(networkKeyRepository, userWorkspaceStateRepository, organizationMembersRepository,
+                userAccountRepository, redisTemplate, mailSender, null, null);
+    }
+
+    @Autowired
+    public OrganizationInvitationService(
+            OrganizationNetworkKeyRepository networkKeyRepository,
+            UserWorkspaceStateRepository userWorkspaceStateRepository,
+            OrganizationMembersRepository organizationMembersRepository,
+            UserAccountRepository userAccountRepository,
+            RedisTemplate<String, Object> redisTemplate,
+            @Autowired(required = false) JavaMailSender mailSender,
+            @Autowired(required = false) PasswordEncoder passwordEncoder,
+            @Autowired(required = false) UserAccountService userAccountService) {
         this.networkKeyRepository = networkKeyRepository;
         this.userWorkspaceStateRepository = userWorkspaceStateRepository;
         this.organizationMembersRepository = organizationMembersRepository;
         this.userAccountRepository = userAccountRepository;
         this.redisTemplate = redisTemplate;
         this.mailSender = mailSender;
+        this.passwordEncoder = passwordEncoder;
+        this.userAccountService = userAccountService;
     }
 
     @Transactional
@@ -242,16 +270,20 @@ public class OrganizationInvitationService {
         OrganizationMembers member = record.getOrganizationMember();
         String inviteeEmail = claims.get("inviteeEmail", String.class);
         String role = claims.get("role", String.class);
+        String resolvedEmail = inviteeEmail != null ? inviteeEmail : (member != null ? member.getEmail() : null);
+        boolean accountExists = resolvedEmail != null
+                && userAccountRepository.findUserByEmailIgnoreCase(resolvedEmail.trim()).isPresent();
 
         return new VerifyInvitationResponse(
                 true,
                 "Invitation token is valid.",
-                inviteeEmail != null ? inviteeEmail : (member != null ? member.getEmail() : null),
+                resolvedEmail,
                 org.getId(),
                 org.getDisplayName(),
                 org.getLegalName(),
                 role != null ? role : (member != null ? member.getRole() : null),
-                record.getExpiresAt()
+                record.getExpiresAt(),
+                accountExists
         );
     }
 
@@ -353,6 +385,143 @@ public class OrganizationInvitationService {
         );
     }
 
+    @Transactional
+    public AcceptInvitationResponse registerAndAcceptInvitation(RegisterAndAcceptInvitationRequest request) {
+        if (request == null || request.token() == null || request.token().isBlank()) {
+            throw new IllegalArgumentException("Invitation token is required.");
+        }
+
+        String token = request.token().trim();
+        Claims claims;
+        try {
+            claims = parseInvitationClaims(token);
+        } catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("Invitation token has expired.");
+        } catch (JwtException e) {
+            throw new IllegalArgumentException("Invalid invitation token.");
+        }
+
+        if (!INVITATION_TOKEN_TYPE.equals(claims.get("type", String.class))) {
+            throw new IllegalArgumentException("Token is not a valid organization invitation.");
+        }
+
+        OrganizationNetworkKey invitation = networkKeyRepository.findByInvitationTokenAndIsActiveTrue(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invitation token is invalid, revoked, or already used."));
+
+        if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+            invitation.setIsActive(Boolean.FALSE);
+            networkKeyRepository.save(invitation);
+            throw new IllegalArgumentException("Invitation token has expired.");
+        }
+
+        OrganizationMembers memberRecord = invitation.getOrganizationMember();
+        String inviteeEmail = claims.get("inviteeEmail", String.class);
+        if ((inviteeEmail == null || inviteeEmail.isBlank()) && memberRecord != null) {
+            inviteeEmail = memberRecord.getEmail();
+        }
+        if (inviteeEmail == null || !request.email().trim().equalsIgnoreCase(inviteeEmail.trim())) {
+            throw new IllegalArgumentException("Email does not match the invited email address (" + inviteeEmail + ").");
+        }
+
+        String normalizedEmail = inviteeEmail.trim().toLowerCase();
+        var existingUserOpt = userAccountRepository.findUserByEmailIgnoreCase(normalizedEmail);
+        if (existingUserOpt.isPresent() && existingUserOpt.get().isEnabled()) {
+            throw new IllegalArgumentException("An active MERRA account already exists for " + normalizedEmail + ". Please sign in to accept this invitation.");
+        }
+
+        Organization organization = invitation.getOrganization();
+        String role = normalizeAndValidateRole(
+                claims.get("role", String.class) != null
+                        ? claims.get("role", String.class)
+                        : (memberRecord != null ? memberRecord.getRole() : null)
+        );
+
+        String encodedPassword = passwordEncoder != null
+                ? passwordEncoder.encode(request.password())
+                : request.password();
+
+        UserAccount user = existingUserOpt.orElseGet(() -> new UserAccount(normalizedEmail, encodedPassword));
+        user.setEmail(normalizedEmail);
+        user.setAccountPassword(encodedPassword);
+        user.setFirstName(request.firstName().trim());
+        user.setLastName(request.lastName().trim());
+        user.setGender(request.gender().trim().toLowerCase());
+        user.setIsEnabled(false);
+        user.setVerificationToken(null);
+        user.setPartOfOrganization(true);
+        user.setRoles(role);
+        UserAccount savedUser = userAccountRepository.save(user);
+
+        if (existingUserOpt.isEmpty() && userAccountService != null) {
+            userAccountService.createUserAccountSetting(savedUser);
+        }
+
+        boolean alreadyMember = organizationMembersRepository.isUserMemberOfOrganization(organization.getId(), savedUser.getUserId());
+        if (!alreadyMember) {
+            OrganizationMembers member = memberRecord != null ? memberRecord : new OrganizationMembers();
+            member.setOrganization(organization);
+            member.setUser(savedUser);
+            member.setEmail(normalizedEmail);
+            member.setRole(role);
+            member.setIsCreator(Boolean.FALSE);
+            member.setIsInvited(Boolean.TRUE);
+            if (member.getInvitationDate() == null) {
+                member.setInvitationDate(invitation.getCreatedAt() != null
+                        ? invitation.getCreatedAt().toLocalDate()
+                        : LocalDate.now());
+            }
+            member.setStatus(UserAccountStatusEn.ACTIVE.name());
+            member.setDateJoined(LocalDate.now());
+            member.setDateUpdated(LocalDate.now());
+            organizationMembersRepository.save(member);
+        }
+
+        UserWorkspaceState workspace = userWorkspaceStateRepository.findByUser(savedUser)
+                .orElseGet(() -> new UserWorkspaceState(savedUser, organization));
+        workspace.setCurrentOrganization(organization);
+        workspace.setLastActiveAt(OffsetDateTime.now());
+        userWorkspaceStateRepository.save(workspace);
+
+        invitation.setIsActive(Boolean.FALSE);
+        networkKeyRepository.save(invitation);
+
+        try {
+            if (redisTemplate != null) {
+                redisTemplate.delete(RedisKeys.PRINCIPAL);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to evict principal cache after registering and accepting invitation: {}", e.getMessage());
+        }
+
+        String accessToken = generateAuthJwtToken(savedUser.getEmail(), savedUser.getRoles(), accessTokenDuration, false);
+        String refreshToken = generateAuthJwtToken(savedUser.getEmail(), savedUser.getRoles(), refreshTokenDuration, true);
+
+        return new AcceptInvitationResponse(
+                organization.getId(),
+                organization.getDisplayName(),
+                organization.getLegalName(),
+                role,
+                "Account created and joined " + organization.getDisplayName() + " as " + role + ".",
+                accessToken,
+                refreshToken
+        );
+    }
+
+    private String generateAuthJwtToken(String userEmail, String role, long duration, boolean isRefreshToken) {
+        long durationMs = (isRefreshToken && duration <= 365)
+                ? duration * 24L * 60 * 60 * 1000L
+                : duration;
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + durationMs);
+        return Jwts.builder()
+                .claims(Map.of("role", role != null ? role : UserAccountStatusEn.MEMBER.name()))
+                .subject(userEmail)
+                .issuedAt(now)
+                .expiration(exp)
+                .signWith(getSigningKey(), Jwts.SIG.HS256)
+                .compact();
+    }
+
     private String normalizeAndValidateRole(String role) {
         if (role == null || role.isBlank()) {
             throw new IllegalArgumentException("Role cannot be blank.");
@@ -401,26 +570,63 @@ public class OrganizationInvitationService {
         try {
             String subject = "You're invited to join " + displayName + " on MERRA";
             String html = """
-                    <div style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f8fafc;padding:32px 16px;">
-                      <div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:32px;">
-                        <h2 style="margin:0 0 12px 0;color:#0f172a;font-size:22px;">Organization Invitation</h2>
-                        <p style="margin:0 0 16px 0;color:#475569;font-size:15px;line-height:1.6;">
-                          You have been invited to join <strong>%s</strong> (%s) on MERRA with the role <strong>%s</strong>.
-                        </p>
-                        <div style="text-align:center;margin:28px 0;">
-                          <a href="%s" style="display:inline-block;background:#0284c7;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 24px;border-radius:8px;">
-                            Accept Invitation
-                          </a>
+                    <div style="font-family:Inter,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f8fafc;padding:32px 16px;">
+                      <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;">
+                        <div style="background:#689d4b;padding:24px 32px;">
+                          <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px;">MERRA</div>
+                          <div style="color:#f4f8f1;font-size:13px;margin-top:4px;">Accounting Platform</div>
                         </div>
-                        <p style="margin:0 0 8px 0;color:#64748b;font-size:13px;">
-                          Or paste this invitation token on the Enter Invitation Token page:
-                        </p>
-                        <div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:10px 12px;font-family:monospace;font-size:12px;word-break:break-all;color:#0f172a;">
-                          %s
+                        <div style="padding:32px;">
+                          <h2 style="margin:0 0 12px 0;color:#1e293b;font-size:22px;font-weight:600;">You're invited to join an organization</h2>
+                          <p style="margin:0 0 20px 0;color:#475569;font-size:15px;line-height:1.6;">
+                            Hello, you have been invited to collaborate on <strong style="color:#1e293b;">%1$s</strong> in MERRA.
+                            Review the details below and accept the invitation to get started.
+                          </p>
+                          <table role="presentation" style="width:100%%;border-collapse:collapse;border:1px solid #e2e8f0;margin:0 0 24px 0;font-size:14px;">
+                            <tr>
+                              <td style="padding:10px 14px;background:#f4f8f1;color:#64748b;font-weight:500;width:40%%;border-bottom:1px solid #e2e8f0;">Organization</td>
+                              <td style="padding:10px 14px;color:#1e293b;font-weight:600;border-bottom:1px solid #e2e8f0;">%1$s</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:10px 14px;background:#f4f8f1;color:#64748b;font-weight:500;border-bottom:1px solid #e2e8f0;">Legal name</td>
+                              <td style="padding:10px 14px;color:#1e293b;font-weight:600;border-bottom:1px solid #e2e8f0;">%2$s</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:10px 14px;background:#f4f8f1;color:#64748b;font-weight:500;border-bottom:1px solid #e2e8f0;">Your role</td>
+                              <td style="padding:10px 14px;color:#1e293b;font-weight:600;border-bottom:1px solid #e2e8f0;">%3$s</td>
+                            </tr>
+                            <tr>
+                              <td style="padding:10px 14px;background:#f4f8f1;color:#64748b;font-weight:500;">Expires</td>
+                              <td style="padding:10px 14px;color:#1e293b;font-weight:600;">24 hours after this email was sent</td>
+                            </tr>
+                          </table>
+                          <div style="text-align:center;margin:28px 0;">
+                            <a href="%4$s" style="display:inline-block;background:#689d4b;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 28px;border:1px solid #689d4b;">
+                              Accept Invitation
+                            </a>
+                          </div>
+                          <p style="margin:0 0 8px 0;color:#64748b;font-size:13px;line-height:1.5;">
+                            Button not working? Go to the <strong>Enter Invitation Token</strong> page in MERRA and paste this token:
+                          </p>
+                          <div style="background:#f4f8f1;border:1px solid #689d4b;padding:10px 12px;font-family:monospace;font-size:12px;word-break:break-all;color:#1e293b;">
+                            %5$s
+                          </div>
+                          <div style="margin:24px 0 0 0;padding:14px 16px;background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;">
+                            <div style="color:#92400e;font-size:14px;font-weight:700;margin-bottom:6px;">Keep your token private</div>
+                            <div style="color:#78350f;font-size:13px;line-height:1.6;">
+                              This invitation token is personal and grants access to the organization.
+                              <strong>Do not share it with anyone</strong>, including colleagues or MERRA support.
+                              MERRA will never ask you for this token by phone, chat, or email.
+                            </div>
+                          </div>
+                          <p style="margin:24px 0 0 0;color:#64748b;font-size:13px;line-height:1.6;">
+                            Didn't expect this invitation? You can safely ignore this email and no changes will be made.
+                            If the invitation expires, ask the organization administrator to send a new one.
+                          </p>
                         </div>
-                        <p style="margin:20px 0 0 0;color:#94a3b8;font-size:12px;">
-                          This invitation expires in 24 hours.
-                        </p>
+                        <div style="padding:16px 32px;background:#f8fafc;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:12px;text-align:center;">
+                          This is an automated message from MERRA. Please do not reply to this email.
+                        </div>
                       </div>
                     </div>
                     """.formatted(displayName, legalName, role, invitationLink, token);

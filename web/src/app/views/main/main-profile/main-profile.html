@@ -1,16 +1,82 @@
 <section class="profile-accordion shared-expansion-panels">
-  <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
-    <div class="profile-header">
-      <div class="profile-title-group">
-        <h2 class="profile-title">Personal Information</h2>
-        <p class="profile-subtitle">Manage your personal credentials and linked organizations</p>
+  <div class="profile-header">
+    <div class="profile-title-group">
+      <div class="profile-title-row">
+        <h2 class="profile-title">User Profile &amp; Settings</h2>
+        @if (!isAccountActivated) {
+          <span class="status-pill unverified">
+            <i class="pi pi-exclamation-triangle"></i> Pending Activation
+          </span>
+        } @else {
+          <span class="status-pill verified">
+            <i class="pi pi-check-circle"></i> Verified Account
+          </span>
+        }
       </div>
-      <button class="profile-image-button" type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
-        <i class="pi pi-user profile-image-icon"></i>
-      </button>
+      <p class="profile-subtitle">Manage your personal credentials, account verification, and linked organizations</p>
     </div>
+    <button class="profile-image-button" type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
+      <i class="pi pi-user profile-image-icon"></i>
+    </button>
+  </div>
 
-    <p-accordion [value]="['0', '4']" [multiple]="true">
+  @if (!isAccountActivated) {
+    <div class="unverified-callout-banner">
+      <div class="callout-content">
+        <span class="callout-icon">
+          <i class="pi pi-exclamation-triangle"></i>
+        </span>
+        <div class="callout-text">
+          <strong class="callout-heading">Your user account is not activated yet</strong>
+          <p class="callout-desc">
+            Go to the <strong>Account Settings</strong> tab and click <strong>Send Activation PIN</strong> to receive a 4-digit PIN code via email and activate your account.
+          </p>
+        </div>
+      </div>
+      @if (activeSection !== 'settings') {
+        <p-button
+          type="button"
+          label="Activate Account"
+          icon="pi pi-shield"
+          [size]="'small'"
+          (onClick)="switchSection('settings')">
+        </p-button>
+      }
+    </div>
+  }
+
+  <div class="profile-settings-tabs" role="tablist">
+    <button
+      type="button"
+      role="tab"
+      class="settings-tab-btn"
+      [class.active]="activeSection === 'personal'"
+      [attr.aria-selected]="activeSection === 'personal'"
+      (click)="switchSection('personal')">
+      <i class="pi pi-id-card"></i>
+      <span>Personal Information</span>
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      class="settings-tab-btn"
+      [class.active]="activeSection === 'settings'"
+      [attr.aria-selected]="activeSection === 'settings'"
+      (click)="switchSection('settings')">
+      <i class="pi pi-cog"></i>
+      <span>Account Settings</span>
+      @if (!isAccountActivated) {
+        <span class="tab-warning-badge" title="Account activation required">
+          <i class="pi pi-exclamation-triangle"></i> Action Needed
+        </span>
+      }
+    </button>
+  </div>
+
+  @if (activeSection === 'personal') {
+    <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+      <p-accordion [value]="['0', '4']" [multiple]="true">
       <!-- Panel 1: Name -->
       <p-accordion-panel value="0">
         <p-accordion-header>
@@ -253,6 +319,179 @@
       </p-accordion-panel>
     </p-accordion>
   </form>
+  } @else {
+    <div class="account-settings-view">
+      <!-- Section 1: Account Verification / Activation -->
+      <div class="settings-section-card" [class.unverified-card]="!isAccountActivated">
+        <div class="settings-card-header">
+          <div class="header-left">
+            <span class="section-icon" [class.warn]="!isAccountActivated">
+              <i class="pi" [ngClass]="isAccountActivated ? 'pi-verified' : 'pi-shield'"></i>
+            </span>
+            <div>
+              <h3 class="section-title">Account Verification &amp; Activation</h3>
+              <p class="section-subtitle">
+                Verify your email ownership using the 4-digit PIN code sent to your inbox
+              </p>
+            </div>
+          </div>
+          @if (isAccountActivated) {
+            <span class="status-pill verified">
+              <i class="pi pi-check-circle"></i> Activated
+            </span>
+          } @else {
+            <span class="status-pill unverified">
+              <i class="pi pi-exclamation-triangle"></i> Not Activated
+            </span>
+          }
+        </div>
+
+        <div class="settings-card-body">
+          @if (isAccountActivated) {
+            <div class="activated-summary-box">
+              <i class="pi pi-check-circle activated-icon"></i>
+              <div>
+                <strong>Your MERRA account ({{ personalDetails?.email }}) is verified and active.</strong>
+                <p>No further verification action is required.</p>
+              </div>
+            </div>
+          } @else if (!hasSentActivationPin()) {
+            <div class="pin-activation-container">
+              <p class="pin-instructions">
+                Your MERRA account (<strong>{{ personalDetails?.email || 'your email address' }}</strong>) is not activated yet.
+                Click the button below to receive a 4-digit activation PIN code in your email inbox, then copy and paste it here to activate your account.
+              </p>
+
+              <div class="pin-actions-row">
+                <p-button
+                  type="button"
+                  label="Send Activation PIN"
+                  icon="pi pi-send"
+                  [size]="'small'"
+                  [loading]="isResendingPin()"
+                  [disabled]="isResendingPin()"
+                  (onClick)="resendActivationPin()">
+                </p-button>
+              </div>
+            </div>
+          } @else {
+            <div class="pin-activation-container">
+              <p class="pin-instructions">
+                We sent a 4-digit activation PIN code to
+                <strong>{{ personalDetails?.email || 'your email address' }}</strong>.
+                Copy the PIN code from your email and paste it below to activate your account.
+              </p>
+
+              <div class="pin-input-row">
+                <div class="pin-boxes" (paste)="onPinPaste($event)">
+                  @for (digit of [0, 1, 2, 3]; track digit) {
+                    <input
+                      #pinInput
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="1"
+                      class="pin-digit-box"
+                      [class.has-value]="!!pinDigits()[digit]"
+                      [class.has-error]="!!pinError()"
+                      [value]="pinDigits()[digit]"
+                      [attr.aria-label]="'PIN digit ' + (digit + 1)"
+                      (input)="onPinDigitInput($event, digit)"
+                      (keydown)="onPinKeyDown($event, digit)" />
+                  }
+                </div>
+
+                <p-button
+                  type="button"
+                  label="Paste PIN"
+                  icon="pi pi-clipboard"
+                  [outlined]="true"
+                  [size]="'small'"
+                  (onClick)="pastePinFromClipboard()">
+                </p-button>
+              </div>
+
+              @if (pinError()) {
+                <div class="pin-error-msg">
+                  <i class="pi pi-exclamation-circle"></i>
+                  <span>{{ pinError() }}</span>
+                </div>
+              }
+
+              <div class="pin-actions-row">
+                <p-button
+                  type="button"
+                  label="Activate Account"
+                  icon="pi pi-check-circle"
+                  [size]="'small'"
+                  [loading]="isActivatingPin()"
+                  [disabled]="isActivatingPin() || !isPinComplete"
+                  (onClick)="activateAccountWithPin()">
+                </p-button>
+
+                <p-button
+                  type="button"
+                  [label]="resendCooldownSeconds() > 0 ? 'Resend PIN (' + resendCooldownSeconds() + 's)' : 'Resend PIN via Email'"
+                  icon="pi pi-refresh"
+                  [outlined]="true"
+                  [size]="'small'"
+                  [loading]="isResendingPin()"
+                  [disabled]="isResendingPin() || resendCooldownSeconds() > 0"
+                  (onClick)="resendActivationPin()">
+                </p-button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Section 2: Security & Session Settings -->
+      <div class="settings-section-card">
+        <div class="settings-card-header">
+          <div class="header-left">
+            <span class="section-icon">
+              <i class="pi pi-lock"></i>
+            </span>
+            <div>
+              <h3 class="section-title">Security &amp; Session</h3>
+              <p class="section-subtitle">Manage your account password and active session</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-card-body security-actions-row">
+          <div class="security-item">
+            <div>
+              <strong class="security-item-title">Account Password</strong>
+              <p class="security-item-desc">Update your password regularly to keep your account secure.</p>
+            </div>
+            <p-button
+              type="button"
+              label="Change Password"
+              icon="pi pi-key"
+              [size]="'small'"
+              (click)="openChangePasswordSheet()">
+            </p-button>
+          </div>
+
+          <div class="security-item">
+            <div>
+              <strong class="security-item-title">Sign Out of MERRA</strong>
+              <p class="security-item-desc">End your current session on this browser.</p>
+            </div>
+            <p-button
+              type="button"
+              label="Sign Out"
+              icon="pi pi-sign-out"
+              [severity]="'secondary'"
+              [outlined]="true"
+              [size]="'small'"
+              (click)="onLogout()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
   <div class="profile-page-actions">
     <p-button label="Change Password" icon="pi pi-key" [size]="'small'" (click)="openChangePasswordSheet()"></p-button>

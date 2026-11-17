@@ -5,15 +5,25 @@ import { OrganizationService } from '../services/organization-service';
 import { LocalStorageService } from '../services/local-storage-service';
 import { UserOrganizationAffiliation } from '../models/organization';
 
-export const organizationMemberGuard: CanActivateFn = () => {
+export const organizationMemberGuard: CanActivateFn = (_route, state) => {
   const organizationService = inject(OrganizationService);
   const localStorage = inject(LocalStorageService);
   const router = inject(Router);
 
   const token = localStorage.getItem('access_token');
+  const pendingInvitationToken = localStorage.getItem('pending_invitation_token');
   const email = localStorage.getItem('user_email') || '';
 
   if (!token) {
+    if (pendingInvitationToken) {
+      if (state.url === '/main' || state.url === '/main/') {
+        return router.createUrlTree(['/main/organization']);
+      }
+      if (state.url.startsWith('/main/organization')) {
+        return true;
+      }
+      return router.createUrlTree(['/main/organization']);
+    }
     return router.createUrlTree(['/account/signin']);
   }
 

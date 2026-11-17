@@ -10,6 +10,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MessageService } from 'primeng/api';
 import { LoginRequest, SigninResponse } from '../../shared/models/auth';
 import { AuthService } from '../../shared/services/auth-service';
+import { InvitationService } from '../../shared/services/invitation-service';
 import { Config, ErrorResponse } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
 
@@ -33,6 +34,7 @@ export class Signin implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
+  private readonly invitationService = inject(InvitationService, { optional: true });
   private readonly localStorage = inject(LocalStorageService);
   private readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
@@ -130,17 +132,57 @@ export class Signin implements OnInit, OnDestroy {
 
           if (!isProfileComplete) {
             this.router.navigate(userEmail ? ['/account/personal-details', userEmail] : ['/account/personal-details']);
-          } else if (!status?.partOfOrganization) {
-            this.router.navigate(
-              userEmail ? ['/account/organization-choice', userEmail] : ['/account/organization-choice']
-            );
-          } else if (status?.hasActiveWorkspace) {
-            this.router.navigate(['/entering-workspace']);
-          } else {
-            this.router.navigate(['/select-organization']);
+            return;
           }
+
+          const pendingToken = this.localStorage.getItem('pending_invitation_token');
+          const pendingEmail = this.localStorage.getItem('pending_invitation_email');
+          const matchesPendingEmail =
+            !pendingEmail || pendingEmail.trim().toLowerCase() === userEmail.trim().toLowerCase();
+
+          if (pendingToken && matchesPendingEmail && this.invitationService) {
+            this.invitationService.acceptInvitation(pendingToken).subscribe({
+              next: (invRes) => {
+                this.localStorage.removeItem('pending_invitation_token');
+                this.localStorage.removeItem('pending_invitation_email');
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Invitation Accepted',
+                  detail: invRes.data?.message || 'You have joined the organization.',
+                  life: 5000,
+                });
+                void this.router.navigate(['/main/organization']);
+              },
+              error: (err) => {
+                this.localStorage.removeItem('pending_invitation_token');
+                this.localStorage.removeItem('pending_invitation_email');
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Cannot Join Organization',
+                  detail: err?.error?.message || 'Failed to accept organization invitation.',
+                  life: 5000,
+                });
+                this.navigatePostSignin(status, userEmail);
+              },
+            });
+            return;
+          }
+
+          this.navigatePostSignin(status, userEmail);
         },
       });
+    }
+  }
+
+  private navigatePostSignin(status: SigninResponse['accountStatus'], userEmail: string): void {
+    if (!status?.partOfOrganization) {
+      this.router.navigate(
+        userEmail ? ['/account/organization-choice', userEmail] : ['/account/organization-choice']
+      );
+    } else if (status?.hasActiveWorkspace) {
+      this.router.navigate(['/entering-workspace']);
+    } else {
+      this.router.navigate(['/select-organization']);
     }
   }
 }

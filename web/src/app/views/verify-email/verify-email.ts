@@ -215,6 +215,7 @@ export class VerifyEmail implements OnInit, OnDestroy {
           });
 
           if (verifiedEmail) {
+            this.localStorage.setItem('user_email', verifiedEmail);
             void this.router.navigate(['account/personal-details', verifiedEmail]);
           } else {
             void this.router.navigate(['account/personal-details']);

@@ -4,6 +4,7 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { OrganizationService } from '../../services/organization-service';
+import { LocalStorageService } from '../../services/local-storage-service';
 
 @Component({
   selector: 'app-main-header',
@@ -14,6 +15,7 @@ import { OrganizationService } from '../../services/organization-service';
 })
 export class MainHeader implements OnInit {
   private readonly organizationService = inject(OrganizationService);
+  private readonly localStorage = inject(LocalStorageService);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
   isMenuOpen = false;
@@ -26,6 +28,14 @@ export class MainHeader implements OnInit {
   }
 
   loadCurrentOrganization(): void {
+    if (!this.localStorage.getItem('access_token') && this.localStorage.getItem('pending_invitation_token')) {
+      const pendingName = this.localStorage.getItem('pending_invitation_org_name') || 'My Organization';
+      this.currentOrgName = pendingName;
+      this.orgInitial = pendingName.charAt(0).toUpperCase();
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.organizationService.getCurrentOrganization().subscribe({
       next: (res: any) => {
         if (res && res.success && res.data) {

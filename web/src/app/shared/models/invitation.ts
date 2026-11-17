@@ -28,10 +28,20 @@ export interface VerifyInvitationResponse {
   organizationLegalName?: string;
   role?: string;
   expiresAt?: string;
+  accountExists?: boolean;
 }
 
 export interface AcceptInvitationRequest {
   token: string;
+}
+
+export interface RegisterAndAcceptInvitationRequest {
+  token: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  password: string;
 }
 
 export interface AcceptInvitationResponse {
@@ -40,6 +50,8 @@ export interface AcceptInvitationResponse {
   organizationLegalName: string;
   role: string;
   message: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export const ORGANIZATION_INVITATION_ROLES = [

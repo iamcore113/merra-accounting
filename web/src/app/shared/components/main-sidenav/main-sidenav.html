@@ -31,13 +31,24 @@
           class="nav-item"
           routerLinkActive="active-item"
           [routerLinkActiveOptions]="{ exact: item.exact || false }"
-          [pTooltip]="!isOpen ? item.label : ''"
+          [pTooltip]="!isOpen ? (item.route === '/main/profile' && isProfileUnverified ? item.label + ' (Account not activated)' : item.label) : ''"
           tooltipPosition="right">
           <span class="nav-icon-wrapper">
             <i [ngClass]="item.icon"></i>
+            @if (item.route === '/main/profile' && isProfileUnverified) {
+              <span class="nav-icon-warning-dot" aria-hidden="true"></span>
+            }
           </span>
           @if (isOpen) {
             <span class="nav-item-label">{{ item.label }}</span>
+            @if (item.route === '/main/profile' && isProfileUnverified) {
+              <span
+                class="nav-warning-badge"
+                pTooltip="Your user account is not activated yet"
+                tooltipPosition="right">
+                <i class="pi pi-exclamation-triangle"></i>
+              </span>
+            }
           }
         </a>
       }

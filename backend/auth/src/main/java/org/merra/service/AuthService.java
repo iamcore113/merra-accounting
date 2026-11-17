@@ -268,17 +268,34 @@ public class AuthService {
   }
 
   private VerifiedAccountResponse activateUserAccount(UserAccount findAccount) {
-    // Enable the account, clear the verification token, and assign the default role
+    String existingRole = findAccount.getRoles();
+    boolean hasOrganizationRole = findAccount.isPartOfOrganization()
+        && existingRole != null
+        && !existingRole.isBlank()
+        && !existingRole.toUpperCase().contains(ROLE_IDLE);
+    String assignedRole = hasOrganizationRole
+        ? existingRole.replace("ROLE_", "")
+        : ROLE_IDLE;
+
+    // Enable the account, clear the verification token, and preserve organization role if already joined
     findAccount.setVerificationToken(null);
     findAccount.setIsEnabled(true);
-    findAccount.setRoles(ROLE_IDLE);
+    findAccount.setRoles(assignedRole);
     userRepository.save(findAccount);
+
+    try {
+      if (redisTemplate != null) {
+        redisTemplate.delete(RedisKeys.PRINCIPAL);
+      }
+    } catch (Exception e) {
+      logger.warn("Failed to evict principal cache after account activation: {}", e.getMessage());
+    }
 
     final String getAccountEmail = findAccount.getEmail();
     final UUID getUserId = findAccount.getUserId();
 
     // Generate an access JWT token.
-    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", ROLE_IDLE),
+    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", assignedRole),
         forAccessToken,
         false);
 

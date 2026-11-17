@@ -37,24 +37,27 @@ public class OrganizationUsersService {
 		if (principalDto == null) {
 			UserAccount getPrincipal = userAccountService.getAuthenticatedUser();
 			UserAccountSettings principalAccountSettings = getPrincipal.getAccountSettings();
-			PrincipalAccountSettings principalAccountSettingsDto = new PrincipalAccountSettings(
-					principalAccountSettings.getUserSettingId(),
-					principalAccountSettings.getUserAccount().getUserId(),
-					principalAccountSettings.getAutoAcceptInvitation(),
-					principalAccountSettings.getEmailChange());
+			if (principalAccountSettings != null) {
+				PrincipalAccountSettings principalAccountSettingsDto = new PrincipalAccountSettings(
+						principalAccountSettings.getUserSettingId(),
+						principalAccountSettings.getUserAccount().getUserId(),
+						principalAccountSettings.getAutoAcceptInvitation(),
+						principalAccountSettings.getEmailChange());
+				redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL_ACCOUNT_SETTINGS, principalAccountSettingsDto,
+						RedisKeys.CONSTANT_DURATION);
+			}
 			principalDto = new PrincipalDetailsResponse(
 					getPrincipal.getUserId(),
 					getPrincipal.getFirstName(),
 					getPrincipal.getLastName(),
-					getPrincipal.getFullName().get(),
+					getPrincipal.getFullName().orElse(getPrincipal.getFirstName() + " " + getPrincipal.getLastName()),
 					getPrincipal.getGender(),
-					getPrincipal.getCountry(),
+					getPrincipal.getCountry() != null ? getPrincipal.getCountry() : "",
 					getPrincipal.getEmail(),
-					organizationService.getUserOrganizationAffiliation());
+					organizationService.getUserOrganizationAffiliation(),
+					getPrincipal.isEnabled());
 
 			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL, principalDto, RedisKeys.CONSTANT_DURATION);
-			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL_ACCOUNT_SETTINGS, principalAccountSettingsDto,
-					RedisKeys.CONSTANT_DURATION);
 		}
 		return principalDto;
 	}

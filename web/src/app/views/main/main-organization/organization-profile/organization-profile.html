@@ -1,4 +1,15 @@
-<section class="org-profile-page">
+@if (requiresInvitationAccountSetup()) {
+  <app-invitation-account-setup-modal
+    [invitationToken]="pendingInvitationToken"
+    [inviteeEmail]="pendingInvitationEmail"
+    [organizationDisplayName]="pendingInvitationOrgName"
+    [organizationLegalName]="pendingInvitationLegalName"
+    [role]="pendingInvitationRole"
+    (accountCreated)="onInvitationAccountCreated()">
+  </app-invitation-account-setup-modal>
+}
+
+<section class="org-profile-page" [class.is-blocked-by-modal]="requiresInvitationAccountSetup()">
   <!-- Page Header -->
   <header class="profile-page-header">
     <div class="header-text-group">

@@ -3,6 +3,12 @@
 }
 
 .org-profile-page {
+  &.is-blocked-by-modal {
+    filter: blur(6px);
+    pointer-events: none;
+    user-select: none;
+  }
+
   max-width: 1040px;
   margin: 1.5rem auto;
   padding: 0 1.25rem 2.5rem;

@@ -12,6 +12,7 @@ import { NetworkKeyService } from '../../../../shared/services/network-key-servi
 import { InvitationService } from '../../../../shared/services/invitation-service';
 import { UtilityService } from '../../../../shared/services/utility-service';
 import { LocalStorageService } from '../../../../shared/services/local-storage-service';
+import { InvitationAccountSetupModal } from '../../../../shared/components/invitation-account-setup-modal/invitation-account-setup-modal';
 import {
   CurrentOrganizationResponse,
   OrganizationMetaDataResponse,
@@ -37,7 +38,8 @@ export interface ProfileSocialLink {
     TooltipModule,
     TagModule,
     SkeletonModule,
-    DatePipe
+    DatePipe,
+    InvitationAccountSetupModal
   ],
   templateUrl: './organization-profile.html',
   styleUrl: './organization-profile.scss',
@@ -77,6 +79,13 @@ export class OrganizationProfile implements OnInit, OnDestroy {
   addresses: CurrentOrganizationResponseContactAddress[] = [];
   externalLinks: ProfileSocialLink[] = [];
 
+  requiresInvitationAccountSetup = signal(false);
+  pendingInvitationToken = '';
+  pendingInvitationEmail = '';
+  pendingInvitationOrgName = '';
+  pendingInvitationLegalName = '';
+  pendingInvitationRole = '';
+
   private readonly supportedPlatforms: { type: 'FACEBOOK' | 'X' | 'INSTAGRAM' | 'LINKEDIN'; label: string }[] = [
     { type: 'FACEBOOK', label: 'Facebook' },
     { type: 'X', label: 'X (Twitter)' },
@@ -87,6 +96,32 @@ export class OrganizationProfile implements OnInit, OnDestroy {
   private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   ngOnInit(): void {
+    const accessToken = this.localStorage.getItem('access_token');
+    const pendingToken = this.localStorage.getItem('pending_invitation_token');
+
+    if (!accessToken && pendingToken) {
+      this.pendingInvitationToken = pendingToken;
+      this.pendingInvitationEmail = this.localStorage.getItem('pending_invitation_email') || '';
+      this.pendingInvitationOrgName = this.localStorage.getItem('pending_invitation_org_name') || 'Invited Organization';
+      this.pendingInvitationLegalName =
+        this.localStorage.getItem('pending_invitation_legal_name') || this.pendingInvitationOrgName;
+      this.pendingInvitationRole = this.localStorage.getItem('pending_invitation_role') || 'MEMBER';
+
+      this.currentOrganization = {
+        organizationId: this.localStorage.getItem('pending_invitation_org_id') || '',
+        names: {
+          displayName: this.pendingInvitationOrgName,
+          legalName: this.pendingInvitationLegalName,
+          description: '',
+        },
+      } as CurrentOrganizationResponse;
+
+      this.requiresInvitationAccountSetup.set(true);
+      this.loadCountries();
+      this.cdr.markForCheck();
+      return;
+    }
+
     this.isLoadingOrganization = true;
     this.loadCountries();
     this.loadOrganizationMetadata();
@@ -94,6 +129,17 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     this.loadNetworkKeysCount();
     this.loadInvitationsCount();
     this.loadStoredLogo();
+  }
+
+  onInvitationAccountCreated(): void {
+    this.requiresInvitationAccountSetup.set(false);
+    this.isLoadingOrganization = true;
+    this.loadOrganizationMetadata();
+    this.loadOrganization();
+    this.loadNetworkKeysCount();
+    this.loadInvitationsCount();
+    this.loadStoredLogo();
+    this.cdr.markForCheck();
   }
 
   loadOrganization(): void {

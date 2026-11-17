@@ -1,10 +1,12 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { RouterModule } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AuthService } from '../../services/auth-service';
+import { UserService } from '../../services/user-service';
+import { LocalStorageService } from '../../services/local-storage-service';
 import { Dialog } from '../dialog/dialog';
 
 export interface NavItem {
@@ -21,13 +23,27 @@ export interface NavItem {
   templateUrl: './main-sidenav.html',
   styleUrl: './main-sidenav.scss',
 })
-export class MainSidenav {
+export class MainSidenav implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dialogService = inject(DialogService);
+  private readonly userService = inject(UserService, { optional: true });
+  private readonly localStorage = inject(LocalStorageService, { optional: true });
 
   @Input() isOpen = true;
   @Input() isMobile = false;
   @Output() readonly isOpenChange = new EventEmitter<boolean>();
+
+  get isProfileUnverified(): boolean {
+    return this.userService?.isAccountUnverified() ?? false;
+  }
+
+  ngOnInit(): void {
+    if (this.localStorage?.getItem('access_token') && this.userService) {
+      this.userService.getAuthenticatedUserDetails().subscribe({
+        error: () => {},
+      });
+    }
+  }
 
   protected readonly mainNavItems: NavItem[] = [
     { label: 'Dashboard', route: '/main', icon: 'pi pi-th-large', exact: true },

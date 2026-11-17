@@ -5,6 +5,7 @@ import {
   ACCEPT_INVITATION_URL,
   CREATE_INVITATION_URL,
   INVITATION_BASE_URL,
+  REGISTER_AND_ACCEPT_INVITATION_URL,
   REVOKE_INVITATION_URL,
   VERIFY_INVITATION_URL,
 } from '../api/invitation';
@@ -14,6 +15,7 @@ import {
   AcceptInvitationResponse,
   CreateInvitationRequest,
   InvitationResponse,
+  RegisterAndAcceptInvitationRequest,
   VerifyInvitationResponse,
 } from '../models/invitation';
 
@@ -52,6 +54,15 @@ export class InvitationService {
       ACCEPT_INVITATION_URL,
       { token },
       { context: new HttpContext().set(IS_AUTHENTICATED, true) }
+    );
+  }
+
+  registerAndAcceptInvitation(
+    request: RegisterAndAcceptInvitationRequest
+  ): Observable<SuccessResponse<AcceptInvitationResponse>> {
+    return this.http.post<SuccessResponse<AcceptInvitationResponse>>(
+      REGISTER_AND_ACCEPT_INVITATION_URL,
+      request
     );
   }
 }

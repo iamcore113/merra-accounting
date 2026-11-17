@@ -162,9 +162,21 @@
   color: #64748b;
   font-size: 1.05rem;
   transition: color 0.15s ease;
+  position: relative;
 
   i {
     font-size: 1.05rem;
+  }
+
+  .nav-icon-warning-dot {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #f59e0b;
+    border: 1.5px solid #ffffff;
   }
 }
 
@@ -173,6 +185,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1.25;
+  flex: 1;
+}
+
+.nav-warning-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #d97706;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-left: auto;
+
+  i {
+    font-size: 0.75rem;
+  }
 }
 
 .side-nav-footer {

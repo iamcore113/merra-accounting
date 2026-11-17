@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.merra.dto.AcceptInvitationResponse;
 import org.merra.dto.CreateInvitationRequest;
 import org.merra.dto.InvitationResponse;
+import org.merra.dto.RegisterAndAcceptInvitationRequest;
 import org.merra.dto.VerifyInvitationResponse;
 import org.merra.entities.Organization;
 import org.merra.entities.OrganizationMembers;
@@ -154,6 +155,8 @@ class OrganizationInvitationServiceTest {
 
         when(networkKeyRepository.findByInvitationTokenAndIsActiveTrue(created.invitationToken()))
                 .thenReturn(Optional.of(storedHolder[0]));
+        when(userAccountRepository.findUserByEmailIgnoreCase("invitee@example.com"))
+                .thenReturn(Optional.empty());
 
         VerifyInvitationResponse verified = service.verifyInvitationToken(created.invitationToken());
         assertTrue(verified.valid());
@@ -161,6 +164,7 @@ class OrganizationInvitationServiceTest {
         assertEquals("Acme Accounting", verified.organizationDisplayName());
         assertEquals("Acme Accounting LLC", verified.organizationLegalName());
         assertEquals("ADVISOR", verified.role());
+        assertFalse(verified.accountExists());
 
         // Now accept as the invitee user
         SecurityContextHolder.getContext().setAuthentication(
@@ -191,5 +195,69 @@ class OrganizationInvitationServiceTest {
 
         VerifyInvitationResponse invalid = service.verifyInvitationToken("not-a-jwt");
         assertFalse(invalid.valid());
+    }
+
+    @Test
+    void registerAndAcceptInvitationCreatesUserAndJoinsOrganization() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(adminUser, null, adminUser.getAuthorities())
+        );
+        when(workspaceStateRepository.findCurrentOrganizationByPrincipal()).thenReturn(Optional.of(organization));
+        when(membersRepository.save(any(OrganizationMembers.class))).thenAnswer(inv -> {
+            OrganizationMembers m = inv.getArgument(0);
+            if (m.getId() == null) {
+                ReflectionTestUtils.setField(m, "id", UUID.randomUUID());
+            }
+            return m;
+        });
+        final OrganizationNetworkKey[] storedHolder = new OrganizationNetworkKey[1];
+        when(networkKeyRepository.save(any(OrganizationNetworkKey.class))).thenAnswer(inv -> {
+            OrganizationNetworkKey k = inv.getArgument(0);
+            if (k.getId() == null) {
+                ReflectionTestUtils.setField(k, "id", UUID.randomUUID());
+            }
+            storedHolder[0] = k;
+            return k;
+        });
+
+        InvitationResponse created = service.createInvitation(
+                new CreateInvitationRequest("newinvitee@example.com", "STANDARD", false)
+        );
+
+        SecurityContextHolder.clearContext();
+        when(networkKeyRepository.findByInvitationTokenAndIsActiveTrue(created.invitationToken()))
+                .thenReturn(Optional.of(storedHolder[0]));
+        when(userAccountRepository.findUserByEmailIgnoreCase("newinvitee@example.com"))
+                .thenReturn(Optional.empty());
+        when(userAccountRepository.save(any(UserAccount.class))).thenAnswer(inv -> {
+            UserAccount u = inv.getArgument(0);
+            if (u.getUserId() == null) {
+                ReflectionTestUtils.setField(u, "userId", UUID.randomUUID());
+            }
+            return u;
+        });
+        when(membersRepository.isUserMemberOfOrganization(any(UUID.class), any(UUID.class)))
+                .thenReturn(false);
+        when(workspaceStateRepository.findByUser(any(UserAccount.class)))
+                .thenReturn(Optional.empty());
+        when(mailSender.createMimeMessage()).thenReturn(new MimeMessage(Session.getDefaultInstance(new Properties())));
+
+        AcceptInvitationResponse result = service.registerAndAcceptInvitation(
+                new RegisterAndAcceptInvitationRequest(
+                        created.invitationToken(),
+                        "newinvitee@example.com",
+                        "Jane",
+                        "Doe",
+                        "female",
+                        "Password123!"
+                )
+        );
+
+        assertEquals(organization.getId(), result.organizationId());
+        assertEquals("STANDARD", result.role());
+        assertNotNull(result.accessToken());
+        assertNotNull(result.refreshToken());
+        assertFalse(storedHolder[0].getIsActive());
+        verify(mailSender, never()).send(any(MimeMessage.class));
     }
 }

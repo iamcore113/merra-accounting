@@ -11,6 +11,19 @@ public record VerifyInvitationResponse(
         String organizationDisplayName,
         String organizationLegalName,
         String role,
-        LocalDateTime expiresAt
+        LocalDateTime expiresAt,
+        boolean accountExists
 ) {
+    public VerifyInvitationResponse(
+            boolean valid,
+            String message,
+            String inviteeEmail,
+            UUID organizationId,
+            String organizationDisplayName,
+            String organizationLegalName,
+            String role,
+            LocalDateTime expiresAt
+    ) {
+        this(valid, message, inviteeEmail, organizationId, organizationDisplayName, organizationLegalName, role, expiresAt, false);
+    }
 }

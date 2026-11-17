@@ -7,6 +7,17 @@ public record AcceptInvitationResponse(
         String organizationDisplayName,
         String organizationLegalName,
         String role,
-        String message
+        String message,
+        String accessToken,
+        String refreshToken
 ) {
+    public AcceptInvitationResponse(
+            UUID organizationId,
+            String organizationDisplayName,
+            String organizationLegalName,
+            String role,
+            String message
+    ) {
+        this(organizationId, organizationDisplayName, organizationLegalName, role, message, null, null);
+    }
 }

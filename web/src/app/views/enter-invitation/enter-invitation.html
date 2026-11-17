@@ -1,4 +1,26 @@
-<div class="invitation-wrapper">
+@if (isTransitioning()) {
+  <div class="transition-container" [class.leaving]="isLeaving()">
+    <div class="transition-card">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+
+      <div class="loader" aria-hidden="true">
+        <span class="ring"></span>
+        <span class="dot"></span>
+      </div>
+
+      <p class="transition-label">Joining organization</p>
+      <h2 class="organization-name">
+        {{ verifiedInvitation()?.organizationDisplayName || 'Organization Workspace' }}
+      </h2>
+      <p class="transition-hint">Preparing your organization profile&hellip;</p>
+
+      <div class="progress-track">
+        <div class="progress-bar"></div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="invitation-wrapper">
   <div class="invitation-header">
     <h1 class="invitation-title">Join an Organization</h1>
     <p class="sub-text">
@@ -78,7 +100,7 @@
       </div>
 
       <div class="verified-actions">
-        @if (isAuthenticated) {
+        @if (info.accountExists === false || isAuthenticatedAsInvitee) {
           <p-button
             label="Accept & Join Organization"
             icon="pi pi-check"
@@ -88,13 +110,13 @@
             (onClick)="acceptInvitation()">
           </p-button>
         } @else {
-          <p class="auth-prompt">Sign in or create an account with <strong>{{ info.inviteeEmail }}</strong> to accept this invitation.</p>
+          <p class="auth-prompt">Sign in with <strong>{{ info.inviteeEmail }}</strong> to accept this invitation.</p>
           <div class="auth-buttons">
-            <p-button label="Sign In" icon="pi pi-sign-in" [size]="'small'" (onClick)="goToSignin()"></p-button>
-            <p-button label="Create Account" [outlined]="true" [size]="'small'" (onClick)="goToSignup()"></p-button>
+            <p-button label="Sign In to Accept" icon="pi pi-sign-in" [size]="'small'" (onClick)="goToSignin()"></p-button>
           </div>
         }
       </div>
     </div>
   }
-</div>
+  </div>
+}

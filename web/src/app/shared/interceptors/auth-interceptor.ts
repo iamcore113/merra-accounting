@@ -115,7 +115,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const accessToken = localStorageService.getItem('access_token');
   if (!accessToken && requiresAuth) {
     localStorageService.removeItem('access_token');
-    openSessionExpiredDialog(dialogService, 'Your session is invalid or has expired. Please sign in again to continue.');
+    if (!localStorageService.getItem('pending_invitation_token')) {
+      openSessionExpiredDialog(dialogService, 'Your session is invalid or has expired. Please sign in again to continue.');
+    }
     return throwError(() => new Error('No authentication token found'));
   }
 

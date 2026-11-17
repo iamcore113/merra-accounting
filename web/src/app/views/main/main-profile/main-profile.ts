@@ -1,6 +1,7 @@
-import { Component, OnInit, ViewEncapsulation, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, ViewEncapsulation, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { AccordionModule } from 'primeng/accordion';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SelectModule } from 'primeng/select';
@@ -13,8 +14,10 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
 import { UserService } from '../../../shared/services/user-service';
+import { LocalStorageService } from '../../../shared/services/local-storage-service';
 import { PrincipalDetailsResponse } from '../../../shared/models/organization';
 import { RestCountriesSelection, Config } from '../../../shared/models/api_response';
+import { VerifiedAccountResponse } from '../../../shared/models/auth';
 import { OrganizationService } from '../../../shared/services/organization-service';
 import { UtilityService } from '../../../shared/services/utility-service';
 import { AuthService } from '../../../shared/services/auth-service';
@@ -168,15 +171,19 @@ export class ChangePasswordDialog {
   styleUrl: './main-profile.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class MainProfile implements OnInit {
+export class MainProfile implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private readonly authService = inject(AuthService);
+  private readonly localStorage = inject(LocalStorageService);
   private readonly dialogService = inject(DialogService);
   private readonly messageService = inject(MessageService);
   private readonly cdRef = inject(ChangeDetectorRef);
   private readonly organizationService = inject(OrganizationService);
   private readonly utilityService = inject(UtilityService);
   private readonly fb = inject(FormBuilder);
+
+  @ViewChildren('pinInput') pinInputs!: QueryList<ElementRef<HTMLInputElement>>;
+
   public personalDetails: PrincipalDetailsResponse | null = null;
   affiliatedOrganizationsCount = 0;
   isLoading = false;
@@ -188,6 +195,26 @@ export class MainProfile implements OnInit {
   countries: RestCountriesSelection = [];
   filteredCountries: string[] = [];
 
+  activeSection: 'personal' | 'settings' = 'personal';
+  hasSentActivationPin = signal(false);
+  pinDigits = signal<string[]>(['', '', '', '']);
+  pinError = signal<string | null>(null);
+  isActivatingPin = signal(false);
+  isResendingPin = signal(false);
+  resendCooldownSeconds = signal(0);
+  private cooldownInterval: ReturnType<typeof setInterval> | null = null;
+
+  get isAccountActivated(): boolean {
+    if (this.personalDetails && typeof this.personalDetails.isEnabled === 'boolean') {
+      return this.personalDetails.isEnabled;
+    }
+    return !this.userService.isAccountUnverified();
+  }
+
+  get isPinComplete(): boolean {
+    return this.pinDigits().every((d) => /^\d$/.test(d));
+  }
+
   genderOptions = [
     { label: 'Male', value: 'male' },
     { label: 'Female', value: 'female' }
@@ -197,7 +224,7 @@ export class MainProfile implements OnInit {
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
     gender: ['', Validators.required],
-    country: ['', Validators.required],
+    country: [''],
     email: ['', [Validators.required, Validators.email]],
   });
 
@@ -214,6 +241,10 @@ export class MainProfile implements OnInit {
         if (this.personalDetails?.organizationAffiliation) {
           this.affiliatedOrganizationsCount = this.personalDetails.organizationAffiliation.count || (this.personalDetails.organizationAffiliation.organizations?.length ?? 0);
         }
+        const enabled = this.personalDetails?.isEnabled ?? this.personalDetails?.enabled;
+        if (typeof enabled === 'boolean') {
+          this.userService.setAccountUnverified(!enabled);
+        }
         this.patchForm(this.personalDetails);
         this.isLoading = false;
         this.cdRef.detectChanges();
@@ -224,6 +255,270 @@ export class MainProfile implements OnInit {
         this.cdRef.detectChanges();
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  }
+
+  switchSection(section: 'personal' | 'settings'): void {
+    this.activeSection = section;
+    this.cdRef.detectChanges();
+  }
+
+  onPinDigitInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const rawValue = input.value.replace(/\D/g, '');
+    this.pinError.set(null);
+
+    if (!rawValue) {
+      this.updatePinDigit(index, '');
+      input.value = '';
+      return;
+    }
+
+    const digit = rawValue.slice(-1);
+    this.updatePinDigit(index, digit);
+    input.value = digit;
+
+    if (index < 3) {
+      this.focusPinInput(index + 1);
+    }
+  }
+
+  onPinKeyDown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Backspace') {
+      this.pinError.set(null);
+      const currentDigits = this.pinDigits();
+      if (currentDigits[index]) {
+        this.updatePinDigit(index, '');
+      } else if (index > 0) {
+        this.updatePinDigit(index - 1, '');
+        this.focusPinInput(index - 1);
+      }
+      event.preventDefault();
+    } else if (event.key === 'ArrowLeft' && index > 0) {
+      this.focusPinInput(index - 1);
+      event.preventDefault();
+    } else if (event.key === 'ArrowRight' && index < 3) {
+      this.focusPinInput(index + 1);
+      event.preventDefault();
+    } else if (event.key === 'Enter' && this.isPinComplete) {
+      this.activateAccountWithPin();
+      event.preventDefault();
+    }
+  }
+
+  onPinPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const pastedText = event.clipboardData?.getData('text') || '';
+    this.applyPastedPin(pastedText);
+  }
+
+  async pastePinFromClipboard(): Promise<void> {
+    try {
+      const text = await navigator.clipboard.readText();
+      this.applyPastedPin(text);
+    } catch {
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Paste PIN',
+        detail: 'Press Ctrl+V (or Cmd+V) inside the PIN boxes to paste your 4-digit code.',
+        life: 3500,
+      });
+    }
+  }
+
+  private applyPastedPin(rawText: string): void {
+    const digitsOnly = (rawText || '').replace(/\D/g, '').slice(0, 4);
+    if (!digitsOnly) {
+      return;
+    }
+    this.pinError.set(null);
+    const updated = [...this.pinDigits()];
+    for (let i = 0; i < 4; i++) {
+      updated[i] = digitsOnly[i] || '';
+    }
+    this.pinDigits.set(updated);
+
+    const inputs = this.pinInputs?.toArray() || [];
+    inputs.forEach((el, idx) => {
+      el.nativeElement.value = updated[idx];
+    });
+    this.focusPinInput(Math.min(digitsOnly.length, 3));
+    this.cdRef.detectChanges();
+  }
+
+  activateAccountWithPin(): void {
+    const email = this.personalDetails?.email || this.localStorage.getItem('user_email') || '';
+    if (!email) {
+      this.pinError.set('Unable to determine your account email address.');
+      return;
+    }
+
+    const pin = this.pinDigits().join('');
+    if (!/^\d{4}$/.test(pin)) {
+      this.pinError.set('Please enter the 4-digit PIN code sent to your email.');
+      return;
+    }
+
+    if (this.isActivatingPin()) {
+      return;
+    }
+
+    this.isActivatingPin.set(true);
+    this.pinError.set(null);
+
+    this.authService
+      .verifyPin({ email, pin })
+      .pipe(
+        finalize(() => {
+          this.isActivatingPin.set(false);
+          this.cdRef.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response: Config) => {
+          if (response.success && 'data' in response) {
+            const verifiedData = (response as any).data as VerifiedAccountResponse;
+            if (verifiedData?.accessToken) {
+              this.localStorage.setItem('access_token', verifiedData.accessToken);
+            }
+          }
+
+          if (this.personalDetails) {
+            this.personalDetails = {
+              ...this.personalDetails,
+              isEnabled: true,
+              enabled: true,
+            };
+          }
+          this.userService.setAccountUnverified(false);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Account Activated',
+            detail: 'Your MERRA user account has been verified and activated successfully!',
+            life: 5000,
+          });
+          this.cdRef.detectChanges();
+        },
+        error: (error) => {
+          const msg =
+            error?.error?.message ||
+            error?.error?.error ||
+            error?.message ||
+            'Invalid or expired PIN code. Please check your email and try again.';
+          this.pinError.set(msg);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Activation Failed',
+            detail: msg,
+            life: 5000,
+          });
+          this.cdRef.detectChanges();
+        },
+      });
+  }
+
+  resendActivationPin(): void {
+    const email = this.personalDetails?.email || this.localStorage.getItem('user_email') || '';
+    if (!email || this.isResendingPin() || this.resendCooldownSeconds() > 0) {
+      return;
+    }
+
+    const isFirstSend = !this.hasSentActivationPin();
+    this.isResendingPin.set(true);
+    this.authService
+      .resendVerificationEmail({
+        email,
+        ...(this.personalDetails?.id ? { userId: this.personalDetails.id } : {}),
+      })
+      .pipe(
+        finalize(() => {
+          this.isResendingPin.set(false);
+          this.cdRef.detectChanges();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.hasSentActivationPin.set(true);
+          setTimeout(() => {
+            this.clearPinBoxes();
+            this.cdRef.detectChanges();
+          }, 50);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'PIN Code Sent',
+            detail: `A 4-digit activation PIN has been sent to ${email}.`,
+            life: 5000,
+          });
+          if (!isFirstSend) {
+            this.startResendCooldown(60);
+          } else {
+            this.startResendCooldown(30);
+          }
+        },
+        error: (error) => {
+          const msg =
+            error?.error?.message ||
+            error?.message ||
+            'Failed to send activation PIN. Please try again.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Send Failed',
+            detail: msg,
+            life: 5000,
+          });
+        },
+      });
+  }
+
+  private updatePinDigit(index: number, value: string): void {
+    const updated = [...this.pinDigits()];
+    updated[index] = value;
+    this.pinDigits.set(updated);
+  }
+
+  private clearPinBoxes(): void {
+    this.pinDigits.set(['', '', '', '']);
+    this.pinError.set(null);
+    const inputs = this.pinInputs?.toArray() || [];
+    inputs.forEach((el) => {
+      el.nativeElement.value = '';
+    });
+    this.focusPinInput(0);
+  }
+
+  private focusPinInput(index: number): void {
+    const inputs = this.pinInputs?.toArray() || [];
+    const target = inputs[index]?.nativeElement;
+    if (target) {
+      target.focus();
+      target.select();
+    }
+  }
+
+  private startResendCooldown(seconds: number): void {
+    this.resendCooldownSeconds.set(seconds);
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+    }
+    this.cooldownInterval = setInterval(() => {
+      this.resendCooldownSeconds.update((s) => {
+        if (s <= 1) {
+          if (this.cooldownInterval) {
+            clearInterval(this.cooldownInterval);
+            this.cooldownInterval = null;
+          }
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
   }
 
   private patchForm(details: PrincipalDetailsResponse | null): void {

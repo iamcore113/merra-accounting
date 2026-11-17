@@ -19,7 +19,8 @@ public interface UserMapper {
 
     @Mappings({
             @Mapping(target = "fullName", source = "fullName"),
-            @Mapping(target = "organizationAffiliation", ignore = true)
+            @Mapping(target = "organizationAffiliation", ignore = true),
+            @Mapping(target = "isEnabled", expression = "java(userAccount.isEnabled())")
     })
     PrincipalDetailsResponse toPrincipalDetailsResponse(UserAccount userAccount, String fullName);
 }

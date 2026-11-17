@@ -316,4 +316,6 @@ export interface PrincipalDetailsResponse {
   country: string;
   email: string;
   organizationAffiliation: UserOrganizationAffiliation;
+  isEnabled?: boolean;
+  enabled?: boolean;
 }

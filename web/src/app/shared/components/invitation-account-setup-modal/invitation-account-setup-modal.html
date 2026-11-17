@@ -1,0 +1,188 @@
+<div class="invitation-modal-backdrop" [class.closing]="isClosing()" role="dialog" aria-modal="true">
+  @if (step() === 'prompt') {
+    <div class="invitation-modal-card prompt-card">
+      <div class="modal-brand-bar"></div>
+      <div class="modal-body">
+        <div class="prompt-icon-circle">
+          <i class="pi pi-user-plus"></i>
+        </div>
+        <h2 class="modal-title">MERRA Account Required</h2>
+        <p class="modal-message">
+          You don't have a MERRA user account yet for
+          <strong>{{ inviteeEmail }}</strong>.
+          To complete joining
+          <strong>{{ organizationDisplayName || 'this organization' }}</strong>
+          @if (role) {
+            as <strong>{{ role }}</strong>
+          }, please proceed to create your account.
+        </p>
+
+        <div class="modal-actions">
+          <p-button
+            type="button"
+            label="Proceed"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            [size]="'small'"
+            styleClass="proceed-btn"
+            (onClick)="proceedToForm()">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="invitation-modal-card form-card">
+      <div class="modal-brand-bar"></div>
+      <div class="modal-header">
+        <img src="merra-logo.svg" alt="MERRA" class="brand-logo" />
+        <h2 class="modal-title">Create Your MERRA Account</h2>
+        <p class="modal-subtitle">
+          Complete your account details to join
+          <strong>{{ organizationDisplayName || 'the organization' }}</strong>
+        </p>
+      </div>
+
+      <div class="modal-body">
+        @if (submitError()) {
+          <div class="error-banner">
+            <i class="pi pi-exclamation-triangle"></i>
+            <span>{{ submitError() }}</span>
+          </div>
+        }
+
+        <form [formGroup]="accountForm" (ngSubmit)="onSubmit()" class="setup-form">
+          <!-- 1. Email (Pre-filled and Read-Only) -->
+          <div class="field-group">
+            <label for="inviteEmail" class="field-label">Email Address</label>
+            <p-iconfield iconPosition="right" class="full-width">
+              <input
+                id="inviteEmail"
+                pInputText
+                [pSize]="'small'"
+                type="email"
+                formControlName="email"
+                class="full-width readonly-input"
+                readonly />
+              <p-inputicon styleClass="pi pi-lock"></p-inputicon>
+            </p-iconfield>
+          </div>
+
+          <!-- 2 & 3. First Name & Last Name -->
+          <div class="name-row">
+            <div class="field-group">
+              <label for="inviteFirstName" class="field-label">First Name</label>
+              <input
+                id="inviteFirstName"
+                pInputText
+                [pSize]="'small'"
+                type="text"
+                formControlName="firstName"
+                class="full-width"
+                placeholder="Enter first name" />
+              @if (accountForm.get('firstName')?.hasError('required') && accountForm.get('firstName')?.touched) {
+                <small class="field-error">First name is required</small>
+              }
+            </div>
+
+            <div class="field-group">
+              <label for="inviteLastName" class="field-label">Last Name</label>
+              <input
+                id="inviteLastName"
+                pInputText
+                [pSize]="'small'"
+                type="text"
+                formControlName="lastName"
+                class="full-width"
+                placeholder="Enter last name" />
+              @if (accountForm.get('lastName')?.hasError('required') && accountForm.get('lastName')?.touched) {
+                <small class="field-error">Last name is required</small>
+              }
+            </div>
+          </div>
+
+          <!-- 4. Gender -->
+          <div class="field-group">
+            <label class="field-label">Gender</label>
+            <div class="gender-radio-group">
+              <div class="radio-option">
+                <p-radiobutton
+                  name="gender"
+                  value="male"
+                  formControlName="gender"
+                  inputId="inviteGenderMale">
+                </p-radiobutton>
+                <label for="inviteGenderMale" class="radio-label">Male</label>
+              </div>
+              <div class="radio-option">
+                <p-radiobutton
+                  name="gender"
+                  value="female"
+                  formControlName="gender"
+                  inputId="inviteGenderFemale">
+                </p-radiobutton>
+                <label for="inviteGenderFemale" class="radio-label">Female</label>
+              </div>
+            </div>
+            @if (accountForm.get('gender')?.hasError('required') && accountForm.get('gender')?.touched) {
+              <small class="field-error">Gender is required</small>
+            }
+          </div>
+
+          <!-- 5. Password -->
+          <div class="field-group">
+            <div class="field-label-row">
+              <label for="invitePassword" class="field-label">Password</label>
+              <button type="button" class="toggle-show-btn" (click)="toggleShowPassword()">
+                <i class="pi" [ngClass]="showPassword() ? 'pi-eye-slash' : 'pi-eye'"></i>
+                <span>{{ showPassword() ? 'Hide' : 'Show' }}</span>
+              </button>
+            </div>
+            <div class="password-input-wrapper">
+              <input
+                id="invitePassword"
+                pInputText
+                [pSize]="'small'"
+                [type]="showPassword() ? 'text' : 'password'"
+                formControlName="password"
+                class="full-width password-input"
+                [class.invalid-field]="(passwordTouched || passwordValue.length > 0) && !isPasswordAllValid"
+                [class.valid-field]="passwordValue.length > 0 && isPasswordAllValid"
+                placeholder="Create a strong password" />
+            </div>
+
+            <ul class="password-hints">
+              <li [class.met]="hasMinLength" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasMinLength">
+                <i class="pi" [ngClass]="hasMinLength ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+                <span>Use 8 or more characters</span>
+              </li>
+              <li [class.met]="hasUpperAndLower" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasUpperAndLower">
+                <i class="pi" [ngClass]="hasUpperAndLower ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+                <span>Use upper and lower case letters</span>
+              </li>
+              <li [class.met]="hasNumber" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasNumber">
+                <i class="pi" [ngClass]="hasNumber ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+                <span>Use a number</span>
+              </li>
+              <li [class.met]="hasSymbol" [class.unmet]="(passwordTouched || passwordValue.length > 0) && !hasSymbol">
+                <i class="pi" [ngClass]="hasSymbol ? 'pi-check' : 'pi-exclamation-triangle'"></i>
+                <span>Use a symbol</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="modal-actions form-submit-row">
+            <p-button
+              type="submit"
+              label="Create Account & Join Organization"
+              icon="pi pi-check-circle"
+              [size]="'small'"
+              [loading]="isSubmitting()"
+              [disabled]="isSubmitting() || accountForm.invalid"
+              styleClass="submit-account-btn">
+            </p-button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

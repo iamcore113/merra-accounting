@@ -8,6 +8,7 @@ import org.merra.dto.AcceptInvitationRequest;
 import org.merra.dto.AcceptInvitationResponse;
 import org.merra.dto.CreateInvitationRequest;
 import org.merra.dto.InvitationResponse;
+import org.merra.dto.RegisterAndAcceptInvitationRequest;
 import org.merra.dto.VerifyInvitationResponse;
 import org.merra.services.OrganizationInvitationService;
 import org.springframework.http.HttpStatus;
@@ -92,5 +93,17 @@ public class OrganizationInvitationController {
                 HttpStatus.OK,
                 result);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("register-and-accept")
+    public ResponseEntity<ApiResponse<AcceptInvitationResponse>> registerAndAcceptInvitation(
+            @Valid @RequestBody RegisterAndAcceptInvitationRequest request) {
+        AcceptInvitationResponse result = invitationService.registerAndAcceptInvitation(request);
+        ApiResponse<AcceptInvitationResponse> response = new ApiResponse<>(
+                result.message(),
+                true,
+                HttpStatus.CREATED,
+                result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
