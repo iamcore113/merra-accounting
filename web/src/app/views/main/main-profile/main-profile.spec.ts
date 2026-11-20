@@ -24,8 +24,9 @@ describe('MainProfile', () => {
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['open']);
-    userServiceSpy = jasmine.createSpyObj('UserService', ['getAuthenticatedUserDetails']);
+    userServiceSpy = jasmine.createSpyObj('UserService', ['getAuthenticatedUserDetails', 'isAccountUnverified', 'setAccountUnverified']);
     userServiceSpy.getAuthenticatedUserDetails.and.returnValue(of({ success: true, data: {} } as any));
+    userServiceSpy.isAccountUnverified.and.returnValue(false);
     organizationServiceSpy = jasmine.createSpyObj('OrganizationService', ['getCurrentOrganization']);
     organizationServiceSpy.getCurrentOrganization.and.returnValue(of({ success: true, data: {} } as any));
     utilityServiceSpy = jasmine.createSpyObj('UtilityService', ['getCountries']);
@@ -63,5 +64,15 @@ describe('MainProfile', () => {
 
     component.onLogout();
     expect(dialogServiceSpy.open).toHaveBeenCalled();
+  });
+
+  it('should render skeleton loading placeholders when isLoading is true', () => {
+    component.isLoading = true;
+    fixture.detectChanges();
+
+    const nativeEl: HTMLElement = fixture.nativeElement;
+    expect(nativeEl.querySelectorAll('p-skeleton').length).toBeGreaterThan(0);
+    expect(nativeEl.querySelectorAll('.skeleton-affiliated-item').length).toBe(2);
+    expect(nativeEl.querySelector('.affiliated-empty-state')).toBeNull();
   });
 });

@@ -3,7 +3,9 @@
     <div class="profile-title-group">
       <div class="profile-title-row">
         <h2 class="profile-title">User Profile &amp; Settings</h2>
-        @if (!isAccountActivated) {
+        @if (isLoading) {
+          <p-skeleton width="8.5rem" height="1.45rem" borderRadius="0" styleClass="status-pill-skeleton"></p-skeleton>
+        } @else if (!isAccountActivated) {
           <span class="status-pill unverified">
             <i class="pi pi-exclamation-triangle"></i> Pending Activation
           </span>
@@ -20,7 +22,7 @@
     </button>
   </div>
 
-  @if (!isAccountActivated) {
+  @if (!isLoading && !isAccountActivated) {
     <div class="unverified-callout-banner">
       <div class="callout-content">
         <span class="callout-icon">
@@ -66,7 +68,7 @@
       (click)="switchSection('settings')">
       <i class="pi pi-cog"></i>
       <span>Account Settings</span>
-      @if (!isAccountActivated) {
+      @if (!isLoading && !isAccountActivated) {
         <span class="tab-warning-badge" title="Account activation required">
           <i class="pi pi-exclamation-triangle"></i> Action Needed
         </span>
@@ -87,7 +89,9 @@
             <div class="detail-text">
               <span class="detail-label">Name:</span>
               @if (isLoading) {
-                <span class="detail-skeleton"></span>
+                <span class="detail-skeleton">
+                  <p-skeleton width="11rem" height="1.15rem" borderRadius="3px"></p-skeleton>
+                </span>
               } @else {
                 <span class="detail-value">{{ personalDetails?.fullName ?? 'Not set' }}</span>
               }
@@ -98,7 +102,10 @@
           <div class="editor-container">
             @if (isLoading) {
               <div class="skeleton-field-row">
-                <div class="skeleton-input"></div>
+                <div class="skeleton-input">
+                  <p-skeleton width="12rem" height="1.1rem" borderRadius="3px"></p-skeleton>
+                  <p-skeleton width="3.25rem" height="1rem" borderRadius="3px"></p-skeleton>
+                </div>
               </div>
             } @else if (!isEditingName) {
               <button class="display-toggle-btn" type="button" (click)="isEditingName = true">
@@ -135,7 +142,9 @@
             <div class="detail-text">
               <span class="detail-label">Gender:</span>
               @if (isLoading) {
-                <span class="detail-skeleton"></span>
+                <span class="detail-skeleton">
+                  <p-skeleton width="6rem" height="1.15rem" borderRadius="3px"></p-skeleton>
+                </span>
               } @else {
                 <span class="detail-value">{{ getGenderDisplay() }}</span>
               }
@@ -146,7 +155,10 @@
           <div class="editor-container">
             @if (isLoading) {
               <div class="skeleton-field-row">
-                <div class="skeleton-input"></div>
+                <div class="skeleton-input">
+                  <p-skeleton width="7rem" height="1.1rem" borderRadius="3px"></p-skeleton>
+                  <p-skeleton width="3.25rem" height="1rem" borderRadius="3px"></p-skeleton>
+                </div>
               </div>
             } @else if (!isEditingGender) {
               <button class="display-toggle-btn" type="button" (click)="isEditingGender = true">
@@ -179,7 +191,9 @@
             <div class="detail-text">
               <span class="detail-label">Country:</span>
               @if (isLoading) {
-                <span class="detail-skeleton"></span>
+                <span class="detail-skeleton">
+                  <p-skeleton width="10rem" height="1.15rem" borderRadius="3px"></p-skeleton>
+                </span>
               } @else {
                 <span class="detail-value">{{ getCountryDisplay() }}</span>
               }
@@ -190,7 +204,10 @@
           <div class="editor-container">
             @if (isLoading) {
               <div class="skeleton-field-row">
-                <div class="skeleton-input"></div>
+                <div class="skeleton-input">
+                  <p-skeleton width="10.5rem" height="1.1rem" borderRadius="3px"></p-skeleton>
+                  <p-skeleton width="3.25rem" height="1rem" borderRadius="3px"></p-skeleton>
+                </div>
               </div>
             } @else if (!isEditingCountry) {
               <button class="display-toggle-btn" type="button" (click)="isEditingCountry = true">
@@ -233,7 +250,9 @@
             <div class="detail-text">
               <span class="detail-label">Email:</span>
               @if (isLoading) {
-                <span class="detail-skeleton"></span>
+                <span class="detail-skeleton">
+                  <p-skeleton width="13.5rem" height="1.15rem" borderRadius="3px"></p-skeleton>
+                </span>
               } @else {
                 <span class="detail-value">{{ personalDetails?.email ?? 'Not set' }}</span>
               }
@@ -244,7 +263,10 @@
           <div class="editor-container">
             @if (isLoading) {
               <div class="skeleton-field-row">
-                <div class="skeleton-input"></div>
+                <div class="skeleton-input">
+                  <p-skeleton width="14rem" height="1.1rem" borderRadius="3px"></p-skeleton>
+                  <p-skeleton width="3.25rem" height="1rem" borderRadius="3px"></p-skeleton>
+                </div>
               </div>
             } @else if (!isEditingEmail) {
               <button class="display-toggle-btn" type="button" (click)="isEditingEmail = true">
@@ -283,20 +305,40 @@
             </span>
             <div class="detail-text">
               <span class="detail-label">Affiliated Organizations:</span>
-              <span class="detail-value">
-                @if (affiliatedOrganizationsCount > 0) {
-                  <span class="org-count-pill">
-                    {{ affiliatedOrganizationsCount }} {{ affiliatedOrganizationsCount === 1 ? 'organization' : 'organizations' }}
-                  </span>
-                } @else {
-                  <span class="empty-badge">None</span>
-                }
-              </span>
+              @if (isLoading) {
+                <span class="detail-skeleton">
+                  <p-skeleton width="7.5rem" height="1.35rem" borderRadius="4px"></p-skeleton>
+                </span>
+              } @else {
+                <span class="detail-value">
+                  @if (affiliatedOrganizationsCount > 0) {
+                    <span class="org-count-pill">
+                      {{ affiliatedOrganizationsCount }} {{ affiliatedOrganizationsCount === 1 ? 'organization' : 'organizations' }}
+                    </span>
+                  } @else {
+                    <span class="empty-badge">None</span>
+                  }
+                </span>
+              }
             </div>
           </div>
         </p-accordion-header>
         <p-accordion-content>
-          @if (affiliatedOrganizationsCount > 0) {
+          @if (isLoading) {
+            <div class="affiliated-list affiliated-skeleton-list">
+              @for (item of [0, 1]; track item) {
+                <div class="affiliated-item skeleton-affiliated-item">
+                  <div class="affiliated-info">
+                    <p-skeleton width="32px" height="32px" borderRadius="4px"></p-skeleton>
+                    <div class="affiliated-meta">
+                      <p-skeleton width="11rem" height="1.1rem" borderRadius="3px"></p-skeleton>
+                    </div>
+                  </div>
+                  <p-skeleton width="4.5rem" height="1.35rem" borderRadius="4px"></p-skeleton>
+                </div>
+              }
+            </div>
+          } @else if (affiliatedOrganizationsCount > 0) {
             <div class="affiliated-list">
               @for (org of personalDetails?.organizationAffiliation?.organizations; track org.organizationId) {
                 <div class="affiliated-item">
@@ -322,11 +364,11 @@
   } @else {
     <div class="account-settings-view">
       <!-- Section 1: Account Verification / Activation -->
-      <div class="settings-section-card" [class.unverified-card]="!isAccountActivated">
+      <div class="settings-section-card" [class.unverified-card]="!isLoading && !isAccountActivated">
         <div class="settings-card-header">
           <div class="header-left">
-            <span class="section-icon" [class.warn]="!isAccountActivated">
-              <i class="pi" [ngClass]="isAccountActivated ? 'pi-verified' : 'pi-shield'"></i>
+            <span class="section-icon" [class.warn]="!isLoading && !isAccountActivated">
+              <i class="pi" [ngClass]="isLoading || isAccountActivated ? 'pi-verified' : 'pi-shield'"></i>
             </span>
             <div>
               <h3 class="section-title">Account Verification &amp; Activation</h3>
@@ -335,7 +377,9 @@
               </p>
             </div>
           </div>
-          @if (isAccountActivated) {
+          @if (isLoading) {
+            <p-skeleton width="6.5rem" height="1.45rem" borderRadius="0"></p-skeleton>
+          } @else if (isAccountActivated) {
             <span class="status-pill verified">
               <i class="pi pi-check-circle"></i> Activated
             </span>
@@ -347,7 +391,15 @@
         </div>
 
         <div class="settings-card-body">
-          @if (isAccountActivated) {
+          @if (isLoading) {
+            <div class="activated-summary-skeleton">
+              <p-skeleton width="1.5rem" height="1.5rem" borderRadius="50%"></p-skeleton>
+              <div class="summary-skeleton-lines">
+                <p-skeleton width="18rem" height="1rem" borderRadius="3px"></p-skeleton>
+                <p-skeleton width="13rem" height="0.85rem" borderRadius="3px"></p-skeleton>
+              </div>
+            </div>
+          } @else if (isAccountActivated) {
             <div class="activated-summary-box">
               <i class="pi pi-check-circle activated-icon"></i>
               <div>

@@ -10,6 +10,7 @@ import { ChipModule } from 'primeng/chip';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { SkeletonModule } from 'primeng/skeleton';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
@@ -165,7 +166,8 @@ export class ChangePasswordDialog {
     BadgeModule,
     ChipModule,
     ButtonModule,
-    InputTextModule
+    InputTextModule,
+    SkeletonModule
   ],
   templateUrl: './main-profile.html',
   styleUrl: './main-profile.scss',
@@ -186,7 +188,7 @@ export class MainProfile implements OnInit, OnDestroy {
 
   public personalDetails: PrincipalDetailsResponse | null = null;
   affiliatedOrganizationsCount = 0;
-  isLoading = false;
+  isLoading = true;
   isUpdating = false;
   isEditingEmail = false;
   isEditingCountry = false;
