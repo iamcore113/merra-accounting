@@ -5,12 +5,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.crypto.SecretKey;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 
 import org.merra.dto.AcceptInvitationResponse;
 import org.merra.dto.CreateInvitationRequest;
@@ -66,6 +73,17 @@ public class OrganizationInvitationService {
             UserAccountStatusEn.INVOICE_ONLY.name(),
             UserAccountStatusEn.READ_ONLY.name(),
             UserAccountStatusEn.MEMBER.name()
+    );
+    private static final Pattern STRICT_EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*\\.[A-Za-z]{2,24}$"
+    );
+    private static final List<String> KNOWN_EMAIL_DOMAINS = List.of(
+            "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.uk", "ymail.com",
+            "outlook.com", "hotmail.com", "live.com", "msn.com", "icloud.com",
+            "aol.com", "protonmail.com", "proton.me", "zoho.com", "gmx.com", "mail.com"
+    );
+    private static final Set<String> TEST_SAFE_DOMAINS = Set.of(
+            "example.com", "example.org", "example.net", "acme.com", "merra.example", "localhost"
     );
 
     @Value("${token.secret}")
@@ -135,8 +153,15 @@ public class OrganizationInvitationService {
         UserAccount inviter = SecurityUtils.getPrincipal(UserAccount.class)
                 .orElseThrow(() -> new EntityNotFoundException("No authenticated user found."));
 
-        String normalizedEmail = request.inviteeEmail().trim().toLowerCase();
+        String normalizedEmail = request.inviteeEmail() != null ? request.inviteeEmail().trim().toLowerCase() : "";
+        validateInviteeEmail(normalizedEmail);
         String normalizedRole = normalizeAndValidateRole(request.role());
+
+        if (isEmailAlreadyPartOfOrganization(currentOrg.getId(), normalizedEmail, inviter)) {
+            throw new IllegalArgumentException(
+                    "User with email " + normalizedEmail + " is already a member of " + currentOrg.getDisplayName() + "."
+            );
+        }
 
         Date now = new Date();
         Date expirationDate = new Date(now.getTime() + INVITATION_DURATION_MS);
@@ -271,6 +296,19 @@ public class OrganizationInvitationService {
         String inviteeEmail = claims.get("inviteeEmail", String.class);
         String role = claims.get("role", String.class);
         String resolvedEmail = inviteeEmail != null ? inviteeEmail : (member != null ? member.getEmail() : null);
+        if (resolvedEmail != null && isEmailAlreadyPartOfOrganization(org.getId(), resolvedEmail.trim(), null)) {
+            return new VerifyInvitationResponse(
+                    false,
+                    "User with email " + resolvedEmail + " is already a member of " + org.getDisplayName() + ".",
+                    resolvedEmail,
+                    org.getId(),
+                    org.getDisplayName(),
+                    org.getLegalName(),
+                    role != null ? role : (member != null ? member.getRole() : null),
+                    record.getExpiresAt(),
+                    true
+            );
+        }
         boolean accountExists = resolvedEmail != null
                 && userAccountRepository.findUserByEmailIgnoreCase(resolvedEmail.trim()).isPresent();
 
@@ -328,6 +366,14 @@ public class OrganizationInvitationService {
         }
 
         Organization organization = invitation.getOrganization();
+        if (organizationMembersRepository.isUserMemberOfOrganization(organization.getId(), user.getUserId())
+                || isEmailAlreadyPartOfOrganization(organization.getId(), inviteeEmail, null)) {
+            invitation.setIsActive(Boolean.FALSE);
+            networkKeyRepository.save(invitation);
+            throw new IllegalArgumentException(
+                    "User with email " + inviteeEmail + " is already a member of " + organization.getDisplayName() + "."
+            );
+        }
         OrganizationMembers memberRecord = invitation.getOrganizationMember();
         String role = normalizeAndValidateRole(
                 claims.get("role", String.class) != null
@@ -430,6 +476,13 @@ public class OrganizationInvitationService {
         }
 
         Organization organization = invitation.getOrganization();
+        if (isEmailAlreadyPartOfOrganization(organization.getId(), normalizedEmail, null)) {
+            invitation.setIsActive(Boolean.FALSE);
+            networkKeyRepository.save(invitation);
+            throw new IllegalArgumentException(
+                    "User with email " + normalizedEmail + " is already a member of " + organization.getDisplayName() + "."
+            );
+        }
         String role = normalizeAndValidateRole(
                 claims.get("role", String.class) != null
                         ? claims.get("role", String.class)
@@ -520,6 +573,109 @@ public class OrganizationInvitationService {
                 .expiration(exp)
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
+    }
+
+    private void validateInviteeEmail(String email) {
+        if (email == null || email.isBlank() || !STRICT_EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Please enter a valid email address.");
+        }
+        int atIdx = email.lastIndexOf('@');
+        String localPart = email.substring(0, atIdx);
+        String domain = email.substring(atIdx + 1).toLowerCase();
+
+        if (localPart.startsWith(".") || localPart.endsWith(".") || localPart.contains("..") || domain.contains("..")) {
+            throw new IllegalArgumentException("Please enter a valid email address.");
+        }
+
+        String suggestedDomain = findMisspelledProviderSuggestion(domain);
+        if (suggestedDomain != null) {
+            throw new IllegalArgumentException(
+                    "Invalid email domain \"@" + domain + "\". Did you mean \"" + localPart + "@" + suggestedDomain + "\"?"
+            );
+        }
+
+        if (!TEST_SAFE_DOMAINS.contains(domain) && !KNOWN_EMAIL_DOMAINS.contains(domain) && !hasValidMailDnsRecord(domain)) {
+            throw new IllegalArgumentException(
+                    "The email domain \"@" + domain + "\" does not exist or cannot receive emails. Please check the email address."
+            );
+        }
+    }
+
+    private String findMisspelledProviderSuggestion(String domain) {
+        if (KNOWN_EMAIL_DOMAINS.contains(domain) || TEST_SAFE_DOMAINS.contains(domain)) {
+            return null;
+        }
+        String collapsed = domain.replaceAll("(.)\\1+", "$1");
+        for (String known : KNOWN_EMAIL_DOMAINS) {
+            String knownCollapsed = known.replaceAll("(.)\\1+", "$1");
+            if (collapsed.equals(knownCollapsed)) {
+                return known;
+            }
+            int dist = levenshteinDistance(domain, known);
+            if (dist >= 1 && dist <= 2) {
+                return known;
+            }
+        }
+        return null;
+    }
+
+    private int levenshteinDistance(String a, String b) {
+        int[][] dp = new int[a.length() + 1][b.length() + 1];
+        for (int i = 0; i <= a.length(); i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= b.length(); j++) {
+            dp[0][j] = j;
+        }
+        for (int i = 1; i <= a.length(); i++) {
+            for (int j = 1; j <= b.length(); j++) {
+                int cost = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                dp[i][j] = Math.min(
+                        Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1),
+                        dp[i - 1][j - 1] + cost
+                );
+            }
+        }
+        return dp[a.length()][b.length()];
+    }
+
+    private boolean hasValidMailDnsRecord(String domain) {
+        Hashtable<String, String> env = new Hashtable<>();
+        env.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
+        env.put("com.sun.jndi.dns.timeout.initial", "2000");
+        env.put("com.sun.jndi.dns.timeout.retries", "1");
+        try {
+            DirContext ictx = new InitialDirContext(env);
+            Attributes attrs = ictx.getAttributes(domain, new String[]{"MX", "A", "AAAA"});
+            Attribute mx = attrs.get("MX");
+            if (mx != null && mx.size() > 0) {
+                return true;
+            }
+            Attribute a = attrs.get("A");
+            if (a != null && a.size() > 0) {
+                return true;
+            }
+            Attribute aaaa = attrs.get("AAAA");
+            return aaaa != null && aaaa.size() > 0;
+        } catch (NamingException e) {
+            return false;
+        }
+    }
+
+    private boolean isEmailAlreadyPartOfOrganization(UUID organizationId, String normalizedEmail, UserAccount inviter) {
+        if (organizationId == null || normalizedEmail == null || normalizedEmail.isBlank()) {
+            return false;
+        }
+        if (inviter != null && inviter.getEmail() != null && inviter.getEmail().trim().equalsIgnoreCase(normalizedEmail)) {
+            return true;
+        }
+        if (organizationMembersRepository.isEmailMemberOfOrganization(organizationId, normalizedEmail)) {
+            return true;
+        }
+        return userAccountRepository.findUserByEmailIgnoreCase(normalizedEmail)
+                .filter(u -> u.getUserId() != null)
+                .map(u -> organizationMembersRepository.isUserMemberOfOrganization(organizationId, u.getUserId()))
+                .orElse(false);
     }
 
     private String normalizeAndValidateRole(String role) {

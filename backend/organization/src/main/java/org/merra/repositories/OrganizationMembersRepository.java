@@ -43,4 +43,20 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	boolean isUserMemberOfOrganization(
 			@org.springframework.data.repository.query.Param("orgId") UUID orgId,
 			@org.springframework.data.repository.query.Param("userId") UUID userId);
+
+	/**
+	 * Checks if a user with the specified email is already an active member of the organization.
+	 *
+	 * @param orgId the UUID of the organization
+	 * @param email the email address to check
+	 * @return true if an active membership exists for that email in the organization, false otherwise
+	 */
+	@Query("SELECT COUNT(om) > 0 FROM OrganizationMembers om " +
+			"LEFT JOIN om.user u " +
+			"WHERE om.organization.id = :orgId " +
+			"AND om.status = 'ACTIVE' " +
+			"AND (LOWER(om.email) = LOWER(:email) OR LOWER(u.email) = LOWER(:email))")
+	boolean isEmailMemberOfOrganization(
+			@org.springframework.data.repository.query.Param("orgId") UUID orgId,
+			@org.springframework.data.repository.query.Param("email") String email);
 }

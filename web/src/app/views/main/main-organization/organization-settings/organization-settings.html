@@ -970,6 +970,40 @@
             </div>
           </div>
 
+          <!-- Closeable Invitation Notice / Already Member Section -->
+          @if (invitationNotice; as notice) {
+            <div class="invitation-notice-section" [class.already-member]="notice.isAlreadyMember">
+              <div class="notice-main">
+                <span class="notice-icon">
+                  <i class="pi" [ngClass]="notice.isAlreadyMember ? 'pi-user-edit' : 'pi-exclamation-triangle'"></i>
+                </span>
+                <div class="notice-content">
+                  <strong class="notice-title">{{ notice.title }}</strong>
+                  <p class="notice-message">{{ notice.message }}</p>
+                  @if (notice.suggestedEmail; as suggested) {
+                    <div style="margin-top:0.35rem">
+                      <p-button
+                        type="button"
+                        [label]="'Use ' + suggested"
+                        icon="pi pi-check"
+                        [outlined]="true"
+                        [size]="'small'"
+                        (onClick)="applySuggestedEmail(suggested)">
+                      </p-button>
+                    </div>
+                  }
+                </div>
+              </div>
+              <button
+                type="button"
+                class="notice-close-btn"
+                aria-label="Close notice"
+                (click)="closeInvitationNotice()">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          }
+
           <!-- Latest Generated Invitation Box -->
           @if (lastCreatedInvitation; as created) {
             <div class="latest-invitation-banner">

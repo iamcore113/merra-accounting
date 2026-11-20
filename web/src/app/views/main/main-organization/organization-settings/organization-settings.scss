@@ -217,6 +217,16 @@
   .role-field{width:200px}
   .invitation-btn-row{display:flex;gap:.65rem;flex-wrap:wrap;margin-top:.25rem}
 }
+.invitation-notice-section{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;padding:.85rem 1rem;background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid #f59e0b;margin-bottom:1rem;
+  &.already-member{background:#fef2f2;border-color:#fecaca;border-left-color:#ef4444;.notice-icon{background:#fee2e2;color:#dc2626}.notice-title{color:#991b1b}.notice-message{color:#7f1d1d}}
+  .notice-main{display:flex;align-items:flex-start;gap:.75rem;flex:1;min-width:0}
+  .notice-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#fef3c7;color:#d97706;flex-shrink:0}
+  .notice-content{display:flex;flex-direction:column;gap:.2rem;min-width:0}
+  .notice-title{font-size:.84rem;font-weight:700;color:#92400e}
+  .notice-message{margin:0;font-size:.78rem;color:#78350f;line-height:1.45}
+  .notice-close-btn{background:transparent;border:none;color:#64748b;cursor:pointer;padding:.25rem;display:inline-flex;align-items:center;justify-content:center;&:hover{color:#0f172a}}
+}
 .latest-invitation-banner{
   padding:.85rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;margin-bottom:1rem;
   .latest-banner-header{display:flex;align-items:center;justify-content:space-between;font-size:.8125rem;color:#166534;margin-bottom:.65rem}

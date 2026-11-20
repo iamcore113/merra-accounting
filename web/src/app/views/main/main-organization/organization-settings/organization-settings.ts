@@ -253,6 +253,31 @@ export class OrganizationSettings implements OnInit {
   selectedInvitationRole = 'STANDARD';
   readonly invitationRoles = ORGANIZATION_INVITATION_ROLES;
   lastCreatedInvitation: InvitationResponse | null = null;
+  invitationNotice: {
+    title: string;
+    message: string;
+    isAlreadyMember: boolean;
+    suggestedEmail?: string;
+  } | null = null;
+
+  private readonly knownEmailDomains = [
+    'gmail.com',
+    'googlemail.com',
+    'yahoo.com',
+    'yahoo.co.uk',
+    'ymail.com',
+    'outlook.com',
+    'hotmail.com',
+    'live.com',
+    'msn.com',
+    'icloud.com',
+    'aol.com',
+    'protonmail.com',
+    'proton.me',
+    'zoho.com',
+    'gmx.com',
+    'mail.com'
+  ];
 
   private monthAbbreviations = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -1380,16 +1405,26 @@ export class OrganizationSettings implements OnInit {
   }
 
   createInvitation(sendEmail: boolean): void {
-    const email = this.inviteeEmail.trim();
+    const email = this.inviteeEmail.trim().toLowerCase();
     if (!email) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Email Required',
-        detail: 'Please enter the invitee email address'
-      });
+      this.invitationNotice = {
+        title: 'Email Required',
+        message: 'Please enter the invitee email address before generating an invitation.',
+        isAlreadyMember: false
+      };
+      this.cdr.markForCheck();
       return;
     }
 
+    const emailValidationError = this.validateInviteeEmailAddress(email);
+    if (emailValidationError) {
+      this.lastCreatedInvitation = null;
+      this.invitationNotice = emailValidationError;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.invitationNotice = null;
     this.isCreatingInvitation = true;
     this.invitationService
       .createInvitation({
@@ -1401,6 +1436,7 @@ export class OrganizationSettings implements OnInit {
         next: (res) => {
           this.isCreatingInvitation = false;
           if (res.success && res.data) {
+            this.invitationNotice = null;
             this.lastCreatedInvitation = res.data;
             this.invitations = [res.data, ...this.invitations];
             this.inviteeEmail = '';
@@ -1414,14 +1450,112 @@ export class OrganizationSettings implements OnInit {
         },
         error: (err) => {
           this.isCreatingInvitation = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Invitation Failed',
-            detail: err.error?.message || 'Failed to create invitation'
-          });
+          const msg: string = err?.error?.message || 'Failed to create invitation.';
+          const isAlreadyMember = msg.toLowerCase().includes('already a member');
+          this.lastCreatedInvitation = null;
+          this.invitationNotice = {
+            title: isAlreadyMember ? 'Already a Member of This Organization' : 'Cannot Send Invitation',
+            message: msg,
+            isAlreadyMember
+          };
           this.cdr.markForCheck();
         }
       });
+  }
+
+  closeInvitationNotice(): void {
+    this.invitationNotice = null;
+    this.cdr.markForCheck();
+  }
+
+  applySuggestedEmail(suggestedEmail: string): void {
+    this.inviteeEmail = suggestedEmail;
+    this.invitationNotice = null;
+    this.cdr.markForCheck();
+  }
+
+  private validateInviteeEmailAddress(email: string): {
+    title: string;
+    message: string;
+    isAlreadyMember: boolean;
+    suggestedEmail?: string;
+  } | null {
+    const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,24}$/;
+    if (!strictEmailRegex.test(email)) {
+      return {
+        title: 'Invalid Email Format',
+        message: `"${email}" is not a valid email address. Please enter a valid email (e.g., colleague@company.com).`,
+        isAlreadyMember: false
+      };
+    }
+
+    const atIdx = email.lastIndexOf('@');
+    const localPart = email.substring(0, atIdx);
+    const domain = email.substring(atIdx + 1).toLowerCase();
+
+    if (
+      localPart.startsWith('.') ||
+      localPart.endsWith('.') ||
+      localPart.includes('..') ||
+      domain.includes('..') ||
+      domain.startsWith('-') ||
+      domain.endsWith('-')
+    ) {
+      return {
+        title: 'Invalid Email Format',
+        message: `"${email}" contains invalid characters or dot placement.`,
+        isAlreadyMember: false
+      };
+    }
+
+    const suggestedDomain = this.findMisspelledDomainSuggestion(domain);
+    if (suggestedDomain) {
+      const suggestedEmail = `${localPart}@${suggestedDomain}`;
+      return {
+        title: 'Invalid or Misspelled Email Domain',
+        message: `The domain "@${domain}" appears to be misspelled. Did you mean "${suggestedEmail}"?`,
+        isAlreadyMember: false,
+        suggestedEmail
+      };
+    }
+
+    return null;
+  }
+
+  private findMisspelledDomainSuggestion(domain: string): string | null {
+    if (this.knownEmailDomains.includes(domain)) {
+      return null;
+    }
+
+    const collapsed = domain.replace(/(.)\1+/g, '$1');
+    for (const known of this.knownEmailDomains) {
+      const knownCollapsed = known.replace(/(.)\1+/g, '$1');
+      if (collapsed === knownCollapsed) {
+        return known;
+      }
+      const dist = this.getLevenshteinDistance(domain, known);
+      if (dist >= 1 && dist <= 2) {
+        return known;
+      }
+    }
+
+    return null;
+  }
+
+  private getLevenshteinDistance(a: string, b: string): number {
+    const dp: number[][] = Array.from({ length: a.length + 1 }, () =>
+      new Array(b.length + 1).fill(0)
+    );
+    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+      }
+    }
+    return dp[a.length][b.length];
   }
 
   copyInvitationText(text: string, label: string): void {

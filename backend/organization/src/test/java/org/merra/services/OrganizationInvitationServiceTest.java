@@ -260,4 +260,23 @@ class OrganizationInvitationServiceTest {
         assertFalse(storedHolder[0].getIsActive());
         verify(mailSender, never()).send(any(MimeMessage.class));
     }
+
+    @Test
+    void createInvitationRejectsEmailAlreadyInOrganization() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(adminUser, null, adminUser.getAuthorities())
+        );
+        when(workspaceStateRepository.findCurrentOrganizationByPrincipal()).thenReturn(Optional.of(organization));
+        when(membersRepository.isEmailMemberOfOrganization(organization.getId(), "invitee@example.com"))
+                .thenReturn(true);
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> service.createInvitation(new CreateInvitationRequest("invitee@example.com", "STANDARD", true))
+        );
+
+        assertTrue(ex.getMessage().contains("already a member"));
+        verify(networkKeyRepository, never()).save(any(OrganizationNetworkKey.class));
+        verify(mailSender, never()).send(any(MimeMessage.class));
+    }
 }
