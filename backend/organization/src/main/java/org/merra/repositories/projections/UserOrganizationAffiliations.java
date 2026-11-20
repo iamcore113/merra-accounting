@@ -13,5 +13,7 @@ public interface UserOrganizationAffiliations {
         String getDisplayName();
 
         String getLegalName();
+
+        String getLogo();
     }
 }

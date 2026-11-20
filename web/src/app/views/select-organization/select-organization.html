@@ -64,8 +64,17 @@
               role="button"
               tabindex="0"
               (keydown.enter)="onSelectOrganization(org)">
-              <div class="org-avatar">
-                {{ getOrgInitial(org.organizationName) }}
+              <div class="org-avatar" [class.has-image]="logoUrls()[org.organizationId]">
+                @if (loadingLogoIds().has(org.organizationId)) {
+                  <span class="org-avatar-skeleton"></span>
+                } @else if (logoUrls()[org.organizationId]) {
+                  <img
+                    class="org-avatar-img"
+                    [src]="logoUrls()[org.organizationId]"
+                    [alt]="org.organizationName + ' logo'" />
+                } @else {
+                  {{ getOrgInitial(org.organizationName) }}
+                }
               </div>
               <div class="org-details">
                 <span class="org-name">{{ org.organizationName }}</span>

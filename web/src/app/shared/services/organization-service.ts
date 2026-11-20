@@ -68,6 +68,13 @@ export class OrganizationService {
     });
   }
 
+  getAffiliatedOrganizationProfileImage(organizationId: string): Observable<Blob> {
+    return this.http.get(`${ORGANIZATION_AFFILIATIONS_URL}${organizationId}/profile-image`, {
+      responseType: 'blob',
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
   getUserOrganizationAffiliations(): Observable<Config> {
     return this.http.get<Config>(ORGANIZATION_AFFILIATIONS_URL, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)

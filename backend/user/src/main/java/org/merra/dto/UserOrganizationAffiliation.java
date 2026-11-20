@@ -10,9 +10,14 @@ public record UserOrganizationAffiliation(
             UUID organizationId,
             String organizationName,
             String legalName,
-            String role) {
+            String role,
+            boolean hasProfileImage) {
         public Organizations(UUID organizationId, String organizationName, String role) {
-            this(organizationId, organizationName, organizationName, role);
+            this(organizationId, organizationName, organizationName, role, false);
+        }
+
+        public Organizations(UUID organizationId, String organizationName, String legalName, String role) {
+            this(organizationId, organizationName, legalName, role, false);
         }
 
         public Organizations {

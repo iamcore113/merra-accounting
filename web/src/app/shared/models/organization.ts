@@ -298,6 +298,7 @@ export interface OrganizationAffiliation {
   organizationName: string;
   legalName?: string;
   role: string;
+  hasProfileImage?: boolean;
 }
 
 // Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.java

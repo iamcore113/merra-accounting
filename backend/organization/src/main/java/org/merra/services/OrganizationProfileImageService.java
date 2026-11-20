@@ -8,8 +8,11 @@ import java.util.UUID;
 import org.merra.dto.OrganizationProfileImageResponse;
 import org.merra.entities.Organization;
 import org.merra.exceptions.OrganizationExceptions;
+import org.merra.entities.UserAccount;
+import org.merra.repositories.OrganizationMembersRepository;
 import org.merra.repositories.OrganizationRepository;
 import org.merra.repositories.UserWorkspaceStateRepository;
+import org.merra.utilities.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +51,7 @@ public class OrganizationProfileImageService {
 	private final S3Client s3Client;
 	private final OrganizationRepository organizationRepository;
 	private final UserWorkspaceStateRepository userWorkspaceStateRepository;
+	private final OrganizationMembersRepository organizationMembersRepository;
 	private final String bucket;
 	private volatile boolean bucketChecked;
 
@@ -55,10 +59,12 @@ public class OrganizationProfileImageService {
 			S3Client s3Client,
 			OrganizationRepository organizationRepository,
 			UserWorkspaceStateRepository userWorkspaceStateRepository,
+			OrganizationMembersRepository organizationMembersRepository,
 			@Value("${app.storage.organization-bucket:merra-organization}") String bucket) {
 		this.s3Client = s3Client;
 		this.organizationRepository = organizationRepository;
 		this.userWorkspaceStateRepository = userWorkspaceStateRepository;
+		this.organizationMembersRepository = organizationMembersRepository;
 		this.bucket = bucket;
 	}
 
@@ -101,7 +107,25 @@ public class OrganizationProfileImageService {
 	}
 
 	public ProfileImage download() {
-		Organization organization = currentOrganization();
+		return read(currentOrganization());
+	}
+
+	/**
+	 * Downloads the profile image of any organization the authenticated user is an
+	 * active member of (used by the organization picker, before one is selected).
+	 */
+	public ProfileImage downloadForMember(UUID organizationId) {
+		UserAccount user = SecurityUtils.getPrincipal(UserAccount.class)
+				.orElseThrow(() -> new EntityNotFoundException("No authenticated user found."));
+		if (!organizationMembersRepository.isUserMemberOfOrganization(organizationId, user.getUserId())) {
+			throw new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION);
+		}
+		Organization organization = organizationRepository.findById(organizationId)
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_ORGANIZATION));
+		return read(organization);
+	}
+
+	private ProfileImage read(Organization organization) {
 		final String key = organization.getLogo();
 		if (key == null || key.isBlank()) {
 			throw new EntityNotFoundException("Organization has no profile image.");

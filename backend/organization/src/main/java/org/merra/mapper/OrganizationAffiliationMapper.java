@@ -50,7 +50,9 @@ public interface OrganizationAffiliationMapper {
                         affiliation.getOrganization().getId(),
                         affiliation.getOrganization().getDisplayName(),
                         affiliation.getOrganization().getLegalName(),
-                        affiliation.getRole()))
+                        affiliation.getRole(),
+                        affiliation.getOrganization().getLogo() != null
+                                && !affiliation.getOrganization().getLogo().isBlank()))
                 .toList();
     }
 }

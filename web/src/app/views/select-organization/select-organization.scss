@@ -179,6 +179,37 @@
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.15s ease;
+    overflow: hidden;
+    position: relative;
+
+    &.has-image {
+      background-color: #ffffff;
+    }
+
+    .org-avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      animation: org-avatar-fade 0.3s ease;
+    }
+
+    .org-avatar-skeleton {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #e6f1df 25%, #f3f8ef 50%, #e6f1df 75%);
+      background-size: 200% 100%;
+      animation: org-avatar-shimmer 1.2s infinite linear;
+    }
+  }
+
+  @keyframes org-avatar-shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+
+  @keyframes org-avatar-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .org-details {

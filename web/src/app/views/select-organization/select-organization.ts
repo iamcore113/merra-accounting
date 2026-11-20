@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -26,7 +26,7 @@ import { Config } from '../../shared/models/api_response';
   templateUrl: './select-organization.html',
   styleUrl: './select-organization.scss',
 })
-export class SelectOrganization implements OnInit {
+export class SelectOrganization implements OnInit, OnDestroy {
   private readonly organizationService = inject(OrganizationService);
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
@@ -40,6 +40,9 @@ export class SelectOrganization implements OnInit {
   organizations = signal<OrganizationAffiliation[]>([]);
   isLoading = signal<boolean>(true);
   selectingOrgId = signal<string | null>(null);
+  logoUrls = signal<Record<string, string>>({});
+  loadingLogoIds = signal<Set<string>>(new Set());
+  private readonly loadedLogoIds = new Set<string>();
 
   ngOnInit(): void {
     const storedEmail = this.localStorage.getItem('user_email') || '';
@@ -83,6 +86,7 @@ export class SelectOrganization implements OnInit {
           const affiliationData = res.data as UserOrganizationAffiliation;
           const orgs = affiliationData.organizations || [];
           this.organizations.set(orgs);
+          this.loadOrganizationLogos(orgs);
           if (orgs.length === 0) {
             const email = this.userEmail() || this.localStorage.getItem('user_email') || '';
             void this.router.navigate(
@@ -105,6 +109,34 @@ export class SelectOrganization implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  private loadOrganizationLogos(orgs: OrganizationAffiliation[]): void {
+    for (const org of orgs) {
+      if (!org.hasProfileImage || this.loadedLogoIds.has(org.organizationId)) continue;
+      this.loadedLogoIds.add(org.organizationId);
+      this.setLogoLoading(org.organizationId, true);
+      this.organizationService.getAffiliatedOrganizationProfileImage(org.organizationId).subscribe({
+        next: (blob: Blob) => {
+          this.logoUrls.update((m) => ({ ...m, [org.organizationId]: URL.createObjectURL(blob) }));
+          this.setLogoLoading(org.organizationId, false);
+        },
+        error: () => this.setLogoLoading(org.organizationId, false), // fall back to initial
+      });
+    }
+  }
+
+  private setLogoLoading(orgId: string, loading: boolean): void {
+    this.loadingLogoIds.update((set) => {
+      const next = new Set(set);
+      if (loading) next.add(orgId);
+      else next.delete(orgId);
+      return next;
+    });
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.logoUrls()).forEach((url) => URL.revokeObjectURL(url));
   }
 
   onSelectOrganization(org: OrganizationAffiliation): void {
