@@ -1,0 +1,64 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-card-header">
+      <img src="merra-logo.svg" alt="Merra" class="brand-logo" />
+      <h2 class="auth-title">Account Not Activated</h2>
+    </div>
+
+    <div class="status-icon-wrapper">
+      <div class="status-icon-badge">
+        <i class="pi pi-exclamation-circle"></i>
+      </div>
+    </div>
+
+    <div class="message-container">
+      <p class="message-text">
+        Your account with this email address has not been activated yet:
+        @if (email) {
+          <span class="email-highlight">{{ email }}</span>
+        } @else {
+          <span class="email-highlight">your email address</span>
+        }
+      </p>
+      <p class="status-question">
+        Activate your account to sign in
+      </p>
+      <p class="message-subtext">
+        Before you can access your workspace, you need to verify your email address. Click the button below to receive and enter your 4-digit PIN code to activate your account.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <button
+        pButton
+        type="button"
+        (click)="proceedToPinActivation()"
+        class="activate-button"
+        [loading]="isSendingPin()"
+        [disabled]="isSendingPin()"
+        icon="pi pi-key"
+        label="Enter 4-Digit PIN to Activate"
+        [size]="'small'">
+      </button>
+
+      <button
+        pButton
+        type="button"
+        (click)="backToSignin()"
+        class="secondary-button"
+        [outlined]="true"
+        [disabled]="isSendingPin()"
+        icon="pi pi-arrow-left"
+        label="Back to Sign in"
+        [size]="'small'">
+      </button>
+    </div>
+
+    <div class="auth-footer">
+      <div class="signin-prompt">
+        <span>Need to use a different account? </span>
+        <a routerLink="/account/signup" class="signin-link">Create a new account</a>
+      </div>
+    </div>
+  </div>
+</div>

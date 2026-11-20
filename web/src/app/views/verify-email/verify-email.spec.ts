@@ -101,4 +101,55 @@ describe('VerifyEmail', () => {
       'user@merra.example',
     ]);
   });
+
+  it('should skip personal-details and navigate to main/entering-workspace when profile is already complete and part of organization', () => {
+    authServiceSpy.verifyPin.and.returnValue(
+      of({
+        success: true,
+        message: 'Activated',
+        response: 'CREATED',
+        data: {
+          isVerified: true,
+          userId: '123',
+          email: 'user@merra.example',
+          accessToken: 'token-abc',
+          refreshToken: 'refresh-xyz',
+          isProfileComplete: true,
+          partOfOrganization: true,
+          hasActiveWorkspace: true,
+        },
+      } as any)
+    );
+
+    component.pinDigits.set(['4', '8', '2', '9']);
+    component.onSubmitPin();
+
+    expect(localStorageSpy.setItem).toHaveBeenCalledWith('access_token', 'token-abc');
+    expect(localStorageSpy.setItem).toHaveBeenCalledWith('refresh_token', 'refresh-xyz');
+    expect(router.navigate).toHaveBeenCalledWith(['/entering-workspace']);
+  });
+
+  it('should skip personal-details and navigate to /main/organization when profile is complete and part of organization without active workspace flag', () => {
+    authServiceSpy.verifyPin.and.returnValue(
+      of({
+        success: true,
+        message: 'Activated',
+        response: 'CREATED',
+        data: {
+          isVerified: true,
+          userId: '123',
+          email: 'user@merra.example',
+          accessToken: 'token-abc',
+          isProfileComplete: true,
+          partOfOrganization: true,
+          hasActiveWorkspace: false,
+        },
+      } as any)
+    );
+
+    component.pinDigits.set(['4', '8', '2', '9']);
+    component.onSubmitPin();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/main/organization']);
+  });
 });

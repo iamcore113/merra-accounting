@@ -8,6 +8,7 @@ import { combineLatest, timer } from 'rxjs';
 import { VerifiedAccountResponse } from '../../shared/models/auth';
 import { Config } from '../../shared/models/api_response';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
+import { UserService } from '../../shared/services/user-service';
 
 @Component({
   selector: 'app-verify-account',
@@ -22,12 +23,15 @@ export class VerifyAccount implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
   private readonly localStorage = inject(LocalStorageService);
+  private readonly userService = inject(UserService, { optional: true });
   private readonly cdr = inject(ChangeDetectorRef);
 
   token: string | null = null;
   email: string | null = null;
   access_token: string | null = null;
+  refresh_token: string | null = null;
   user_id: string | null = null;
+  verifiedData: VerifiedAccountResponse | null = null;
   isLoading = true;
 
   ngOnInit(): void {
@@ -46,8 +50,10 @@ export class VerifyAccount implements OnInit {
             this.isLoading = false;
             if (response.success && 'data' in response) {
               const verifiedData = (response as any).data as VerifiedAccountResponse;
+              this.verifiedData = verifiedData;
               this.email = verifiedData.email;
               this.access_token = verifiedData.accessToken;
+              this.refresh_token = verifiedData.refreshToken || null;
               this.user_id = verifiedData.userId;
             }
             this.cdr.detectChanges();
@@ -71,16 +77,40 @@ export class VerifyAccount implements OnInit {
               detail: 'Account verified successfully!',
               life: 5000,
             });
+            if (this.access_token) {
+              this.localStorage.setItem('access_token', this.access_token);
+            }
+            if (this.refresh_token) {
+              this.localStorage.setItem('refresh_token', this.refresh_token);
+            }
             if (this.email) {
-              if (this.access_token) {
-                this.localStorage.setItem('access_token', this.access_token);
-              }
               this.localStorage.setItem('user_email', this.email);
-              this.localStorage.removeItem('pendingVerificationUserId');
-              this.router.navigate(['account/personal-details', this.email]);
+            }
+            this.localStorage.removeItem('pendingVerificationUserId');
+            this.userService?.setAccountUnverified(false);
+
+            const isProfileComplete =
+              this.verifiedData?.isProfileComplete ?? this.verifiedData?.profileComplete ?? false;
+
+            if (!isProfileComplete) {
+              if (this.email) {
+                this.router.navigate(['account/personal-details', this.email]);
+              } else {
+                this.router.navigate(['account/personal-details']);
+              }
+              return;
+            }
+
+            if (!this.verifiedData?.partOfOrganization) {
+              this.router.navigate(
+                this.email
+                  ? ['/account/organization-choice', this.email]
+                  : ['/account/organization-choice']
+              );
+            } else if (this.verifiedData?.hasActiveWorkspace) {
+              this.router.navigate(['/entering-workspace']);
             } else {
-              this.localStorage.removeItem('pendingVerificationUserId');
-              this.router.navigate(['account/personal-details']);
+              this.router.navigate(['/main/organization']);
             }
           },
         });

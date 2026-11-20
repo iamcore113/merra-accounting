@@ -5,6 +5,7 @@ import { ForgotPassword } from './views/forgot-password/forgot-password';
 import { ResetPassword } from './views/reset-password/reset-password';
 import { LinkExpired } from './views/link-expired/link-expired';
 import { ConfirmAccount } from './views/confirm-account/confirm-account';
+import { AccountNotActivated } from './views/account-not-activated/account-not-activated';
 import { VerifyEmail } from './views/verify-email/verify-email';
 import { VerifyAccount } from './views/verify-account/verify-account';
 import { PersonalDetails } from './views/personal-details/personal-details';
@@ -36,6 +37,8 @@ export const routes: Routes = [
   { path: 'account/confirm-account/:email', component: ConfirmAccount, title: 'MERRA - Confirm Account Ownership' },
   { path: 'account/confirm-ownership', redirectTo: 'account/confirm-account', pathMatch: 'full' },
   { path: 'account/confirm-ownership/:email', redirectTo: 'account/confirm-account/:email', pathMatch: 'full' },
+  { path: 'account/not-activated', component: AccountNotActivated, canActivate: [verifyEmailGuard], title: 'MERRA - Account Not Activated' },
+  { path: 'account/not-activated/:email', component: AccountNotActivated, canActivate: [verifyEmailGuard], title: 'MERRA - Account Not Activated' },
   { path: 'account/signin', component: Signin, title: 'MERRA - Sign In' },
   { path: 'account/forgot-password', component: ForgotPassword, title: 'MERRA - Forgot Password' },
   { path: 'account/reset-password', component: ResetPassword, title: 'MERRA - Reset Password' },

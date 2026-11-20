@@ -17,8 +17,9 @@ export const verifyEmailGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =
     return router.createUrlTree(['/']);
   }
 
-  // 2. Validate email parameter from the route
-  const email = route.paramMap.get('email');
+  // 2. Validate email parameter from the route (param, queryParam, or navigation state)
+  const navStateEmail = router.getCurrentNavigation()?.extras?.state?.['email'];
+  const email = route.paramMap.get('email') || route.queryParamMap.get('email') || navStateEmail;
   if (!email || !email.trim()) {
     return router.createUrlTree(['/']);
   }

@@ -37,6 +37,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.merra.entities.UserAccount;
 import org.merra.enums.UserAccountStatusEn;
+import org.merra.exception.AccountNotActivatedException;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.multitenancy.UserWorkspaceManager;
 import org.merra.repositories.UserAccountRepository;
@@ -52,6 +53,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -294,10 +296,23 @@ public class AuthService {
     final String getAccountEmail = findAccount.getEmail();
     final UUID getUserId = findAccount.getUserId();
 
-    // Generate an access JWT token.
-    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, Map.of("role", assignedRole),
+    // Generate access and refresh JWT tokens.
+    final Map<String, Object> claims = Map.of("role", findAccount.getRoles());
+    final String generateAccessToken = jwtUtils.generateToken(getAccountEmail, claims,
         forAccessToken,
         false);
+    final String generateRefreshToken = jwtUtils.generateToken(getAccountEmail, claims,
+        refreshTokenExpiration,
+        true);
+
+    boolean isProfileComplete = findAccount.getFirstName() != null
+        && !findAccount.getFirstName().isBlank()
+        && findAccount.getLastName() != null
+        && !findAccount.getLastName().isBlank();
+    boolean isPartOfOrganization = findAccount.isPartOfOrganization();
+    boolean hasActiveWorkspace = userWorkspaceManager != null
+        && getUserId != null
+        && userWorkspaceManager.checkAndRefreshWorkspace(getUserId);
 
     UserDetails userDetails = userDetailsService.loadUserByUsername(getAccountEmail);
     Authentication auth = new UsernamePasswordAuthenticationToken(
@@ -308,7 +323,15 @@ public class AuthService {
     // Set the authenticated user in the security context
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    return new VerifiedAccountResponse(true, getUserId, getAccountEmail, generateAccessToken);
+    return new VerifiedAccountResponse(
+        true,
+        getUserId,
+        getAccountEmail,
+        generateAccessToken,
+        generateRefreshToken,
+        isProfileComplete,
+        isPartOfOrganization,
+        hasActiveWorkspace);
   }
 
   /**
@@ -491,8 +514,21 @@ public class AuthService {
    * @throws BadCredentialsException if authentication fails
    */
   private Authentication authenticateUser(String email, String password) {
+    if (email != null && !email.isBlank() && password != null) {
+      Optional<UserAccount> existingUser = userRepository.findUserByEmailIgnoreCase(email.trim());
+      if (existingUser.isPresent() && !existingUser.get().isEnabled()) {
+        UserAccount user = existingUser.get();
+        if (user.getPassword() != null && passwordEncoder.matches(password, user.getPassword())) {
+          throw new AccountNotActivatedException(AuthConstantResponses.ACCOUNT_NOT_ACTIVATED, user.getEmail());
+        }
+        throw new BadCredentialsException(AuthConstantResponses.INVALID_CREDENTIALS);
+      }
+    }
+
     try {
       return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    } catch (DisabledException e) {
+      throw new AccountNotActivatedException(AuthConstantResponses.ACCOUNT_NOT_ACTIVATED, email);
     } catch (AuthenticationException e) {
       // Wrap and rethrow authentication failures as BadCredentialsException with a
       // custom message

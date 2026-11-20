@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.merra.exception.AccountNotActivatedException;
 import org.merra.exception.EmailAlreadyEnabledException;
 import org.merra.exception.ResourceAlreadyExistsException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -224,6 +225,16 @@ public class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                                 : "Data integrity violation: " + root.getLocalizedMessage();
                 ApiError apiError = new ApiError(
                                 message, false, unique ? HttpStatus.CONFLICT : HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<Object>(
+                                apiError,
+                                new HttpHeaders(),
+                                apiError.getResponse());
+        }
+
+        @ExceptionHandler({ AccountNotActivatedException.class })
+        public ResponseEntity<Object> accountNotActivatedException(AccountNotActivatedException ex) {
+                ApiError apiError = new ApiError(
+                                ex.getLocalizedMessage(), false, HttpStatus.FORBIDDEN);
                 return new ResponseEntity<Object>(
                                 apiError,
                                 new HttpHeaders(),

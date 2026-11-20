@@ -3,6 +3,7 @@ package org.merra.utils;
 public class AuthConstantResponses {
 	// exceptions
 	public static final String INVALID_CREDENTIALS = "Invalid credentials";
+	public static final String ACCOUNT_NOT_ACTIVATED = "Account is not yet activated. Please verify your email using the 4-digit PIN code.";
 	public static final String SIGNUP_FAILED = "Unable to signup";
 	public static final String EMAIL_EXISTS = "Email already exists";
 	public static final String INVALID_REFRESH_TOKEN = "Refresh token is invalid or expired.";

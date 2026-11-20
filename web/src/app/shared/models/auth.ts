@@ -31,6 +31,11 @@ export interface VerifiedAccountResponse {
   userId: string;
   email: string;
   accessToken: string;
+  refreshToken?: string;
+  isProfileComplete?: boolean;
+  profileComplete?: boolean;
+  partOfOrganization?: boolean;
+  hasActiveWorkspace?: boolean;
 }
 
 // Corresponds to: backend/auth/src/main/java/org/merra/dto/VerificationResponse.VerificationToken

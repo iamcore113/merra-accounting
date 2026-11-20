@@ -110,6 +110,20 @@ export class Signin implements OnInit, OnDestroy {
           this.isSubmitting.set(false);
           const errorDict: ErrorResponse = error.error;
           const msg = errorDict?.message || 'Failed to sign in. Please try again.';
+
+          if (this.isAccountNotActivatedError(error, msg)) {
+            const targetEmail = (req.email || '').trim();
+            if (targetEmail) {
+              void this.router.navigate(['/account/not-activated', targetEmail], {
+                queryParams: { email: targetEmail },
+                state: { email: targetEmail },
+              });
+            } else {
+              void this.router.navigate(['/account/not-activated']);
+            }
+            return;
+          }
+
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -118,16 +132,31 @@ export class Signin implements OnInit, OnDestroy {
           });
         },
         complete: () => {
+          const status = verifiedData?.accountStatus;
+          const isAccountEnabled = status?.enabled ?? status?.isEnabled ?? true;
+          const userEmail = verifiedData?.userdetails?.email || req.email || '';
+
+          if (!isAccountEnabled) {
+            this.isSubmitting.set(false);
+            if (userEmail) {
+              void this.router.navigate(['/account/not-activated', userEmail], {
+                queryParams: { email: userEmail },
+                state: { email: userEmail },
+              });
+            } else {
+              void this.router.navigate(['/account/not-activated']);
+            }
+            return;
+          }
+
           const accessToken = verifiedData.tokens.accessToken;
           const refreshToken = verifiedData.tokens.refreshToken;
           this.localStorage.setItem('access_token', accessToken);
           this.localStorage.setItem('refresh_token', refreshToken);
-          const userEmail = verifiedData.userdetails?.email || req.email || '';
           if (userEmail) {
             this.localStorage.setItem('user_email', userEmail);
           }
 
-          const status = verifiedData.accountStatus;
           const isProfileComplete = status?.complete ?? status?.isComplete ?? true;
 
           if (!isProfileComplete) {
@@ -172,6 +201,23 @@ export class Signin implements OnInit, OnDestroy {
         },
       });
     }
+  }
+
+  private isAccountNotActivatedError(error: any, message: string): boolean {
+    const rawMsg = (
+      message ||
+      error?.error?.message ||
+      error?.error?.error ||
+      error?.message ||
+      ''
+    ).toLowerCase();
+
+    return (
+      error?.status === 403 ||
+      rawMsg.includes('not yet activated') ||
+      rawMsg.includes('not activated') ||
+      rawMsg.includes('account is disabled')
+    );
   }
 
   private navigatePostSignin(status: SigninResponse['accountStatus'], userEmail: string): void {

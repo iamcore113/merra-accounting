@@ -20,9 +20,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.merra.config.JwtUtils;
 import org.merra.dto.CreateAccountRequest;
+import org.merra.dto.LoginRequest;
 import org.merra.dto.VerifiedAccountResponse;
 import org.merra.dto.VerifyPinRequest;
 import org.merra.entities.UserAccount;
+import org.merra.exception.AccountNotActivatedException;
+import org.merra.multitenancy.UserWorkspaceManager;
 import org.merra.repositories.UserAccountRepository;
 import org.merra.services.UserAccountService;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -47,6 +50,7 @@ class AuthServicePinVerificationTest {
   private PasswordEncoder passwordEncoder;
   private UserAccountRepository userRepository;
   private UserAccountService userAccountService;
+  private UserWorkspaceManager userWorkspaceManager;
   private AuthService authService;
 
   @BeforeEach
@@ -63,6 +67,7 @@ class AuthServicePinVerificationTest {
     userRepository = mock(UserAccountRepository.class);
     userAccountService = mock(UserAccountService.class);
     TokenBlacklistService tokenBlacklistService = mock(TokenBlacklistService.class);
+    userWorkspaceManager = mock(UserWorkspaceManager.class);
 
     authService = new AuthService(
         redisTemplate,
@@ -73,7 +78,8 @@ class AuthServicePinVerificationTest {
         passwordEncoder,
         userRepository,
         userAccountService,
-        tokenBlacklistService);
+        tokenBlacklistService,
+        userWorkspaceManager);
 
     ReflectionTestUtils.setField(authService, "forAccessToken", 3600000L);
     ReflectionTestUtils.setField(authService, "refreshTokenExpiration", 7L);
@@ -112,9 +118,43 @@ class AuthServicePinVerificationTest {
     assertEquals(email, response.email());
     assertEquals(userId, response.userId());
     assertNotNull(response.accessToken());
+    assertNotNull(response.refreshToken());
+    assertFalse(response.isProfileComplete());
+    assertFalse(response.partOfOrganization());
     assertTrue(account.isEnabled());
     assertNull(account.getVerificationToken());
     verify(userRepository).save(account);
+  }
+
+  @Test
+  void verifyAccountPin_returnsProfileCompleteAndOrganizationStatusForInvitedAccount() {
+    String email = "invitee@merra.example";
+    String pin = "8412";
+    String verificationToken = authService.generatePinVerificationToken(email, pin);
+
+    UserAccount account = new UserAccount(email, "hashed-pwd");
+    UUID userId = UUID.randomUUID();
+    ReflectionTestUtils.setField(account, "userId", userId);
+    account.setFirstName("Jane");
+    account.setLastName("Doe");
+    account.setPartOfOrganization(true);
+    account.setRoles("MEMBER");
+    account.setVerificationToken(verificationToken);
+    account.setIsEnabled(false);
+
+    when(userRepository.findUserByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
+    when(userDetailsService.loadUserByUsername(email)).thenReturn(account);
+    when(userWorkspaceManager.checkAndRefreshWorkspace(userId)).thenReturn(true);
+
+    VerifiedAccountResponse response = authService.verifyAccountPin(new VerifyPinRequest(email, pin));
+
+    assertTrue(response.isVerified());
+    assertTrue(response.isProfileComplete());
+    assertTrue(response.partOfOrganization());
+    assertTrue(response.hasActiveWorkspace());
+    assertNotNull(response.accessToken());
+    assertNotNull(response.refreshToken());
+    assertEquals("ROLE_MEMBER", account.getRoles());
   }
 
   @Test
@@ -185,5 +225,36 @@ class AuthServicePinVerificationTest {
     assertTrue(htmlBody.contains("24 hours"), "Email HTML should state 24 hours expiration");
     assertFalse(htmlBody.contains("Go to Activation Page"), "Email HTML should not contain an activation link button");
     assertFalse(htmlBody.contains("account/verify"), "Email HTML should not contain an activation page URL");
+  }
+
+  @Test
+  void login_throwsAccountNotActivatedWhenDisabledAccountProvidesValidPassword() {
+    String email = "unverified@merra.example";
+    UserAccount account = new UserAccount(email, "hashed-pwd");
+    account.setIsEnabled(false);
+
+    when(userRepository.findUserByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
+    when(passwordEncoder.matches("ValidPass1!", "hashed-pwd")).thenReturn(true);
+
+    AccountNotActivatedException ex = assertThrows(
+        AccountNotActivatedException.class,
+        () -> authService.login(new LoginRequest(email, "ValidPass1!")));
+    assertTrue(ex.getMessage().toLowerCase().contains("not yet activated"));
+    assertEquals(email, ex.getEmail());
+  }
+
+  @Test
+  void login_throwsBadCredentialsWhenDisabledAccountProvidesInvalidPassword() {
+    String email = "unverified@merra.example";
+    UserAccount account = new UserAccount(email, "hashed-pwd");
+    account.setIsEnabled(false);
+
+    when(userRepository.findUserByEmailIgnoreCase(email)).thenReturn(Optional.of(account));
+    when(passwordEncoder.matches("WrongPass1!", "hashed-pwd")).thenReturn(false);
+
+    BadCredentialsException ex = assertThrows(
+        BadCredentialsException.class,
+        () -> authService.login(new LoginRequest(email, "WrongPass1!")));
+    assertEquals("Invalid credentials", ex.getMessage());
   }
 }

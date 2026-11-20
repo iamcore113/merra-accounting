@@ -5,6 +5,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../shared/services/auth-service';
 import { LocalStorageService } from '../../shared/services/local-storage-service';
+import { UserService } from '../../shared/services/user-service';
+import { InvitationService } from '../../shared/services/invitation-service';
 import {
   EmailVerificationStatusResponse,
   ResendEmailVerification,
@@ -27,6 +29,8 @@ export class VerifyEmail implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
   private readonly localStorage = inject(LocalStorageService);
+  private readonly userService = inject(UserService, { optional: true });
+  private readonly invitationService = inject(InvitationService, { optional: true });
 
   @ViewChildren('pinInput') pinInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -196,17 +200,27 @@ export class VerifyEmail implements OnInit, OnDestroy {
       .subscribe({
         next: (response: Config) => {
           let verifiedEmail = this.email;
+          let verifiedData: VerifiedAccountResponse | undefined;
           if (response.success && 'data' in response) {
-            const verifiedData = (response as any).data as VerifiedAccountResponse;
+            verifiedData = (response as any).data as VerifiedAccountResponse;
             if (verifiedData.accessToken) {
               this.localStorage.setItem('access_token', verifiedData.accessToken);
+            }
+            if (verifiedData.refreshToken) {
+              this.localStorage.setItem('refresh_token', verifiedData.refreshToken);
             }
             if (verifiedData.email) {
               verifiedEmail = verifiedData.email;
             }
           }
 
+          if (verifiedEmail) {
+            this.localStorage.setItem('user_email', verifiedEmail);
+          }
+
           this.localStorage.removeItem('pendingVerificationUserId');
+          this.userService?.setAccountUnverified(false);
+
           this.messageService.add({
             severity: 'success',
             summary: 'Account Activated',
@@ -214,12 +228,54 @@ export class VerifyEmail implements OnInit, OnDestroy {
             life: 5000,
           });
 
-          if (verifiedEmail) {
-            this.localStorage.setItem('user_email', verifiedEmail);
-            void this.router.navigate(['account/personal-details', verifiedEmail]);
-          } else {
-            void this.router.navigate(['account/personal-details']);
+          const isProfileComplete =
+            verifiedData?.isProfileComplete ?? verifiedData?.profileComplete ?? false;
+
+          if (!isProfileComplete) {
+            if (verifiedEmail) {
+              void this.router.navigate(['account/personal-details', verifiedEmail]);
+            } else {
+              void this.router.navigate(['account/personal-details']);
+            }
+            return;
           }
+
+          const pendingToken = this.localStorage.getItem('pending_invitation_token');
+          const pendingEmail = this.localStorage.getItem('pending_invitation_email');
+          const matchesPendingEmail =
+            !pendingEmail ||
+            !verifiedEmail ||
+            pendingEmail.trim().toLowerCase() === verifiedEmail.trim().toLowerCase();
+
+          if (pendingToken && matchesPendingEmail && this.invitationService) {
+            this.invitationService.acceptInvitation(pendingToken).subscribe({
+              next: (invRes) => {
+                this.localStorage.removeItem('pending_invitation_token');
+                this.localStorage.removeItem('pending_invitation_email');
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Invitation Accepted',
+                  detail: invRes.data?.message || 'You have joined the organization.',
+                  life: 5000,
+                });
+                void this.router.navigate(['/main/organization']);
+              },
+              error: (err) => {
+                this.localStorage.removeItem('pending_invitation_token');
+                this.localStorage.removeItem('pending_invitation_email');
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Cannot Join Organization',
+                  detail: err?.error?.message || 'Failed to accept organization invitation.',
+                  life: 5000,
+                });
+                this.navigatePostActivation(verifiedData, verifiedEmail);
+              },
+            });
+            return;
+          }
+
+          this.navigatePostActivation(verifiedData, verifiedEmail);
         },
         error: (error) => {
           const errorMessage =
@@ -310,6 +366,23 @@ export class VerifyEmail implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  private navigatePostActivation(
+    verifiedData: VerifiedAccountResponse | undefined,
+    verifiedEmail: string | null
+  ): void {
+    if (!verifiedData?.partOfOrganization) {
+      void this.router.navigate(
+        verifiedEmail
+          ? ['/account/organization-choice', verifiedEmail]
+          : ['/account/organization-choice']
+      );
+    } else if (verifiedData?.hasActiveWorkspace) {
+      void this.router.navigate(['/entering-workspace']);
+    } else {
+      void this.router.navigate(['/main/organization']);
+    }
   }
 
   private updateDigit(index: number, value: string): void {

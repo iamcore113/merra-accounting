@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Signin } from './signin';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { AuthService } from '../../shared/services/auth-service';
 import { MessageService } from 'primeng/api';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, throwError } from 'rxjs';
 
 describe('Signin', () => {
   let component: Signin;
@@ -58,4 +58,35 @@ describe('Signin', () => {
     expect(component.signinForm.get('password')?.value).toBe('');
     expect(component.signinForm.valid).toBeFalse();
   }));
+
+  it('should redirect to /account/not-activated/:email when account is not activated (403)', () => {
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+    const navigateSpy = spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
+
+    authServiceSpy.signin.and.returnValue(
+      throwError(() => ({
+        status: 403,
+        error: {
+          message: 'Account is not yet activated. Please verify your email using the 4-digit PIN code.',
+        },
+      }))
+    );
+
+    component.signinForm.setValue({
+      email: 'unverified@merra.example',
+      password: 'ValidPassword1!',
+    });
+
+    component.onSubmit();
+
+    expect(navigateSpy).toHaveBeenCalledWith(
+      ['/account/not-activated', 'unverified@merra.example'],
+      {
+        queryParams: { email: 'unverified@merra.example' },
+        state: { email: 'unverified@merra.example' },
+      }
+    );
+    expect(messageServiceSpy.add).not.toHaveBeenCalled();
+  });
 });
