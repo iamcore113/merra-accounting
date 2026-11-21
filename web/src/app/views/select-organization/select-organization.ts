@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogService } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
+import { Dialog } from '../../shared/components/dialog/dialog';
 import { OrganizationService } from '../../shared/services/organization-service';
 import { UserService } from '../../shared/services/user-service';
 import { AuthService } from '../../shared/services/auth-service';
@@ -32,6 +34,7 @@ export class SelectOrganization implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly localStorage = inject(LocalStorageService);
   private readonly router = inject(Router);
+  private readonly dialogService = inject(DialogService, { optional: true });
   private readonly messageService = inject(MessageService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -174,7 +177,48 @@ export class SelectOrganization implements OnInit, OnDestroy {
   }
 
   onSignOut(): void {
-    this.authService.logout().subscribe();
+    if (!this.dialogService) {
+      this.authService.logout().subscribe();
+      return;
+    }
+
+    const userEmail = this.userEmail() || this.localStorage.getItem('user_email') || '';
+    const fullName = this.userName() || '';
+    const ref = this.dialogService.open(Dialog, {
+      header: 'Sign Out of MERRA',
+      width: '440px',
+      modal: true,
+      dismissableMask: true,
+      data: {
+        variant: 'signout',
+        subtitle: 'Session Security',
+        title: 'Ready to sign out?',
+        messages: [
+          'Are you sure you want to end your current MERRA Accounting session on this browser?',
+        ],
+        contextBadge:
+          fullName || userEmail
+            ? {
+                icon: 'pi pi-user',
+                label: 'Signed in account',
+                value: fullName || userEmail,
+                subValue: fullName && userEmail && fullName !== userEmail ? userEmail : undefined,
+              }
+            : undefined,
+        confirmLabel: 'Sign Out',
+        cancelLabel: 'Stay Signed In',
+        confirmColor: 'warn',
+        icon: 'pi pi-sign-out',
+      },
+    });
+
+    if (ref) {
+      ref.onClose.subscribe((confirmed: boolean) => {
+        if (confirmed) {
+          this.authService.logout().subscribe();
+        }
+      });
+    }
   }
 
   getOrgInitial(name: string): string {

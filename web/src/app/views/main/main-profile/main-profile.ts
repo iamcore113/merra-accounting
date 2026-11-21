@@ -1063,15 +1063,31 @@ export class MainProfile implements OnInit, OnDestroy {
   }
 
   onLogout(): void {
+    const userEmail = this.personalDetails?.email || this.localStorage.getItem('user_email') || '';
+    const fullName = this.personalDetails?.fullName?.trim() || '';
     const ref = this.dialogService.open(Dialog, {
-      header: 'Confirm Sign Out',
-      width: '420px',
+      header: 'Sign Out of MERRA',
+      width: '440px',
       modal: true,
+      dismissableMask: true,
       data: {
-        title: 'Sign Out',
-        messages: ['Are you sure you want to sign out of your account?'],
+        variant: 'signout',
+        subtitle: 'Session Security',
+        title: 'Ready to sign out?',
+        messages: [
+          'Are you sure you want to end your current MERRA Accounting session on this browser?',
+        ],
+        contextBadge:
+          fullName || userEmail
+            ? {
+                icon: 'pi pi-user',
+                label: 'Signed in account',
+                value: fullName || userEmail,
+                subValue: fullName && userEmail ? userEmail : undefined,
+              }
+            : undefined,
         confirmLabel: 'Sign Out',
-        cancelLabel: 'Cancel',
+        cancelLabel: 'Stay Signed In',
         confirmColor: 'warn',
         icon: 'pi pi-sign-out',
       },

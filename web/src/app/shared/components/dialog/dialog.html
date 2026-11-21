@@ -1,25 +1,111 @@
-<div class="dialog-wrapper">
-  @if (data.icon) {
-    <div class="dialog-header">
-      <i [class]="'dialog-icon ' + (data.icon.startsWith('pi ') ? data.icon : 'pi ' + data.icon)"></i>
+<div
+  class="dialog-wrapper"
+  [class.dialog-signout]="isSignOutVariant"
+  [class.dialog-warn]="isWarnVariant && !isSignOutVariant">
+
+  <div class="dialog-accent-bar" aria-hidden="true"></div>
+
+  <!-- Hero Section -->
+  <div class="dialog-hero">
+    <div class="dialog-icon-ring">
+      <div class="dialog-icon-circle">
+        <i [class]="'dialog-icon ' + resolvedIcon"></i>
+      </div>
+      @if (isSignOutVariant) {
+        <span class="dialog-status-badge" title="Active Session">
+          <i class="pi pi-shield"></i>
+        </span>
+      }
+    </div>
+
+    <div class="dialog-heading">
+      @if (data.subtitle || isSignOutVariant) {
+        <span class="dialog-eyebrow">
+          {{ data.subtitle || 'Session Security' }}
+        </span>
+      }
       <h2 class="dialog-title">{{ data.title }}</h2>
     </div>
-  } @else {
-    <h2 class="dialog-title">{{ data.title }}</h2>
+  </div>
+
+  <!-- Optional Context Card (e.g., Active User / Account) -->
+  @if (data.contextBadge) {
+    <div class="dialog-context-card">
+      <div class="context-avatar">
+        <i [class]="data.contextBadge.icon || 'pi pi-user'"></i>
+      </div>
+      <div class="context-details">
+        <span class="context-label">{{ data.contextBadge.label }}</span>
+        <span class="context-value">{{ data.contextBadge.value }}</span>
+        @if (data.contextBadge.subValue) {
+          <span class="context-subvalue">{{ data.contextBadge.subValue }}</span>
+        }
+      </div>
+      <span class="context-live-pill">
+        <span class="live-dot"></span>
+        Active
+      </span>
+    </div>
   }
+
+  <!-- Body Messages -->
   <div class="dialog-body">
     @for (message of data.messages; track $index) {
       @if (data.isHtml) {
-        <p [innerHTML]="message"></p>
+        <p class="dialog-message" [innerHTML]="message"></p>
       } @else {
-        <p>{{ message }}</p>
+        <p class="dialog-message">{{ message }}</p>
       }
     }
   </div>
+
+  <!-- Highlights / Reassurance Checklist -->
+  @if (defaultHighlights.length > 0) {
+    <div class="dialog-highlights">
+      @for (item of defaultHighlights; track $index) {
+        <div class="highlight-item">
+          <i class="pi pi-check-circle highlight-icon"></i>
+          <span>{{ item }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  @if (data.footnote) {
+    <p class="dialog-footnote">
+      <i class="pi pi-info-circle"></i>
+      <span>{{ data.footnote }}</span>
+    </p>
+  }
+
+  <!-- Action Footer -->
   <div class="dialog-actions">
     @if (!data.hideCancel) {
-      <button pButton [outlined]="true" type="button" (click)="cancel()" [size]="'small'">{{ data.cancelLabel ?? 'Cancel' }}</button>
+      <button
+        pButton
+        [outlined]="true"
+        type="button"
+        class="dialog-btn dialog-cancel-btn"
+        (click)="cancel()"
+        [size]="'small'">
+        @if (data.cancelIcon) {
+          <i [class]="data.cancelIcon"></i>
+        }
+        <span>{{ data.cancelLabel ?? (isSignOutVariant ? 'Stay Signed In' : 'Cancel') }}</span>
+      </button>
     }
-    <button pButton [severity]="data.confirmColor === 'warn' ? 'danger' : undefined" type="button" (click)="confirm()" [size]="'small'">{{ data.confirmLabel ?? 'Confirm' }}</button>
+    <button
+      pButton
+      [severity]="isWarnVariant ? 'danger' : undefined"
+      type="button"
+      class="dialog-btn dialog-confirm-btn"
+      (click)="confirm()"
+      [size]="'small'">
+      @if (data.confirmIcon || isSignOutVariant) {
+        <i [class]="data.confirmIcon || 'pi pi-sign-out'"></i>
+      }
+      <span>{{ data.confirmLabel ?? 'Confirm' }}</span>
+    </button>
   </div>
 </div>
+

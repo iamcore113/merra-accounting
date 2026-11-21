@@ -1,34 +1,183 @@
 .dialog-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding: 0.5rem;
+  gap: 1.15rem;
+  padding: 0.25rem 0.15rem 0.25rem;
+  color: #1e293b;
+  animation: dialogContentFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
 
-  .dialog-header {
+  .dialog-accent-bar {
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, #689D4B 0%, #8ebe73 100%);
+    margin-bottom: -0.25rem;
+  }
+
+  .dialog-hero {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
+    padding: 0.95rem 1.1rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+  }
+
+  .dialog-icon-ring {
+    position: relative;
+    flex-shrink: 0;
+    padding: 4px;
+    background: rgba(104, 157, 75, 0.12);
+    border: 1px solid rgba(104, 157, 75, 0.24);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dialog-icon-circle {
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    border: 1px solid #d4e8c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
 
     .dialog-icon {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
+      color: #689D4B;
+    }
+  }
+
+  .dialog-status-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    background: #1e293b;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.16);
+
+    i {
+      font-size: 0.65rem;
+    }
+  }
+
+  .dialog-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+
+    .dialog-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       color: #689D4B;
     }
 
     .dialog-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #111827;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: #0f172a;
       margin: 0;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+  }
+
+  .dialog-context-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 0.95rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #689D4B;
+
+    .context-avatar {
+      width: 36px;
+      height: 36px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      i {
+        font-size: 0.95rem;
+      }
+    }
+
+    .context-details {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
+
+      .context-label {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+      }
+
+      .context-value {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .context-subvalue {
+        font-size: 0.76rem;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .context-live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #166534;
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+      flex-shrink: 0;
+
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: #22c55e;
+      }
     }
   }
 
   .dialog-body {
-    color: #4b5563;
-    font-size: 0.9375rem;
+    color: #475569;
+    font-size: 0.9rem;
     line-height: 1.6;
+    padding: 0 0.15rem;
 
-    p {
-      margin-bottom: 0.5rem;
+    .dialog-message {
+      margin: 0 0 0.55rem;
 
       &:last-child {
         margin-bottom: 0;
@@ -36,11 +185,124 @@
     }
   }
 
+  .dialog-highlights {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 0.95rem;
+    background-color: #f8fafc;
+    border: 1px dashed #cbd5e1;
+
+    .highlight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #475569;
+
+      .highlight-icon {
+        font-size: 0.85rem;
+        color: #689D4B;
+        margin-top: 0.12rem;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .dialog-footnote {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.76rem;
+    color: #64748b;
+
+    i {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+  }
+
   .dialog-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
+    align-items: center;
+    gap: 0.65rem;
+    padding-top: 0.85rem;
+    margin-top: 0.15rem;
+    border-top: 1px solid #f1f5f9;
+
+    .dialog-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      font-weight: 600;
+      padding: 0.5rem 1rem !important;
+      transition: all 0.15s ease;
+
+      i {
+        font-size: 0.82rem;
+      }
+    }
+  }
+
+  /* Sign Out & Warn Variants */
+  &.dialog-signout,
+  &.dialog-warn {
+    .dialog-accent-bar {
+      background: linear-gradient(90deg, #dc2626 0%, #f97316 100%);
+    }
+
+    .dialog-hero {
+      background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 60%, #fff7ed 100%);
+      border-color: #fecaca;
+    }
+
+    .dialog-icon-ring {
+      background: rgba(220, 38, 38, 0.08);
+      border-color: rgba(220, 38, 38, 0.22);
+    }
+
+    .dialog-icon-circle {
+      border-color: #fecaca;
+
+      .dialog-icon {
+        color: #dc2626;
+      }
+    }
+
+    .dialog-heading .dialog-eyebrow {
+      color: #dc2626;
+    }
+  }
+
+  &.dialog-signout {
+    .dialog-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      @media (max-width: 420px) {
+        grid-template-columns: 1fr;
+      }
+
+      .dialog-btn {
+        width: 100%;
+      }
+    }
   }
 }
+
+@keyframes dialogContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
