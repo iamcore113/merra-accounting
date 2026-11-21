@@ -164,6 +164,16 @@
           @if (customLogoUrl) {
             <button
               type="button"
+              class="adjust-logo-inline-btn"
+              (click)="openExistingLogoEditor()"
+              [disabled]="isRemovingLogo || isUploadingLogo"
+              title="Move, crop, or rotate organization logo">
+              <i class="pi pi-sliders-h"></i>
+              Adjust / Crop
+            </button>
+
+            <button
+              type="button"
               class="remove-logo-inline-btn"
               (click)="removeLogo()"
               [disabled]="isRemovingLogo || isUploadingLogo"
@@ -387,6 +397,154 @@
     </div>
   </div>
 
+  <!-- Card 4: Organization Members & Pending Invitees -->
+  <div class="info-card members-card">
+    <div class="info-card-header members-card-header">
+      <div class="card-title-group">
+        <i class="pi pi-users card-lead-icon"></i>
+        <h3 class="card-title">Organization Members</h3>
+        <span class="count-pill">{{ organizationMembers.length }}</span>
+      </div>
+
+      <div class="members-header-controls">
+        <div class="member-filter-pills" role="tablist" aria-label="Filter organization members">
+          <button
+            type="button"
+            class="filter-pill-btn"
+            [class.active]="memberFilter === 'ALL'"
+            (click)="setMemberFilter('ALL')">
+            All ({{ organizationMembers.length }})
+          </button>
+          <button
+            type="button"
+            class="filter-pill-btn"
+            [class.active]="memberFilter === 'ACTIVE'"
+            (click)="setMemberFilter('ACTIVE')">
+            Active ({{ activeMembersCount }})
+          </button>
+          <button
+            type="button"
+            class="filter-pill-btn"
+            [class.active]="memberFilter === 'PENDING'"
+            (click)="setMemberFilter('PENDING')">
+            Pending Invitees ({{ pendingMembersCount }})
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="card-header-link invite-member-link"
+          (click)="navigateToSettings('network-keys')"
+          title="Invite team members in Organization Settings">
+          <i class="pi pi-user-plus"></i>
+          <span>Invite Member</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="info-card-body">
+      @if (isLoadingMembers) {
+        <div class="members-skeleton-list">
+          <p-skeleton width="100%" height="3.5rem" borderRadius="6px"></p-skeleton>
+          <p-skeleton width="100%" height="3.5rem" borderRadius="6px"></p-skeleton>
+        </div>
+      } @else if (filteredMembers.length > 0) {
+        <div class="members-list" role="list">
+          @for (member of filteredMembers; track member.id || member.email) {
+            <div
+              class="member-row"
+              role="listitem"
+              [class.is-pending]="member.status === 'PENDING'"
+              [class.is-creator]="member.isCreator">
+              <div class="member-identity">
+                <div
+                  class="member-avatar"
+                  [class.pending-avatar]="member.status === 'PENDING'"
+                  [class.creator-avatar]="member.isCreator"
+                  [class.has-image]="!!(member.userId && memberAvatarUrls[member.userId])">
+                  @if (member.status === 'PENDING') {
+                    <i class="pi pi-envelope"></i>
+                  } @else if (member.userId && memberAvatarUrls[member.userId]) {
+                    <img
+                      [src]="memberAvatarUrls[member.userId]"
+                      [alt]="getMemberDisplayName(member)"
+                      class="member-avatar-img"
+                      (error)="onMemberAvatarError(member.userId)" />
+                  } @else {
+                    <span>{{ getMemberInitials(member) }}</span>
+                  }
+                </div>
+
+                <div class="member-details">
+                  <div class="member-name-row">
+                    <span class="member-name">{{ getMemberDisplayName(member) }}</span>
+                    @if (member.isCreator) {
+                      <span class="owner-pill" pTooltip="Organization Creator" tooltipPosition="top">
+                        <i class="pi pi-crown"></i> Owner
+                      </span>
+                    }
+                  </div>
+
+                  <div class="member-submeta">
+                    <span class="member-email">{{ member.email }}</span>
+                    @if (member.status === 'PENDING') {
+                      @if (member.invitationDate) {
+                        <span class="meta-dot">&bull;</span>
+                        <span class="member-date">Invited {{ member.invitationDate | date: 'mediumDate' }}</span>
+                      }
+                      @if (member.invitedBy) {
+                        <span class="meta-dot">&bull;</span>
+                        <span class="member-invited-by">by {{ member.invitedBy }}</span>
+                      }
+                    } @else if (member.dateJoined) {
+                      <span class="meta-dot">&bull;</span>
+                      <span class="member-date">Joined {{ member.dateJoined | date: 'mediumDate' }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="member-badges">
+                <span class="role-badge" [ngClass]="getRoleBadgeClass(member.role, member.isCreator)">
+                  <i class="pi pi-shield"></i>
+                  <span>{{ getRoleDisplayLabel(member.role, member.isCreator) }}</span>
+                </span>
+
+                @if (member.status === 'PENDING') {
+                  <span class="member-status-badge pending">
+                    <i class="pi pi-clock"></i>
+                    <span>Pending Invitee</span>
+                  </span>
+                } @else {
+                  <span class="member-status-badge active">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Active</span>
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-section-state">
+          <i class="pi pi-users empty-state-icon"></i>
+          @if (memberFilter === 'PENDING') {
+            <p class="empty-state-msg">No pending invitees at the moment.</p>
+          } @else {
+            <p class="empty-state-msg">No organization members found.</p>
+          }
+          <p-button
+            label="Invite Team Member"
+            icon="pi pi-user-plus"
+            [size]="'small'"
+            [outlined]="true"
+            (click)="navigateToSettings('network-keys')">
+          </p-button>
+        </div>
+      }
+    </div>
+  </div>
+
   <!-- Bottom Row: Addresses & Network Overview -->
   <div class="profile-grid bottom-grid">
     <!-- Configured Addresses Preview -->
@@ -496,4 +654,224 @@
       </div>
     </div>
   </div>
+
+  <!-- Interactive Organization Logo Editor Modal (Move, Crop/Zoom, Rotate, Flip) -->
+  <p-dialog
+    header="Adjust Organization Logo"
+    [(visible)]="showLogoEditorDialog"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '480px', maxWidth: '95vw' }"
+    (onHide)="closeLogoEditorDialog()">
+    @if (editorLogoUrl) {
+      <div class="org-logo-editor-modal">
+        <p class="editor-helper-text">
+          Drag the logo to position it, use the zoom slider to crop, or rotate it to your preference.
+        </p>
+
+        <!-- Interactive Crop & Pan Stage -->
+        <div
+          class="editor-crop-stage"
+          [class.is-dragging]="isDraggingEditorCanvas"
+          (mousedown)="onEditorPointerDown($event)"
+          (mousemove)="onEditorPointerMove($event)"
+          (mouseup)="onEditorPointerUp()"
+          (mouseleave)="onEditorPointerUp()"
+          (touchstart)="onEditorPointerDown($event)"
+          (touchmove)="onEditorPointerMove($event)"
+          (touchend)="onEditorPointerUp()"
+          (wheel)="onEditorWheel($event)">
+          <div class="editor-viewport-frame">
+            <img
+              [src]="editorLogoUrl"
+              alt="Organization logo crop preview"
+              class="editor-source-image"
+              [style.transform]="getEditorTransformStyle()"
+              (load)="onEditorLogoLoaded($event)"
+              draggable="false" />
+            <div class="crop-grid-overlay"></div>
+          </div>
+
+          <span class="stage-drag-badge">
+            <i class="pi pi-arrows-alt"></i> Drag to reposition
+          </span>
+        </div>
+
+        <!-- Position Nudge & Reset Bar -->
+        <div class="editor-quick-bar">
+          <div class="nudge-btn-group" role="group" aria-label="Reposition controls">
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Left"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(-10, 0)">
+              <i class="pi pi-arrow-left"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Up"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(0, -10)">
+              <i class="pi pi-arrow-up"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Center Image"
+              tooltipPosition="top"
+              (click)="centerEditorPosition()">
+              <i class="pi pi-compass"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Down"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(0, 10)">
+              <i class="pi pi-arrow-down"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Right"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(10, 0)">
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          </div>
+
+          <div class="rotate-btn-group" role="group" aria-label="Rotate and flip controls">
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Rotate 90° Left"
+              tooltipPosition="top"
+              (click)="rotateEditorLogo(-90)">
+              <i class="pi pi-replay"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Rotate 90° Right"
+              tooltipPosition="top"
+              (click)="rotateEditorLogo(90)">
+              <i class="pi pi-refresh"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              [class.active]="editorFlipX"
+              pTooltip="Flip Horizontal"
+              tooltipPosition="top"
+              (click)="toggleEditorFlipX()">
+              <i class="pi pi-arrows-h"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              [class.active]="editorFlipY"
+              pTooltip="Flip Vertical"
+              tooltipPosition="top"
+              (click)="toggleEditorFlipY()">
+              <i class="pi pi-arrows-v"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-reset-btn"
+              pTooltip="Reset all adjustments"
+              tooltipPosition="top"
+              (click)="resetLogoEditorTransforms()">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Sliders for Zoom (Crop) and Fine Rotation -->
+        <div class="editor-sliders-box">
+          <div class="slider-control-row">
+            <div class="slider-label-col">
+              <i class="pi pi-search-plus"></i>
+              <span>Zoom &amp; Crop</span>
+            </div>
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Zoom out"
+              (click)="adjustEditorZoom(-0.1)">
+              <i class="pi pi-minus"></i>
+            </button>
+            <input
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.05"
+              [(ngModel)]="editorZoom"
+              class="editor-range-slider"
+              aria-label="Zoom level" />
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Zoom in"
+              (click)="adjustEditorZoom(0.1)">
+              <i class="pi pi-plus"></i>
+            </button>
+            <span class="slider-value-tag">{{ (editorZoom * 100) | number: '1.0-0' }}%</span>
+          </div>
+
+          <div class="slider-control-row">
+            <div class="slider-label-col">
+              <i class="pi pi-sync"></i>
+              <span>Rotate</span>
+            </div>
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Rotate counter-clockwise"
+              (click)="rotateEditorLogo(-5)">
+              <i class="pi pi-angle-left"></i>
+            </button>
+            <input
+              type="range"
+              min="-180"
+              max="180"
+              step="1"
+              [(ngModel)]="editorRotation"
+              class="editor-range-slider"
+              aria-label="Rotation angle" />
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Rotate clockwise"
+              (click)="rotateEditorLogo(5)">
+              <i class="pi pi-angle-right"></i>
+            </button>
+            <span class="slider-value-tag">{{ editorRotation }}&deg;</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <ng-template #footer>
+      <div class="editor-dialog-footer">
+        <p-button
+          type="button"
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="closeLogoEditorDialog()">
+        </p-button>
+        <p-button
+          type="button"
+          label="Apply &amp; Save Logo"
+          icon="pi pi-check"
+          [size]="'small'"
+          [loading]="isUploadingLogo"
+          (onClick)="applyCropAndUploadLogo()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
 </section>

@@ -64,10 +64,17 @@ describe('MainOrganization', () => {
   beforeEach(async () => {
     organizationServiceSpy = jasmine.createSpyObj('OrganizationService', [
       'getCurrentOrganization',
-      'getOrganizationMetadata'
+      'getOrganizationMetadata',
+      'getOrganizationMembers'
     ]);
     organizationServiceSpy.getCurrentOrganization.and.returnValue(of(mockOrgResponse));
     organizationServiceSpy.getOrganizationMetadata.and.returnValue(of(mockMetadataResponse));
+    organizationServiceSpy.getOrganizationMembers.and.returnValue(of({
+      message: 'Success',
+      success: true,
+      response: 200,
+      data: []
+    }));
 
     networkKeyServiceSpy = jasmine.createSpyObj('NetworkKeyService', ['getActiveKeys']);
     networkKeyServiceSpy.getActiveKeys.and.returnValue(of({

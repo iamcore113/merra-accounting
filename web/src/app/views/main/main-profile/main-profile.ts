@@ -11,6 +11,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { SkeletonModule } from 'primeng/skeleton';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { Dialog, DialogData } from '../../../shared/components/dialog/dialog';
@@ -167,7 +169,9 @@ export class ChangePasswordDialog {
     ChipModule,
     ButtonModule,
     InputTextModule,
-    SkeletonModule
+    SkeletonModule,
+    DialogModule,
+    TooltipModule
   ],
   templateUrl: './main-profile.html',
   styleUrl: './main-profile.scss',
@@ -198,6 +202,33 @@ export class MainProfile implements OnInit, OnDestroy {
   filteredCountries: string[] = [];
 
   activeSection: 'personal' | 'settings' = 'personal';
+  customProfileImageUrl: string | null = null;
+  isUploadingProfileImage = false;
+  isRemovingProfileImage = false;
+  isLoadingProfileImage = false;
+  isProfileImageLoaded = false;
+  isDraggingProfileImage = false;
+  private previousProfileImageUrl: string | null = null;
+
+  // Interactive Profile Photo Editor (Move/Pan, Zoom/Crop, Rotate, Flip)
+  showImageEditorDialog = false;
+  editorImageUrl: string | null = null;
+  editorFileName = 'profile-photo.png';
+  editorFileType = 'image/png';
+  editorZoom = 1;
+  editorRotation = 0;
+  editorFlipX = false;
+  editorFlipY = false;
+  editorPanX = 0;
+  editorPanY = 0;
+  isDraggingEditorCanvas = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragInitialPanX = 0;
+  private dragInitialPanY = 0;
+  private editorNaturalWidth = 0;
+  private editorNaturalHeight = 0;
+
   hasSentActivationPin = signal(false);
   pinDigits = signal<string[]>(['', '', '', '']);
   pinError = signal<string | null>(null);
@@ -237,6 +268,7 @@ export class MainProfile implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.isLoading = true;
     this.loadCountries();
+    this.loadStoredProfileImage();
     this.userService.getAuthenticatedUserDetails().subscribe({
       next: (response: any) => {
         this.personalDetails = response.data as PrincipalDetailsResponse;
@@ -260,10 +292,410 @@ export class MainProfile implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.revokeProfileImageUrl();
+    this.revokeEditorImageUrl();
     if (this.cooldownInterval) {
       clearInterval(this.cooldownInterval);
       this.cooldownInterval = null;
     }
+  }
+
+  private loadStoredProfileImage(): void {
+    if (!this.userService.getProfileImage) {
+      return;
+    }
+    this.isLoadingProfileImage = true;
+    this.userService.getProfileImage().subscribe({
+      next: (blob: Blob) => {
+        this.setProfileImageFromBlob(blob);
+        this.isLoadingProfileImage = false;
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        // 404 means no profile image has been uploaded yet
+        this.customProfileImageUrl = null;
+        this.isLoadingProfileImage = false;
+        this.cdRef.detectChanges();
+      },
+    });
+  }
+
+  private setProfileImageFromBlob(blob: Blob): void {
+    this.revokeProfileImageUrl();
+    this.isProfileImageLoaded = false;
+    this.customProfileImageUrl = URL.createObjectURL(blob);
+    this.cdRef.detectChanges();
+  }
+
+  private revokeProfileImageUrl(): void {
+    if (this.customProfileImageUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.customProfileImageUrl);
+    }
+  }
+
+  getUserInitials(): string {
+    const fullName = this.personalDetails?.fullName?.trim();
+    if (fullName) {
+      const parts = fullName.split(/\s+/).filter(Boolean);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    const email = this.personalDetails?.email?.trim();
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return 'ME';
+  }
+
+  onProfileFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (file) {
+      this.openImageEditorWithFile(file);
+    }
+  }
+
+  openProfileImagePicker(input: HTMLInputElement): void {
+    if (this.isUploadingProfileImage || this.isRemovingProfileImage || this.isLoadingProfileImage) {
+      return;
+    }
+    input.click();
+  }
+
+  onProfileImageDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (!this.isUploadingProfileImage) {
+      this.isDraggingProfileImage = true;
+    }
+  }
+
+  onProfileImageDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDraggingProfileImage = false;
+  }
+
+  onProfileImageDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.isDraggingProfileImage = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file && !this.isUploadingProfileImage) {
+      this.openImageEditorWithFile(file);
+    }
+  }
+
+  private validateProfileImageFile(file: File): boolean {
+    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Unsupported File',
+        detail: 'Profile image must be a PNG, JPEG or WEBP image',
+      });
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'File Too Large',
+        detail: `Profile image must be smaller than 5MB (selected: ${(file.size / 1024 / 1024).toFixed(1)}MB)`,
+      });
+      return false;
+    }
+    return true;
+  }
+
+  openImageEditorWithFile(file: File): void {
+    if (!this.validateProfileImageFile(file)) {
+      return;
+    }
+    this.revokeEditorImageUrl();
+    this.editorFileName = file.name || 'profile-photo.png';
+    this.editorFileType = file.type || 'image/png';
+    this.editorImageUrl = URL.createObjectURL(file);
+    this.resetImageEditorTransforms();
+    this.showImageEditorDialog = true;
+    this.cdRef.detectChanges();
+  }
+
+  openExistingImageEditor(): void {
+    if (!this.customProfileImageUrl || this.isUploadingProfileImage || this.isRemovingProfileImage) {
+      return;
+    }
+    this.revokeEditorImageUrl();
+    this.editorFileName = 'profile-photo.png';
+    this.editorFileType = 'image/png';
+    this.editorImageUrl = this.customProfileImageUrl;
+    this.resetImageEditorTransforms();
+    this.showImageEditorDialog = true;
+    this.cdRef.detectChanges();
+  }
+
+  closeImageEditorDialog(): void {
+    this.showImageEditorDialog = false;
+    this.isDraggingEditorCanvas = false;
+    this.revokeEditorImageUrl();
+    this.cdRef.detectChanges();
+  }
+
+  private revokeEditorImageUrl(): void {
+    if (
+      this.editorImageUrl &&
+      this.editorImageUrl.startsWith('blob:') &&
+      this.editorImageUrl !== this.customProfileImageUrl
+    ) {
+      URL.revokeObjectURL(this.editorImageUrl);
+    }
+    this.editorImageUrl = null;
+  }
+
+  resetImageEditorTransforms(): void {
+    this.editorZoom = 1;
+    this.editorRotation = 0;
+    this.editorFlipX = false;
+    this.editorFlipY = false;
+    this.editorPanX = 0;
+    this.editorPanY = 0;
+  }
+
+  onEditorImageLoaded(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.editorNaturalWidth = img.naturalWidth || 512;
+    this.editorNaturalHeight = img.naturalHeight || 512;
+  }
+
+  getEditorTransformStyle(): string {
+    const scaleX = (this.editorFlipX ? -1 : 1) * this.editorZoom;
+    const scaleY = (this.editorFlipY ? -1 : 1) * this.editorZoom;
+    return `translate3d(${this.editorPanX}px, ${this.editorPanY}px, 0) rotate(${this.editorRotation}deg) scale(${scaleX}, ${scaleY})`;
+  }
+
+  onEditorPointerDown(event: MouseEvent | TouchEvent): void {
+    event.preventDefault();
+    this.isDraggingEditorCanvas = true;
+    const pt = this.getPointerCoordinates(event);
+    this.dragStartX = pt.x;
+    this.dragStartY = pt.y;
+    this.dragInitialPanX = this.editorPanX;
+    this.dragInitialPanY = this.editorPanY;
+  }
+
+  onEditorPointerMove(event: MouseEvent | TouchEvent): void {
+    if (!this.isDraggingEditorCanvas) {
+      return;
+    }
+    event.preventDefault();
+    const pt = this.getPointerCoordinates(event);
+    this.editorPanX = Math.round(this.dragInitialPanX + (pt.x - this.dragStartX));
+    this.editorPanY = Math.round(this.dragInitialPanY + (pt.y - this.dragStartY));
+  }
+
+  onEditorPointerUp(): void {
+    this.isDraggingEditorCanvas = false;
+  }
+
+  onEditorWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const delta = event.deltaY < 0 ? 0.08 : -0.08;
+    this.adjustEditorZoom(delta);
+  }
+
+  private getPointerCoordinates(event: MouseEvent | TouchEvent): { x: number; y: number } {
+    if ('touches' in event && event.touches.length > 0) {
+      return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+    const mouse = event as MouseEvent;
+    return { x: mouse.clientX, y: mouse.clientY };
+  }
+
+  adjustEditorZoom(delta: number): void {
+    const next = Math.min(3, Math.max(0.5, +(this.editorZoom + delta).toFixed(2)));
+    this.editorZoom = next;
+  }
+
+  rotateEditorImage(degreesDelta: number): void {
+    let next = this.editorRotation + degreesDelta;
+    while (next > 180) next -= 360;
+    while (next < -180) next += 360;
+    this.editorRotation = next;
+  }
+
+  toggleEditorFlipX(): void {
+    this.editorFlipX = !this.editorFlipX;
+  }
+
+  toggleEditorFlipY(): void {
+    this.editorFlipY = !this.editorFlipY;
+  }
+
+  nudgeEditorPosition(dx: number, dy: number): void {
+    this.editorPanX += dx;
+    this.editorPanY += dy;
+  }
+
+  centerEditorPosition(): void {
+    this.editorPanX = 0;
+    this.editorPanY = 0;
+  }
+
+  async applyCropAndUpload(): Promise<void> {
+    if (!this.editorImageUrl) {
+      return;
+    }
+    try {
+      const croppedFile = await this.renderEditedImageToFile();
+      this.closeImageEditorDialog();
+      this.uploadProfileImage(croppedFile);
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Image Processing Failed',
+        detail: 'Could not process the edited image. Please try again.',
+      });
+    }
+  }
+
+  private renderEditedImageToFile(): Promise<File> {
+    return new Promise((resolve, reject) => {
+      if (!this.editorImageUrl) {
+        reject(new Error('No editor image source'));
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const outputSize = 512;
+        const viewportSize = 260;
+        const ratio = outputSize / viewportSize;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context unavailable'));
+          return;
+        }
+
+        const natW = img.naturalWidth || outputSize;
+        const natH = img.naturalHeight || outputSize;
+        // Fit image initially so it covers the viewport (object-fit: cover behavior)
+        const baseScale = Math.max(outputSize / natW, outputSize / natH);
+        const drawW = natW * baseScale;
+        const drawH = natH * baseScale;
+
+        ctx.save();
+        ctx.translate(
+          outputSize / 2 + this.editorPanX * ratio,
+          outputSize / 2 + this.editorPanY * ratio
+        );
+        ctx.rotate((this.editorRotation * Math.PI) / 180);
+        ctx.scale(
+          (this.editorFlipX ? -1 : 1) * this.editorZoom,
+          (this.editorFlipY ? -1 : 1) * this.editorZoom
+        );
+        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+
+        const mimeType = ['image/png', 'image/jpeg', 'image/webp'].includes(this.editorFileType)
+          ? this.editorFileType
+          : 'image/png';
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create image blob'));
+              return;
+            }
+            const file = new File([blob], this.editorFileName || 'profile-photo.png', {
+              type: mimeType,
+            });
+            resolve(file);
+          },
+          mimeType,
+          0.92
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image for cropping'));
+      img.src = this.editorImageUrl;
+    });
+  }
+
+  uploadProfileImage(file: File): void {
+    if (!this.validateProfileImageFile(file)) {
+      return;
+    }
+
+    this.previousProfileImageUrl = this.customProfileImageUrl;
+    this.customProfileImageUrl = URL.createObjectURL(file);
+    this.isProfileImageLoaded = true;
+    this.isUploadingProfileImage = true;
+    this.cdRef.detectChanges();
+
+    this.userService.uploadProfileImage(file).subscribe({
+      next: () => {
+        if (this.previousProfileImageUrl?.startsWith('blob:')) {
+          URL.revokeObjectURL(this.previousProfileImageUrl);
+        }
+        this.previousProfileImageUrl = null;
+        this.isUploadingProfileImage = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Profile Photo Updated',
+          detail: 'Your profile image has been updated',
+          life: 2500,
+        });
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        this.revokeProfileImageUrl();
+        this.customProfileImageUrl = this.previousProfileImageUrl;
+        this.previousProfileImageUrl = null;
+        this.isUploadingProfileImage = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Upload Failed',
+          detail: 'Could not upload your profile image. Please try again.',
+        });
+        this.cdRef.detectChanges();
+      },
+    });
+  }
+
+  onProfileImageLoaded(): void {
+    this.isProfileImageLoaded = true;
+    this.cdRef.detectChanges();
+  }
+
+  removeProfileImage(): void {
+    if (this.isRemovingProfileImage || this.isUploadingProfileImage) {
+      return;
+    }
+    this.isRemovingProfileImage = true;
+    this.userService.deleteProfileImage().subscribe({
+      next: () => {
+        this.isRemovingProfileImage = false;
+        this.revokeProfileImageUrl();
+        this.customProfileImageUrl = null;
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Profile Photo Removed',
+          detail: 'Reverted to default profile avatar',
+          life: 2000,
+        });
+        this.cdRef.detectChanges();
+      },
+      error: () => {
+        this.isRemovingProfileImage = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Remove Failed',
+          detail: 'Could not remove your profile image',
+        });
+        this.cdRef.detectChanges();
+      },
+    });
   }
 
   switchSection(section: 'personal' | 'settings'): void {

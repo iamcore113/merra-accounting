@@ -332,6 +332,36 @@
           }
         }
 
+        .adjust-logo-inline-btn {
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          padding: 0.22rem 0.55rem;
+          color: #334155;
+          font-size: 0.75rem;
+          font-weight: 600;
+          cursor: pointer;
+          border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
+          transition: all 0.15s ease;
+
+          &:hover:not(:disabled) {
+            background-color: #f1f8ed;
+            border-color: #689D4B;
+            color: #2e7d32;
+          }
+
+          &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          i {
+            font-size: 0.7rem;
+          }
+        }
+
         .remove-logo-inline-btn {
           background: none;
           border: none;
@@ -697,6 +727,292 @@
   }
 }
 
+/* Organization Members & Pending Invitees Card */
+.members-card {
+  margin-bottom: 1.25rem;
+
+  .members-card-header {
+    flex-wrap: wrap;
+
+    .members-header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+
+      .member-filter-pills {
+        display: inline-flex;
+        align-items: center;
+        background-color: #e2e8f0;
+        padding: 2px;
+        border-radius: 6px;
+        gap: 2px;
+
+        .filter-pill-btn {
+          border: none;
+          background: transparent;
+          color: #475569;
+          font-size: 0.74rem;
+          font-weight: 600;
+          padding: 0.25rem 0.6rem;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &:hover {
+            color: #0f172a;
+          }
+
+          &.active {
+            background-color: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+          }
+        }
+      }
+
+      .invite-member-link {
+        background-color: #f1f8ed;
+        border: 1px solid #c8e6c9;
+        padding: 0.28rem 0.65rem;
+        border-radius: 5px;
+      }
+    }
+  }
+
+  .members-skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+
+    .member-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 0.9rem;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+
+      &:hover {
+        background-color: #ffffff;
+        border-color: #cbd5e1;
+      }
+
+      &.is-pending {
+        background-color: #fffdf7;
+        border-style: dashed;
+        border-color: #fcd34d;
+      }
+
+      @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .member-identity {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 0;
+        flex: 1;
+
+        .member-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+          color: #2e7d32;
+          font-size: 0.85rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          border: 1px solid #a5d6a7;
+
+          &.creator-avatar {
+            background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+            color: #14532d;
+            border-color: #4ade80;
+          }
+
+          &.has-image {
+            padding: 0;
+            overflow: hidden;
+            background: #ffffff;
+          }
+
+          .member-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+          }
+
+          &.pending-avatar {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px dashed #f59e0b;
+
+            i {
+              font-size: 0.95rem;
+            }
+          }
+        }
+
+        .member-details {
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          min-width: 0;
+
+          .member-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+
+            .member-name {
+              font-size: 0.875rem;
+              font-weight: 700;
+              color: #0f172a;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+
+            .owner-pill {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.25rem;
+              font-size: 0.68rem;
+              font-weight: 700;
+              color: #166534;
+              background-color: #dcfce7;
+              border: 1px solid #bbf7d0;
+              padding: 0.1rem 0.45rem;
+              border-radius: 9999px;
+
+              i {
+                font-size: 0.65rem;
+              }
+            }
+          }
+
+          .member-submeta {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            font-size: 0.76rem;
+            color: #64748b;
+
+            .member-email {
+              color: #475569;
+              font-weight: 500;
+            }
+
+            .meta-dot {
+              color: #cbd5e1;
+            }
+          }
+        }
+      }
+
+      .member-badges {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+
+        .role-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          font-size: 0.74rem;
+          font-weight: 600;
+          padding: 0.22rem 0.6rem;
+          border-radius: 6px;
+          background-color: #f1f5f9;
+          color: #334155;
+          border: 1px solid #cbd5e1;
+
+          i {
+            font-size: 0.7rem;
+          }
+
+          &.role-creator {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+          }
+
+          &.role-advisor {
+            background-color: #f3e8ff;
+            color: #7e22ce;
+            border-color: #e9d5ff;
+          }
+
+          &.role-standard {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+          }
+
+          &.role-invoice {
+            background-color: #ecfeff;
+            color: #0e7490;
+            border-color: #a5f3fc;
+          }
+
+          &.role-readonly {
+            background-color: #f8fafc;
+            color: #475569;
+            border-color: #cbd5e1;
+          }
+        }
+
+        .member-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 0.2rem 0.55rem;
+          border-radius: 9999px;
+
+          i {
+            font-size: 0.7rem;
+          }
+
+          &.active {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+          }
+
+          &.pending {
+            background-color: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+          }
+        }
+      }
+    }
+  }
+}
+
 /* Addresses Summary */
 .addresses-summary-list {
   display: flex;
@@ -891,4 +1207,236 @@
       }
     }
   }
+}
+
+/* Interactive Organization Logo Editor Dialog Styles */
+.org-logo-editor-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+
+  .editor-helper-text {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: #64748b;
+    line-height: 1.45;
+  }
+
+  .editor-crop-stage {
+    position: relative;
+    width: 100%;
+    height: 290px;
+    background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+
+    &.is-dragging {
+      cursor: grabbing;
+
+      .crop-grid-overlay {
+        opacity: 1;
+      }
+    }
+
+    .editor-viewport-frame {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 0 999px rgba(15, 23, 42, 0.58);
+      border: 2px solid #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .editor-source-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform-origin: center center;
+        will-change: transform;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .crop-grid-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.35;
+        transition: opacity 0.15s ease;
+        background-image:
+          linear-gradient(to right, rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+        background-size: 33.333% 33.333%;
+      }
+    }
+
+    .stage-drag-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      color: #f8fafc;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      pointer-events: none;
+
+      i {
+        font-size: 0.68rem;
+      }
+    }
+  }
+
+  .editor-quick-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .nudge-btn-group,
+    .rotate-btn-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .editor-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #f1f8ed;
+        border-color: #689D4B;
+        color: #2e7d32;
+      }
+
+      &.active {
+        background: #689D4B;
+        border-color: #689D4B;
+        color: #ffffff;
+      }
+
+      i {
+        font-size: 0.8rem;
+      }
+    }
+
+    .editor-reset-btn {
+      height: 32px;
+      padding: 0 0.65rem;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+      }
+    }
+  }
+
+  .editor-sliders-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+
+    .slider-control-row {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+
+      .slider-label-col {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        width: 105px;
+        flex-shrink: 0;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #334155;
+
+        i {
+          color: #689D4B;
+          font-size: 0.8rem;
+        }
+      }
+
+      .slider-step-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+        background: #ffffff;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+
+        &:hover {
+          border-color: #689D4B;
+          color: #2e7d32;
+        }
+
+        i {
+          font-size: 0.65rem;
+        }
+      }
+
+      .editor-range-slider {
+        flex: 1;
+        accent-color: #689D4B;
+        cursor: pointer;
+      }
+
+      .slider-value-tag {
+        width: 44px;
+        text-align: right;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #0f172a;
+        font-family: ui-monospace, monospace;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+.editor-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }

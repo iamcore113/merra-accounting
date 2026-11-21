@@ -24,9 +24,19 @@ describe('MainProfile', () => {
   beforeEach(async () => {
     authServiceSpy = jasmine.createSpyObj('AuthService', ['logout']);
     dialogServiceSpy = jasmine.createSpyObj('DialogService', ['open']);
-    userServiceSpy = jasmine.createSpyObj('UserService', ['getAuthenticatedUserDetails', 'isAccountUnverified', 'setAccountUnverified']);
+    userServiceSpy = jasmine.createSpyObj('UserService', [
+      'getAuthenticatedUserDetails',
+      'isAccountUnverified',
+      'setAccountUnverified',
+      'uploadProfileImage',
+      'getProfileImage',
+      'deleteProfileImage'
+    ]);
     userServiceSpy.getAuthenticatedUserDetails.and.returnValue(of({ success: true, data: {} } as any));
     userServiceSpy.isAccountUnverified.and.returnValue(false);
+    userServiceSpy.getProfileImage.and.returnValue(of(new Blob(['fake-img'], { type: 'image/png' })));
+    userServiceSpy.uploadProfileImage.and.returnValue(of({ success: true, data: { profileUrl: 'users/1/profile/img.png' } } as any));
+    userServiceSpy.deleteProfileImage.and.returnValue(of({ success: true } as any));
     organizationServiceSpy = jasmine.createSpyObj('OrganizationService', ['getCurrentOrganization']);
     organizationServiceSpy.getCurrentOrganization.and.returnValue(of({ success: true, data: {} } as any));
     utilityServiceSpy = jasmine.createSpyObj('UtilityService', ['getCountries']);
@@ -74,5 +84,32 @@ describe('MainProfile', () => {
     expect(nativeEl.querySelectorAll('p-skeleton').length).toBeGreaterThan(0);
     expect(nativeEl.querySelectorAll('.skeleton-affiliated-item').length).toBe(2);
     expect(nativeEl.querySelector('.affiliated-empty-state')).toBeNull();
+  });
+
+  it('should open image editor on file selection, adjust position/zoom/rotation, and upload/remove user profile image', () => {
+    const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+    const event = { target: { files: [file], value: 'avatar.png' } } as unknown as Event;
+
+    component.onProfileFileSelected(event);
+    expect(component.showImageEditorDialog).toBeTrue();
+    expect(component.editorImageUrl).toBeTruthy();
+
+    component.nudgeEditorPosition(15, -10);
+    expect(component.editorPanX).toBe(15);
+    expect(component.editorPanY).toBe(-10);
+
+    component.adjustEditorZoom(0.25);
+    expect(component.editorZoom).toBe(1.25);
+
+    component.rotateEditorImage(90);
+    expect(component.editorRotation).toBe(90);
+
+    component.uploadProfileImage(file);
+    expect(userServiceSpy.uploadProfileImage).toHaveBeenCalledWith(file);
+    expect(component.customProfileImageUrl).toBeTruthy();
+
+    component.removeProfileImage();
+    expect(userServiceSpy.deleteProfileImage).toHaveBeenCalled();
+    expect(component.customProfileImageUrl).toBeNull();
   });
 });

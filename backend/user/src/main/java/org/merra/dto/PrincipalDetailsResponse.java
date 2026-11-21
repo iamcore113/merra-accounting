@@ -11,7 +11,8 @@ public record PrincipalDetailsResponse(
         String country,
         String email,
         UserOrganizationAffiliation organizationAffiliation,
-        Boolean isEnabled) {
+        Boolean isEnabled,
+        String profileUrl) {
     public PrincipalDetailsResponse(
             UUID id,
             String firstName,
@@ -21,7 +22,20 @@ public record PrincipalDetailsResponse(
             String country,
             String email,
             UserOrganizationAffiliation organizationAffiliation) {
-        this(id, firstName, lastName, fullName, gender, country, email, organizationAffiliation, Boolean.TRUE);
+        this(id, firstName, lastName, fullName, gender, country, email, organizationAffiliation, Boolean.TRUE, null);
+    }
+
+    public PrincipalDetailsResponse(
+            UUID id,
+            String firstName,
+            String lastName,
+            String fullName,
+            String gender,
+            String country,
+            String email,
+            UserOrganizationAffiliation organizationAffiliation,
+            Boolean isEnabled) {
+        this(id, firstName, lastName, fullName, gender, country, email, organizationAffiliation, isEnabled, null);
     }
 
     public PrincipalDetailsResponse {

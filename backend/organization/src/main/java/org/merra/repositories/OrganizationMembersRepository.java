@@ -59,4 +59,18 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 	boolean isEmailMemberOfOrganization(
 			@org.springframework.data.repository.query.Param("orgId") UUID orgId,
 			@org.springframework.data.repository.query.Param("email") String email);
+
+	/**
+	 * Retrieves all members (including active members and pending invitees) for the specified organization.
+	 *
+	 * @param orgId the UUID of the organization
+	 * @return a list of {@link OrganizationMembers} belonging to the organization
+	 */
+	@Query("SELECT om FROM OrganizationMembers om " +
+			"LEFT JOIN FETCH om.user u " +
+			"LEFT JOIN FETCH om.invitationBy ib " +
+			"WHERE om.organization.id = :orgId " +
+			"ORDER BY om.isCreator DESC, om.status ASC, om.dateJoined ASC, om.invitationDate DESC")
+	List<OrganizationMembers> findMembersByOrganizationId(
+			@org.springframework.data.repository.query.Param("orgId") UUID orgId);
 }

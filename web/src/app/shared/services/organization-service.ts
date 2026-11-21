@@ -4,6 +4,7 @@ import {
   CREATE_ORGANIZATION,
   ORGANIZATION_METADATA_URL,
   CURRENT_ORGANIZATION,
+  ORGANIZATION_MEMBERS_URL,
   CURRENT_ORGANIZATION_UPDATE,
   SELECT_ORGANIZATION,
   ORGANIZATION_AFFILIATIONS_URL,
@@ -37,6 +38,19 @@ export class OrganizationService {
 
   getCurrentOrganization(): Observable<Config> {
     return this.http.get<Config>(CURRENT_ORGANIZATION, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getOrganizationMembers(): Observable<Config> {
+    return this.http.get<Config>(ORGANIZATION_MEMBERS_URL, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getOrganizationMemberProfileImage(userId: string): Observable<Blob> {
+    return this.http.get(`${ORGANIZATION_MEMBERS_URL}/${userId}/profile-image`, {
+      responseType: 'blob',
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

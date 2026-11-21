@@ -292,6 +292,23 @@ export interface CurrentOrganizationResponse {
   externalLinks?: CurrentOrganizationResponseExternalLink[];
 }
 
+// Corresponds to: backend/organization/src/main/java/org/merra/dto/OrganizationMemberResponse.java
+export interface OrganizationMemberResponse {
+  id: string;
+  userId?: string | null;
+  fullName?: string | null;
+  email: string;
+  role: string;
+  status: 'ACTIVE' | 'PENDING' | 'INACTIVE' | string;
+  isCreator: boolean;
+  isInvited: boolean;
+  invitedBy?: string | null;
+  invitationDate?: string | null;
+  dateJoined?: string | null;
+  expiresAt?: string | null;
+  hasProfileImage?: boolean;
+}
+
 // Corresponds to: backend/user/src/main/java/org/merra/dto/UserOrganizationAffiliation.Organizations
 export interface OrganizationAffiliation {
   organizationId: string;
@@ -319,4 +336,5 @@ export interface PrincipalDetailsResponse {
   organizationAffiliation: UserOrganizationAffiliation;
   isEnabled?: boolean;
   enabled?: boolean;
+  profileUrl?: string | null;
 }

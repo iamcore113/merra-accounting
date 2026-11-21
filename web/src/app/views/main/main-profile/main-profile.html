@@ -1,26 +1,338 @@
 <section class="profile-accordion shared-expansion-panels">
   <div class="profile-header">
-    <div class="profile-title-group">
-      <div class="profile-title-row">
-        <h2 class="profile-title">User Profile &amp; Settings</h2>
-        @if (isLoading) {
-          <p-skeleton width="8.5rem" height="1.45rem" borderRadius="0" styleClass="status-pill-skeleton"></p-skeleton>
-        } @else if (!isAccountActivated) {
-          <span class="status-pill unverified">
-            <i class="pi pi-exclamation-triangle"></i> Pending Activation
-          </span>
+    <div class="profile-header-identity">
+      <div
+        class="user-avatar-container"
+        [class.is-dragging]="isDraggingProfileImage"
+        [class.is-busy]="isUploadingProfileImage || isRemovingProfileImage"
+        (dragover)="onProfileImageDragOver($event)"
+        (dragleave)="onProfileImageDragLeave($event)"
+        (drop)="onProfileImageDrop($event)">
+        @if (isLoadingProfileImage) {
+          <p-skeleton width="100%" height="100%" borderRadius="50%"></p-skeleton>
+        } @else if (customProfileImageUrl) {
+          @if (!isProfileImageLoaded) {
+            <p-skeleton width="100%" height="100%" borderRadius="50%" styleClass="avatar-skeleton-abs"></p-skeleton>
+          }
+          <img
+            [src]="customProfileImageUrl"
+            alt="User Profile Photo"
+            class="user-avatar-image"
+            [class.loaded]="isProfileImageLoaded"
+            (load)="onProfileImageLoaded()" />
         } @else {
-          <span class="status-pill verified">
-            <i class="pi pi-check-circle"></i> Verified Account
-          </span>
+          <div class="user-avatar-fallback">
+            @if (personalDetails?.fullName || personalDetails?.email) {
+              <span class="fallback-initials">{{ getUserInitials() }}</span>
+            } @else {
+              <i class="pi pi-user fallback-icon"></i>
+            }
+          </div>
+        }
+
+        <input
+          #profileFileInput
+          type="file"
+          accept="image/png, image/jpeg, image/webp"
+          (change)="onProfileFileSelected($event)"
+          style="display: none" />
+
+        @if (!isLoadingProfileImage) {
+          <button
+            type="button"
+            class="avatar-overlay"
+            (click)="openProfileImagePicker(profileFileInput)"
+            [disabled]="isUploadingProfileImage || isRemovingProfileImage"
+            aria-label="Upload user profile photo"
+            title="Upload profile photo (PNG, JPEG or WEBP, max 5MB). You can also drop an image here.">
+            <i class="pi pi-camera"></i>
+          </button>
+          <span class="avatar-camera-badge" aria-hidden="true"><i class="pi pi-camera"></i></span>
+        }
+
+        @if (isUploadingProfileImage || isRemovingProfileImage) {
+          <div class="avatar-busy-layer" role="status" [attr.aria-label]="isUploadingProfileImage ? 'Uploading profile photo' : 'Removing profile photo'">
+            <i class="pi pi-spin pi-spinner"></i>
+          </div>
+        }
+
+        @if (isDraggingProfileImage) {
+          <div class="avatar-drop-hint"><i class="pi pi-upload"></i></div>
         }
       </div>
-      <p class="profile-subtitle">Manage your personal credentials, account verification, and linked organizations</p>
+
+      <div class="profile-title-group">
+        <div class="profile-title-row">
+          <h2 class="profile-title">User Profile &amp; Settings</h2>
+          @if (isLoading) {
+            <p-skeleton width="8.5rem" height="1.45rem" borderRadius="0" styleClass="status-pill-skeleton"></p-skeleton>
+          } @else if (!isAccountActivated) {
+            <span class="status-pill unverified">
+              <i class="pi pi-exclamation-triangle"></i> Pending Activation
+            </span>
+          } @else {
+            <span class="status-pill verified">
+              <i class="pi pi-check-circle"></i> Verified Account
+            </span>
+          }
+        </div>
+        <p class="profile-subtitle">Manage your personal credentials, account verification, and linked organizations</p>
+
+        <div class="profile-photo-actions">
+          <button
+            type="button"
+            class="upload-photo-inline-btn"
+            (click)="openProfileImagePicker(profileFileInput)"
+            [disabled]="isUploadingProfileImage || isRemovingProfileImage || isLoadingProfileImage">
+            <i class="pi pi-upload"></i>
+            <span>{{ customProfileImageUrl ? 'Change photo' : 'Upload photo' }}</span>
+          </button>
+
+          @if (customProfileImageUrl) {
+            <button
+              type="button"
+              class="adjust-photo-inline-btn"
+              (click)="openExistingImageEditor()"
+              [disabled]="isUploadingProfileImage || isRemovingProfileImage"
+              title="Move, crop, or rotate your current profile photo">
+              <i class="pi pi-sliders-h"></i>
+              <span>Adjust / Crop</span>
+            </button>
+
+            <button
+              type="button"
+              class="remove-photo-inline-btn"
+              (click)="removeProfileImage()"
+              [disabled]="isRemovingProfileImage || isUploadingProfileImage"
+              title="Reset profile photo">
+              <i class="pi" [ngClass]="isRemovingProfileImage ? 'pi-spin pi-spinner' : 'pi-times'"></i>
+              <span>{{ isRemovingProfileImage ? 'Removing…' : 'Remove photo' }}</span>
+            </button>
+          }
+        </div>
+      </div>
     </div>
-    <button class="profile-image-button" type="button" aria-label="Profile picture" (click)="openProfileImageDialog()">
-      <i class="pi pi-user profile-image-icon"></i>
-    </button>
   </div>
+
+  <!-- Interactive Profile Image Editor Modal (Move, Crop/Zoom, Rotate, Flip) -->
+  <p-dialog
+    header="Adjust Profile Photo"
+    [(visible)]="showImageEditorDialog"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '480px', maxWidth: '95vw' }"
+    (onHide)="closeImageEditorDialog()">
+    @if (editorImageUrl) {
+      <div class="profile-image-editor-modal">
+        <p class="editor-helper-text">
+          Drag the photo to position it, use the zoom slider to crop, or rotate it to your preference.
+        </p>
+
+        <!-- Interactive Crop & Pan Stage -->
+        <div
+          class="editor-crop-stage"
+          [class.is-dragging]="isDraggingEditorCanvas"
+          (mousedown)="onEditorPointerDown($event)"
+          (mousemove)="onEditorPointerMove($event)"
+          (mouseup)="onEditorPointerUp()"
+          (mouseleave)="onEditorPointerUp()"
+          (touchstart)="onEditorPointerDown($event)"
+          (touchmove)="onEditorPointerMove($event)"
+          (touchend)="onEditorPointerUp()"
+          (wheel)="onEditorWheel($event)">
+          <div class="editor-viewport-circle">
+            <img
+              [src]="editorImageUrl"
+              alt="Profile crop preview"
+              class="editor-source-image"
+              [style.transform]="getEditorTransformStyle()"
+              (load)="onEditorImageLoaded($event)"
+              draggable="false" />
+            <div class="crop-grid-overlay"></div>
+          </div>
+
+          <span class="stage-drag-badge">
+            <i class="pi pi-arrows-alt"></i> Drag to reposition
+          </span>
+        </div>
+
+        <!-- Position Nudge & Reset Bar -->
+        <div class="editor-quick-bar">
+          <div class="nudge-btn-group" role="group" aria-label="Reposition controls">
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Left"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(-10, 0)">
+              <i class="pi pi-arrow-left"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Up"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(0, -10)">
+              <i class="pi pi-arrow-up"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Center Image"
+              tooltipPosition="top"
+              (click)="centerEditorPosition()">
+              <i class="pi pi-compass"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Down"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(0, 10)">
+              <i class="pi pi-arrow-down"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Move Right"
+              tooltipPosition="top"
+              (click)="nudgeEditorPosition(10, 0)">
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          </div>
+
+          <div class="rotate-btn-group" role="group" aria-label="Rotate and flip controls">
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Rotate 90° Left"
+              tooltipPosition="top"
+              (click)="rotateEditorImage(-90)">
+              <i class="pi pi-replay"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              pTooltip="Rotate 90° Right"
+              tooltipPosition="top"
+              (click)="rotateEditorImage(90)">
+              <i class="pi pi-refresh"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              [class.active]="editorFlipX"
+              pTooltip="Flip Horizontal"
+              tooltipPosition="top"
+              (click)="toggleEditorFlipX()">
+              <i class="pi pi-arrows-h"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-icon-btn"
+              [class.active]="editorFlipY"
+              pTooltip="Flip Vertical"
+              tooltipPosition="top"
+              (click)="toggleEditorFlipY()">
+              <i class="pi pi-arrows-v"></i>
+            </button>
+            <button
+              type="button"
+              class="editor-reset-btn"
+              pTooltip="Reset all adjustments"
+              tooltipPosition="top"
+              (click)="resetImageEditorTransforms()">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Sliders for Zoom (Crop) and Fine Rotation -->
+        <div class="editor-sliders-box">
+          <div class="slider-control-row">
+            <div class="slider-label-col">
+              <i class="pi pi-search-plus"></i>
+              <span>Zoom &amp; Crop</span>
+            </div>
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Zoom out"
+              (click)="adjustEditorZoom(-0.1)">
+              <i class="pi pi-minus"></i>
+            </button>
+            <input
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.05"
+              [(ngModel)]="editorZoom"
+              class="editor-range-slider"
+              aria-label="Zoom level" />
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Zoom in"
+              (click)="adjustEditorZoom(0.1)">
+              <i class="pi pi-plus"></i>
+            </button>
+            <span class="slider-value-tag">{{ (editorZoom * 100) | number: '1.0-0' }}%</span>
+          </div>
+
+          <div class="slider-control-row">
+            <div class="slider-label-col">
+              <i class="pi pi-sync"></i>
+              <span>Rotate</span>
+            </div>
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Rotate counter-clockwise"
+              (click)="rotateEditorImage(-5)">
+              <i class="pi pi-angle-left"></i>
+            </button>
+            <input
+              type="range"
+              min="-180"
+              max="180"
+              step="1"
+              [(ngModel)]="editorRotation"
+              class="editor-range-slider"
+              aria-label="Rotation angle" />
+            <button
+              type="button"
+              class="slider-step-btn"
+              aria-label="Rotate clockwise"
+              (click)="rotateEditorImage(5)">
+              <i class="pi pi-angle-right"></i>
+            </button>
+            <span class="slider-value-tag">{{ editorRotation }}&deg;</span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <ng-template #footer>
+      <div class="editor-dialog-footer">
+        <p-button
+          type="button"
+          label="Cancel"
+          [outlined]="true"
+          [size]="'small'"
+          (onClick)="closeImageEditorDialog()">
+        </p-button>
+        <p-button
+          type="button"
+          label="Apply &amp; Save Photo"
+          icon="pi pi-check"
+          [size]="'small'"
+          [loading]="isUploadingProfileImage"
+          (onClick)="applyCropAndUpload()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
 
   @if (!isLoading && !isAccountActivated) {
     <div class="unverified-callout-banner">

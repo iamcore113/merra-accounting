@@ -4,10 +4,13 @@ import org.merra.api.ApiResponse;
 import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
+import org.merra.dto.OrganizationMemberResponse;
 import org.merra.dto.OrganizationNameCheckResponse;
 import org.merra.dto.OrganizationProfileImageResponse;
 import org.merra.services.OrganizationProfileImageService;
 import org.merra.services.OrganizationService;
+import org.merra.services.UserProfileImageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -36,11 +40,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class OrganizationController {
 	private final OrganizationService organizationService;
 	private final OrganizationProfileImageService profileImageService;
+	private final UserProfileImageService userProfileImageService;
 
 	public OrganizationController(OrganizationService organizationService,
 			OrganizationProfileImageService profileImageService) {
+		this(organizationService, profileImageService, null);
+	}
+
+	@Autowired
+	public OrganizationController(OrganizationService organizationService,
+			OrganizationProfileImageService profileImageService,
+			@Autowired(required = false) UserProfileImageService userProfileImageService) {
 		this.organizationService = organizationService;
 		this.profileImageService = profileImageService;
+		this.userProfileImageService = userProfileImageService;
 	}
 
 	@GetMapping("dashboard")
@@ -65,6 +78,34 @@ public class OrganizationController {
 				currentOrganization);
 
 		return ResponseEntity.ok(response);
+	}
+
+	/**
+	 * Retrieves all members of the current organization, including active members
+	 * and pending invitees along with their roles.
+	 */
+	@Operation(summary = "get current organization members including pending invitees")
+	@GetMapping("members")
+	public ResponseEntity<ApiResponse<List<OrganizationMemberResponse>>> getOrganizationMembers() {
+		List<OrganizationMemberResponse> members = organizationService.getOrganizationMembers();
+		ApiResponse<List<OrganizationMemberResponse>> response = new ApiResponse<>(
+				"Organization members retrieved successfully.",
+				true,
+				HttpStatus.OK,
+				members);
+		return ResponseEntity.ok(response);
+	}
+
+	/**
+	 * Returns the profile image bytes for a specific member of the current organization.
+	 */
+	@Operation(summary = "get an organization member's user profile image")
+	@GetMapping("members/{userId}/profile-image")
+	public ResponseEntity<byte[]> getOrganizationMemberProfileImage(@PathVariable("userId") UUID userId) {
+		var image = userProfileImageService.downloadForOrganizationMember(userId);
+		MediaType type = image.contentType() == null ? MediaType.APPLICATION_OCTET_STREAM
+				: MediaType.parseMediaType(image.contentType());
+		return ResponseEntity.ok().contentType(type).cacheControl(CacheControl.noCache()).body(image.content());
 	}
 
 	/**

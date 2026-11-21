@@ -1,10 +1,12 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
+import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 
 import { OrganizationService } from '../../../../shared/services/organization-service';
@@ -18,8 +20,10 @@ import {
   OrganizationMetaDataResponse,
   OrganizationTypesMetaData,
   CurrentOrganizationResponseContactAddress,
-  CurrentOrganizationResponseExternalLink
+  CurrentOrganizationResponseExternalLink,
+  OrganizationMemberResponse
 } from '../../../../shared/models/organization';
+import { InvitationResponse, ORGANIZATION_INVITATION_ROLES } from '../../../../shared/models/invitation';
 import { Config } from '../../../../shared/models/api_response';
 
 export interface ProfileSocialLink {
@@ -33,11 +37,13 @@ export interface ProfileSocialLink {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     ButtonModule,
     TooltipModule,
     TagModule,
     SkeletonModule,
+    DialogModule,
     DatePipe,
     InvitationAccountSetupModal
   ],
@@ -64,9 +70,14 @@ export class OrganizationProfile implements OnInit, OnDestroy {
   isLoadingCountries = false;
   isLoadingNetworkKeys = false;
   isLoadingInvitations = false;
+  isLoadingMembers = false;
 
   networkKeysCount = 0;
   invitationsCount = 0;
+  organizationMembers: OrganizationMemberResponse[] = [];
+  memberAvatarUrls: Record<string, string> = {};
+  pendingInvitationsList: InvitationResponse[] = [];
+  memberFilter: 'ALL' | 'ACTIVE' | 'PENDING' = 'ALL';
   copiedId = false;
   customLogoUrl: string | null = null;
   isUploadingLogo = false;
@@ -75,6 +86,25 @@ export class OrganizationProfile implements OnInit, OnDestroy {
   isLogoLoaded = false;
   isDraggingLogo = false;
   private previousLogoUrl: string | null = null;
+
+  // Interactive Organization Logo Editor (Move/Pan, Zoom/Crop, Rotate, Flip)
+  showLogoEditorDialog = false;
+  editorLogoUrl: string | null = null;
+  editorFileName = 'organization-logo.png';
+  editorFileType = 'image/png';
+  editorZoom = 1;
+  editorRotation = 0;
+  editorFlipX = false;
+  editorFlipY = false;
+  editorPanX = 0;
+  editorPanY = 0;
+  isDraggingEditorCanvas = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragInitialPanX = 0;
+  private dragInitialPanY = 0;
+  private editorNaturalWidth = 0;
+  private editorNaturalHeight = 0;
 
   addresses: CurrentOrganizationResponseContactAddress[] = [];
   externalLinks: ProfileSocialLink[] = [];
@@ -128,6 +158,7 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     this.loadOrganization();
     this.loadNetworkKeysCount();
     this.loadInvitationsCount();
+    this.loadOrganizationMembers();
     this.loadStoredLogo();
   }
 
@@ -138,6 +169,7 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     this.loadOrganization();
     this.loadNetworkKeysCount();
     this.loadInvitationsCount();
+    this.loadOrganizationMembers();
     this.loadStoredLogo();
     this.cdr.markForCheck();
   }
@@ -224,18 +256,203 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     this.invitationService.getInvitations().subscribe({
       next: (res) => {
         this.isLoadingInvitations = false;
-        this.invitationsCount = res.success && res.data ? res.data.length : 0;
+        this.pendingInvitationsList = res.success && res.data ? res.data : [];
+        this.invitationsCount = this.pendingInvitationsList.length;
+        this.mergePendingInvitationsIntoMembers();
         this.cdr.markForCheck();
       },
       error: () => {
         this.isLoadingInvitations = false;
+        this.pendingInvitationsList = [];
         this.invitationsCount = 0;
         this.cdr.markForCheck();
       }
     });
   }
 
+  loadOrganizationMembers(): void {
+    if (!this.organizationService.getOrganizationMembers) {
+      return;
+    }
+    this.isLoadingMembers = true;
+    this.organizationService.getOrganizationMembers().subscribe({
+      next: (res: Config) => {
+        this.isLoadingMembers = false;
+        if (res.success && 'data' in res && Array.isArray(res.data)) {
+          this.organizationMembers = res.data as OrganizationMemberResponse[];
+        } else {
+          this.organizationMembers = [];
+        }
+        this.mergePendingInvitationsIntoMembers();
+        this.loadMemberAvatars();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingMembers = false;
+        this.mergePendingInvitationsIntoMembers();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadMemberAvatars(): void {
+    if (!this.organizationService.getOrganizationMemberProfileImage) {
+      return;
+    }
+    for (const member of this.organizationMembers) {
+      const userId = member.userId;
+      if (!userId || member.status === 'PENDING' || !member.hasProfileImage) {
+        continue;
+      }
+      if (this.memberAvatarUrls[userId]) {
+        continue;
+      }
+      this.organizationService.getOrganizationMemberProfileImage(userId).subscribe({
+        next: (blob: Blob) => {
+          if (blob && blob.size > 0) {
+            this.memberAvatarUrls[userId] = URL.createObjectURL(blob);
+            this.cdr.markForCheck();
+          }
+        },
+        error: () => {
+          delete this.memberAvatarUrls[userId];
+        }
+      });
+    }
+  }
+
+  onMemberAvatarError(userId?: string | null): void {
+    if (!userId) return;
+    const existing = this.memberAvatarUrls[userId];
+    if (existing?.startsWith('blob:')) {
+      URL.revokeObjectURL(existing);
+    }
+    delete this.memberAvatarUrls[userId];
+    this.cdr.markForCheck();
+  }
+
+  private revokeMemberAvatarUrls(): void {
+    for (const url of Object.values(this.memberAvatarUrls)) {
+      if (url?.startsWith('blob:')) {
+        URL.revokeObjectURL(url);
+      }
+    }
+    this.memberAvatarUrls = {};
+  }
+
+  private mergePendingInvitationsIntoMembers(): void {
+    const byEmail = new Map<string, OrganizationMemberResponse>();
+    for (const member of this.organizationMembers) {
+      const key = (member.email || member.id || '').trim().toLowerCase();
+      if (key) {
+        byEmail.set(key, { ...member });
+      }
+    }
+
+    for (const inv of this.pendingInvitationsList) {
+      const emailKey = (inv.inviteeEmail || '').trim().toLowerCase();
+      if (!emailKey) continue;
+      const existing = byEmail.get(emailKey);
+      if (!existing) {
+        byEmail.set(emailKey, {
+          id: inv.id,
+          userId: null,
+          fullName: null,
+          email: inv.inviteeEmail,
+          role: inv.role || 'MEMBER',
+          status: 'PENDING',
+          isCreator: false,
+          isInvited: true,
+          invitedBy: null,
+          invitationDate: inv.createdAt || null,
+          dateJoined: null,
+          expiresAt: inv.expiresAt || null
+        });
+      } else if (existing.status === 'PENDING' && inv.expiresAt && !existing.expiresAt) {
+        existing.expiresAt = inv.expiresAt;
+      }
+    }
+
+    this.organizationMembers = Array.from(byEmail.values());
+  }
+
+  get filteredMembers(): OrganizationMemberResponse[] {
+    if (this.memberFilter === 'ACTIVE') {
+      return this.organizationMembers.filter((m) => m.status !== 'PENDING');
+    }
+    if (this.memberFilter === 'PENDING') {
+      return this.organizationMembers.filter((m) => m.status === 'PENDING');
+    }
+    return this.organizationMembers;
+  }
+
+  get activeMembersCount(): number {
+    return this.organizationMembers.filter((m) => m.status !== 'PENDING').length;
+  }
+
+  get pendingMembersCount(): number {
+    return this.organizationMembers.filter((m) => m.status === 'PENDING').length;
+  }
+
+  setMemberFilter(filter: 'ALL' | 'ACTIVE' | 'PENDING'): void {
+    this.memberFilter = filter;
+  }
+
+  getMemberDisplayName(member: OrganizationMemberResponse): string {
+    if (member.fullName && member.fullName.trim()) {
+      return member.fullName.trim();
+    }
+    if (member.status === 'PENDING') {
+      return member.email || 'Pending Invitee';
+    }
+    if (member.email) {
+      const localPart = member.email.split('@')[0];
+      return localPart
+        .replace(/[._-]+/g, ' ')
+        .replace(/\b\w/g, (ch) => ch.toUpperCase());
+    }
+    return 'Organization Member';
+  }
+
+  getMemberInitials(member: OrganizationMemberResponse): string {
+    const source = (member.fullName && member.fullName.trim()) || member.email || 'OM';
+    const clean = source.includes('@') ? source.split('@')[0] : source;
+    const parts = clean.trim().split(/[\s._-]+/).filter(Boolean);
+    if (parts.length === 0) return 'OM';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  getRoleDisplayLabel(role?: string, isCreator?: boolean): string {
+    const normalized = (role || '').trim().toUpperCase().replace(/^ROLE_/, '');
+    if (normalized === 'CREATOR' || isCreator) {
+      return 'Creator (Owner)';
+    }
+    const found = ORGANIZATION_INVITATION_ROLES.find((r) => r.value === normalized);
+    if (found) {
+      return found.label;
+    }
+    if (!normalized) return 'Member';
+    return normalized
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
+  }
+
+  getRoleBadgeClass(role?: string, isCreator?: boolean): string {
+    const normalized = (role || '').trim().toUpperCase().replace(/^ROLE_/, '');
+    if (normalized === 'CREATOR' || isCreator) return 'role-creator';
+    if (normalized === 'ADVISOR') return 'role-advisor';
+    if (normalized === 'STANDARD') return 'role-standard';
+    if (normalized === 'INVOICE_ONLY') return 'role-invoice';
+    if (normalized === 'READ_ONLY') return 'role-readonly';
+    return 'role-member';
+  }
+
   private loadStoredLogo(): void {
+    if (!this.organizationService.getProfileImage) {
+      return;
+    }
     this.isLoadingLogo = true;
     this.organizationService.getProfileImage().subscribe({
       next: (blob: Blob) => {
@@ -267,6 +484,8 @@ export class OrganizationProfile implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.revokeLogoUrl();
+    this.revokeEditorLogoUrl();
+    this.revokeMemberAvatarUrls();
   }
 
   getInitials(): string {
@@ -359,7 +578,7 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (file) this.uploadLogo(file);
+    if (file) this.openLogoEditorWithFile(file);
   }
 
   openLogoPicker(input: HTMLInputElement): void {
@@ -381,10 +600,10 @@ export class OrganizationProfile implements OnInit, OnDestroy {
     event.preventDefault();
     this.isDraggingLogo = false;
     const file = event.dataTransfer?.files?.[0];
-    if (file && !this.isUploadingLogo) this.uploadLogo(file);
+    if (file && !this.isUploadingLogo) this.openLogoEditorWithFile(file);
   }
 
-  private uploadLogo(file: File): void {
+  private validateLogoFile(file: File): boolean {
     const allowed = ['image/png', 'image/jpeg', 'image/webp'];
     if (!allowed.includes(file.type)) {
       this.messageService.add({
@@ -392,7 +611,7 @@ export class OrganizationProfile implements OnInit, OnDestroy {
         summary: 'Unsupported File',
         detail: 'Logo must be a PNG, JPEG or WEBP image'
       });
-      return;
+      return false;
     }
     if (file.size > 5 * 1024 * 1024) {
       this.messageService.add({
@@ -400,6 +619,229 @@ export class OrganizationProfile implements OnInit, OnDestroy {
         summary: 'File Too Large',
         detail: `Logo image must be smaller than 5MB (selected: ${(file.size / 1024 / 1024).toFixed(1)}MB)`
       });
+      return false;
+    }
+    return true;
+  }
+
+  openLogoEditorWithFile(file: File): void {
+    if (!this.validateLogoFile(file)) {
+      return;
+    }
+    this.revokeEditorLogoUrl();
+    this.editorFileName = file.name || 'organization-logo.png';
+    this.editorFileType = file.type || 'image/png';
+    this.editorLogoUrl = URL.createObjectURL(file);
+    this.resetLogoEditorTransforms();
+    this.showLogoEditorDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  openExistingLogoEditor(): void {
+    if (!this.customLogoUrl || this.isUploadingLogo || this.isRemovingLogo) {
+      return;
+    }
+    this.revokeEditorLogoUrl();
+    this.editorFileName = 'organization-logo.png';
+    this.editorFileType = 'image/png';
+    this.editorLogoUrl = this.customLogoUrl;
+    this.resetLogoEditorTransforms();
+    this.showLogoEditorDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  closeLogoEditorDialog(): void {
+    this.showLogoEditorDialog = false;
+    this.isDraggingEditorCanvas = false;
+    this.revokeEditorLogoUrl();
+    this.cdr.markForCheck();
+  }
+
+  private revokeEditorLogoUrl(): void {
+    if (
+      this.editorLogoUrl &&
+      this.editorLogoUrl.startsWith('blob:') &&
+      this.editorLogoUrl !== this.customLogoUrl
+    ) {
+      URL.revokeObjectURL(this.editorLogoUrl);
+    }
+    this.editorLogoUrl = null;
+  }
+
+  resetLogoEditorTransforms(): void {
+    this.editorZoom = 1;
+    this.editorRotation = 0;
+    this.editorFlipX = false;
+    this.editorFlipY = false;
+    this.editorPanX = 0;
+    this.editorPanY = 0;
+  }
+
+  onEditorLogoLoaded(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    this.editorNaturalWidth = img.naturalWidth || 512;
+    this.editorNaturalHeight = img.naturalHeight || 512;
+  }
+
+  getEditorTransformStyle(): string {
+    const scaleX = (this.editorFlipX ? -1 : 1) * this.editorZoom;
+    const scaleY = (this.editorFlipY ? -1 : 1) * this.editorZoom;
+    return `translate3d(${this.editorPanX}px, ${this.editorPanY}px, 0) rotate(${this.editorRotation}deg) scale(${scaleX}, ${scaleY})`;
+  }
+
+  onEditorPointerDown(event: MouseEvent | TouchEvent): void {
+    event.preventDefault();
+    this.isDraggingEditorCanvas = true;
+    const pt = this.getPointerCoordinates(event);
+    this.dragStartX = pt.x;
+    this.dragStartY = pt.y;
+    this.dragInitialPanX = this.editorPanX;
+    this.dragInitialPanY = this.editorPanY;
+  }
+
+  onEditorPointerMove(event: MouseEvent | TouchEvent): void {
+    if (!this.isDraggingEditorCanvas) {
+      return;
+    }
+    event.preventDefault();
+    const pt = this.getPointerCoordinates(event);
+    this.editorPanX = Math.round(this.dragInitialPanX + (pt.x - this.dragStartX));
+    this.editorPanY = Math.round(this.dragInitialPanY + (pt.y - this.dragStartY));
+  }
+
+  onEditorPointerUp(): void {
+    this.isDraggingEditorCanvas = false;
+  }
+
+  onEditorWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const delta = event.deltaY < 0 ? 0.08 : -0.08;
+    this.adjustEditorZoom(delta);
+  }
+
+  private getPointerCoordinates(event: MouseEvent | TouchEvent): { x: number; y: number } {
+    if ('touches' in event && event.touches.length > 0) {
+      return { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+    const mouse = event as MouseEvent;
+    return { x: mouse.clientX, y: mouse.clientY };
+  }
+
+  adjustEditorZoom(delta: number): void {
+    const next = Math.min(3, Math.max(0.5, +(this.editorZoom + delta).toFixed(2)));
+    this.editorZoom = next;
+  }
+
+  rotateEditorLogo(degreesDelta: number): void {
+    let next = this.editorRotation + degreesDelta;
+    while (next > 180) next -= 360;
+    while (next < -180) next += 360;
+    this.editorRotation = next;
+  }
+
+  toggleEditorFlipX(): void {
+    this.editorFlipX = !this.editorFlipX;
+  }
+
+  toggleEditorFlipY(): void {
+    this.editorFlipY = !this.editorFlipY;
+  }
+
+  nudgeEditorPosition(dx: number, dy: number): void {
+    this.editorPanX += dx;
+    this.editorPanY += dy;
+  }
+
+  centerEditorPosition(): void {
+    this.editorPanX = 0;
+    this.editorPanY = 0;
+  }
+
+  async applyCropAndUploadLogo(): Promise<void> {
+    if (!this.editorLogoUrl) {
+      return;
+    }
+    try {
+      const croppedFile = await this.renderEditedLogoToFile();
+      this.closeLogoEditorDialog();
+      this.uploadLogo(croppedFile);
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Image Processing Failed',
+        detail: 'Could not process the edited logo image. Please try again.'
+      });
+    }
+  }
+
+  private renderEditedLogoToFile(): Promise<File> {
+    return new Promise((resolve, reject) => {
+      if (!this.editorLogoUrl) {
+        reject(new Error('No editor logo source'));
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const outputSize = 512;
+        const viewportSize = 260;
+        const ratio = outputSize / viewportSize;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context unavailable'));
+          return;
+        }
+
+        const natW = img.naturalWidth || outputSize;
+        const natH = img.naturalHeight || outputSize;
+        const baseScale = Math.max(outputSize / natW, outputSize / natH);
+        const drawW = natW * baseScale;
+        const drawH = natH * baseScale;
+
+        ctx.save();
+        ctx.translate(
+          outputSize / 2 + this.editorPanX * ratio,
+          outputSize / 2 + this.editorPanY * ratio
+        );
+        ctx.rotate((this.editorRotation * Math.PI) / 180);
+        ctx.scale(
+          (this.editorFlipX ? -1 : 1) * this.editorZoom,
+          (this.editorFlipY ? -1 : 1) * this.editorZoom
+        );
+        ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+
+        const mimeType = ['image/png', 'image/jpeg', 'image/webp'].includes(this.editorFileType)
+          ? this.editorFileType
+          : 'image/png';
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to create logo blob'));
+              return;
+            }
+            const file = new File([blob], this.editorFileName || 'organization-logo.png', {
+              type: mimeType
+            });
+            resolve(file);
+          },
+          mimeType,
+          0.92
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load logo image for cropping'));
+      img.src = this.editorLogoUrl;
+    });
+  }
+
+  uploadLogo(file: File): void {
+    if (!this.validateLogoFile(file)) {
       return;
     }
 

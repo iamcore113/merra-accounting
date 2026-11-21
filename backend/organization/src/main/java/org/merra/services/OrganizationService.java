@@ -21,6 +21,7 @@ import org.merra.dto.CreateOrganizationRequest;
 import org.merra.dto.CurrentOrganizationResponse;
 import org.merra.dto.NewOrganizationResponse;
 import org.merra.dto.OrganizationDashboardResponse;
+import org.merra.dto.OrganizationMemberResponse;
 import org.merra.dto.OrganizationMetaDataResponse;
 import org.merra.dto.UserOrganizationAffiliation;
 import org.merra.entities.AddressType;
@@ -594,6 +595,78 @@ public class OrganizationService {
 		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
 				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
 		return organizationMapper.toCurrentOrganizationResponse(currentOrganization);
+	}
+
+	/**
+	 * Retrieves all members of the authenticated user's current organization,
+	 * including active members and pending invitees with their assigned roles.
+	 *
+	 * @return a list of {@link OrganizationMemberResponse} records
+	 */
+	@Transactional(readOnly = true)
+	public List<OrganizationMemberResponse> getOrganizationMembers() {
+		Organization currentOrganization = userWorkspaceStateRepository.findCurrentOrganizationByPrincipal()
+				.orElseThrow(() -> new EntityNotFoundException(OrganizationExceptions.NOT_FOUND_CURRENT_ORGANIZATION));
+
+		List<OrganizationMembers> rows = organizationMembersRepository
+				.findMembersByOrganizationId(currentOrganization.getId());
+
+		Map<String, OrganizationMemberResponse> deduplicated = new java.util.LinkedHashMap<>();
+		for (OrganizationMembers om : rows) {
+			UserAccount memberUser = om.getUser();
+			String resolvedEmail = (om.getEmail() != null && !om.getEmail().isBlank())
+					? om.getEmail().trim()
+					: (memberUser != null && memberUser.getEmail() != null ? memberUser.getEmail().trim() : "");
+
+			String fullName = null;
+			if (memberUser != null) {
+				String first = memberUser.getFirstName() != null ? memberUser.getFirstName().trim() : "";
+				String last = memberUser.getLastName() != null ? memberUser.getLastName().trim() : "";
+				String combined = (first + " " + last).trim();
+				if (!combined.isBlank()) {
+					fullName = combined;
+				}
+			}
+
+			String invitedBy = null;
+			UserAccount inviter = om.getInvitationBy();
+			if (inviter != null) {
+				String invFirst = inviter.getFirstName() != null ? inviter.getFirstName().trim() : "";
+				String invLast = inviter.getLastName() != null ? inviter.getLastName().trim() : "";
+				String invCombined = (invFirst + " " + invLast).trim();
+				invitedBy = !invCombined.isBlank() ? invCombined : inviter.getEmail();
+			}
+
+			boolean hasProfileImage = memberUser != null
+					&& memberUser.getProfileUrl() != null
+					&& !memberUser.getProfileUrl().isBlank();
+
+			OrganizationMemberResponse dto = new OrganizationMemberResponse(
+					om.getId(),
+					memberUser != null ? memberUser.getUserId() : null,
+					fullName,
+					resolvedEmail,
+					om.getRole(),
+					om.getStatus(),
+					Boolean.TRUE.equals(om.getIsCreator()),
+					Boolean.TRUE.equals(om.getIsInvited()),
+					invitedBy,
+					om.getInvitationDate(),
+					om.getDateJoined(),
+					hasProfileImage
+			);
+
+			String key = !resolvedEmail.isBlank()
+					? resolvedEmail.toLowerCase()
+					: (om.getId() != null ? om.getId().toString() : UUID.randomUUID().toString());
+
+			OrganizationMemberResponse existing = deduplicated.get(key);
+			if (existing == null || (!"ACTIVE".equalsIgnoreCase(existing.status()) && "ACTIVE".equalsIgnoreCase(dto.status()))) {
+				deduplicated.put(key, dto);
+			}
+		}
+
+		return new ArrayList<>(deduplicated.values());
 	}
 
 	/**

@@ -55,7 +55,8 @@ public class OrganizationUsersService {
 					getPrincipal.getCountry() != null ? getPrincipal.getCountry() : "",
 					getPrincipal.getEmail(),
 					organizationService.getUserOrganizationAffiliation(),
-					getPrincipal.isEnabled());
+					getPrincipal.isEnabled(),
+					getPrincipal.getProfileUrl());
 
 			redisTemplate.opsForValue().set(RedisKeys.PRINCIPAL, principalDto, RedisKeys.CONSTANT_DURATION);
 		}

@@ -5,7 +5,11 @@ import { COMPLETE_PROFILE_URL } from '../api/user';
 import { Observable, tap } from 'rxjs';
 import { Config } from '../models/api_response';
 import { IS_AUTHENTICATED } from '../context/auth.token';
-import { AUTHENTICATED_USER_DETAILS, AUTHENTICATED_USER_UPDATE_PROFILE } from '../api/organization';
+import {
+  AUTHENTICATED_USER_DETAILS,
+  AUTHENTICATED_USER_UPDATE_PROFILE,
+  AUTHENTICATED_USER_PROFILE_IMAGE,
+} from '../api/organization';
 import { PrincipalDetailsResponse } from '../models/organization';
 import { LocalStorageService } from './local-storage-service';
 
@@ -54,6 +58,27 @@ export class UserService {
 
   updateProfile(req: PrincipalDetailsResponse): Observable<Config> {
     return this.http.put<Config>(AUTHENTICATED_USER_UPDATE_PROFILE, req, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  uploadProfileImage(file: File): Observable<Config> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<Config>(AUTHENTICATED_USER_PROFILE_IMAGE, formData, {
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  getProfileImage(): Observable<Blob> {
+    return this.http.get(AUTHENTICATED_USER_PROFILE_IMAGE, {
+      responseType: 'blob',
+      context: new HttpContext().set(IS_AUTHENTICATED, true)
+    });
+  }
+
+  deleteProfileImage(): Observable<Config> {
+    return this.http.delete<Config>(AUTHENTICATED_USER_PROFILE_IMAGE, {
       context: new HttpContext().set(IS_AUTHENTICATED, true)
     });
   }

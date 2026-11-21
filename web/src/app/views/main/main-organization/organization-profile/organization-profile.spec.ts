@@ -52,7 +52,8 @@ describe('OrganizationProfile', () => {
   beforeEach(async () => {
     organizationServiceSpy = jasmine.createSpyObj('OrganizationService', [
       'getCurrentOrganization',
-      'getOrganizationMetadata'
+      'getOrganizationMetadata',
+      'getOrganizationMembers'
     ]);
     organizationServiceSpy.getCurrentOrganization.and.returnValue(of(mockOrgResponse));
     organizationServiceSpy.getOrganizationMetadata.and.returnValue(of({
@@ -65,6 +66,36 @@ describe('OrganizationProfile', () => {
         addresses: [],
         paymentTerms: { subElements: [], types: [] }
       }
+    }));
+    organizationServiceSpy.getOrganizationMembers.and.returnValue(of({
+      message: 'Success',
+      success: true,
+      response: 200,
+      data: [
+        {
+          id: 'mem-1',
+          userId: 'user-1',
+          fullName: 'Alice Founder',
+          email: 'alice@merra.com',
+          role: 'CREATOR',
+          status: 'ACTIVE',
+          isCreator: true,
+          isInvited: false,
+          dateJoined: '2026-01-15'
+        },
+        {
+          id: 'mem-2',
+          userId: null,
+          fullName: null,
+          email: 'pending@merra.com',
+          role: 'ADVISOR',
+          status: 'PENDING',
+          isCreator: false,
+          isInvited: true,
+          invitedBy: 'Alice Founder',
+          invitationDate: '2026-11-20'
+        }
+      ]
     }));
 
     networkKeyServiceSpy = jasmine.createSpyObj('NetworkKeyService', ['getActiveKeys']);
@@ -125,5 +156,45 @@ describe('OrganizationProfile', () => {
 
   it('should calculate financial year end display properly', () => {
     expect(component.getFinancialYearEndDisplay()).toBe('Dec. 31');
+  });
+
+  it('should display organization members and pending invitees with their roles', () => {
+    expect(component.organizationMembers.length).toBe(2);
+    expect(component.activeMembersCount).toBe(1);
+    expect(component.pendingMembersCount).toBe(1);
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Organization Members');
+    expect(compiled.textContent).toContain('Alice Founder');
+    expect(compiled.textContent).toContain('Creator (Owner)');
+    expect(compiled.textContent).toContain('pending@merra.com');
+    expect(compiled.textContent).toContain('Advisor (Administrator)');
+    expect(compiled.textContent).toContain('Pending Invitee');
+
+    component.setMemberFilter('PENDING');
+    expect(component.filteredMembers.length).toBe(1);
+    expect(component.filteredMembers[0].email).toBe('pending@merra.com');
+  });
+
+  it('should open interactive logo editor on file selection and support position, zoom, and rotation adjustments', () => {
+    const file = new File(['dummy-logo'], 'logo.png', { type: 'image/png' });
+    const event = { target: { files: [file], value: 'logo.png' } } as unknown as Event;
+
+    component.onFileSelected(event);
+    expect(component.showLogoEditorDialog).toBeTrue();
+    expect(component.editorLogoUrl).toBeTruthy();
+
+    component.nudgeEditorPosition(12, -8);
+    expect(component.editorPanX).toBe(12);
+    expect(component.editorPanY).toBe(-8);
+
+    component.adjustEditorZoom(0.2);
+    expect(component.editorZoom).toBe(1.2);
+
+    component.rotateEditorLogo(90);
+    expect(component.editorRotation).toBe(90);
+
+    component.closeLogoEditorDialog();
+    expect(component.showLogoEditorDialog).toBeFalse();
   });
 });
